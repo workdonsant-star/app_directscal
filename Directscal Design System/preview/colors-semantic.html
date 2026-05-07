@@ -1,0 +1,42 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin:0; padding:0; }
+  body { background: var(--bg); padding: 24px; font-family: var(--font-sans); }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .item { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+  .item .bar { height: 56px; }
+  .item .meta { padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; }
+  .item .name { font-size: 12px; font-weight: 600; }
+  .item .hex { font-family: var(--font-mono); font-size: 11px; color: var(--fg-subtle); }
+  .label-row { font-size: 11px; color: var(--fg-subtle); letter-spacing: var(--tracking-eyebrow); text-transform: uppercase; font-weight: 500; margin-bottom: 12px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; border: 1px solid; line-height: 1.6; }
+  .row { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--border-subtle); }
+</style>
+</head>
+<body>
+  <div class="label-row">Semantic · status</div>
+  <div class="grid">
+    <div class="item">
+      <div class="bar" style="background:#117A4D"></div>
+      <div class="meta"><span class="name">Success</span><span class="hex">#117A4D</span></div>
+      <div class="row"><span class="pill" style="background:#D9F2E5; color:#117A4D; border-color:#B0E1C7">Active</span></div>
+    </div>
+    <div class="item">
+      <div class="bar" style="background:#B7791F"></div>
+      <div class="meta"><span class="name">Warning</span><span class="hex">#B7791F</span></div>
+      <div class="row"><span class="pill" style="background:#FFF1D6; color:#8A5A0E; border-color:#F2D9A0">Pending</span></div>
+    </div>
+    <div class="item">
+      <div class="bar" style="background:#B42318"></div>
+      <div class="meta"><span class="name">Danger</span><span class="hex">#B42318</span></div>
+      <div class="row"><span class="pill" style="background:#FCE7E5; color:#B42318; border-color:#F2C2BE">Failed</span></div>
+    </div>
+    <div class="item">
+      <div class="bar" style="background:#185EFF"></div>
+      <div class="meta"><span class="name">Info</span><span class="hex">#185EFF</span></div>
+      <div class="row"><span class="pill" style="background:#E6EDFF; color:#0F3FAE; border-color:#C2D2FF">In review</span></div>
+    </div>
+  </div>
+</body></html>

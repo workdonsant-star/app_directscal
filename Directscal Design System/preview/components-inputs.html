@@ -1,0 +1,58 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin:0; padding:0; }
+  body { background: var(--bg); padding: 28px 32px; font-family: var(--font-sans); }
+  .label-row { font-size: 11px; color: var(--fg-subtle); letter-spacing: var(--tracking-eyebrow); text-transform: uppercase; font-weight: 500; margin-bottom: 14px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  label { font-size: 12px; font-weight: 500; color: var(--fg); }
+  .help { font-size: 11px; color: var(--fg-subtle); }
+  .input {
+    height: 36px; padding: 0 12px;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: white; color: var(--fg); font-family: var(--font-sans); font-size: 13px;
+    outline: none; transition: all 120ms;
+  }
+  .input::placeholder { color: var(--fg-faint); }
+  .input.focus { border-color: var(--brand-500); box-shadow: 0 0 0 3px rgba(24,94,255,0.15); }
+  .input.error { border-color: var(--danger-500); }
+  .input.disabled { background: var(--neutral-050); color: var(--fg-faint); }
+
+  .select {
+    appearance: none;
+    background: white url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E6E76' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>") no-repeat right 10px center;
+    padding-right: 32px;
+  }
+  .check { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; }
+  .check input { accent-color: var(--brand-500); width: 14px; height: 14px; }
+  .err { font-size: 11px; color: var(--danger-500); }
+</style>
+</head>
+<body>
+  <div class="label-row">Form inputs</div>
+  <div class="grid">
+    <div class="field">
+      <label>Empresa</label>
+      <input class="input" placeholder="Razão social" />
+      <span class="help">Como aparece nos contratos.</span>
+    </div>
+    <div class="field">
+      <label>Estágio do negócio</label>
+      <select class="input select"><option>Selecione</option><option>Pré-receita</option><option>R$ 1-10M ARR</option><option>R$ 10M+ ARR</option></select>
+    </div>
+    <div class="field">
+      <label>Foco do diagnóstico (focused)</label>
+      <input class="input focus" value="Pricing & retenção" />
+    </div>
+    <div class="field">
+      <label>E-mail (erro)</label>
+      <input class="input error" value="contato@empresa" />
+      <span class="err">Endereço inválido.</span>
+    </div>
+    <div class="field" style="grid-column: 1 / -1;">
+      <label class="check"><input type="checkbox" checked> Concordo com a NDA padrão da Directscal antes do envio dos materiais.</label>
+    </div>
+  </div>
+</body></html>

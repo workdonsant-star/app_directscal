@@ -1,26 +1,204 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   Directscal Design Tokens — mapped to shadcn variables
+   Source: Directscal Design System/colors_and_type.css
+   ============================================================ */
 
 @theme inline {
+  /* Color role tokens (mapped to shadcn) */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Chart palette (McKinsey-style) */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-positive: var(--chart-positive);
+  --color-chart-negative: var(--chart-negative);
+
+  /* Sidebar */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Brand scale (acessível como bg-brand-500, text-brand-600 etc.) */
+  --color-brand-50: #F4F7FF;
+  --color-brand-100: #E6EDFF;
+  --color-brand-200: #C2D2FF;
+  --color-brand-300: #88AAFF;
+  --color-brand-400: #4A82FF;
+  --color-brand-500: #185EFF;
+  --color-brand-600: #1450DB;
+  --color-brand-700: #0F3FAE;
+
+  /* Type */
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-instrument-serif);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-heading: var(--font-inter);
+
+  /* Radius (Directscal: 6/10/14/20) */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 2);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ===== LIGHT THEME ===== */
+:root {
+  --radius: 0.625rem; /* 10px — matches Directscal --radius-lg (cards) */
+
+  /* Surfaces */
+  --background: #FFFFFF;
+  --foreground: #111114;       /* neutral-900 */
+  --card: #FFFFFF;
+  --card-foreground: #111114;
+  --popover: #FFFFFF;
+  --popover-foreground: #111114;
+
+  /* Primary = brand blue */
+  --primary: #185EFF;          /* brand-500 */
+  --primary-foreground: #FFFFFF;
+
+  /* Secondary = subtle neutral surface */
+  --secondary: #F5F5F6;        /* neutral-050 */
+  --secondary-foreground: #111114;
+
+  /* Muted = even more subtle */
+  --muted: #FAFAFA;            /* neutral-025 */
+  --muted-foreground: #4A4A52; /* neutral-600 */
+
+  /* Accent surface (hover, focus rest) */
+  --accent: #F5F5F6;           /* neutral-050 */
+  --accent-foreground: #111114;
+
+  /* Destructive */
+  --destructive: #B42318;      /* danger-500 */
+
+  /* Borders */
+  --border: #E2E2E5;           /* neutral-200 */
+  --input: #E2E2E5;
+  --ring: #185EFF;             /* focus ring = brand */
+
+  /* Charts (McKinsey-style anchored on brand blue) */
+  --chart-1: #185EFF;
+  --chart-2: #0B2E78;
+  --chart-3: #4A82FF;
+  --chart-4: #8AB0FF;
+  --chart-5: #1C1C20;
+  --chart-positive: #117A4D;
+  --chart-negative: #B42318;
+
+  /* Sidebar — slightly off-white to separate from main canvas */
+  --sidebar: #FAFAFA;          /* neutral-025 */
+  --sidebar-foreground: #111114;
+  --sidebar-primary: #185EFF;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #EEEEF0;   /* neutral-100 */
+  --sidebar-accent-foreground: #111114;
+  --sidebar-border: #E2E2E5;
+  --sidebar-ring: #185EFF;
+}
+
+/* ===== DARK THEME ===== */
+.dark {
+  /* Surfaces */
+  --background: #08080A;       /* neutral-950 */
+  --foreground: #FAFAFA;       /* neutral-025 */
+  --card: #111114;             /* neutral-900 */
+  --card-foreground: #FAFAFA;
+  --popover: #111114;
+  --popover-foreground: #FAFAFA;
+
+  /* Primary stays brand */
+  --primary: #185EFF;
+  --primary-foreground: #FFFFFF;
+
+  /* Secondary surface */
+  --secondary: #1C1C20;        /* neutral-800 */
+  --secondary-foreground: #FAFAFA;
+
+  /* Muted surface */
+  --muted: #1C1C20;
+  --muted-foreground: #9C9CA3; /* neutral-400 */
+
+  /* Accent */
+  --accent: #1C1C20;
+  --accent-foreground: #FAFAFA;
+
+  /* Destructive (slightly desaturated for dark) */
+  --destructive: #E5564C;
+
+  /* Borders */
+  --border: #1C1C20;           /* neutral-800 */
+  --input: #1C1C20;
+  --ring: #185EFF;
+
+  /* Charts */
+  --chart-1: #185EFF;
+  --chart-2: #88AAFF;          /* lighter on dark for contrast */
+  --chart-3: #4A82FF;
+  --chart-4: #C2D2FF;
+  --chart-5: #FAFAFA;
+  --chart-positive: #2BB673;
+  --chart-negative: #E5564C;
+
+  /* Sidebar — slightly raised vs background */
+  --sidebar: #0E0E10;
+  --sidebar-foreground: #FAFAFA;
+  --sidebar-primary: #185EFF;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #1C1C20;
+  --sidebar-accent-foreground: #FAFAFA;
+  --sidebar-border: #1C1C20;
+  --sidebar-ring: #185EFF;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
-}
+  html {
+    @apply font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "cv11";
+  }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* Tabular numerals for KPIs and data */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
 }

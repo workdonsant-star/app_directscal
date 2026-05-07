@@ -1,0 +1,29 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin:0; padding:0; }
+  body { background: var(--bg); padding: 24px; font-family: var(--font-sans); }
+  .row { display: grid; grid-template-columns: repeat(9, 1fr); gap: 8px; }
+  .swatch { aspect-ratio: 1 / 1.1; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); padding: 8px; display: flex; flex-direction: column; justify-content: flex-end; position: relative; overflow: hidden; }
+  .swatch .name { font-size: 10px; font-weight: 600; letter-spacing: 0; }
+  .swatch .hex { font-family: var(--font-mono); font-size: 9px; opacity: 0.7; }
+  .swatch.dark .name, .swatch.dark .hex { color: white; }
+  .swatch.light .name, .swatch.light .hex { color: var(--neutral-900); }
+  .label-row { font-size: 11px; color: var(--fg-subtle); letter-spacing: var(--tracking-eyebrow); text-transform: uppercase; font-weight: 500; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+  <div class="label-row">Brand · #185EFF</div>
+  <div class="row">
+    <div class="swatch light" style="background:#F4F7FF"><span class="name">050</span><span class="hex">F4F7FF</span></div>
+    <div class="swatch light" style="background:#E6EDFF"><span class="name">100</span><span class="hex">E6EDFF</span></div>
+    <div class="swatch light" style="background:#C2D2FF"><span class="name">200</span><span class="hex">C2D2FF</span></div>
+    <div class="swatch light" style="background:#88AAFF"><span class="name">300</span><span class="hex">88AAFF</span></div>
+    <div class="swatch dark"  style="background:#4A82FF"><span class="name">400</span><span class="hex">4A82FF</span></div>
+    <div class="swatch dark"  style="background:#185EFF; outline: 2px solid var(--brand-700); outline-offset: -2px;"><span class="name">500 ★</span><span class="hex">185EFF</span></div>
+    <div class="swatch dark"  style="background:#1450DB"><span class="name">600</span><span class="hex">1450DB</span></div>
+    <div class="swatch dark"  style="background:#0F3FAE"><span class="name">700</span><span class="hex">0F3FAE</span></div>
+    <div class="swatch dark"  style="background:#0B2E78"><span class="name">navy</span><span class="hex">0B2E78</span></div>
+  </div>
+</body></html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin:0; padding:0; }
+  body { background: var(--bg); padding: 28px 32px; font-family: var(--font-sans); }
+  .label-row { font-size: 11px; color: var(--fg-subtle); letter-spacing: var(--tracking-eyebrow); text-transform: uppercase; font-weight: 500; margin-bottom: 14px; }
+  .stack { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding-bottom: 14px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 14px; }
+  .stack:last-child { border-bottom: none; margin-bottom: 0; }
+
+  .badge { display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 10px; border-radius: 999px; font-size: 11px; font-weight: 500; border: 1px solid; line-height: 1; }
+  .b-success { background: #D9F2E5; color: #117A4D; border-color: #B0E1C7; }
+  .b-warn    { background: #FFF1D6; color: #8A5A0E; border-color: #F2D9A0; }
+  .b-danger  { background: #FCE7E5; color: #B42318; border-color: #F2C2BE; }
+  .b-info    { background: #E6EDFF; color: #0F3FAE; border-color: #C2D2FF; }
+  .b-neutral { background: var(--neutral-050); color: var(--fg); border-color: var(--border); }
+  .dot { width: 6px; height: 6px; border-radius: 999px; background: currentColor; }
+
+  .tag { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: 4px; font-size: 11px; border: 1px solid var(--border); background: white; color: var(--fg); font-family: var(--font-mono); letter-spacing: 0; }
+  .tag .x { color: var(--fg-subtle); cursor: pointer; }
+
+  .kbd { font-family: var(--font-mono); font-size: 11px; padding: 2px 6px; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px; background: var(--neutral-050); color: var(--fg-muted); }
+
+  .row-label { font-family: var(--font-mono); font-size: 10px; color: var(--fg-subtle); margin-right: 8px; }
+</style>
+</head>
+<body>
+  <div class="label-row">Badges, tags & kbd</div>
+  <div class="stack">
+    <span class="row-label">status</span>
+    <span class="badge b-success"><span class="dot"></span>Active</span>
+    <span class="badge b-warn"><span class="dot"></span>Pending</span>
+    <span class="badge b-danger"><span class="dot"></span>Failed</span>
+    <span class="badge b-info"><span class="dot"></span>In review</span>
+    <span class="badge b-neutral">Draft</span>
+  </div>
+  <div class="stack">
+    <span class="row-label">tags</span>
+    <span class="tag">pricing <span class="x">×</span></span>
+    <span class="tag">unit-economics <span class="x">×</span></span>
+    <span class="tag">retention <span class="x">×</span></span>
+    <span class="tag">b2b-saas <span class="x">×</span></span>
+  </div>
+  <div class="stack">
+    <span class="row-label">keys</span>
+    <span class="kbd">⌘</span><span class="kbd">K</span>
+    <span style="color: var(--fg-subtle); font-size: 11px;">to open command palette</span>
+  </div>
+</body></html>

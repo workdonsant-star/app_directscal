@@ -1,0 +1,328 @@
+/* ============================================================
+   Directscal — Colors & Type
+   ------------------------------------------------------------
+   Visual language: technical, specialist, premium, but modern.
+   Inspirations: McKinsey (charts + structured palette),
+                 Vercel + shadcn (UI density + neutrals + craft).
+
+   Naming convention follows shadcn-ish + functional roles.
+   ============================================================ */
+
+/* -----  FONTS  ---------------------------------------------- */
+/* We use Google Fonts so this loads anywhere. If Directscal has
+   licensed display/body faces, swap the @import for local @font-face
+   declarations against /fonts and keep the var stack the same. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* ===== TYPE TOKENS ===== */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Instrument Serif', 'Times New Roman', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Numeric type scale (rem, base 16) */
+  --text-xs: 0.75rem;     /* 12 — captions, eyebrow */
+  --text-sm: 0.8125rem;   /* 13 — labels, meta */
+  --text-base: 0.9375rem; /* 15 — body */
+  --text-md: 1rem;        /* 16 — emphasized body */
+  --text-lg: 1.125rem;    /* 18 — lead */
+  --text-xl: 1.375rem;    /* 22 — h4 */
+  --text-2xl: 1.75rem;    /* 28 — h3 */
+  --text-3xl: 2.25rem;    /* 36 — h2 */
+  --text-4xl: 3rem;       /* 48 — h1 */
+  --text-5xl: 4rem;       /* 64 — display */
+  --text-6xl: 5.5rem;     /* 88 — hero display */
+
+  --leading-tight: 1.05;
+  --leading-snug: 1.2;
+  --leading-normal: 1.45;
+  --leading-relaxed: 1.6;
+
+  --tracking-tight: -0.02em;
+  --tracking-snug: -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;
+  --tracking-eyebrow: 0.12em;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* ===== COLOR — BRAND ===== */
+  /* Brand chevron blue, taken directly from the logo SVG (rgb 24,94,255). */
+  --brand-500: #185EFF;       /* primary / signal */
+  --brand-600: #1450DB;       /* hover */
+  --brand-700: #0F3FAE;       /* press */
+  --brand-400: #4A82FF;
+  --brand-300: #88AAFF;
+  --brand-200: #C2D2FF;
+  --brand-100: #E6EDFF;
+  --brand-050: #F4F7FF;
+
+  /* ===== COLOR — NEUTRAL (the workhorse) ===== */
+  /* Cool, slightly desaturated. Vercel-ish. Used for 90% of UI. */
+  --neutral-000: #FFFFFF;
+  --neutral-025: #FAFAFA;
+  --neutral-050: #F5F5F6;
+  --neutral-100: #EEEEF0;
+  --neutral-200: #E2E2E5;
+  --neutral-300: #C9C9CE;
+  --neutral-400: #9C9CA3;
+  --neutral-500: #6E6E76;
+  --neutral-600: #4A4A52;
+  --neutral-700: #2E2E34;
+  --neutral-800: #1C1C20;
+  --neutral-900: #111114;
+  --neutral-950: #08080A;
+
+  /* ===== COLOR — CHART / DATA ===== */
+  /* McKinsey-style: structured, restrained, readable in print + screen.
+     Order matters — pickers should iterate through 1→6 for series. */
+  --chart-1: #185EFF;  /* brand blue */
+  --chart-2: #0B2E78;  /* deep navy */
+  --chart-3: #4A82FF;  /* mid blue */
+  --chart-4: #8AB0FF;  /* soft blue */
+  --chart-5: #1C1C20;  /* near-black for emphasis */
+  --chart-6: #C9C9CE;  /* neutral comparator */
+  --chart-positive: #117A4D;
+  --chart-negative: #B42318;
+  --chart-grid: #EEEEF0;
+  --chart-axis: #6E6E76;
+
+  /* ===== COLOR — SEMANTIC ===== */
+  --success-500: #117A4D;
+  --success-100: #D9F2E5;
+  --warning-500: #B7791F;
+  --warning-100: #FFF1D6;
+  --danger-500:  #B42318;
+  --danger-100:  #FCE7E5;
+  --info-500:    #185EFF;
+  --info-100:    #E6EDFF;
+
+  /* ===== ROLE / SEMANTIC TOKENS ===== */
+  /* Use these in components. They reference the scale above so a future
+     theme swap (e.g. dark mode) only re-points the role tokens. */
+  --bg:           var(--neutral-000);
+  --bg-subtle:    var(--neutral-025);
+  --bg-muted:     var(--neutral-050);
+  --bg-inverse:   var(--neutral-900);
+
+  --surface:        var(--neutral-000);
+  --surface-raised: var(--neutral-000);
+  --surface-sunken: var(--neutral-050);
+
+  --fg:           var(--neutral-900);   /* primary text */
+  --fg-muted:     var(--neutral-600);   /* body secondary */
+  --fg-subtle:    var(--neutral-500);   /* meta, captions */
+  --fg-faint:     var(--neutral-400);   /* placeholders */
+  --fg-on-brand:  var(--neutral-000);
+  --fg-inverse:   var(--neutral-000);
+
+  --border:        var(--neutral-200);
+  --border-strong: var(--neutral-300);
+  --border-subtle: var(--neutral-100);
+  --border-focus:  var(--brand-500);
+
+  --accent:       var(--brand-500);
+  --accent-hover: var(--brand-600);
+  --accent-press: var(--brand-700);
+  --accent-bg:    var(--brand-050);
+
+  /* ===== SHADOWS ===== */
+  /* Tight, low-spread, near-black. No coloured shadows. */
+  --shadow-xs: 0 1px 1px rgba(8,8,10,0.04);
+  --shadow-sm: 0 1px 2px rgba(8,8,10,0.06), 0 1px 1px rgba(8,8,10,0.04);
+  --shadow-md: 0 4px 12px rgba(8,8,10,0.06), 0 1px 2px rgba(8,8,10,0.04);
+  --shadow-lg: 0 12px 32px rgba(8,8,10,0.08), 0 4px 8px rgba(8,8,10,0.04);
+  --shadow-xl: 0 24px 64px rgba(8,8,10,0.12), 0 8px 16px rgba(8,8,10,0.06);
+  --shadow-inner: inset 0 1px 2px rgba(8,8,10,0.06);
+
+  /* Focus ring — Vercel-style 2-stop ring */
+  --ring: 0 0 0 2px var(--neutral-000), 0 0 0 4px var(--brand-500);
+
+  /* ===== RADII ===== */
+  --radius-none: 0;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-2xl: 20px;
+  --radius-pill: 999px;
+
+  /* ===== SPACING (4px base) ===== */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* ===== MOTION ===== */
+  --ease-standard: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-slow: 280ms;
+}
+
+/* ===== DARK THEME (optional opt-in via [data-theme="dark"]) ===== */
+[data-theme="dark"] {
+  --bg:           var(--neutral-950);
+  --bg-subtle:    var(--neutral-900);
+  --bg-muted:     var(--neutral-800);
+  --bg-inverse:   var(--neutral-000);
+
+  --surface:        var(--neutral-900);
+  --surface-raised: var(--neutral-800);
+  --surface-sunken: var(--neutral-950);
+
+  --fg:           var(--neutral-025);
+  --fg-muted:     var(--neutral-300);
+  --fg-subtle:    var(--neutral-400);
+  --fg-faint:     var(--neutral-500);
+
+  --border:        var(--neutral-700);
+  --border-strong: var(--neutral-600);
+  --border-subtle: var(--neutral-800);
+
+  --accent-bg:    rgba(24,94,255,0.12);
+  --chart-grid:   var(--neutral-800);
+  --chart-axis:   var(--neutral-400);
+}
+
+/* ============================================================
+   SEMANTIC ELEMENT STYLES
+   Drop colors_and_type.css into a page and these "just work".
+   ============================================================ */
+
+html, body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--fg);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'ss01', 'cv11';
+}
+
+h1, .h1 {
+  font-family: var(--font-sans);
+  font-size: var(--text-4xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+  margin: 0;
+}
+
+h2, .h2 {
+  font-family: var(--font-sans);
+  font-size: var(--text-3xl);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+  margin: 0;
+}
+
+h3, .h3 {
+  font-family: var(--font-sans);
+  font-size: var(--text-2xl);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-snug);
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+  margin: 0;
+}
+
+h4, .h4 {
+  font-family: var(--font-sans);
+  font-size: var(--text-xl);
+  line-height: var(--leading-snug);
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+  margin: 0;
+}
+
+.display {
+  font-family: var(--font-sans);
+  font-size: var(--text-6xl);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+}
+
+.display-serif {
+  font-family: var(--font-serif);
+  font-size: var(--text-6xl);
+  line-height: 1;
+  letter-spacing: -0.015em;
+  font-weight: var(--weight-regular);
+  font-style: italic;
+  color: var(--fg);
+}
+
+p, .body {
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--fg-muted);
+  margin: 0;
+}
+
+.lead {
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
+  color: var(--fg-muted);
+}
+
+.eyebrow {
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  font-weight: var(--weight-medium);
+  color: var(--fg-subtle);
+}
+
+.label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-snug);
+  color: var(--fg);
+}
+
+.caption {
+  font-size: var(--text-xs);
+  color: var(--fg-subtle);
+  line-height: var(--leading-normal);
+}
+
+code, .code, .mono {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  font-feature-settings: 'zero', 'ss01';
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+a:hover { color: var(--accent-hover); }
+
+/* Useful utilities */
+.fg-muted { color: var(--fg-muted); }
+.fg-subtle { color: var(--fg-subtle); }
+.fg-faint { color: var(--fg-faint); }
+.fg-brand { color: var(--accent); }

@@ -1,0 +1,43 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin:0; padding:0; }
+  body { background: var(--neutral-025); padding: 24px 28px; font-family: var(--font-sans); }
+  .label-row { font-size: 11px; color: var(--fg-subtle); letter-spacing: var(--tracking-eyebrow); text-transform: uppercase; font-weight: 500; margin-bottom: 14px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 8px; transition: all 180ms; }
+  .card:hover { border-color: var(--border-strong); background: var(--neutral-025); }
+  .card .eyebrow { font-size: 10px; letter-spacing: var(--tracking-eyebrow); text-transform: uppercase; color: var(--fg-subtle); font-weight: 500; }
+  .card .title { font-size: 16px; font-weight: 600; color: var(--fg); letter-spacing: -0.01em; }
+  .card .desc { font-size: 12px; color: var(--fg-muted); line-height: 1.5; }
+  .card .meta { font-size: 11px; color: var(--fg-subtle); margin-top: 4px; font-family: var(--font-mono); }
+  .card.feature { padding: 22px; }
+  .card.feature .num { font-family: var(--font-mono); font-size: 32px; font-weight: 600; color: var(--fg); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .card.brand { background: var(--neutral-900); color: white; border-color: var(--neutral-900); }
+  .card.brand .title, .card.brand .desc { color: white; }
+  .card.brand .desc { color: var(--neutral-300); }
+  .card.brand .eyebrow { color: var(--brand-300); }
+</style>
+</head>
+<body>
+  <div class="label-row">Cards · default, feature, inverse</div>
+  <div class="grid">
+    <div class="card">
+      <span class="eyebrow">Estudo de caso</span>
+      <span class="title">Pricing redesenhado em 6 semanas</span>
+      <span class="desc">SaaS B2B, R$ 32M ARR. Nova segmentação de planos e regras de desconto.</span>
+      <span class="meta">+38% margem op.</span>
+    </div>
+    <div class="card feature">
+      <span class="eyebrow">Margem operacional</span>
+      <span class="num">+38%</span>
+      <span class="desc">Após reestruturação completa do funil de aquisição e do modelo de pricing.</span>
+    </div>
+    <div class="card brand">
+      <span class="eyebrow">Método</span>
+      <span class="title">Diagnóstico → Plano → Execução</span>
+      <span class="desc">14 dias de mapeamento, 30 dias de plano, 90 dias de execução acompanhada.</span>
+    </div>
+  </div>
+</body></html>

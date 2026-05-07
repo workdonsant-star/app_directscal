@@ -1,0 +1,24 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin:0; padding:0; }
+  body { background: var(--neutral-050); padding: 32px; font-family: var(--font-sans); }
+  .label-row { font-size: 11px; color: var(--fg-subtle); letter-spacing: var(--tracking-eyebrow); text-transform: uppercase; font-weight: 500; margin-bottom: 20px; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
+  .item { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .box { width: 80px; height: 80px; background: white; border-radius: 10px; }
+  .nm { font-family: var(--font-mono); font-size: 11px; color: var(--fg); }
+  .desc { font-size: 10px; color: var(--fg-subtle); }
+</style>
+</head>
+<body>
+  <div class="label-row">Shadow system · 2-stop, near-black, no color</div>
+  <div class="grid">
+    <div class="item"><div class="box" style="box-shadow: var(--shadow-xs)"></div><div class="nm">xs</div><div class="desc">borders</div></div>
+    <div class="item"><div class="box" style="box-shadow: var(--shadow-sm)"></div><div class="nm">sm</div><div class="desc">buttons</div></div>
+    <div class="item"><div class="box" style="box-shadow: var(--shadow-md)"></div><div class="nm">md</div><div class="desc">menus</div></div>
+    <div class="item"><div class="box" style="box-shadow: var(--shadow-lg)"></div><div class="nm">lg</div><div class="desc">popovers</div></div>
+    <div class="item"><div class="box" style="box-shadow: var(--shadow-xl)"></div><div class="nm">xl</div><div class="desc">modals</div></div>
+  </div>
+</body></html>

@@ -1,0 +1,32 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin:0; padding:0; }
+  body { background: var(--bg); padding: 24px 28px; font-family: var(--font-sans); }
+  .label-row { font-size: 11px; color: var(--fg-subtle); letter-spacing: var(--tracking-eyebrow); text-transform: uppercase; font-weight: 500; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { text-align: left; font-weight: 500; color: var(--fg-subtle); font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--fg); }
+  td.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  td.delta-pos { color: #117A4D; font-family: var(--font-mono); text-align: right; font-variant-numeric: tabular-nums; }
+  td.delta-neg { color: #B42318; font-family: var(--font-mono); text-align: right; font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: none; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 500; border: 1px solid; }
+  .b-success { background: #D9F2E5; color: #117A4D; border-color: #B0E1C7; }
+  .b-warn    { background: #FFF1D6; color: #8A5A0E; border-color: #F2D9A0; }
+  .b-info    { background: #E6EDFF; color: #0F3FAE; border-color: #C2D2FF; }
+</style>
+</head>
+<body>
+  <div class="label-row">Table · tabular numerals, sparing borders</div>
+  <table>
+    <thead><tr><th>Cliente</th><th>Estágio</th><th style="text-align:right">ARR</th><th style="text-align:right">Margem</th><th style="text-align:right">Δ 90d</th></tr></thead>
+    <tbody>
+      <tr><td>Petralis</td><td><span class="pill b-success">Execução</span></td><td class="num">R$ 32.4M</td><td class="num">28%</td><td class="delta-pos">+12.0pp</td></tr>
+      <tr><td>Northbound</td><td><span class="pill b-info">Plano</span></td><td class="num">R$ 8.1M</td><td class="num">14%</td><td class="delta-pos">+3.2pp</td></tr>
+      <tr><td>Quadra Capital</td><td><span class="pill b-warn">Diagnóstico</span></td><td class="num">R$ 54.0M</td><td class="num">31%</td><td class="delta-neg">−1.4pp</td></tr>
+      <tr><td>Velo Studio</td><td><span class="pill b-success">Execução</span></td><td class="num">R$ 4.6M</td><td class="num">22%</td><td class="delta-pos">+6.8pp</td></tr>
+    </tbody>
+  </table>
+</body></html>
