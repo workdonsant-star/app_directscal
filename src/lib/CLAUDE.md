@@ -1,86 +1,73 @@
-# `src/lib` — Types, mock data e utilidades
+# `src/lib` — Contratos, dados mockados e utilidades
 
 Antes de editar, releia o **AGENTS.md** da raiz e este documento.
 
 ## Propósito
 
-`src/lib` concentra **tipos compartilhados, dados mockados e utilidades neutras** ao framework. Nada aqui depende de React, Next ou DOM — exceto `utils.ts` que é puramente helper de classes Tailwind.
+`src/lib` concentra a fronteira de dados do app. A fase atual ainda é 100% mockada, mas os contratos já estão preparados para futura integração com Supabase.
 
-## Arquivos
+## Estrutura
 
 ```
 src/lib/
-├── mock-data.ts     ← dimensões, diagnósticos, KPIs e função classifyScore
-├── types.ts         ← tipos de domínio (Diagnostic, Dimension, RespondentGroup, …)
-└── utils.ts         ← cn() (clsx + tailwind-merge)
+├── contracts/              ← schemas Zod, tipos e mappers de dados
+├── data/                   ← data-source mockado consumido por páginas/componentes
+├── mock-data.ts            ← seed temporário e bruto dos dados mockados
+├── profile-storage.ts      ← overrides locais de perfil via localStorage
+├── types.ts                ← reexports dos tipos públicos de contracts/
+└── utils.ts                ← cn() (clsx + tailwind-merge)
 ```
 
-## `types.ts` — fonte canônica do domínio
+## Contratos
 
-Os tipos aqui descrevem o **shape esperado da API real** quando ela chegar. Ao alterá-los:
-- Atualize `mock-data.ts` no mesmo commit.
-- Atualize componentes que dependem do tipo (TypeScript apontará).
-- Não introduza tipos que só fazem sentido em mock (campos fictícios, valores hardcoded). Os tipos devem ser realistas.
+- `src/lib/contracts/` é a fonte canônica dos contratos de dados.
+- Use Zod para validar shapes em runtime e inferir tipos TypeScript.
+- `Db*` representa o formato futuro Supabase, com campos `snake_case`.
+- DTOs e modelos usados pela UI ficam em `camelCase`.
+- Conversões de `Db*` para UI devem passar por `src/lib/contracts/mappers.ts`.
+- Datas de evento usam datetime ISO com offset: `createdAt`, `updatedAt`, `activatedAt`, `closedAt`.
+- Datas de prazo usam date ISO: `deadline` no formato `YYYY-MM-DD`.
+- IDs são `string` nesta fase porque os mocks usam ids como `diag_01`; a migração para UUID deve ser feita nos schemas, não nos componentes.
 
-Domínio coberto hoje:
-- `Diagnostic` — diagnóstico criado pelo administrador.
-- `Dimension` — uma das 6 dimensões avaliadas (id, número, nome, nome curto, pergunta-chave, descrição).
-- `DiagnosticStatus` — `"rascunho" | "ativo" | "encerrado"`.
-- `RespondentGroup` — `"fundador" | "lideranca" | "operacao"` (note: sem cedilha, sem acento — keys de dado).
-- `DimensionId` — uma das 6 ids de dimensão.
-- `Classification` — string literal com as 5 classificações de maturidade.
+Contratos principais:
+- `Diagnostic`, `DiagnosticListItem`, `DiagnosticDetail`.
+- `DiagnosticTemplate`, `Dimension`, `LikertScalePoint`, `RespondentGroupMeta`.
+- `DiagnosticShareLink`, `DiagnosticShareWorkspace`.
+- `Respondent`, `ResponseSession`, `LikertAnswer`, `SubmitLikertResponseInput`.
+- `DashboardSummary`, `DimensionInsightSummary`.
+- `UserProfile`, `ProfileSettingsData`.
+- Inputs de escrita: `CreateDiagnosticInput`, `UpdateDiagnosticDraftInput`, `ActivateDiagnosticInput`, `CloseDiagnosticInput`, `DeleteDiagnosticInput`, `UpdateProfileInput`, `ChangePasswordInput`, `UpdateOrganizationInput`.
 
-## `mock-data.ts` — dados fictícios
+## Data-source mockado
 
-**Esta é a fase de mock data.** Toda interface lê daqui. Quando a API entrar, este arquivo será substituído por hooks de domínio com a mesma forma de dados.
+- Páginas e componentes devem importar dados de `src/lib/data/omdx-data-source.ts`.
+- Não importe arrays de `mock-data.ts` em componentes ou páginas.
+- `mock-data.ts` é apenas seed temporário. Ele pode ser importado pela camada `data/`, mas não pela UI.
+- Quando Supabase entrar, a troca deve acontecer dentro de `src/lib/data/`, preservando os contratos públicos sempre que possível.
+- Cálculos agregados e helpers de domínio devem ficar em `data/` ou em funções puras de contrato, não em componentes.
+- `profile-storage.ts` é exceção client-only para a fase mockada: persiste overrides de perfil no `localStorage` e emite evento para atualizar o shell. Deve ser substituído por backend/autenticação real no futuro.
 
-Exporta:
-- `dimensions[]` — as 6 dimensões com nomes, perguntas e descrições.
-- `diagnostics[]` — 6 diagnósticos fictícios em estados variados (cobre rascunho, ativo, encerrado).
-- `lastDiagnosticDimensionScores` — objeto `Record<DimensionId, number>` com os scores do último diagnóstico (alimenta o gráfico do dashboard).
-- `dashboardKpis` — KPIs agregados (calculados a partir dos arrays acima).
-- `classifyScore(score: number): Classification` — **única fonte** da regra de classificação.
-- `getDimensionById(id)` — helper.
+## `mock-data.ts`
 
-### Regras
+Mantém dados fictícios determinísticos para validar a interface:
+- organizações;
+- perfil mockado;
+- dimensões;
+- templates;
+- diagnósticos;
+- registros de insights por dimensão;
+- KPIs agregados temporários.
 
-- **Cálculos derivados moram aqui**, não em componente. Se uma página mostrar "score médio", calcule em `mock-data.ts` e exporte.
-- **Português realista.** Nomes de empresa fictícios mas plausíveis ("Vertex Logistics", "Lumen Health"), datas absolutas (`"2026-04-22"` — nunca relativas), descrições curtas e técnicas.
-- **Cobrir estados.** Pelo menos um diagnóstico em cada status (rascunho, ativo com poucas respostas, ativo com muitas, encerrado).
-- **Não vaze dados pessoais reais.** Nada de e-mails verdadeiros, nomes de clientes reais, números de tickets.
+Os mocks devem continuar realistas, em pt-BR, sem dados pessoais reais e sem `Math.random()`.
 
-### Ao adicionar novos dados mockados
+## `utils.ts`
 
-1. Defina o tipo em `types.ts` primeiro.
-2. Adicione o mock em `mock-data.ts`.
-3. Se for derivado, exporte uma função pura — não duplique a regra em componente.
-4. Atualize a tabela em `src/components/omdx/CLAUDE.md` se houver impacto de UI.
-
-## `utils.ts` — helper único
-
-`cn(...inputs)` combina clsx + tailwind-merge. Use sempre que compor classes condicionalmente:
-
-```ts
-import { cn } from "@/lib/utils";
-
-<div className={cn("base", isActive && "ativo", className)} />
-```
-
-Não adicione utilidades genéricas aqui sem justificar — `lib/` deve permanecer enxuto.
+`cn(...inputs)` combina clsx + tailwind-merge. Use sempre que compor classes condicionalmente.
 
 ## Anti-padrões
 
-- Importar React, Next ou shadcn em `src/lib/` (exceção: `utils.ts` mexe com classes Tailwind, mas sem JSX).
-- Duplicar a regra de `classifyScore` em outro arquivo.
-- Mistura de seeds determinísticos com `Math.random()` no mock — mantenha tudo estático para a UI ser previsível.
-- Fetches reais, server actions, chamadas a APIs. **Esta fase é 100% mockada.**
-- Tipos com campos opcionais "por via das dúvidas" — modele como será de verdade.
-
-## Quando virar API real
-
-Manteremos a forma dos tipos. O que muda:
-- `diagnostics[]` vira `useDiagnostics()` (TanStack Query ou similar).
-- `dashboardKpis` vira derivação dentro de um selector ou hook.
-- `classifyScore` continua aqui — é regra de domínio, não de transporte.
-
-A meta é: **substituir a fonte sem reescrever os componentes**.
+- Importar `mock-data.ts` em página ou componente.
+- Duplicar mappers de `Db*` dentro de UI.
+- Criar campos opcionais por conveniência sem refletir o contrato real.
+- Introduzir fetch, server action, Supabase client, migrations ou autenticação real nesta fase.
+- Misturar validação de formulário com contrato de transporte quando o dado ainda não sai do client.

@@ -1,4 +1,8 @@
-import { dimensions, lastDiagnosticDimensionScores, classifyScore } from "@/lib/mock-data";
+import {
+  classifyScore,
+  getDimensions,
+  getLatestDimensionScores,
+} from "@/lib/data/omdx-data-source";
 import { cn } from "@/lib/utils";
 
 /**
@@ -7,6 +11,8 @@ import { cn } from "@/lib/utils";
  */
 export function DimensionBarChart() {
   const max = 5;
+  const dimensions = getDimensions();
+  const lastDiagnosticDimensionScores = getLatestDimensionScores();
 
   return (
     <div className="flex flex-col gap-4">

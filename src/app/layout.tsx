@@ -28,6 +28,10 @@ export const metadata: Metadata = {
   title: "Directscal — OMDx",
   description:
     "Diagnóstico de Maturidade Operacional. Estruturação de negócios digitais que precisam crescer.",
+  icons: {
+    icon: [{ url: "/favicon.svg.svg", type: "image/svg+xml" }],
+    shortcut: "/favicon.svg.svg",
+  },
 };
 
 export default function RootLayout({
@@ -44,8 +48,8 @@ export default function RootLayout({
       <body className="min-h-full bg-background text-foreground">
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
+          defaultTheme="system"
+          enableSystem
           disableTransitionOnChange
         >
           {children}

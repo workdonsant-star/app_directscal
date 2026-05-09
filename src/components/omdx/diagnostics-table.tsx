@@ -1,8 +1,10 @@
 "use client";
 
-import { Copy, Eye, MoreHorizontal, Pencil } from "lucide-react";
+import { Check, Copy, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { DeleteDiagnosticDialog } from "@/components/omdx/delete-diagnostic-dialog";
+import { StatusBadge } from "@/components/omdx/status-badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,9 +21,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { StatusBadge } from "@/components/omdx/status-badge";
-import { diagnostics } from "@/lib/mock-data";
-import type { Diagnostic, DiagnosticStatus } from "@/lib/types";
+import {
+  getResponseToken,
+  getRespondentGroups,
+} from "@/lib/data/omdx-data-source";
+import type { Diagnostic, DiagnosticStatus, RespondentGroup } from "@/lib/types";
 
 type Filter = "todos" | DiagnosticStatus;
 
@@ -32,6 +36,8 @@ const filters: { value: Filter; label: string }[] = [
   { value: "encerrado", label: "Encerrados" },
 ];
 
+const respondentGroups = getRespondentGroups();
+
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("pt-BR", {
     day: "2-digit",
@@ -39,6 +45,12 @@ function formatDate(iso: string) {
     year: "numeric",
   });
 }
+
+type DiagnosticsTableProps = {
+  diagnostics: Diagnostic[];
+  onConfigure?: (diagnostic: Diagnostic) => void;
+  onDelete?: (diagnostic: Diagnostic) => void;
+};
 
 function deadlineLabel(diagnostic: Diagnostic) {
   if (!diagnostic.deadline) return "—";
@@ -56,8 +68,46 @@ function deadlineLabel(diagnostic: Diagnostic) {
   return `${diff} dias restantes`;
 }
 
-export function DiagnosticsTable() {
+function ResponseLinkCell({
+  copiedKey,
+  diagnostic,
+  groupId,
+  onCopy,
+}: {
+  copiedKey: string | null;
+  diagnostic: Diagnostic;
+  groupId: RespondentGroup;
+  onCopy: (diagnostic: Diagnostic, groupId: RespondentGroup) => void;
+}) {
+  if (diagnostic.status === "rascunho") {
+    return <span className="text-muted-foreground">—</span>;
+  }
+
+  const key = `${diagnostic.id}-${groupId}`;
+  const copied = copiedKey === key;
+
+  return (
+    <Button
+      variant="outline"
+      size="xs"
+      onClick={() => onCopy(diagnostic, groupId)}
+      aria-label={`Copiar link de ${groupId}`}
+    >
+      {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
+      {copied ? "Copiado" : "Copiar"}
+    </Button>
+  );
+}
+
+export function DiagnosticsTable({
+  diagnostics,
+  onConfigure,
+  onDelete,
+}: DiagnosticsTableProps) {
   const [filter, setFilter] = useState<Filter>("todos");
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [diagnosticToDelete, setDiagnosticToDelete] =
+    useState<Diagnostic | null>(null);
 
   const counts = useMemo(
     () => ({
@@ -66,7 +116,7 @@ export function DiagnosticsTable() {
       rascunho: diagnostics.filter((d) => d.status === "rascunho").length,
       encerrado: diagnostics.filter((d) => d.status === "encerrado").length,
     }),
-    [],
+    [diagnostics],
   );
 
   const visible = useMemo(
@@ -74,8 +124,25 @@ export function DiagnosticsTable() {
       filter === "todos"
         ? diagnostics
         : diagnostics.filter((d) => d.status === filter),
-    [filter],
+    [diagnostics, filter],
   );
+
+  async function handleCopyResponseLink(
+    diagnostic: Diagnostic,
+    groupId: RespondentGroup,
+  ) {
+    const token = getResponseToken(diagnostic.id, groupId);
+    const url = `${window.location.origin}/r/${token}`;
+
+    await navigator.clipboard.writeText(url);
+    setCopiedKey(`${diagnostic.id}-${groupId}`);
+    window.setTimeout(() => setCopiedKey(null), 1800);
+  }
+
+  function handleConfirmDelete(diagnostic: Diagnostic) {
+    onDelete?.(diagnostic);
+    setDiagnosticToDelete(null);
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -101,9 +168,12 @@ export function DiagnosticsTable() {
         <Table>
           <TableHeader className="bg-muted/40">
             <TableRow>
-              <TableHead className="w-[28%]">Diagnóstico</TableHead>
+              <TableHead className="w-[24%]">Diagnóstico</TableHead>
               <TableHead>Empresa</TableHead>
               <TableHead>Status</TableHead>
+              {respondentGroups.map((group) => (
+                <TableHead key={group.id}>{group.label}</TableHead>
+              ))}
               <TableHead className="text-right">Respostas</TableHead>
               <TableHead className="text-right">Score</TableHead>
               <TableHead>Prazo</TableHead>
@@ -127,6 +197,16 @@ export function DiagnosticsTable() {
                 <TableCell>
                   <StatusBadge status={d.status} />
                 </TableCell>
+                {respondentGroups.map((group) => (
+                  <TableCell key={group.id}>
+                    <ResponseLinkCell
+                      copiedKey={copiedKey}
+                      diagnostic={d}
+                      groupId={group.id}
+                      onCopy={handleCopyResponseLink}
+                    />
+                  </TableCell>
+                ))}
                 <TableCell className="text-right tabular-nums">
                   {d.responses.total > 0 ? (
                     <span className="text-foreground">{d.responses.total}</span>
@@ -162,29 +242,20 @@ export function DiagnosticsTable() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       {d.status === "rascunho" && (
-                        <DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onConfigure?.(d)}
+                        >
                           <Pencil className="size-4" />
                           Continuar configuração
                         </DropdownMenuItem>
                       )}
-                      {d.status === "ativo" && (
-                        <>
-                          <DropdownMenuItem>
-                            <Copy className="size-4" />
-                            Copiar link
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Eye className="size-4" />
-                            Ver progresso
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                      {(d.status === "encerrado" || d.generalScore !== null) && (
-                        <DropdownMenuItem>
-                          <Eye className="size-4" />
-                          Ver resultado
-                        </DropdownMenuItem>
-                      )}
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => setDiagnosticToDelete(d)}
+                      >
+                        <Trash2 className="size-4" />
+                        Excluir
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -193,7 +264,7 @@ export function DiagnosticsTable() {
             {visible.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={10}
                   className="text-muted-foreground py-12 text-center text-sm"
                 >
                   Nenhum diagnóstico nesta categoria.
@@ -203,6 +274,15 @@ export function DiagnosticsTable() {
           </TableBody>
         </Table>
       </div>
+
+      <DeleteDiagnosticDialog
+        diagnostic={diagnosticToDelete}
+        open={Boolean(diagnosticToDelete)}
+        onOpenChange={(open) => {
+          if (!open) setDiagnosticToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }

@@ -132,7 +132,7 @@
 /* ===== DARK THEME ===== */
 .dark {
   /* Surfaces */
-  --background: #08080A;       /* neutral-950 */
+  --background: #101010;       /* neutral-950 */
   --foreground: #FAFAFA;       /* neutral-025 */
   --card: #111114;             /* neutral-900 */
   --card-foreground: #FAFAFA;
@@ -173,7 +173,7 @@
   --chart-negative: #E5564C;
 
   /* Sidebar — slightly raised vs background */
-  --sidebar: #0E0E10;
+  --sidebar: #101010;
   --sidebar-foreground: #FAFAFA;
   --sidebar-primary: #185EFF;
   --sidebar-primary-foreground: #FFFFFF;
@@ -191,10 +191,59 @@
     @apply font-sans;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    width: 100%;
+    max-width: 100%;
+    overscroll-behavior: none;
+    overflow-x: clip;
   }
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "ss01", "cv11";
+    width: 100%;
+    max-width: 100%;
+    overscroll-behavior: none;
+    overflow-x: clip;
+  }
+
+  :where(
+    a[href],
+    button:not(:disabled),
+    summary,
+    label[for],
+    input[type="button"]:not(:disabled),
+    input[type="submit"]:not(:disabled),
+    input[type="reset"]:not(:disabled),
+    [role="button"]:not([aria-disabled="true"]),
+    [role="link"]:not([aria-disabled="true"]),
+    [role="menuitem"]:not([aria-disabled="true"]):not([data-disabled]),
+    [role="option"]:not([aria-disabled="true"]):not([data-disabled]),
+    [role="tab"]:not([aria-disabled="true"]):not(:disabled),
+    [data-slot="button"]:not(:disabled),
+    [data-slot="dialog-trigger"],
+    [data-slot="dialog-close"],
+    [data-slot="sheet-trigger"],
+    [data-slot="sheet-close"],
+    [data-slot="dropdown-menu-trigger"],
+    [data-slot="dropdown-menu-item"]:not([data-disabled]),
+    [data-slot="dropdown-menu-checkbox-item"]:not([data-disabled]),
+    [data-slot="dropdown-menu-radio-item"]:not([data-disabled]),
+    [data-slot="dropdown-menu-sub-trigger"]:not([data-disabled]),
+    [data-slot="select-trigger"]:not(:disabled),
+    [data-slot="select-item"]:not([data-disabled]),
+    [data-slot="tabs-trigger"]:not(:disabled),
+    [data-slot="sidebar-trigger"],
+    [data-slot="sidebar-group-action"],
+    [data-slot="sidebar-menu-button"]:not(:disabled):not([aria-disabled="true"]),
+    [data-slot="sidebar-menu-action"]:not(:disabled)
+  ) {
+    cursor: pointer;
+  }
+
+  [data-slot="sidebar-inset"],
+  [data-slot="sidebar-content"],
+  [data-slot="sheet-content"],
+  [data-slot="dropdown-menu-content"] {
+    overscroll-behavior: none;
   }
 
   /* Tabular numerals for KPIs and data */

@@ -23,7 +23,7 @@ Estrutura esperada:
     ├── components/CLAUDE.md           ← padrões visuais por domínio
     │   ├── ui/CLAUDE.md               ← primitives shadcn/ui (base-ui)
     │   └── omdx/CLAUDE.md             ← componentes do módulo OMDx
-    └── lib/CLAUDE.md                  ← types, mock data, utils
+    └── lib/CLAUDE.md                  ← contratos, data-source, mocks e utils
 ```
 
 Ao criar uma pasta nova com responsabilidade clara (novo módulo, novo domínio, nova feature substancial), **gere um `CLAUDE.md` na raiz dela**. Se uma pasta perder relevância, atualize ou remova o doc local.
@@ -47,11 +47,11 @@ Princípios do produto:
 - **TypeScript** em modo `strict`.
 - **Tailwind CSS `4`** com tokens em `src/app/globals.css`.
 - **shadcn/ui** estilo `base-nova` (sobre **base-ui**, não Radix). API usa `render` no lugar de `asChild`.
-- **next-themes** para dark mode (default `dark`, sem system).
+- **next-themes** para dark mode (default `system`, com alternância manual no dropdown do usuário).
 - **lucide-react** para ícones.
 - Fontes Google: **Inter** (sans), **Instrument Serif** (display itálico), **JetBrains Mono** (mono — substitui IBM Plex Mono do design system original).
 
-Estado atual: **scaffold inicial + dashboard do administrador**. Não há ainda backend, autenticação, banco, testes E2E ou unitários. Tudo opera com **mock data** estática em `src/lib/mock-data.ts`. A primeira prioridade é validar interface e fluxos antes de qualquer motor de API.
+Estado atual: **scaffold inicial + dashboard OMDx + fluxos mockados de diagnóstico, compartilhamento, insights, metodologia, documentação e perfil**. Não há ainda backend, autenticação, banco, testes E2E ou unitários. A UI consome uma camada mockada em `src/lib/data/`, com contratos Zod em `src/lib/contracts/` preparados para futura integração com Supabase.
 
 ## Fontes de verdade
 
@@ -64,7 +64,7 @@ Estado atual: **scaffold inicial + dashboard do administrador**. Não há ainda 
 | Padrões de componentes | `src/components/CLAUDE.md` |
 | Primitives shadcn/ui | `src/components/ui/CLAUDE.md` |
 | Componentes do módulo OMDx | `src/components/omdx/CLAUDE.md` |
-| Types, mock data e utils | `src/lib/CLAUDE.md` |
+| Contratos, data-source, mocks e utils | `src/lib/CLAUDE.md` |
 
 A pasta `Directscal Design System/` é **fonte canônica de marca** (cores, tipografia, voz, componentes de referência). Não edite arquivos lá dentro sem motivo claro — eles foram gerados a partir do logo e da definição de marca da empresa.
 
@@ -112,7 +112,10 @@ src/
 ├── app/
 │   ├── (app)/                ← route group autenticado (sidebar + topbar)
 │   │   ├── layout.tsx        ← SidebarProvider + AppSidebar + SidebarInset
-│   │   └── omdx/page.tsx     ← dashboard do cliente administrador
+│   │   └── omdx/
+│   │       ├── page.tsx      ← dashboard executivo do OMDx
+│   │       ├── diagnosticos/ ← área operacional de diagnósticos
+│   │       └── [id]/         ← camadas de detalhe/compartilhamento
 │   ├── globals.css           ← tokens da Directscal mapeados p/ shadcn
 │   ├── layout.tsx            ← root layout, ThemeProvider, fontes
 │   └── page.tsx              ← redirect("/omdx")
@@ -124,29 +127,40 @@ src/
 │   ├── theme-provider.tsx    ← wrapper de next-themes
 │   └── theme-toggle.tsx      ← botão sol/lua
 └── lib/
-    ├── mock-data.ts          ← dimensões, diagnósticos, KPIs fictícios
-    ├── types.ts              ← tipos de domínio
+    ├── contracts/            ← schemas Zod, tipos e mappers Supabase-friendly
+    ├── data/                 ← data-source mockado consumido pela UI
+    ├── mock-data.ts          ← seed temporário dos dados fictícios
+    ├── types.ts              ← reexports dos tipos públicos
     └── utils.ts              ← cn() (clsx + tailwind-merge)
 ```
 
 Rotas atuais:
 - `/` → redireciona para `/omdx`.
-- `/omdx` → dashboard do administrador (lista de diagnósticos + visão executiva).
+- `/omdx` → dashboard executivo do OMDx.
+- `/omdx/[id]/compartilhar` → compartilhamento mockado por grupo.
 
-Rotas planejadas (ainda não implementadas):
-- `/omdx/novo`, `/omdx/[id]/configurar` — criação/edição.
-- `/omdx/[id]/compartilhar` — links públicos por grupo (sócios / liderança / time).
+Rotas e fluxos planejados:
+- `/omdx/diagnosticos` — área operacional com lista completa, filtros e ações, acessada pela sidebar.
+- Criação/configuração de diagnóstico — drawer lateral dentro de `/omdx/diagnosticos`, sem página própria visível.
 - `/omdx/[id]/acompanhamento` — coleta em andamento.
 - `/omdx/[id]/resultado` e `/omdx/[id]/resultado/[dimensao]` — resultado executivo.
 - `/r/[token]` (público, sem auth) — fluxo do respondente.
 
+Regras de breadcrumb no OMDx:
+- `/omdx` não usa breadcrumb; é a raiz executiva do módulo.
+- Camadas abaixo usam breadcrumb, por exemplo `OMDx / Diagnósticos` e `OMDx / Diagnósticos / Compartilhar`.
+- Drawers de criação/configuração não têm breadcrumb próprio.
+- `Diagnósticos` é item próprio na sidebar; não deve depender de CTA dentro do dashboard.
+
 ## Dados e mocks
 
-**A camada atual é 100% mockada e síncrona.** Não existe API, banco ou autenticação. Toda página lê direto de `src/lib/mock-data.ts`.
+**A camada atual é 100% mockada e síncrona.** Não existe API, banco ou autenticação. Páginas e componentes consomem `src/lib/data/`, que por enquanto lê seeds de `src/lib/mock-data.ts`.
 
 Convenções:
-- Componentes **podem** importar `mock-data.ts` diretamente nesta fase. Quando o backend chegar, isso será trocado por hooks (TanStack Query ou similar) sem alterar a forma dos dados.
-- Tipos vivem em `src/lib/types.ts` e devem espelhar a forma esperada da API real.
+- Componentes e páginas **não devem** importar `mock-data.ts` diretamente; use `src/lib/data/omdx-data-source.ts`.
+- Contratos vivem em `src/lib/contracts/` com Zod; `src/lib/types.ts` reexporta os tipos públicos.
+- `Db*` representa formato futuro Supabase em `snake_case`; a UI usa domínio em `camelCase`.
+- Conversões de banco para UI ficam em `src/lib/contracts/mappers.ts`.
 - Dados realistas em pt-BR; nomes de empresas fictícios ("Vertex Logistics", "Lumen Health", etc.).
 - Não introduza chamadas a APIs externas, fetches, server actions ou Supabase neste momento.
 
@@ -169,7 +183,7 @@ Convenções:
 - **Exports nomeados**, salvo quando o framework exigir default (`page.tsx`, `layout.tsx`).
 - **Sem `useMemo`/`useCallback` por padrão** — siga o padrão existente do arquivo. Otimize quando houver evidência de problema, não preventivamente.
 - **Comentários raros e úteis.** Explique decisões não óbvias. Não descreva o que o código já diz.
-- **Não duplique lógica entre mocks.** Se a regra de classificação de score precisa mudar, mude em `mock-data.ts` (a função `classifyScore`).
+- **Não duplique lógica entre mocks.** Se a regra de classificação de score precisa mudar, mude na camada `src/lib/data/`.
 - **Não crie abstrações antes da terceira repetição.**
 
 ## Comandos de validação
@@ -202,9 +216,9 @@ Se não puder rodar algum comando, explique o motivo no fechamento da tarefa.
 - Preserve tokens, contraste, foco e responsividade.
 - Conserte a causa estrutural, não só a captura atual.
 
-**Mudança em mock data ou types:**
+**Mudança em contratos, data-source ou mocks:**
 - Leia `src/lib/CLAUDE.md`.
-- Ajuste types **e** mocks juntos. A forma dos dados deve permanecer estável para a futura API real encaixar.
+- Ajuste contratos, data-source e mocks juntos. A forma pública dos dados deve permanecer estável para a futura API real encaixar.
 
 **Adicionar nova rota/funcionalidade:**
 - Crie a página dentro de `src/app/(app)/` ou `src/app/r/` (público) conforme o caso.

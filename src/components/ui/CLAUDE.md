@@ -33,14 +33,18 @@ Esta pasta contém os **primitives do shadcn/ui** — botões, cards, tabelas, s
 | Button | `button.tsx` | variants: default, secondary, ghost, outline, destructive, link |
 | Card | `card.tsx` | 1px border, sem shadow por padrão (decisão da marca) |
 | Badge | `badge.tsx` | use para status discretos; status complexos têm wrapper em `omdx/status-badge.tsx` |
+| Breadcrumb | `breadcrumb.tsx` | usado na topbar limpa do shell autenticado |
 | Table | `table.tsx` | header em `bg-muted/40`, cells densas — use `tabular-nums` para números |
 | Sidebar | `sidebar.tsx` | API extensa (Provider, Sidebar, SidebarMenuButton com `render`, …) |
+| Collapsible | `collapsible.tsx` | primitive base-ui instalado pelo bloco `sidebar-07` |
 | DropdownMenu | `dropdown-menu.tsx` | menu base-ui; trigger via `render` |
+| Dialog | `dialog.tsx` | modal central base-ui para confirmações e decisões curtas |
 | Tabs | `tabs.tsx` | filtros e seções dentro de cards |
 | Tooltip | `tooltip.tsx` | provider com `delay`; conteúdo com setinha automática |
 | Avatar | `avatar.tsx` | inicial 2 letras quando sem imagem |
 | Input | `input.tsx` | sem `Label` próprio — use `<label>` HTML |
 | Separator | `separator.tsx` | vertical e horizontal; usar com altura/largura definida |
+| Select | `select.tsx` | seletor visual do sistema baseado em Base UI; usar no lugar de `<select>` nativo |
 | Sheet | `sheet.tsx` | drawer mobile do sidebar usa internamente |
 | Skeleton | `skeleton.tsx` | use para estados de carregamento |
 
@@ -59,9 +63,16 @@ Isso baixa o componente para `src/components/ui/`. **Ao adicionar:**
 
 - **Editar primitives gerados** sem necessidade. Se precisar de variação, crie wrapper em `src/components/<dominio>/`.
 - **Importar de `@radix-ui/react-*`**. A base mudou; use `@base-ui/react`.
+- **Usar `<select>` nativo** em novas telas. Use `src/components/ui/select.tsx`, salvo exceção técnica explícita.
 - **Hex literal em primitive.** Use sempre tokens (`bg-card`, `text-muted-foreground`).
 - **Esquecer foco.** Os primitives já trazem ring de foco brand — não sobrescreva sem motivo.
+- **Elemento interativo sem mãozinha.** Botões, triggers, itens de menu, tabs e selects devem preservar `cursor-pointer`; use `cursor-default` somente para elementos sem ação real.
 - **Animações longas.** Tudo > 280ms quebra o registro da marca.
+
+## Ajustes locais
+
+- `SidebarProvider` limita o shell a `w-dvw max-w-dvw` com `overflow-x-clip`; não use `w-full` aqui, porque a sidebar cria um gap próprio.
+- `SidebarInset` usa `basis-0`, `min-w-0`, `max-w-full` e `overflow-x-clip`; não use `w-full` no inset de conteúdo em layouts com sidebar.
 
 ## Quando reescrever um primitive
 
