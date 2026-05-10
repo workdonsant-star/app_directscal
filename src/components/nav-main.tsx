@@ -13,7 +13,9 @@ import {
 
 export function NavMain({
   items,
+  label = "Módulos",
 }: {
+  label?: string;
   items: {
     title: string;
     url: string;
@@ -23,7 +25,7 @@ export function NavMain({
 }) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Módulos</SidebarGroupLabel>
+      <SidebarGroupLabel>{label}</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <SidebarMenuItem key={item.title}>

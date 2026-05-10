@@ -12,6 +12,7 @@ Antes de editar arquivos aqui, releia o **AGENTS.md** da raiz e este documento.
 src/app/
 ├── (app)/                    ← route group autenticado (cliente administrador)
 │   ├── layout.tsx            ← shell autenticado com sidebar-07 adaptado
+│   ├── admin/                ← visão de superadmin
 │   └── omdx/
 │       ├── page.tsx          ← dashboard executivo do módulo OMDx
 │       ├── diagnosticos/     ← área operacional (lista + drawer)
@@ -28,6 +29,8 @@ src/app/
 │       └── page.tsx          ← perfil mockado do usuário e da empresa
 ├── r/
 │   └── [token]/page.tsx      ← prévia pública mockada do respondente
+├── a/
+│   └── [token]/page.tsx      ← formulário público de aquisição por campanha
 ├── globals.css               ← tokens da Directscal mapeados para shadcn
 ├── layout.tsx                ← root: <html> <body>, ThemeProvider, fontes
 └── page.tsx                  ← redirect("/omdx")
@@ -80,12 +83,20 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/docs` | `(app)/docs/` | Documentação prática em página única para uso do módulo pelo cliente administrador. |
 | `/perfil` | `(app)/perfil/` | Perfil mockado do usuário: nome, e-mail bloqueado, senha e dados básicos da empresa. |
 | `/r/[token]` | `r/[token]/` | Prévia pública mockada do respondente — **fora** do route group `(app)`, sem sidebar/topbar |
+| `/admin` | `(app)/admin/` | Redireciona para `/admin/modulos`. |
+| `/admin/modulos` | `(app)/admin/modulos/` | Superadmin: módulos disponíveis. |
+| `/admin/campanhas` | `(app)/admin/campanhas/` | Superadmin: campanhas, links e campos de aquisição. |
+| `/admin/leads` | `(app)/admin/leads/` | Superadmin: leads capturados pelos links. |
+| `/admin/leads/[id]` | `(app)/admin/leads/[id]/` | Superadmin: detalhe completo do lead capturado. |
+| `/admin/empresas` | `(app)/admin/empresas/` | Superadmin: empresas derivadas dos leads. |
+| `/a/[token]` | `a/[token]/` | Fluxo público de aquisição por campanha — **fora** do route group `(app)`, sem sidebar/topbar |
 
 ## Navegação e breadcrumb
 
 - O shell autenticado usa o bloco shadcn `sidebar-07` como base visual, adaptado para Directscal.
 - A sidebar colapsa para ícones e mantém `OMDx` e `Diagnósticos` como itens separados.
 - A sidebar tem uma seção `Insights` com as seis dimensões do OMDx.
+- Quando o pathname começa com `/admin`, a sidebar muda para `Administração`, com `Módulos`, `Campanhas`, `Leads` e `Empresas`.
 - `Empresas` e `Relatórios` não fazem parte da navegação principal nesta fase.
 - A topbar é limpa: trigger da sidebar, separador e breadcrumb quando houver camada.
 - `/omdx` é a raiz do módulo e não usa breadcrumb na topbar.
@@ -96,6 +107,11 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - `/metodologia` usa `Metodologia`.
 - `/docs` usa `Documentação`.
 - `/perfil` usa `Perfil`.
+- `/admin/modulos` usa `Admin / Módulos`.
+- `/admin/campanhas` usa `Admin / Campanhas`.
+- `/admin/leads` usa `Admin / Leads`.
+- `/admin/leads/[id]` usa `Admin / Leads / Detalhe`.
+- `/admin/empresas` usa `Admin / Empresas`.
 - Futuras rotas de acompanhamento e resultado usam `OMDx / Diagnósticos / ...`.
 - Criação e configuração não devem abrir páginas próprias; acontecem em drawer dentro de `/omdx/diagnosticos`.
 - `Diagnósticos` deve ser item da sidebar; não use CTA no dashboard para acessar essa área.

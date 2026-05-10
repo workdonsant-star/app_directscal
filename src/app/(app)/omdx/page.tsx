@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 import { AppTopbar } from "@/components/app-topbar";
+import { KpiCard } from "@/components/kpi-card";
 import { DimensionBarChart } from "@/components/omdx/dimension-bar-chart";
-import { KpiCard } from "@/components/omdx/kpi-card";
 import { Button } from "@/components/ui/button";
 import {
   Card,

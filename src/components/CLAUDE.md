@@ -11,6 +11,7 @@ Esta pasta concentra **todos os componentes de UI do app**, organizados por dom�
 ```
 src/components/
 ├── ui/                    ← primitives shadcn/ui (button, card, sidebar, …)
+├── admin/                 ← componentes do superadmin e aquisição pública
 ├── omdx/                  ← componentes específicos do módulo OMDx
 ├── profile/               ← componentes da página de perfil
 ├── app-sidebar.tsx        ← sidebar global do app autenticado
@@ -20,6 +21,7 @@ src/components/
 ├── nav-projects.tsx       ← navegação secundária/recursos da sidebar
 ├── nav-user.tsx           ← menu do usuário na sidebar
 ├── app-switcher.tsx       ← marca Directscal; futuro seletor de apps
+├── kpi-card.tsx           ← card compartilhado de KPI
 ├── theme-provider.tsx     ← wrapper de next-themes
 └── theme-toggle.tsx       ← botão sol/lua
 ```
@@ -38,6 +40,7 @@ Cada subpasta de domínio tem seu próprio `CLAUDE.md`. Crie um quando adicionar
 - **Server Components por padrão.** `"use client"` somente quando o componente precisar (`useState`, `usePathname`, eventos, etc.).
 - O shell autenticado usa o bloco **shadcn `sidebar-07`** como base visual, adaptado para Directscal.
 - A sidebar tem `Módulos` (`OMDx`, `Diagnósticos`) e `Insights` com as seis dimensões; não reintroduza `Empresas` ou `Relatórios` sem nova decisão.
+- Em `/admin`, a sidebar troca para `Administração` (`Módulos`, `Campanhas`, `Leads`, `Empresas`).
 - A visão atual é de cliente com acesso a um único módulo; o header da sidebar deve mostrar o logo Directscal (`public/directscal-logo.svg` no light e `public/directscal-logo-dark.svg` no dark), não um seletor de workspace. O componente `AppSwitcher` poderá virar seletor de apps quando houver clientes com múltiplos apps.
 - O controle manual de claro/escuro fica no dropdown do usuário em `NavUser`; o padrão global continua `system`.
 - A topbar do app autenticado deve ser limpa: `SidebarTrigger`, separador, breadcrumb e ações contextuais de página. Filtros globais de página devem ficar na topbar via `actions`, não dentro do conteúdo principal. Não adicionar busca/notificações sem decisão explícita.
@@ -49,6 +52,7 @@ Cada subpasta de domínio tem seu próprio `CLAUDE.md`. Crie um quando adicionar
 - **Use `cn()` de `@/lib/utils`** para compor classes condicionalmente.
 - **Ícones:** sempre Lucide, tamanho `size-4` (16px) por padrão, `size-3` em chips/badges, `size-5` raramente. Stroke padrão 1.5 (definido pela biblioteca).
 - **Tabular numerals** em qualquer número alinhável (`tabular-nums`).
+- **Tabelas operacionais não ficam dentro de `Card`.** Para continuidade de interface, use o padrão de `DiagnosticsWorkspace`: cabeçalho da seção e ações livres no fluxo da página, seguido por um wrapper direto de tabela com `overflow-hidden rounded-lg border`.
 - **Tipografia da marca:** Inter para sans, Instrument Serif (itálico) para emphasis raro, JetBrains Mono para código/labels técnicos. Não use serif para body.
 
 ## Hierarquia de decisão
@@ -64,6 +68,7 @@ Ao precisar de um componente novo, siga esta ordem:
 ## Anti-padrões
 
 - Replicar componente shadcn dentro de `omdx/` ou outro domínio. Se precisar de variação, faça wrapper que delega para o primitive.
+- Envolver tabelas principais de listagem em cards/boxes. Cards são para KPIs, itens repetidos, modais e ferramentas claramente enquadradas; listagens operacionais devem respirar como parte da página.
 - Usar Tailwind direto com hex: `text-[#185EFF]` → use `text-primary`.
 - Component "god": muitas props, muitas responsabilidades. Quebre em peças menores.
 - Componente cliente desnecessariamente. Server Components renderizam mais rápido e enviam menos JS.

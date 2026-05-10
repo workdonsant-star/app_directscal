@@ -11,6 +11,7 @@ Esta pasta define os contratos de dados preparados para a futura integração co
 - Datas de prazo usam date ISO (`deadline`, formato `YYYY-MM-DD`).
 - IDs continuam como `string` nesta fase porque os mocks usam valores como `diag_01`; a futura migração para UUID deve ser feita nos schemas, não nos componentes.
 - Componentes não devem importar schemas diretamente salvo necessidade de validação local. Prefira tipos e funções de `src/lib/data/`.
+- Contratos do superadmin ficam em `admin.ts`: módulos, campanhas, campos configuráveis, leads, empresas e input de submissão pública.
 
 ## Mappers
 

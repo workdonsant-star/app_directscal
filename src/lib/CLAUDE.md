@@ -30,6 +30,7 @@ src/lib/
 - IDs são `string` nesta fase porque os mocks usam ids como `diag_01`; a migração para UUID deve ser feita nos schemas, não nos componentes.
 
 Contratos principais:
+- `AdminModule`, `AcquisitionCampaign`, `AcquisitionFormField`, `Lead`, `LeadCompany`.
 - `Diagnostic`, `DiagnosticListItem`, `DiagnosticDetail`.
 - `DiagnosticTemplate`, `Dimension`, `LikertScalePoint`, `RespondentGroupMeta`.
 - `DiagnosticShareLink`, `DiagnosticShareWorkspace`.
@@ -37,6 +38,7 @@ Contratos principais:
 - `DashboardSummary`, `DimensionInsightSummary`.
 - `UserProfile`, `ProfileSettingsData`.
 - Inputs de escrita: `CreateDiagnosticInput`, `UpdateDiagnosticDraftInput`, `ActivateDiagnosticInput`, `CloseDiagnosticInput`, `DeleteDiagnosticInput`, `UpdateProfileInput`, `ChangePasswordInput`, `UpdateOrganizationInput`.
+- Inputs de aquisição: `AcquisitionSubmissionInput`.
 
 ## Data-source mockado
 
@@ -46,6 +48,7 @@ Contratos principais:
 - Quando Supabase entrar, a troca deve acontecer dentro de `src/lib/data/`, preservando os contratos públicos sempre que possível.
 - Cálculos agregados e helpers de domínio devem ficar em `data/` ou em funções puras de contrato, não em componentes.
 - `profile-storage.ts` é exceção client-only para a fase mockada: persiste overrides de perfil no `localStorage` e emite evento para atualizar o shell. Deve ser substituído por backend/autenticação real no futuro.
+- `admin-data-source.ts` também usa `localStorage` na fase mockada para campanhas editadas e leads enviados pelos links `/a/[token]`.
 
 ## `mock-data.ts`
 
@@ -57,6 +60,7 @@ Mantém dados fictícios determinísticos para validar a interface:
 - diagnósticos;
 - registros de insights por dimensão;
 - KPIs agregados temporários.
+- módulos, campanhas e leads mockados do superadmin.
 
 Os mocks devem continuar realistas, em pt-BR, sem dados pessoais reais e sem `Math.random()`.
 

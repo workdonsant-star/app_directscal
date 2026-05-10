@@ -51,7 +51,7 @@ Princípios do produto:
 - **lucide-react** para ícones.
 - Fontes Google: **Inter** (sans), **Instrument Serif** (display itálico), **JetBrains Mono** (mono — substitui IBM Plex Mono do design system original).
 
-Estado atual: **scaffold inicial + dashboard OMDx + fluxos mockados de diagnóstico, compartilhamento, insights, metodologia, documentação e perfil**. Não há ainda backend, autenticação, banco, testes E2E ou unitários. A UI consome uma camada mockada em `src/lib/data/`, com contratos Zod em `src/lib/contracts/` preparados para futura integração com Supabase.
+Estado atual: **scaffold inicial + dashboard OMDx + fluxos mockados de diagnóstico, compartilhamento, insights, metodologia, documentação, perfil e superadmin**. Não há ainda backend, autenticação, banco, testes E2E ou unitários. A UI consome uma camada mockada em `src/lib/data/`, com contratos Zod em `src/lib/contracts/` preparados para futura integração com Supabase.
 
 ## Fontes de verdade
 
@@ -112,18 +112,22 @@ src/
 ├── app/
 │   ├── (app)/                ← route group autenticado (sidebar + topbar)
 │   │   ├── layout.tsx        ← SidebarProvider + AppSidebar + SidebarInset
+│   │   ├── admin/            ← visão de superadmin
 │   │   └── omdx/
 │   │       ├── page.tsx      ← dashboard executivo do OMDx
 │   │       ├── diagnosticos/ ← área operacional de diagnósticos
 │   │       └── [id]/         ← camadas de detalhe/compartilhamento
+│   ├── a/[token]/            ← aquisição pública por campanha
 │   ├── globals.css           ← tokens da Directscal mapeados p/ shadcn
 │   ├── layout.tsx            ← root layout, ThemeProvider, fontes
 │   └── page.tsx              ← redirect("/omdx")
 ├── components/
 │   ├── ui/                   ← primitives shadcn (button, card, sidebar, …)
+│   ├── admin/                ← componentes do superadmin e aquisição
 │   ├── omdx/                 ← componentes do módulo OMDx
 │   ├── app-sidebar.tsx       ← sidebar global do app autenticado
 │   ├── app-topbar.tsx        ← topbar com breadcrumb + ações
+│   ├── kpi-card.tsx          ← card compartilhado de KPI
 │   ├── theme-provider.tsx    ← wrapper de next-themes
 │   └── theme-toggle.tsx      ← botão sol/lua
 └── lib/
@@ -138,6 +142,12 @@ Rotas atuais:
 - `/` → redireciona para `/omdx`.
 - `/omdx` → dashboard executivo do OMDx.
 - `/omdx/[id]/compartilhar` → compartilhamento mockado por grupo.
+- `/admin` → redireciona para `/admin/modulos`.
+- `/admin/modulos` → superadmin para módulos disponíveis.
+- `/admin/campanhas` → campanhas, links e campos de aquisição.
+- `/admin/leads` → leads capturados por links de aquisição.
+- `/admin/empresas` → empresas derivadas dos leads.
+- `/a/[token]` → formulário público de aquisição por campanha.
 
 Rotas e fluxos planejados:
 - `/omdx/diagnosticos` — área operacional com lista completa, filtros e ações, acessada pela sidebar.
@@ -158,6 +168,7 @@ Regras de breadcrumb no OMDx:
 
 Convenções:
 - Componentes e páginas **não devem** importar `mock-data.ts` diretamente; use `src/lib/data/omdx-data-source.ts`.
+- Superadmin e aquisição pública usam `src/lib/data/admin-data-source.ts`, que mescla seeds com campanhas editadas e leads enviados no `localStorage`.
 - Contratos vivem em `src/lib/contracts/` com Zod; `src/lib/types.ts` reexporta os tipos públicos.
 - `Db*` representa formato futuro Supabase em `snake_case`; a UI usa domínio em `camelCase`.
 - Conversões de banco para UI ficam em `src/lib/contracts/mappers.ts`.
@@ -171,6 +182,7 @@ Convenções:
 - **Tokens primeiro.** Use as variáveis CSS de `globals.css` (`bg-background`, `text-muted-foreground`, `border`, etc.). Não cole hex direto em componente.
 - **Brand blue (`#185EFF`) é signal-grade.** Um CTA primário por tela. Nunca tile background.
 - **Cards têm 1px border, sem shadow** por padrão. Sombras só em popovers e elementos elevados.
+- **Tabelas operacionais ficam livres, não dentro de cards/boxes.** Siga o padrão de `src/components/omdx/diagnostics-workspace.tsx`: título, descrição e ações no fluxo da página; a tabela usa apenas o seu próprio wrapper `overflow-hidden rounded-lg border`.
 - **Tabular numerals** (`.tabular-nums` ou `font-variant-numeric: tabular-nums`) em KPIs, tabelas e qualquer número alinhável.
 - **Use `cn()` de `@/lib/utils`** para compor classes condicionalmente.
 - **Preserve contraste WCAG AA**, foco visível (ring brand de 2px), semântica HTML e navegação por teclado.

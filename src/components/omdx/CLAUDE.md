@@ -14,7 +14,7 @@ OMDx avalia maturidade operacional em **6 dimensões** (Cultura, Visão, Comunic
 
 | Componente | Arquivo | Onde é usado | Estado |
 | --- | --- | --- | --- |
-| `KpiCard` | `kpi-card.tsx` | Dashboard (4 cards de topo) | Funcional. Recebe `label`, `value`, `trend`, `trendValue`, `caption`, `hint`. |
+| `KpiCard` | `../kpi-card.tsx` via reexport local | Dashboard (4 cards de topo) | Compartilhado com o superadmin. Recebe `label`, `value`, `trend`, `trendValue`, `caption`, `hint`. |
 | `DimensionBarChart` | `dimension-bar-chart.tsx` | Dashboard (card "Maturidade por dimensão") | Lê scores pela camada `src/lib/data/`. |
 | `StatusBadge` | `status-badge.tsx` | Tabela de diagnósticos | 3 estados: `rascunho`, `ativo`, `encerrado`. |
 | `DiagnosticsTable` | `diagnostics-table.tsx` | Área de diagnósticos | Tabs de filtro, três colunas para copiar links públicos por grupo e menu com configuração de rascunho/exclusão. Rascunhos não exibem links. |
