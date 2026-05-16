@@ -1,9 +1,8 @@
 "use client";
 
 import {
+  Binoculars,
   Building2,
-  ClipboardList,
-  Compass,
   FileText,
   GitBranch,
   LayoutGrid,
@@ -37,7 +36,7 @@ const data = {
     initials: "DS",
   },
   modules: [
-    { title: "OMDx", url: "/omdx", icon: ClipboardList, exact: true },
+    { title: "Overview", url: "/omdx", icon: Binoculars, exact: true },
     { title: "Diagnósticos", url: "/omdx/diagnosticos", icon: ListChecks },
   ],
   admin: [
@@ -55,7 +54,6 @@ const data = {
     { name: "Performance", url: "/insights/performance", icon: Target },
   ],
   resources: [
-    { name: "Metodologia", url: "/metodologia", icon: Compass },
     { name: "Documentação", url: "/docs", icon: FileText },
   ],
 };
@@ -105,7 +103,10 @@ export function AppSidebar({
   }));
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar
+      collapsible="icon"
+      className="[&_[data-slot=sidebar-inner]]:bg-background"
+    >
       <SidebarHeader>
         <AppSwitcher />
       </SidebarHeader>

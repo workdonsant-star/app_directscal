@@ -19,9 +19,7 @@ function AuthBackgroundVideo({ className }: { className: string }) {
 
 export function AuthPageShell({
   children,
-  description,
   footer,
-  title,
 }: {
   children: ReactNode;
   description?: string;
@@ -51,16 +49,6 @@ export function AuthPageShell({
           </Link>
           <div className="mb-8 overflow-hidden rounded-lg border bg-muted/20 lg:hidden">
             <AuthBackgroundVideo className="aspect-[16/10] w-full object-cover" />
-          </div>
-          <div className="mb-8">
-            <h2 className="font-heading text-2xl leading-tight font-medium text-balance">
-              {title}
-            </h2>
-            {description ? (
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                {description}
-              </p>
-            ) : null}
           </div>
           {children}
           {footer ? <div className="mt-6">{footer}</div> : null}

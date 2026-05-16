@@ -111,16 +111,7 @@ export function DiagnosticsWorkspace({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-foreground text-3xl font-semibold">
-            Diagnósticos
-          </h1>
-          <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed">
-            Crie, configure e acompanhe coletas do OMDx sem sair do contexto da
-            lista.
-          </p>
-        </div>
+      <div className="flex justify-end">
         <Button onClick={openCreate}>
           <Plus className="size-4" />
           Criar diagnóstico

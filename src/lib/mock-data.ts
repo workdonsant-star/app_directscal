@@ -673,10 +673,9 @@ export const diagnosticReportQuestions: DiagnosticReportQuestion[] =
 
 export function classifyScore(score: number): Classification {
   if (score <= 2.0) return "Crítico";
-  if (score <= 3.0) return "Em desenvolvimento";
-  if (score < 4.0) return "Em estruturação";
-  if (score <= 4.5) return "Maduro";
-  return "Referência";
+  if (score <= 3.0) return "Inconsistente";
+  if (score <= 4.0) return "Atenção";
+  return "Consistente";
 }
 
 export function getDimensionById(id: DimensionId): Dimension {

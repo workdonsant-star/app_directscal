@@ -45,7 +45,7 @@ export function DimensionDiagnosticFilter({
       >
         <SelectTrigger
           id="dimension-diagnostic-filter"
-          className="w-auto min-w-[18ch] max-w-[min(48vw,28rem)]"
+          className="h-7 w-auto min-w-[18ch] max-w-[min(48vw,28rem)] gap-1 rounded-[min(var(--radius-md),12px)] border-border px-2.5 text-[0.8rem] font-medium hover:bg-muted hover:text-foreground data-popup-open:bg-muted data-popup-open:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50 [&_[data-slot=select-icon]>svg]:size-3.5"
         >
           <SelectValue />
         </SelectTrigger>

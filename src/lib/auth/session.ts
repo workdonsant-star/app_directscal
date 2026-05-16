@@ -24,12 +24,12 @@ export async function getCurrentAuthSession() {
   try {
     const session = await auth();
 
-    if (!session) return null;
+    if (session) {
+      const parsedUser = authUserSchema.safeParse(session.user);
 
-    const parsedUser = authUserSchema.safeParse(session.user);
-
-    if (parsedUser.success) {
-      return toAuthSession(parsedUser.data, session.expires);
+      if (parsedUser.success) {
+        return toAuthSession(parsedUser.data, session.expires);
+      }
     }
   } catch {
     // Google OAuth may be unconfigured in local demos; the mock cookie remains

@@ -181,7 +181,7 @@ export function DiagnosticsTable({
         </Tabs>
       </div>
 
-      <div className="overflow-hidden rounded-lg border">
+      <div className="overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm">
         <Table>
           <TableHeader className="bg-muted/40">
             <TableRow>

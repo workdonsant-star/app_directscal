@@ -23,10 +23,9 @@ export const diagnosticTemplateIdSchema = z.enum(diagnosticTemplateIdValues);
 
 export const classificationSchema = z.enum([
   "Crítico",
-  "Em desenvolvimento",
-  "Em estruturação",
-  "Maduro",
-  "Referência",
+  "Inconsistente",
+  "Atenção",
+  "Consistente",
 ]);
 
 export const responsesByGroupSchema = z.object({
@@ -225,6 +224,17 @@ export const dimensionInsightSummarySchema = z.object({
   trend: z.array(dimensionInsightTrendPointSchema),
 });
 
+export const dimensionQuestionResultSchema = z.object({
+  id: idSchema,
+  dimensionId: dimensionIdSchema,
+  text: z.string().min(1),
+  score: z.number().min(1).max(5),
+  gap: z.number().nonnegative(),
+  responses: z.number().int().nonnegative(),
+  classification: classificationSchema,
+  priorityIndex: z.number().int().min(0).max(100),
+});
+
 export const diagnosticReportMisalignmentSchema = z.object({
   value: z.number().nonnegative(),
   highestGroup: respondentGroupSchema,
@@ -409,6 +419,7 @@ export type ResponseSession = z.infer<typeof responseSessionSchema>;
 export type DimensionInsightRecord = z.infer<typeof dimensionInsightRecordSchema>;
 export type DimensionInsightTrendPoint = z.infer<typeof dimensionInsightTrendPointSchema>;
 export type DimensionInsightSummary = z.infer<typeof dimensionInsightSummarySchema>;
+export type DimensionQuestionResult = z.infer<typeof dimensionQuestionResultSchema>;
 export type DiagnosticReportMisalignment = z.infer<typeof diagnosticReportMisalignmentSchema>;
 export type DiagnosticReportQuestion = z.infer<typeof diagnosticReportQuestionSchema>;
 export type DiagnosticReportDimension = z.infer<typeof diagnosticReportDimensionSchema>;

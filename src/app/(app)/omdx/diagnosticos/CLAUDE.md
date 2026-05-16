@@ -6,7 +6,7 @@ Página autenticada para listar, filtrar, criar e configurar diagnósticos OMDx.
 
 ## Convenções locais
 
-- Usar breadcrumb `OMDx / Diagnósticos`.
+- Usar breadcrumb `Overview / Diagnósticos`.
 - Manter criação e configuração em drawer lateral, sem página dedicada.
 - Usar `DiagnosticsWorkspace` como componente client para controlar filtros, ações e drawer.
 - Continuar 100% mockado nesta fase.

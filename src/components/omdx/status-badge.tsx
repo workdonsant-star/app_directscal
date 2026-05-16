@@ -11,7 +11,7 @@ export function StatusBadge({ status }: { status: DiagnosticStatus }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium",
+        "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium",
         status === "rascunho" &&
           "border-border text-muted-foreground bg-muted",
         status === "ativo" &&
@@ -20,14 +20,6 @@ export function StatusBadge({ status }: { status: DiagnosticStatus }) {
           "border-border text-foreground bg-secondary",
       )}
     >
-      <span
-        className={cn(
-          "size-1.5 rounded-full",
-          status === "rascunho" && "bg-muted-foreground",
-          status === "ativo" && "bg-primary",
-          status === "encerrado" && "bg-foreground",
-        )}
-      />
       {labels[status]}
     </span>
   );

@@ -18,7 +18,7 @@ src/app/
 │   ├── layout.tsx            ← gate de sessão + shell autenticado com sidebar
 │   ├── admin/                ← visão de superadmin
 │   └── omdx/
-│       ├── page.tsx          ← dashboard executivo do módulo OMDx
+│       ├── page.tsx          ← Overview executivo do módulo OMDx
 │       ├── diagnosticos/     ← área operacional (lista + drawer)
 │       └── [id]/
 │           ├── compartilhar/page.tsx ← central mockada de coleta
@@ -27,8 +27,6 @@ src/app/
 │   └── insights/
 │       ├── page.tsx          ← redirect para /insights/cultura
 │       └── [dimensao]/page.tsx ← dashboard compacto por dimensão
-│   └── metodologia/
-│       └── page.tsx          ← explicação executiva da metodologia OMDx
 │   └── docs/
 │       └── page.tsx          ← manual prático de uso do módulo OMDx
 │   └── perfil/
@@ -53,7 +51,7 @@ src/app/
 
 ## Convenções
 
-- **Server Components por padrão.** `"use client"` somente quando houver estado, efeito, browser API ou interação real. O dashboard atual é Server Component; os filhos interativos (tabela com filtro, theme toggle) é que são `"use client"`.
+- **Server Components por padrão.** `"use client"` somente quando houver estado, efeito, browser API ou interação real. O Overview atual é Server Component; os filhos interativos (tabela com filtro, theme toggle) é que são `"use client"`.
 - **Route groups com parênteses** (`(auth)`, `(app)`) **não criam segmento de URL** — servem para agrupar rotas que compartilham layout ou responsabilidade.
 - **Redirects no servidor** com `redirect()` de `next/navigation` (vide `src/app/page.tsx`).
 - **Metadata** vem de `export const metadata` em `layout.tsx` e `page.tsx`.
@@ -82,7 +80,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/entrar` | `(auth)/entrar/` | Tela pública de entrada com Google OAuth, redireciona conforme role quando já existe sessão. |
 | `/criar-conta` | `(auth)/criar-conta/` | Cadastro mockado que cria uma sessão local apenas no fallback de desenvolvimento. |
 | `/recuperar-senha` | `(auth)/recuperar-senha/` | Recuperação mockada de senha. |
-| `/omdx` | `(app)/omdx/` | Dashboard executivo do módulo; não deve conter a lista operacional completa. |
+| `/omdx` | `(app)/omdx/` | Overview executivo do módulo; não deve conter a lista operacional completa. |
 | `/omdx/diagnosticos` | `(app)/omdx/diagnosticos/` | Área operacional acessada pela sidebar, com lista, filtros, criação e configuração em drawer lateral. |
 | `/omdx/[id]/compartilhar` | `(app)/omdx/[id]/compartilhar/` | Central de coleta mockada com links por grupo, copy sugerida e resumo compacto. |
 | `/omdx/[id]/action-points` | `(app)/omdx/[id]/action-points/` | Route Handler Node autenticado para download direto do plano de ação RACI. |
@@ -92,7 +90,6 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/omdx/[id]/resultado/[dimensao]` | `(app)/omdx/[id]/resultado/[dimensao]/` | Detalhe por dimensão |
 | `/insights` | `(app)/insights/` | Redireciona para `/insights/cultura`. |
 | `/insights/[dimensao]` | `(app)/insights/[dimensao]/` | Dashboard agregado por dimensão, com filtro por diagnóstico. |
-| `/metodologia` | `(app)/metodologia/` | Página executiva sobre método, dimensões, camadas, escala e interpretação do OMDx. |
 | `/docs` | `(app)/docs/` | Documentação prática em página única para uso do módulo pelo cliente administrador. |
 | `/perfil` | `(app)/perfil/` | Perfil mockado do usuário: nome, e-mail bloqueado, senha e dados básicos da empresa. |
 | `/r/[token]` | `r/[token]/` | Prévia pública mockada do respondente — **fora** do route group `(app)`, sem sidebar/topbar |
@@ -109,19 +106,18 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - O shell autenticado usa o bloco shadcn `sidebar-07` como base visual, adaptado para Directscal.
 - O route group `(app)` valida o cookie de sessão no layout antes de renderizar sidebar/topbar.
 - As rotas de autenticação em `(auth)` ficam fora do shell e redirecionam usuários autenticados conforme role.
-- A sidebar colapsa para ícones e mantém `OMDx` e `Diagnósticos` como itens separados.
+- A sidebar colapsa para ícones e mantém `Overview` e `Diagnósticos` como itens separados.
 - A sidebar tem uma seção `Insights` com as seis dimensões do OMDx.
 - Quando o pathname começa com `/admin`, a sidebar muda para `Administração`, com `Módulos`, `Campanhas`, `Leads` e `Empresas`.
 - `Empresas` e `Relatórios` não fazem parte da navegação principal nesta fase.
 - A topbar é limpa: trigger da sidebar, separador e breadcrumb quando houver camada.
 - `/omdx` é a raiz do módulo e não usa breadcrumb na topbar.
 - Páginas abaixo de `/omdx` usam breadcrumb para mostrar a camada atual.
-- `/omdx/diagnosticos` usa `OMDx / Diagnósticos`.
-- `/omdx/[id]/compartilhar` usa `OMDx / Diagnósticos / Compartilhar`.
+- `/omdx/diagnosticos` usa `Overview / Diagnósticos`.
+- `/omdx/[id]/compartilhar` usa `Overview / Diagnósticos / Compartilhar`.
 - `/omdx/[id]/action-points` não renderiza página nem breadcrumb; retorna PDF como attachment.
 - `/omdx/[id]/relatorio` não renderiza página nem breadcrumb; retorna PDF como attachment.
 - `/insights/[dimensao]` usa `Insights / Nome da dimensão`.
-- `/metodologia` usa `Metodologia`.
 - `/docs` usa `Documentação`.
 - `/perfil` usa `Perfil`.
 - `/admin/modulos` usa `Admin / Módulos`.
@@ -129,14 +125,14 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - `/admin/leads` usa `Admin / Leads`.
 - `/admin/leads/[id]` usa `Admin / Leads / Detalhe`.
 - `/admin/empresas` usa `Admin / Empresas`.
-- Futuras rotas de acompanhamento e resultado usam `OMDx / Diagnósticos / ...`.
+- Futuras rotas de acompanhamento e resultado usam `Overview / Diagnósticos / ...`.
 - Criação e configuração não devem abrir páginas próprias; acontecem em drawer dentro de `/omdx/diagnosticos`.
-- `Diagnósticos` deve ser item da sidebar; não use CTA no dashboard para acessar essa área.
+- `Diagnósticos` deve ser item da sidebar; não use CTA no Overview para acessar essa área.
 - As rotas temporárias `/omdx/novo` e `/omdx/[id]/configurar`, enquanto existirem, devem redirecionar para `/omdx/diagnosticos` ou indicar depreciação.
 
 ## Largura de página
 
-- Páginas autenticadas com conteúdo principal, formulários, tabelas ou dashboards devem usar o mesmo container base da metodologia: `mx-auto w-full max-w-6xl`.
+- Páginas autenticadas com conteúdo principal, formulários, tabelas ou dashboards devem usar um container consistente com a densidade do app; a base documental usa `mx-auto w-full max-w-6xl`.
 - O padding externo recomendado é `px-6 py-8 lg:px-10`.
 - Páginas documentais com sumário lateral mantêm o grid `max-w-6xl` com coluna de conteúdo em torno de `760px`.
 - Estados centralizados, páginas públicas e drawers podem ter larguras próprias quando a experiência exigir.

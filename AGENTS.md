@@ -52,7 +52,7 @@ Princípios do produto:
 - **lucide-react** para ícones.
 - Fontes Google: **Inter** (sans), **Instrument Serif** (display itálico), **JetBrains Mono** (mono — substitui IBM Plex Mono do design system original).
 
-Estado atual: **scaffold inicial + dashboard OMDx + Google OAuth com allowlist corporativa, fallback mockado de autenticação para desenvolvimento, diagnóstico, compartilhamento, relatórios PDF, insights, metodologia, documentação, perfil e superadmin**. Não há ainda backend, banco, testes E2E ou unitários. A UI consome uma camada mockada em `src/lib/data/`, com contratos Zod em `src/lib/contracts/` preparados para futura integração com Supabase. A autenticação usa Auth.js/NextAuth com Google e mantém o cookie mockado `httpOnly` para o login demo por e-mail/senha.
+Estado atual: **scaffold inicial + dashboard OMDx + Google OAuth com allowlist corporativa, fallback mockado de autenticação para desenvolvimento, diagnóstico, compartilhamento, relatórios PDF, insights, documentação, perfil e superadmin**. Não há ainda backend, banco, testes E2E ou unitários. A UI consome uma camada mockada em `src/lib/data/`, com contratos Zod em `src/lib/contracts/` preparados para futura integração com Supabase. A autenticação usa Auth.js/NextAuth com Google e mantém o cookie mockado `httpOnly` para o login demo por e-mail/senha.
 
 ## Fontes de verdade
 

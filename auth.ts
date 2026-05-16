@@ -6,7 +6,15 @@ import {
   resolveAuthUserFromGoogleProfile,
 } from "@/lib/auth/access-control";
 
+const authSecret =
+  process.env.AUTH_SECRET ??
+  process.env.NEXTAUTH_SECRET ??
+  (process.env.NODE_ENV === "production"
+    ? undefined
+    : "directscal-local-development-auth-secret");
+
 export const { auth, handlers, signIn, signOut } = NextAuth({
+  secret: authSecret,
   pages: {
     error: "/entrar",
     signIn: "/entrar",

@@ -58,16 +58,7 @@ export function ShareWorkspace({ diagnostic }: ShareWorkspaceProps) {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div className="flex max-w-3xl flex-col gap-2">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-semibold text-foreground">
-              Compartilhar diagnóstico
-            </h1>
-            <StatusBadge status={status} />
-          </div>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            {diagnostic.name} para {diagnostic.company}. Use os links por grupo
-            para preservar a leitura entre fundador, liderança e operação.
-          </p>
+          <StatusBadge status={status} />
           <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
             <span>Empresa: {diagnostic.company}</span>
             <span className="hidden sm:inline">/</span>

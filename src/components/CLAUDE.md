@@ -40,7 +40,7 @@ Cada subpasta de domínio tem seu próprio `CLAUDE.md`. Crie um quando adicionar
 
 - **Server Components por padrão.** `"use client"` somente quando o componente precisar (`useState`, `usePathname`, eventos, etc.).
 - O shell autenticado usa o bloco **shadcn `sidebar-07`** como base visual, adaptado para Directscal.
-- A sidebar tem `Módulos` (`OMDx`, `Diagnósticos`) e `Insights` com as seis dimensões; não reintroduza `Empresas` ou `Relatórios` sem nova decisão.
+- A sidebar tem `Módulos` (`Overview`, `Diagnósticos`) e `Insights` com as seis dimensões; não reintroduza `Empresas` ou `Relatórios` sem nova decisão.
 - Em `/admin`, a sidebar troca para `Administração` (`Módulos`, `Campanhas`, `Leads`, `Empresas`).
 - Componentes em `auth/` conversam com `/api/auth/*`; não leem nem escrevem cookies diretamente.
 - A visão atual é de cliente com acesso a um único módulo; o header da sidebar deve mostrar o logo Directscal (`public/directscal-logo.svg` no light e `public/directscal-logo-dark.svg` no dark), não um seletor de workspace. O componente `AppSwitcher` poderá virar seletor de apps quando houver clientes com múltiplos apps.

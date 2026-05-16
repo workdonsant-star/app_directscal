@@ -30,7 +30,7 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Chart palette (McKinsey-style) */
+  /* Chart palette */
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -38,6 +38,56 @@
   --color-chart-5: var(--chart-5);
   --color-chart-positive: var(--chart-positive);
   --color-chart-negative: var(--chart-negative);
+  --color-omdx-layer-diretoria-30: var(--omdx-layer-diretoria-30);
+  --color-omdx-layer-diretoria-40: var(--omdx-layer-diretoria-40);
+  --color-omdx-layer-diretoria-50: var(--omdx-layer-diretoria-50);
+  --color-omdx-layer-diretoria-60: var(--omdx-layer-diretoria-60);
+  --color-omdx-layer-diretoria-70: var(--omdx-layer-diretoria-70);
+  --color-omdx-layer-diretoria-80: var(--omdx-layer-diretoria-80);
+  --color-omdx-layer-diretoria-90: var(--omdx-layer-diretoria-90);
+  --color-omdx-layer-diretoria-cyan-30: var(--omdx-layer-diretoria-cyan-30);
+  --color-omdx-layer-diretoria-cyan-40: var(--omdx-layer-diretoria-cyan-40);
+  --color-omdx-layer-lideranca-30: var(--omdx-layer-lideranca-30);
+  --color-omdx-layer-lideranca-40: var(--omdx-layer-lideranca-40);
+  --color-omdx-layer-lideranca-50: var(--omdx-layer-lideranca-50);
+  --color-omdx-layer-lideranca-60: var(--omdx-layer-lideranca-60);
+  --color-omdx-layer-lideranca-70: var(--omdx-layer-lideranca-70);
+  --color-omdx-layer-lideranca-80: var(--omdx-layer-lideranca-80);
+  --color-omdx-layer-lideranca-90: var(--omdx-layer-lideranca-90);
+  --color-omdx-layer-lideranca-purple-30: var(--omdx-layer-lideranca-purple-30);
+  --color-omdx-layer-lideranca-purple-40: var(--omdx-layer-lideranca-purple-40);
+  --color-omdx-layer-lideranca-purple-60: var(--omdx-layer-lideranca-purple-60);
+  --color-omdx-layer-time-30: var(--omdx-layer-time-30);
+  --color-omdx-layer-time-40: var(--omdx-layer-time-40);
+  --color-omdx-layer-time-50: var(--omdx-layer-time-50);
+  --color-omdx-layer-time-60: var(--omdx-layer-time-60);
+  --color-omdx-layer-time-70: var(--omdx-layer-time-70);
+  --color-omdx-layer-time-80: var(--omdx-layer-time-80);
+  --color-omdx-layer-time-90: var(--omdx-layer-time-90);
+  --color-omdx-layer-time-cool-gray-30: var(--omdx-layer-time-cool-gray-30);
+  --color-omdx-layer-time-cool-gray-40: var(--omdx-layer-time-cool-gray-40);
+  --color-omdx-layer-time-cool-gray-90: var(--omdx-layer-time-cool-gray-90);
+  --color-omdx-dimension-cool-gray-30: var(--omdx-dimension-cool-gray-30);
+  --color-omdx-dimension-cool-gray-40: var(--omdx-dimension-cool-gray-40);
+  --color-omdx-dimension-cool-gray-50: var(--omdx-dimension-cool-gray-50);
+  --color-omdx-dimension-cool-gray-60: var(--omdx-dimension-cool-gray-60);
+  --color-omdx-dimension-cool-gray-70: var(--omdx-dimension-cool-gray-70);
+  --color-omdx-dimension-cool-gray-80: var(--omdx-dimension-cool-gray-80);
+  --color-omdx-dimension-cool-gray-90: var(--omdx-dimension-cool-gray-90);
+  --color-omdx-dimension-gray-30: var(--omdx-dimension-gray-30);
+  --color-omdx-dimension-gray-40: var(--omdx-dimension-gray-40);
+  --color-omdx-dimension-gray-50: var(--omdx-dimension-gray-50);
+  --color-omdx-dimension-gray-60: var(--omdx-dimension-gray-60);
+  --color-omdx-dimension-gray-70: var(--omdx-dimension-gray-70);
+  --color-omdx-dimension-gray-80: var(--omdx-dimension-gray-80);
+  --color-omdx-dimension-gray-90: var(--omdx-dimension-gray-90);
+  --color-omdx-dimension-warm-gray-30: var(--omdx-dimension-warm-gray-30);
+  --color-omdx-dimension-warm-gray-40: var(--omdx-dimension-warm-gray-40);
+  --color-omdx-dimension-warm-gray-50: var(--omdx-dimension-warm-gray-50);
+  --color-omdx-dimension-warm-gray-60: var(--omdx-dimension-warm-gray-60);
+  --color-omdx-dimension-warm-gray-70: var(--omdx-dimension-warm-gray-70);
+  --color-omdx-dimension-warm-gray-80: var(--omdx-dimension-warm-gray-80);
+  --color-omdx-dimension-warm-gray-90: var(--omdx-dimension-warm-gray-90);
 
   /* Sidebar */
   --color-sidebar: var(--sidebar);
@@ -109,14 +159,70 @@
   --input: #E2E2E5;
   --ring: #185EFF;             /* focus ring = brand */
 
-  /* Charts (McKinsey-style anchored on brand blue) */
-  --chart-1: #185EFF;
-  --chart-2: #0B2E78;
-  --chart-3: #4A82FF;
-  --chart-4: #8AB0FF;
-  --chart-5: #1C1C20;
+  /* Charts */
+  --chart-1: #0F62FE;
+  --chart-2: #0072C3;
+  --chart-3: #007D79;
+  --chart-4: #697077;
+  --chart-5: #726E6E;
   --chart-positive: #117A4D;
   --chart-negative: #B42318;
+  --omdx-layer-diretoria-30: #A6C8FF;
+  --omdx-layer-diretoria-40: #78A9FF;
+  --omdx-layer-diretoria-50: #4589FF;
+  --omdx-layer-diretoria-60: #0F62FE;
+  --omdx-layer-diretoria-70: #0043CE;
+  --omdx-layer-diretoria-80: #002D9C;
+  --omdx-layer-diretoria-90: #001D6C;
+  --omdx-layer-diretoria-cyan-30: #82CFFF;
+  --omdx-layer-diretoria-cyan-40: #33B1FF;
+  --omdx-layer-lideranca-30: #82CFFF;
+  --omdx-layer-lideranca-40: #33B1FF;
+  --omdx-layer-lideranca-50: #1192E8;
+  --omdx-layer-lideranca-60: #0072C3;
+  --omdx-layer-lideranca-70: #00539A;
+  --omdx-layer-lideranca-80: #003A6D;
+  --omdx-layer-lideranca-90: #012749;
+  --omdx-layer-lideranca-purple-30: #D4BBFF;
+  --omdx-layer-lideranca-purple-40: #BE95FF;
+  --omdx-layer-lideranca-purple-60: #8A3FFC;
+  --omdx-layer-time-30: #3DDBD9;
+  --omdx-layer-time-40: #08BDBA;
+  --omdx-layer-time-50: #009D9A;
+  --omdx-layer-time-60: #007D79;
+  --omdx-layer-time-70: #005D5D;
+  --omdx-layer-time-80: #004144;
+  --omdx-layer-time-90: #022B30;
+  --omdx-layer-time-cool-gray-30: #C1C7CD;
+  --omdx-layer-time-cool-gray-40: #A2A9B0;
+  --omdx-layer-time-cool-gray-90: #21272A;
+  --omdx-dimension-cool-gray-30: #C1C7CD;
+  --omdx-dimension-cool-gray-40: #A2A9B0;
+  --omdx-dimension-cool-gray-50: #878D96;
+  --omdx-dimension-cool-gray-60: #697077;
+  --omdx-dimension-cool-gray-70: #4D5358;
+  --omdx-dimension-cool-gray-80: #343A3F;
+  --omdx-dimension-cool-gray-90: #21272A;
+  --omdx-dimension-gray-30: #C6C6C6;
+  --omdx-dimension-gray-40: #A8A8A8;
+  --omdx-dimension-gray-50: #8D8D8D;
+  --omdx-dimension-gray-60: #6F6F6F;
+  --omdx-dimension-gray-70: #525252;
+  --omdx-dimension-gray-80: #393939;
+  --omdx-dimension-gray-90: #262626;
+  --omdx-dimension-warm-gray-30: #CAC5C4;
+  --omdx-dimension-warm-gray-40: #ADA8A8;
+  --omdx-dimension-warm-gray-50: #8F8B8B;
+  --omdx-dimension-warm-gray-60: #726E6E;
+  --omdx-dimension-warm-gray-70: #565151;
+  --omdx-dimension-warm-gray-80: #3C3838;
+  --omdx-dimension-warm-gray-90: #272525;
+  --omdx-status-consistente: #0F62FE;
+  --omdx-status-inconsistente: #A56EFF;
+  --omdx-status-atencao: #EE5396;
+  --omdx-status-critico: #FA4D56;
+  --omdx-score-text-on-light: #161616;
+  --omdx-score-text-on-dark: #FFFFFF;
 
   /* Sidebar — slightly off-white to separate from main canvas */
   --sidebar: #FAFAFA;          /* neutral-025 */
@@ -164,13 +270,69 @@
   --ring: #185EFF;
 
   /* Charts */
-  --chart-1: #185EFF;
-  --chart-2: #88AAFF;          /* lighter on dark for contrast */
-  --chart-3: #4A82FF;
-  --chart-4: #C2D2FF;
-  --chart-5: #FAFAFA;
+  --chart-1: #0F62FE;
+  --chart-2: #0072C3;
+  --chart-3: #007D79;
+  --chart-4: #697077;
+  --chart-5: #726E6E;
   --chart-positive: #2BB673;
   --chart-negative: #E5564C;
+  --omdx-layer-diretoria-30: #A6C8FF;
+  --omdx-layer-diretoria-40: #78A9FF;
+  --omdx-layer-diretoria-50: #4589FF;
+  --omdx-layer-diretoria-60: #0F62FE;
+  --omdx-layer-diretoria-70: #0043CE;
+  --omdx-layer-diretoria-80: #002D9C;
+  --omdx-layer-diretoria-90: #001D6C;
+  --omdx-layer-diretoria-cyan-30: #82CFFF;
+  --omdx-layer-diretoria-cyan-40: #33B1FF;
+  --omdx-layer-lideranca-30: #82CFFF;
+  --omdx-layer-lideranca-40: #33B1FF;
+  --omdx-layer-lideranca-50: #1192E8;
+  --omdx-layer-lideranca-60: #0072C3;
+  --omdx-layer-lideranca-70: #00539A;
+  --omdx-layer-lideranca-80: #003A6D;
+  --omdx-layer-lideranca-90: #012749;
+  --omdx-layer-lideranca-purple-30: #D4BBFF;
+  --omdx-layer-lideranca-purple-40: #BE95FF;
+  --omdx-layer-lideranca-purple-60: #8A3FFC;
+  --omdx-layer-time-30: #3DDBD9;
+  --omdx-layer-time-40: #08BDBA;
+  --omdx-layer-time-50: #009D9A;
+  --omdx-layer-time-60: #007D79;
+  --omdx-layer-time-70: #005D5D;
+  --omdx-layer-time-80: #004144;
+  --omdx-layer-time-90: #022B30;
+  --omdx-layer-time-cool-gray-30: #C1C7CD;
+  --omdx-layer-time-cool-gray-40: #A2A9B0;
+  --omdx-layer-time-cool-gray-90: #21272A;
+  --omdx-dimension-cool-gray-30: #C1C7CD;
+  --omdx-dimension-cool-gray-40: #A2A9B0;
+  --omdx-dimension-cool-gray-50: #878D96;
+  --omdx-dimension-cool-gray-60: #697077;
+  --omdx-dimension-cool-gray-70: #4D5358;
+  --omdx-dimension-cool-gray-80: #343A3F;
+  --omdx-dimension-cool-gray-90: #21272A;
+  --omdx-dimension-gray-30: #C6C6C6;
+  --omdx-dimension-gray-40: #A8A8A8;
+  --omdx-dimension-gray-50: #8D8D8D;
+  --omdx-dimension-gray-60: #6F6F6F;
+  --omdx-dimension-gray-70: #525252;
+  --omdx-dimension-gray-80: #393939;
+  --omdx-dimension-gray-90: #262626;
+  --omdx-dimension-warm-gray-30: #CAC5C4;
+  --omdx-dimension-warm-gray-40: #ADA8A8;
+  --omdx-dimension-warm-gray-50: #8F8B8B;
+  --omdx-dimension-warm-gray-60: #726E6E;
+  --omdx-dimension-warm-gray-70: #565151;
+  --omdx-dimension-warm-gray-80: #3C3838;
+  --omdx-dimension-warm-gray-90: #272525;
+  --omdx-status-consistente: #78A9FF;
+  --omdx-status-inconsistente: #A56EFF;
+  --omdx-status-atencao: #EE5396;
+  --omdx-status-critico: #FA4D56;
+  --omdx-score-text-on-light: #161616;
+  --omdx-score-text-on-dark: #FFFFFF;
 
   /* Sidebar — slightly raised vs background */
   --sidebar: #101010;

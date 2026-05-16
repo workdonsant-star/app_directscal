@@ -84,16 +84,6 @@ export function AdminCampaignsWorkspace() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-foreground text-3xl font-semibold tracking-tight">
-          Campanhas
-        </h1>
-        <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed">
-          Configure links de aquisição, campos do formulário e acompanhe a
-          entrada de leads por origem.
-        </p>
-      </div>
-
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           label="Campanhas"

@@ -1,6 +1,6 @@
+import { getLayerColor } from "@/components/omdx/chart-colors";
 import { getRespondentGroups } from "@/lib/data/omdx-data-source";
 import type { RespondentGroup } from "@/lib/types";
-import { cn } from "@/lib/utils";
 
 type LayerInsightComparisonProps = {
   scores: Record<RespondentGroup, number | null>;
@@ -14,7 +14,6 @@ export function LayerInsightComparison({ scores }: LayerInsightComparisonProps) 
       {respondentGroups.map((group) => {
         const score = scores[group.id];
         const widthPct = score === null ? 0 : (score / 5) * 100;
-        const isLow = score !== null && score < 3;
 
         return (
           <div key={group.id} className="grid gap-1">
@@ -31,13 +30,16 @@ export function LayerInsightComparison({ scores }: LayerInsightComparisonProps) 
                 {score === null ? "—" : score.toFixed(1)}
               </span>
             </div>
-            <div className="relative h-2 overflow-hidden rounded-full bg-muted">
+            <div className="relative h-2 overflow-hidden bg-muted">
               <div
-                className={cn(
-                  "absolute inset-y-0 left-0 rounded-full",
-                  isLow ? "bg-[var(--chart-negative)]" : "bg-primary",
-                )}
-                style={{ width: `${widthPct}%` }}
+                className="absolute inset-y-0 left-0"
+                style={{
+                  backgroundColor:
+                    score === null
+                      ? undefined
+                      : getLayerColor(group.id),
+                  width: `${widthPct}%`,
+                }}
               />
             </div>
           </div>

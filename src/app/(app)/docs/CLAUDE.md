@@ -6,7 +6,7 @@ Página autenticada de recurso para orientar o cliente administrador no uso do s
 
 - Funcionar como manual prático do produto, não como documentação técnica interna.
 - Explicar onde cada área fica, para que serve e como operar o fluxo OMDx de ponta a ponta.
-- Complementar `/metodologia`: metodologia explica o método; documentação explica o uso do sistema.
+- Consolidar orientação operacional e conceitual do OMDx em uma única página de documentação.
 
 ## Convenções
 
@@ -15,4 +15,4 @@ Página autenticada de recurso para orientar o cliente administrador no uso do s
 - Manter formato de página única com sumário lateral e âncoras internas.
 - O sumário lateral pode usar `DocumentTableOfContents` como client component para rolagem suave e item ativo.
 - Não criar rotas filhas nesta fase.
-- Links finais podem apontar para `/omdx`, `/omdx/diagnosticos` e `/metodologia`.
+- Links finais podem apontar para `/omdx`, `/omdx/diagnosticos` e páginas de insights.

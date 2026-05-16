@@ -15,6 +15,7 @@ import {
   diagnosticReportSchema,
   diagnosticShareLinkSchema,
   diagnosticShareWorkspaceSchema,
+  dimensionQuestionResultSchema,
   diagnosticSchema,
   diagnosticTemplateSchema,
   dimensionInsightRecordSchema,
@@ -39,6 +40,7 @@ import {
   type DimensionId,
   type DimensionInsightRecord,
   type DimensionInsightSummary,
+  type DimensionQuestionResult,
   type ProfileSettingsData,
   type RespondentGroup,
   type RespondentGroupMeta,
@@ -58,10 +60,9 @@ const suggestedMessages: Record<RespondentGroup, string> = {
 
 export function classifyScore(score: number): Classification {
   if (score <= 2.0) return "Crítico";
-  if (score <= 3.0) return "Em desenvolvimento";
-  if (score < 4.0) return "Em estruturação";
-  if (score <= 4.5) return "Maduro";
-  return "Referência";
+  if (score <= 3.0) return "Inconsistente";
+  if (score <= 4.0) return "Atenção";
+  return "Consistente";
 }
 
 export function getProfileSettingsData(): ProfileSettingsData {
@@ -178,6 +179,82 @@ export function getDimensionInsightSummary(
     layerScores,
     trend,
   });
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function calculatePriorityIndex(score: number, gap: number) {
+  return clamp(Math.round((((5 - score) + gap) / 5) * 100), 0, 100);
+}
+
+function calculateLayerGap(scores: Record<RespondentGroup, number>) {
+  const values = Object.values(scores);
+
+  return Math.max(...values) - Math.min(...values);
+}
+
+export function getDimensionQuestionResults(
+  dimensionId: DimensionId,
+  filter: "todos" | string = "todos",
+): DimensionQuestionResult[] {
+  const questions = diagnosticReportQuestions.filter(
+    (question) =>
+      question.dimensionId === dimensionId &&
+      (filter === "todos" || question.diagnosticId === filter),
+  );
+  const groupedQuestions = questions.reduce((acc, question) => {
+    const key = `${question.dimensionId}:${question.text}`;
+    const group = acc.get(key) ?? [];
+
+    group.push(question);
+    acc.set(key, group);
+
+    return acc;
+  }, new Map<string, DiagnosticReportQuestion[]>());
+
+  return Array.from(groupedQuestions.entries())
+    .map(([key, group]) => {
+      const firstQuestion = group[0];
+      const score = roundReportScore(
+        average(group.map((question) => question.score)),
+      );
+      const layerScores = getRespondentGroups().reduce(
+        (acc, respondentGroup) => {
+          acc[respondentGroup.id] = roundReportScore(
+            average(
+              group.map((question) => question.layerScores[respondentGroup.id]),
+            ),
+          );
+
+          return acc;
+        },
+        {} as Record<RespondentGroup, number>,
+      );
+      const gap = roundReportScore(calculateLayerGap(layerScores));
+
+      return dimensionQuestionResultSchema.parse({
+        id: key,
+        dimensionId,
+        text: firstQuestion.text,
+        score,
+        gap,
+        responses: group.reduce(
+          (total, question) => total + question.responses,
+          0,
+        ),
+        classification: classifyScore(score),
+        priorityIndex: calculatePriorityIndex(score, gap),
+      });
+    })
+    .sort((a, b) => {
+      if (a.priorityIndex !== b.priorityIndex) {
+        return b.priorityIndex - a.priorityIndex;
+      }
+
+      return a.score - b.score;
+    });
 }
 
 const reportThreshold = 3;

@@ -44,6 +44,7 @@ export type {
   DimensionInsightRecord,
   DimensionInsightSummary,
   DimensionInsightTrendPoint,
+  DimensionQuestionResult,
   Id,
   Lead,
   LeadCompany,

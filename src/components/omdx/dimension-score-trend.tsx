@@ -1,6 +1,6 @@
+import { getNeutralScoreColor } from "@/components/omdx/chart-colors";
 import { classifyScore } from "@/lib/data/omdx-data-source";
 import type { DimensionInsightTrendPoint } from "@/lib/types";
-import { cn } from "@/lib/utils";
 
 type DimensionScoreTrendProps = {
   points: DimensionInsightTrendPoint[];
@@ -9,7 +9,7 @@ type DimensionScoreTrendProps = {
 export function DimensionScoreTrend({ points }: DimensionScoreTrendProps) {
   if (points.length === 0) {
     return (
-      <div className="rounded-lg border bg-muted/40 p-4 text-sm text-muted-foreground">
+      <div className="border bg-muted/40 p-4 text-sm text-muted-foreground">
         Nenhum diagnóstico com dados para esta dimensão.
       </div>
     );
@@ -19,7 +19,6 @@ export function DimensionScoreTrend({ points }: DimensionScoreTrendProps) {
     <div className="flex flex-col gap-4">
       {points.map((point) => {
         const widthPct = (point.score / 5) * 100;
-        const isLow = point.score < 3;
 
         return (
           <div
@@ -37,13 +36,13 @@ export function DimensionScoreTrend({ points }: DimensionScoreTrendProps) {
             <span className="row-span-2 self-center text-base font-semibold tabular-nums text-foreground">
               {point.score.toFixed(1)}
             </span>
-            <div className="relative h-2 overflow-hidden rounded-full bg-muted">
+            <div className="relative h-2 overflow-hidden bg-muted">
               <div
-                className={cn(
-                  "absolute inset-y-0 left-0 rounded-full",
-                  isLow ? "bg-[var(--chart-negative)]" : "bg-primary",
-                )}
-                style={{ width: `${widthPct}%` }}
+                className="absolute inset-y-0 left-0"
+                style={{
+                  backgroundColor: getNeutralScoreColor(),
+                  width: `${widthPct}%`,
+                }}
               />
             </div>
             <span className="text-xs text-muted-foreground">

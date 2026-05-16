@@ -18,7 +18,10 @@ export default function DiagnosticsPage() {
   return (
     <>
       <AppTopbar
-        breadcrumb={[{ label: "OMDx", href: "/omdx" }, { label: "Diagnósticos" }]}
+        breadcrumb={[
+          { label: "Overview", href: "/omdx" },
+          { label: "Diagnósticos" },
+        ]}
       />
 
       <main className="flex flex-1 flex-col px-6 py-8 lg:px-10">

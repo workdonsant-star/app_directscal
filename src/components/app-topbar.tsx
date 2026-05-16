@@ -23,7 +23,7 @@ type AppTopbarProps = {
 
 export function AppTopbar({ breadcrumb = [], actions }: AppTopbarProps) {
   return (
-    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-2 border-b bg-sidebar/95 backdrop-blur supports-[backdrop-filter]:bg-sidebar/80 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
       <div className="flex h-full min-w-0 flex-1 items-center gap-4 px-4">
         <div className="flex min-w-0 items-center gap-2">
           <SidebarTrigger className="-ml-1 self-center" />

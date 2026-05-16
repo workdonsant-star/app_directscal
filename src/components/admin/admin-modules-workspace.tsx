@@ -23,16 +23,6 @@ export function AdminModulesWorkspace() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-foreground text-3xl font-semibold tracking-tight">
-          Módulos
-        </h1>
-        <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed">
-          Administre os aplicativos Directscal disponíveis e acompanhe a base
-          comercial gerada por cada módulo.
-        </p>
-      </div>
-
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           label="Módulos ativos"

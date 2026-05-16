@@ -11,6 +11,7 @@ Esta pasta concentra o fluxo de autenticação do app. Google OAuth via Auth.js/
 - Usuários Google só entram com `email_verified=true`, domínio em `AUTH_ALLOWED_DOMAINS` e e-mail em `AUTH_ALLOWED_EMAILS`.
 - `AUTH_ADMIN_EMAILS` e `AUTH_SUPERADMIN_EMAILS` definem role após o e-mail já ter sido permitido.
 - `AUTH_ORG_BY_DOMAIN` pode mapear domínio para nome da empresa exibido na sessão.
+- `AUTH_SECRET` ou `NEXTAUTH_SECRET` deve existir em produção. Em desenvolvimento local, `auth.ts` usa um segredo fixo apenas para evitar `MissingSecret` enquanto o login mockado ou a tela pública são testados sem OAuth completo.
 - O cookie mockado `directscal_session` guarda apenas um identificador mínimo e sustenta o fallback demo por e-mail/senha.
 - Senhas mockadas existem apenas para o acesso de demonstração e não representam segurança real.
 - Usuários com role `superadmin` devem ir para `/admin/modulos` após autenticação.

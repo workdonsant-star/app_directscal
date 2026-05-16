@@ -64,6 +64,8 @@ AUTH_SUPERADMIN_EMAILS=admin@directscal.com.br
 AUTH_ENABLE_DEV_PASSWORD_LOGIN=false # habilita cadastro mockado em /criar-conta
 ```
 
+`AUTH_SECRET` continua obrigatório em produção. Em desenvolvimento local, o app usa um segredo fixo de fallback para evitar erro `MissingSecret` quando a tela de login ou o fallback mockado são testados sem configurar OAuth completo.
+
 O callback do Google deve apontar para `/api/auth/callback/google`, por exemplo `http://localhost:3000/api/auth/callback/google` em desenvolvimento.
 
 ## Comandos

@@ -105,15 +105,6 @@ export function AdminLeadDetail({ leadId }: AdminLeadDetailProps) {
   if (!lead) {
     return (
       <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-foreground text-3xl font-semibold tracking-tight">
-            Lead não encontrado
-          </h1>
-          <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed">
-            Este lead não existe no snapshot mockado atual ou foi criado em
-            outro navegador.
-          </p>
-        </div>
         <div>
           <Button
             variant="outline"
@@ -131,15 +122,7 @@ export function AdminLeadDetail({ leadId }: AdminLeadDetailProps) {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-foreground text-3xl font-semibold tracking-tight">
-            {lead.name}
-          </h1>
-          <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed">
-            Detalhe do lead capturado por campanha de aquisição.
-          </p>
-        </div>
+      <div className="flex justify-end">
         <Button
           variant="outline"
           nativeButton={false}

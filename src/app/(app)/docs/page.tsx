@@ -37,12 +37,6 @@ const areas = [
     description:
       "Páginas por dimensão para comparar dados agregados e filtrar diagnósticos específicos.",
   },
-  {
-    name: "Metodologia",
-    path: "/metodologia",
-    description:
-      "Referência conceitual sobre o método OMDx, dimensões, camadas e escala de resposta.",
-  },
 ];
 
 export default function DocumentationPage() {
@@ -65,24 +59,6 @@ export default function DocumentationPage() {
           </aside>
 
           <article className="min-w-0">
-            <header className="border-b pb-8">
-              <h1 className="text-foreground text-4xl font-semibold tracking-tight">
-                Documentação
-              </h1>
-              <p className="text-muted-foreground mt-5 max-w-3xl text-base leading-7">
-                Esta página explica como usar o módulo OMDx dentro do sistema:
-                onde acompanhar a visão executiva, onde operar diagnósticos,
-                como compartilhar coletas e como consultar insights por
-                dimensão.
-              </p>
-              <p className="text-muted-foreground mt-4 max-w-3xl text-base leading-7">
-                Para entender a lógica conceitual do diagnóstico, use a página
-                de metodologia. Esta documentação é prática: ela descreve o
-                fluxo de navegação e as principais ações do cliente
-                administrador.
-              </p>
-            </header>
-
             <section id="visao-geral" className="scroll-mt-24 border-b py-10">
               <h2 className="text-foreground text-2xl font-semibold tracking-tight">
                 Visão geral
@@ -138,9 +114,9 @@ export default function DocumentationPage() {
                   score médio e maior gargalo recorrente.
                 </p>
                 <p>
-                  Use esta página para entender o estado geral da operação e
-                  abrir a metodologia quando precisar revisar a lógica de
-                  interpretação do OMDx.
+                  Use esta página para entender o estado geral da operação,
+                  revisar sinais recorrentes e decidir onde aprofundar a
+                  análise.
                 </p>
               </div>
               <div className="mt-6 border-l pl-4">
@@ -311,23 +287,17 @@ export default function DocumentationPage() {
               </h2>
               <div className="mt-5 space-y-4 text-sm leading-7 text-muted-foreground">
                 <p>
-                  Use a metodologia quando a dúvida for conceitual: o que o
-                  OMDx mede, por que existem seis dimensões, como a escala é
-                  lida e por que a leitura por camada importa.
+                  Use esta documentação quando a dúvida for operacional ou
+                  conceitual: onde cada área fica, o que o OMDx mede, como a
+                  escala é lida e por que a leitura por camada importa.
                 </p>
                 <p>
-                  Esta documentação cobre o fluxo principal de uso do módulo.
-                  Para dúvidas conceituais, a página de metodologia é a
-                  referência principal.
+                  O fluxo principal de uso do módulo está consolidado aqui,
+                  junto com as referências práticas para operar diagnósticos,
+                  compartilhamento e insights.
                 </p>
               </div>
               <div className="mt-8 flex flex-wrap gap-2">
-                <Button
-                  variant="outline"
-                  render={<Link href="/metodologia" />}
-                >
-                  Abrir metodologia
-                </Button>
                 <Button render={<Link href="/omdx/diagnosticos" />}>
                   Abrir diagnósticos
                 </Button>

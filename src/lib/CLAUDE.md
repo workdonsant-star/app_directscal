@@ -39,7 +39,7 @@ Contratos principais:
 - `DiagnosticTemplate`, `Dimension`, `LikertScalePoint`, `RespondentGroupMeta`.
 - `DiagnosticShareLink`, `DiagnosticShareWorkspace`.
 - `Respondent`, `ResponseSession`, `LikertAnswer`, `SubmitLikertResponseInput`.
-- `DashboardSummary`, `DimensionInsightSummary`.
+- `DashboardSummary`, `DimensionInsightSummary`, `DimensionQuestionResult`.
 - `DiagnosticReport`, `DiagnosticReportDimension`, `DiagnosticReportQuestion`.
 - `DiagnosticActionPlan`, `DiagnosticActionPlanDimension`, `DiagnosticActionPoint`.
 - `UserProfile`, `ProfileSettingsData`.
@@ -52,6 +52,7 @@ Contratos principais:
 - Páginas e componentes devem importar dados de `src/lib/data/omdx-data-source.ts`.
 - Não importe arrays de `mock-data.ts` em componentes ou páginas.
 - `mock-data.ts` é apenas seed temporário. Ele pode ser importado pela camada `data/`, mas não pela UI.
+- `omdx-overview-analytics.ts` deriva DTOs executivos do relatório OMDx para cards, charts e rankings da homepage. Dados de distribuição Likert ainda são mockados de forma determinística a partir de score, gap e dispersão enquanto não houver respostas individuais persistidas.
 - Quando Supabase entrar, a troca deve acontecer dentro de `src/lib/data/`, preservando os contratos públicos sempre que possível.
 - Cálculos agregados e helpers de domínio devem ficar em `data/` ou em funções puras de contrato, não em componentes.
 - Planos de ação PDF devem consumir DTOs consolidados daqui, como `getDiagnosticActionPlan()`, sem gerar regra dentro do documento PDF.

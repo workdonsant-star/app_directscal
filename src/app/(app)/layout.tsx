@@ -20,7 +20,7 @@ export default async function AppLayout({
     <TooltipProvider delay={200}>
       <SidebarProvider>
         <AppSidebar user={session.user} />
-        <SidebarInset>{children}</SidebarInset>
+        <SidebarInset className="bg-sidebar">{children}</SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
   );

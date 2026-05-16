@@ -30,7 +30,7 @@ export function ResponseCounters({
           <div>
             <CardTitle>Resumo da coleta</CardTitle>
             <CardDescription>
-              Leitura compacta para decidir se a coleta já pode avançar.
+              Base compacta para decidir se a coleta já pode avançar.
             </CardDescription>
           </div>
           <StatusBadge status={status} />
@@ -72,7 +72,7 @@ export function ResponseCounters({
             <div>
               <p className="text-sm font-medium text-foreground">
                 {isReadyForAnalysis
-                  ? "Base suficiente para leitura executiva"
+                  ? "Base suficiente para consolidação"
                   : "Respostas ainda insuficientes para análise"}
               </p>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
