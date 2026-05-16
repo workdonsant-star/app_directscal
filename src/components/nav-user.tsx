@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 import {
   Avatar,
@@ -26,6 +28,7 @@ import {
 import {
   getProfileOverridesServerSnapshot,
   getProfileOverridesSnapshot,
+  clearProfileOverrides,
   subscribeProfileOverrides,
 } from "@/lib/profile-storage";
 import { ChevronsUpDownIcon, LogOutIcon, Moon, Sun } from "lucide-react";
@@ -49,8 +52,10 @@ export function NavUser({
     initials: string;
   };
 }) {
+  const router = useRouter();
   const { isMobile } = useSidebar();
   const { resolvedTheme, setTheme } = useTheme();
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const storedOverrides = useSyncExternalStore(
     subscribeProfileOverrides,
     getProfileOverridesSnapshot,
@@ -68,6 +73,18 @@ export function NavUser({
 
   function handleThemeToggle() {
     setTheme(isDark ? "light" : "dark");
+  }
+
+  async function handleSignOut() {
+    setIsSigningOut(true);
+
+    await fetch("/api/auth/logout", { method: "POST" }).catch(() => null);
+    await signOut({ callbackUrl: "/entrar", redirect: false }).catch(
+      () => null,
+    );
+    clearProfileOverrides();
+    router.push("/entrar");
+    router.refresh();
   }
 
   return (
@@ -135,9 +152,13 @@ export function NavUser({
               </Button>
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={isSigningOut}
+              onClick={handleSignOut}
+              variant="destructive"
+            >
               <LogOutIcon className="size-4" />
-              Sair
+              {isSigningOut ? "Saindo" : "Sair"}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -79,6 +79,7 @@ Para o respondente (futuro), prever:
 - `Ativar diagnóstico` valida e mostra, no próprio drawer, os 3 links por grupo: fundador, liderança e operação.
 - A tabela operacional também deve expor ações de copiar link por grupo em colunas próprias quando o diagnóstico não estiver em rascunho.
 - O menu de três pontos da tabela deve ser enxuto: `Continuar configuração` apenas em rascunhos e `Excluir` para todos os diagnósticos, sempre com confirmação.
+- `Baixar relatório` e `Baixar action points` aparecem na tabela apenas para diagnósticos com resultado consolidável (`generalScore` e dados de relatório disponíveis).
 - O dashboard não deve exibir CTA para `/omdx/diagnosticos`; a navegação principal fica na sidebar.
 - Não criar páginas visíveis para criação/configuração; se rotas antigas existirem, tratá-las como temporárias/deprecated.
 
@@ -88,6 +89,7 @@ Para o respondente (futuro), prever:
 - Mostrar 3 links por grupo: fundador, liderança e operação.
 - Cada link deve ter mensagem sugerida própria e ação de prévia pública em `/r/[token]`.
 - `Encerrar coleta` é estado local mockado nesta fase; não há persistência real.
+- `Baixar relatório` e `Baixar action points` aparecem como ações contextuais quando o diagnóstico já possui relatório consolidável.
 - Acompanhamento detalhado e lista de respondentes ficam para `/omdx/[id]/acompanhamento`.
 
 ## Insights por dimensão

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Download } from "lucide-react";
 
 import { AppTopbar } from "@/components/app-topbar";
 import { KpiCard } from "@/components/kpi-card";
@@ -12,10 +13,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { classifyScore, getDashboardSummary } from "@/lib/data/omdx-data-source";
+import {
+  classifyScore,
+  getDashboardSummary,
+  getLatestReportableDiagnostic,
+} from "@/lib/data/omdx-data-source";
 
 export default function OmdxDashboardPage() {
   const dashboardKpis = getDashboardSummary();
+  const reportDiagnostic = getLatestReportableDiagnostic();
   const avg = dashboardKpis.averageScore;
   const avgValue = avg !== null ? avg.toFixed(1) : "—";
   const avgClassification = avg !== null ? classifyScore(avg) : "Sem dados";
@@ -38,9 +44,22 @@ export default function OmdxDashboardPage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              {reportDiagnostic && (
+                <Button
+                  size="sm"
+                  nativeButton={false}
+                  render={
+                    <a href={`/omdx/${reportDiagnostic.id}/relatorio`} />
+                  }
+                >
+                  <Download className="size-4" />
+                  Baixar relatório
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"
+                nativeButton={false}
                 render={<Link href="/metodologia" />}
               >
                 Ver metodologia

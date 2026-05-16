@@ -48,10 +48,11 @@ Princípios do produto:
 - **Tailwind CSS `4`** com tokens em `src/app/globals.css`.
 - **shadcn/ui** estilo `base-nova` (sobre **base-ui**, não Radix). API usa `render` no lugar de `asChild`.
 - **next-themes** para dark mode (default `system`, com alternância manual no dropdown do usuário).
+- **Auth.js/NextAuth `5 beta`** para Google OAuth.
 - **lucide-react** para ícones.
 - Fontes Google: **Inter** (sans), **Instrument Serif** (display itálico), **JetBrains Mono** (mono — substitui IBM Plex Mono do design system original).
 
-Estado atual: **scaffold inicial + dashboard OMDx + fluxos mockados de diagnóstico, compartilhamento, insights, metodologia, documentação, perfil e superadmin**. Não há ainda backend, autenticação, banco, testes E2E ou unitários. A UI consome uma camada mockada em `src/lib/data/`, com contratos Zod em `src/lib/contracts/` preparados para futura integração com Supabase.
+Estado atual: **scaffold inicial + dashboard OMDx + Google OAuth com allowlist corporativa, fallback mockado de autenticação para desenvolvimento, diagnóstico, compartilhamento, relatórios PDF, insights, metodologia, documentação, perfil e superadmin**. Não há ainda backend, banco, testes E2E ou unitários. A UI consome uma camada mockada em `src/lib/data/`, com contratos Zod em `src/lib/contracts/` preparados para futura integração com Supabase. A autenticação usa Auth.js/NextAuth com Google e mantém o cookie mockado `httpOnly` para o login demo por e-mail/senha.
 
 ## Fontes de verdade
 
@@ -77,7 +78,7 @@ A pasta `Directscal Design System/` é **fonte canônica de marca** (cores, tipo
 - **Não exponha segredos**, tokens, dados pessoais reais ou valores de produção.
 - **Se alterar comportamento, ajuste a documentação local** (`CLAUDE.md` da pasta) na mesma mudança.
 - **Antes de "consertar" algo, entenda a causa raiz.** Não mascare sintomas.
-- **Foco em interface e fluxos primeiro.** Não introduza motor de API, banco ou autenticação até o usuário pedir explicitamente.
+- **Foco em interface e fluxos primeiro.** Não introduza motor de API, banco ou autenticação real até o usuário pedir explicitamente.
 
 ## Next.js 16
 
@@ -86,7 +87,7 @@ Antes de escrever ou alterar código de Next.js:
 - Não assuma APIs antigas (Pages Router, `getServerSideProps`, `_app`, etc.).
 - **Server Components por padrão.** Use `"use client"` apenas quando houver estado, efeitos, browser APIs ou interatividade real.
 - Use `redirect()` de `next/navigation` para redirects no servidor (existe em `src/app/page.tsx`).
-- Route groups com `(nome)` não criam segmento de URL — usados aqui em `src/app/(app)/` para o layout autenticado.
+- Route groups com `(nome)` não criam segmento de URL — usados aqui em `src/app/(auth)/` para telas públicas de autenticação e `src/app/(app)/` para o layout autenticado.
 
 ## shadcn/ui sobre base-ui
 
@@ -110,20 +111,23 @@ Sempre confira o tipo do componente em `src/components/ui/` antes de presumir AP
 ```
 src/
 ├── app/
+│   ├── (auth)/              ← telas públicas de autenticação
 │   ├── (app)/                ← route group autenticado (sidebar + topbar)
-│   │   ├── layout.tsx        ← SidebarProvider + AppSidebar + SidebarInset
+│   │   ├── layout.tsx        ← valida sessão + SidebarProvider + AppSidebar + SidebarInset
 │   │   ├── admin/            ← visão de superadmin
 │   │   └── omdx/
 │   │       ├── page.tsx      ← dashboard executivo do OMDx
 │   │       ├── diagnosticos/ ← área operacional de diagnósticos
 │   │       └── [id]/         ← camadas de detalhe/compartilhamento
 │   ├── a/[token]/            ← aquisição pública por campanha
+│   ├── api/auth/             ← Auth.js Google OAuth + endpoints mockados de fallback
 │   ├── globals.css           ← tokens da Directscal mapeados p/ shadcn
 │   ├── layout.tsx            ← root layout, ThemeProvider, fontes
 │   └── page.tsx              ← redirect("/omdx")
 ├── components/
 │   ├── ui/                   ← primitives shadcn (button, card, sidebar, …)
 │   ├── admin/                ← componentes do superadmin e aquisição
+│   ├── auth/                 ← componentes do fluxo de autenticação
 │   ├── omdx/                 ← componentes do módulo OMDx
 │   ├── app-sidebar.tsx       ← sidebar global do app autenticado
 │   ├── app-topbar.tsx        ← topbar com breadcrumb + ações
@@ -131,6 +135,7 @@ src/
 │   ├── theme-provider.tsx    ← wrapper de next-themes
 │   └── theme-toggle.tsx      ← botão sol/lua
 └── lib/
+    ├── auth/                 ← Google OAuth, sessão e fallback mockado
     ├── contracts/            ← schemas Zod, tipos e mappers Supabase-friendly
     ├── data/                 ← data-source mockado consumido pela UI
     ├── mock-data.ts          ← seed temporário dos dados fictícios
@@ -140,8 +145,12 @@ src/
 
 Rotas atuais:
 - `/` → redireciona para `/omdx`.
+- `/entrar` → tela pública de login com Google OAuth e fallback mockado opcional.
+- `/criar-conta` → cadastro mockado com criação de sessão, apenas quando `AUTH_ENABLE_DEV_PASSWORD_LOGIN=true`.
+- `/recuperar-senha` → recuperação mockada de senha.
 - `/omdx` → dashboard executivo do OMDx.
 - `/omdx/[id]/compartilhar` → compartilhamento mockado por grupo.
+- `/omdx/[id]/relatorio` → download autenticado do PDF consolidado.
 - `/admin` → redireciona para `/admin/modulos`.
 - `/admin/modulos` → superadmin para módulos disponíveis.
 - `/admin/campanhas` → campanhas, links e campos de aquisição.
@@ -164,7 +173,7 @@ Regras de breadcrumb no OMDx:
 
 ## Dados e mocks
 
-**A camada atual é 100% mockada e síncrona.** Não existe API, banco ou autenticação. Páginas e componentes consomem `src/lib/data/`, que por enquanto lê seeds de `src/lib/mock-data.ts`.
+**A camada de dados atual é mockada.** Não existe banco. Páginas e componentes consomem `src/lib/data/`, que por enquanto lê seeds de `src/lib/mock-data.ts`. Google OAuth exige e-mail Google verificado, domínio em `AUTH_ALLOWED_DOMAINS` e e-mail em `AUTH_ALLOWED_EMAILS`. O fallback demo por senha usa `/api/auth/login` e `src/lib/auth/mock-auth.ts`; cadastro mockado em `/api/auth/register` só fica disponível quando `AUTH_ENABLE_DEV_PASSWORD_LOGIN=true`.
 
 Convenções:
 - Componentes e páginas **não devem** importar `mock-data.ts` diretamente; use `src/lib/data/omdx-data-source.ts`.
@@ -173,7 +182,7 @@ Convenções:
 - `Db*` representa formato futuro Supabase em `snake_case`; a UI usa domínio em `camelCase`.
 - Conversões de banco para UI ficam em `src/lib/contracts/mappers.ts`.
 - Dados realistas em pt-BR; nomes de empresas fictícios ("Vertex Logistics", "Lumen Health", etc.).
-- Não introduza chamadas a APIs externas, fetches, server actions ou Supabase neste momento.
+- Não introduza novas chamadas a APIs externas, server actions ou Supabase neste momento. Google OAuth via Auth.js é a exceção de autenticação já configurada; fetches client são permitidos para `/api/auth/*`.
 
 ## UI, copy e acessibilidade
 

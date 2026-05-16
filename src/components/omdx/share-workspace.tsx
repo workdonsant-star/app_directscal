@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, CalendarDays, Lock } from "lucide-react";
+import { ArrowLeft, CalendarDays, Download, Lock } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -15,6 +15,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  canGenerateDiagnosticActionPlan,
+  canGenerateDiagnosticReport,
+} from "@/lib/data/omdx-data-source";
 import type { Diagnostic, DiagnosticStatus, RespondentGroup } from "@/lib/types";
 
 type ShareWorkspaceProps = {
@@ -27,6 +31,8 @@ export function ShareWorkspace({ diagnostic }: ShareWorkspaceProps) {
   const [notice, setNotice] = useState<string | null>(null);
 
   const isClosed = status === "encerrado";
+  const canDownloadReport = canGenerateDiagnosticReport(diagnostic);
+  const canDownloadActionPlan = canGenerateDiagnosticActionPlan(diagnostic);
 
   async function handleCopy(group: RespondentGroup, value: string) {
     try {
@@ -76,6 +82,26 @@ export function ShareWorkspace({ diagnostic }: ShareWorkspaceProps) {
             <ArrowLeft className="size-4" />
             Voltar para diagnósticos
           </Button>
+          {canDownloadReport && (
+            <Button
+              variant="outline"
+              nativeButton={false}
+              render={<a href={`/omdx/${diagnostic.id}/relatorio`} />}
+            >
+              <Download className="size-4" />
+              Baixar relatório
+            </Button>
+          )}
+          {canDownloadActionPlan && (
+            <Button
+              variant="outline"
+              nativeButton={false}
+              render={<a href={`/omdx/${diagnostic.id}/action-points`} />}
+            >
+              <Download className="size-4" />
+              Baixar action points
+            </Button>
+          )}
           <Button
             type="button"
             variant="destructive"

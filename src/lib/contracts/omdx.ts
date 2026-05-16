@@ -225,6 +225,117 @@ export const dimensionInsightSummarySchema = z.object({
   trend: z.array(dimensionInsightTrendPointSchema),
 });
 
+export const diagnosticReportMisalignmentSchema = z.object({
+  value: z.number().nonnegative(),
+  highestGroup: respondentGroupSchema,
+  lowestGroup: respondentGroupSchema,
+});
+
+export const diagnosticReportQuestionSchema = z.object({
+  id: idSchema,
+  diagnosticId: idSchema,
+  dimensionId: dimensionIdSchema,
+  text: z.string().min(1),
+  score: z.number().min(1).max(5),
+  variance: z.number().nonnegative(),
+  responses: z.number().int().nonnegative(),
+  layerScores: scoresByGroupSchema,
+});
+
+export const diagnosticReportDimensionSchema = z.object({
+  id: dimensionIdSchema,
+  number: z.number().int().min(1).max(6),
+  name: z.string().min(1),
+  shortName: z.string().min(1),
+  question: z.string().min(1),
+  description: z.string().min(1),
+  score: z.number().min(1).max(5),
+  classification: classificationSchema,
+  variance: z.number().nonnegative(),
+  responses: z.number().int().nonnegative(),
+  layerScores: scoresByGroupSchema,
+  misalignment: diagnosticReportMisalignmentSchema,
+  questions: z.array(diagnosticReportQuestionSchema).min(1),
+});
+
+export const diagnosticReportDimensionSummarySchema = z.object({
+  id: dimensionIdSchema,
+  name: z.string().min(1),
+  shortName: z.string().min(1),
+  score: z.number().min(1).max(5),
+  classification: classificationSchema,
+});
+
+export const diagnosticReportTopMisalignmentSchema =
+  diagnosticReportMisalignmentSchema.extend({
+    dimensionId: dimensionIdSchema,
+    dimensionName: z.string().min(1),
+  });
+
+export const diagnosticReportSchema = z.object({
+  diagnostic: diagnosticDetailSchema,
+  generatedAt: isoDateTimeSchema,
+  threshold: z.number().min(1).max(5),
+  generalScore: z.number().min(1).max(5),
+  classification: classificationSchema,
+  responses: responsesByGroupSchema,
+  layerAverages: scoresByGroupSchema,
+  weakestDimension: diagnosticReportDimensionSummarySchema,
+  highestMisalignment: diagnosticReportTopMisalignmentSchema,
+  dimensions: z.array(diagnosticReportDimensionSchema).length(6),
+});
+
+export const diagnosticActionPointPrioritySchema = z.enum([
+  "Alta",
+  "Média",
+  "Baixa",
+]);
+
+export const diagnosticActionPointOwnerSchema = z.enum([
+  "Fundador",
+  "Liderança",
+]);
+
+export const diagnosticActionPlanDimensionSchema = z.object({
+  id: dimensionIdSchema,
+  name: z.string().min(1),
+  shortName: z.string().min(1),
+  score: z.number().min(1).max(5),
+  classification: classificationSchema,
+  gap: z.number().nonnegative(),
+  layerScores: scoresByGroupSchema,
+  criticalQuestions: z.array(diagnosticReportQuestionSchema).min(1),
+});
+
+export const diagnosticActionPointSchema = z.object({
+  id: idSchema,
+  dimensionId: dimensionIdSchema,
+  dimensionName: z.string().min(1),
+  problem: z.string().min(1),
+  recommendedAction: z.string().min(1),
+  owner: diagnosticActionPointOwnerSchema,
+  involved: z.array(z.string().min(1)).min(1),
+  suggestedDeadline: z.string().min(1),
+  expectedImpact: z.string().min(1),
+  successIndicator: z.string().min(1),
+  priority: diagnosticActionPointPrioritySchema,
+  score: z.number().min(1).max(5),
+  gap: z.number().nonnegative(),
+});
+
+export const diagnosticActionPlanSchema = z.object({
+  diagnostic: diagnosticDetailSchema,
+  generatedAt: isoDateTimeSchema,
+  generalScore: z.number().min(1).max(5),
+  classification: classificationSchema,
+  responses: responsesByGroupSchema,
+  weakestDimension: diagnosticReportDimensionSummarySchema,
+  highestMisalignment: diagnosticReportTopMisalignmentSchema,
+  layerAverages: scoresByGroupSchema,
+  dimensions: z.array(diagnosticActionPlanDimensionSchema).length(6),
+  actionPoints: z.array(diagnosticActionPointSchema).min(1),
+});
+
 export const dashboardSummarySchema = z.object({
   activeDiagnostics: z.number().int().nonnegative(),
   totalResponses: z.number().int().nonnegative(),
@@ -298,6 +409,17 @@ export type ResponseSession = z.infer<typeof responseSessionSchema>;
 export type DimensionInsightRecord = z.infer<typeof dimensionInsightRecordSchema>;
 export type DimensionInsightTrendPoint = z.infer<typeof dimensionInsightTrendPointSchema>;
 export type DimensionInsightSummary = z.infer<typeof dimensionInsightSummarySchema>;
+export type DiagnosticReportMisalignment = z.infer<typeof diagnosticReportMisalignmentSchema>;
+export type DiagnosticReportQuestion = z.infer<typeof diagnosticReportQuestionSchema>;
+export type DiagnosticReportDimension = z.infer<typeof diagnosticReportDimensionSchema>;
+export type DiagnosticReportDimensionSummary = z.infer<typeof diagnosticReportDimensionSummarySchema>;
+export type DiagnosticReportTopMisalignment = z.infer<typeof diagnosticReportTopMisalignmentSchema>;
+export type DiagnosticReport = z.infer<typeof diagnosticReportSchema>;
+export type DiagnosticActionPointPriority = z.infer<typeof diagnosticActionPointPrioritySchema>;
+export type DiagnosticActionPointOwner = z.infer<typeof diagnosticActionPointOwnerSchema>;
+export type DiagnosticActionPlanDimension = z.infer<typeof diagnosticActionPlanDimensionSchema>;
+export type DiagnosticActionPoint = z.infer<typeof diagnosticActionPointSchema>;
+export type DiagnosticActionPlan = z.infer<typeof diagnosticActionPlanSchema>;
 export type DashboardSummary = z.infer<typeof dashboardSummarySchema>;
 export type CreateDiagnosticInput = z.infer<typeof createDiagnosticInputSchema>;
 export type UpdateDiagnosticDraftInput = z.infer<typeof updateDiagnosticDraftInputSchema>;

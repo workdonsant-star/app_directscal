@@ -4,14 +4,16 @@ Antes de editar, releia o **AGENTS.md** da raiz e este documento.
 
 ## Propósito
 
-`src/lib` concentra a fronteira de dados do app. A fase atual ainda é 100% mockada, mas os contratos já estão preparados para futura integração com Supabase.
+`src/lib` concentra a fronteira de dados do app. A camada de dados ainda é mockada, mas os contratos já estão preparados para futura integração com Supabase. Autenticação principal usa Auth.js/NextAuth com Google OAuth e regra corporativa em `auth/`.
 
 ## Estrutura
 
 ```
 src/lib/
+├── auth/                   ← Google OAuth, sessão e fallback mockado
 ├── contracts/              ← schemas Zod, tipos e mappers de dados
 ├── data/                   ← data-source mockado consumido por páginas/componentes
+├── pdf/                    ← documentos PDF renderizados a partir da camada data
 ├── mock-data.ts            ← seed temporário e bruto dos dados mockados
 ├── profile-storage.ts      ← overrides locais de perfil via localStorage
 ├── types.ts                ← reexports dos tipos públicos de contracts/
@@ -31,14 +33,19 @@ src/lib/
 
 Contratos principais:
 - `AdminModule`, `AcquisitionCampaign`, `AcquisitionFormField`, `Lead`, `LeadCompany`.
+- `AuthUser`, `AuthSession`, `SignInInput`, `SignUpInput`, `ResetPasswordInput`.
 - `Diagnostic`, `DiagnosticListItem`, `DiagnosticDetail`.
+- `DiagnosticActionPlan`, `DiagnosticActionPoint`.
 - `DiagnosticTemplate`, `Dimension`, `LikertScalePoint`, `RespondentGroupMeta`.
 - `DiagnosticShareLink`, `DiagnosticShareWorkspace`.
 - `Respondent`, `ResponseSession`, `LikertAnswer`, `SubmitLikertResponseInput`.
 - `DashboardSummary`, `DimensionInsightSummary`.
+- `DiagnosticReport`, `DiagnosticReportDimension`, `DiagnosticReportQuestion`.
+- `DiagnosticActionPlan`, `DiagnosticActionPlanDimension`, `DiagnosticActionPoint`.
 - `UserProfile`, `ProfileSettingsData`.
 - Inputs de escrita: `CreateDiagnosticInput`, `UpdateDiagnosticDraftInput`, `ActivateDiagnosticInput`, `CloseDiagnosticInput`, `DeleteDiagnosticInput`, `UpdateProfileInput`, `ChangePasswordInput`, `UpdateOrganizationInput`.
 - Inputs de aquisição: `AcquisitionSubmissionInput`.
+- Inputs de autenticação: `SignInInput`, `SignUpInput`, `ResetPasswordInput`.
 
 ## Data-source mockado
 
@@ -47,7 +54,9 @@ Contratos principais:
 - `mock-data.ts` é apenas seed temporário. Ele pode ser importado pela camada `data/`, mas não pela UI.
 - Quando Supabase entrar, a troca deve acontecer dentro de `src/lib/data/`, preservando os contratos públicos sempre que possível.
 - Cálculos agregados e helpers de domínio devem ficar em `data/` ou em funções puras de contrato, não em componentes.
+- Planos de ação PDF devem consumir DTOs consolidados daqui, como `getDiagnosticActionPlan()`, sem gerar regra dentro do documento PDF.
 - `profile-storage.ts` é exceção client-only para a fase mockada: persiste overrides de perfil no `localStorage` e emite evento para atualizar o shell. Deve ser substituído por backend/autenticação real no futuro.
+- `auth/` concentra Auth.js/NextAuth, regra de domínio/e-mail corporativo e fallback mockado. O cookie `directscal_session` sustenta o login demo por e-mail/senha.
 - `admin-data-source.ts` também usa `localStorage` na fase mockada para campanhas editadas e leads enviados pelos links `/a/[token]`.
 
 ## `mock-data.ts`
@@ -73,5 +82,5 @@ Os mocks devem continuar realistas, em pt-BR, sem dados pessoais reais e sem `Ma
 - Importar `mock-data.ts` em página ou componente.
 - Duplicar mappers de `Db*` dentro de UI.
 - Criar campos opcionais por conveniência sem refletir o contrato real.
-- Introduzir fetch, server action, Supabase client, migrations ou autenticação real nesta fase.
+- Introduzir Supabase client, migrations ou outro provedor de autenticação nesta fase sem pedido explícito.
 - Misturar validação de formulário com contrato de transporte quando o dado ainda não sai do client.

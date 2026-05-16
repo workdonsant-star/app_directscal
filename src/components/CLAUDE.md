@@ -12,6 +12,7 @@ Esta pasta concentra **todos os componentes de UI do app**, organizados por dom�
 src/components/
 ├── ui/                    ← primitives shadcn/ui (button, card, sidebar, …)
 ├── admin/                 ← componentes do superadmin e aquisição pública
+├── auth/                  ← telas e formulários públicos de autenticação
 ├── omdx/                  ← componentes específicos do módulo OMDx
 ├── profile/               ← componentes da página de perfil
 ├── app-sidebar.tsx        ← sidebar global do app autenticado
@@ -41,6 +42,7 @@ Cada subpasta de domínio tem seu próprio `CLAUDE.md`. Crie um quando adicionar
 - O shell autenticado usa o bloco **shadcn `sidebar-07`** como base visual, adaptado para Directscal.
 - A sidebar tem `Módulos` (`OMDx`, `Diagnósticos`) e `Insights` com as seis dimensões; não reintroduza `Empresas` ou `Relatórios` sem nova decisão.
 - Em `/admin`, a sidebar troca para `Administração` (`Módulos`, `Campanhas`, `Leads`, `Empresas`).
+- Componentes em `auth/` conversam com `/api/auth/*`; não leem nem escrevem cookies diretamente.
 - A visão atual é de cliente com acesso a um único módulo; o header da sidebar deve mostrar o logo Directscal (`public/directscal-logo.svg` no light e `public/directscal-logo-dark.svg` no dark), não um seletor de workspace. O componente `AppSwitcher` poderá virar seletor de apps quando houver clientes com múltiplos apps.
 - O controle manual de claro/escuro fica no dropdown do usuário em `NavUser`; o padrão global continua `system`.
 - A topbar do app autenticado deve ser limpa: `SidebarTrigger`, separador, breadcrumb e ações contextuais de página. Filtros globais de página devem ficar na topbar via `actions`, não dentro do conteúdo principal. Não adicionar busca/notificações sem decisão explícita.

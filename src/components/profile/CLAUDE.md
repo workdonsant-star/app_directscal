@@ -4,17 +4,18 @@ Componentes da página `/perfil`, usados para configurar dados básicos da conta
 
 ## Propósito
 
-- Manter o formulário de perfil como UI mockada até existir autenticação real.
+- Manter o formulário de perfil como UI mockada enquanto a autenticação ainda não tiver backend real.
 - Permitir edição local do nome, foto de perfil e quantidade de funcionários.
 - Exibir e-mail e empresa como campos bloqueados nesta fase.
-- Simular troca de senha sem persistência ou chamada de API.
+- Simular troca de senha sem persistência real.
 - Usar um único botão `Salvar alterações` para persistir todas as mudanças da sessão.
 - Manter todas as informações do perfil dentro de um único box; seções internas usam divisórias, não cards separados.
 
 ## Convenções
 
 - Componentes desta pasta podem ser client components quando controlarem formulários.
-- Não adicionar autenticação, sessão real, API ou persistência.
+- Não adicionar sessão real, Supabase ou persistência de backend dentro dos componentes de perfil.
+- A autenticação mockada vive em `src/lib/auth` e `/api/auth/*`.
 - Usar primitives de `src/components/ui/`.
 - Validações devem ser simples e visíveis no próprio formulário.
 - Upload de foto usa `FileReader.readAsDataURL` e persiste em `localStorage` após `Salvar alterações`; não enviar arquivo para backend nesta fase.

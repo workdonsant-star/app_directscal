@@ -10,14 +10,20 @@ Antes de editar arquivos aqui, releia o **AGENTS.md** da raiz e este documento.
 
 ```
 src/app/
+├── (auth)/                  ← telas públicas de autenticação
+│   ├── entrar/page.tsx      ← login com Google OAuth + fallback mockado opcional
+│   ├── criar-conta/page.tsx ← cadastro de sessão mockada quando fallback estiver ativo
+│   └── recuperar-senha/page.tsx ← recuperação mockada de senha
 ├── (app)/                    ← route group autenticado (cliente administrador)
-│   ├── layout.tsx            ← shell autenticado com sidebar-07 adaptado
+│   ├── layout.tsx            ← gate de sessão + shell autenticado com sidebar
 │   ├── admin/                ← visão de superadmin
 │   └── omdx/
 │       ├── page.tsx          ← dashboard executivo do módulo OMDx
 │       ├── diagnosticos/     ← área operacional (lista + drawer)
 │       └── [id]/
-│           └── compartilhar/page.tsx ← central mockada de coleta
+│           ├── compartilhar/page.tsx ← central mockada de coleta
+│           ├── action-points/route.ts ← download direto de PDF RACI
+│           └── relatorio/route.ts ← download direto de PDF
 │   └── insights/
 │       ├── page.tsx          ← redirect para /insights/cultura
 │       └── [dimensao]/page.tsx ← dashboard compacto por dimensão
@@ -31,6 +37,8 @@ src/app/
 │   └── [token]/page.tsx      ← prévia pública mockada do respondente
 ├── a/
 │   └── [token]/page.tsx      ← formulário público de aquisição por campanha
+├── api/
+│   └── auth/                 ← Auth.js Google OAuth + fallback mockado
 ├── globals.css               ← tokens da Directscal mapeados para shadcn
 ├── layout.tsx                ← root: <html> <body>, ThemeProvider, fontes
 └── page.tsx                  ← redirect("/omdx")
@@ -41,12 +49,12 @@ src/app/
 - Páginas devem consumir dados por `src/lib/data/`, não por arrays de `src/lib/mock-data.ts`.
 - `mock-data.ts` é seed temporário usado pela camada de data-source.
 - Contratos de API/banco ficam em `src/lib/contracts/` com schemas Zod.
-- A preparação é Supabase-friendly, mas sem backend real, server actions ou migrations nesta fase.
+- A preparação é Supabase-friendly. A autenticação usa Auth.js/NextAuth com Google OAuth e allowlist corporativa por env; o fallback demo por e-mail/senha usa cookie mockado `httpOnly`.
 
 ## Convenções
 
 - **Server Components por padrão.** `"use client"` somente quando houver estado, efeito, browser API ou interação real. O dashboard atual é Server Component; os filhos interativos (tabela com filtro, theme toggle) é que são `"use client"`.
-- **Route groups com parênteses** (`(app)`, futuramente `(public)`) **não criam segmento de URL** — servem para agrupar rotas que compartilham layout. Use sempre que um conjunto de rotas precisar do mesmo chrome.
+- **Route groups com parênteses** (`(auth)`, `(app)`) **não criam segmento de URL** — servem para agrupar rotas que compartilham layout ou responsabilidade.
 - **Redirects no servidor** com `redirect()` de `next/navigation` (vide `src/app/page.tsx`).
 - **Metadata** vem de `export const metadata` em `layout.tsx` e `page.tsx`.
 - O favicon atual é `public/favicon.svg.svg`, registrado no metadata global.
@@ -71,9 +79,14 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 
 | Rota | Pasta | Propósito |
 | --- | --- | --- |
+| `/entrar` | `(auth)/entrar/` | Tela pública de entrada com Google OAuth, redireciona conforme role quando já existe sessão. |
+| `/criar-conta` | `(auth)/criar-conta/` | Cadastro mockado que cria uma sessão local apenas no fallback de desenvolvimento. |
+| `/recuperar-senha` | `(auth)/recuperar-senha/` | Recuperação mockada de senha. |
 | `/omdx` | `(app)/omdx/` | Dashboard executivo do módulo; não deve conter a lista operacional completa. |
 | `/omdx/diagnosticos` | `(app)/omdx/diagnosticos/` | Área operacional acessada pela sidebar, com lista, filtros, criação e configuração em drawer lateral. |
 | `/omdx/[id]/compartilhar` | `(app)/omdx/[id]/compartilhar/` | Central de coleta mockada com links por grupo, copy sugerida e resumo compacto. |
+| `/omdx/[id]/action-points` | `(app)/omdx/[id]/action-points/` | Route Handler Node autenticado para download direto do plano de ação RACI. |
+| `/omdx/[id]/relatorio` | `(app)/omdx/[id]/relatorio/` | Route Handler Node autenticado para download direto do PDF consolidado. |
 | `/omdx/[id]/acompanhamento` | `(app)/omdx/[id]/acompanhamento/` | Coleta em andamento |
 | `/omdx/[id]/resultado` | `(app)/omdx/[id]/resultado/` | Visão executiva |
 | `/omdx/[id]/resultado/[dimensao]` | `(app)/omdx/[id]/resultado/[dimensao]/` | Detalhe por dimensão |
@@ -94,6 +107,8 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 ## Navegação e breadcrumb
 
 - O shell autenticado usa o bloco shadcn `sidebar-07` como base visual, adaptado para Directscal.
+- O route group `(app)` valida o cookie de sessão no layout antes de renderizar sidebar/topbar.
+- As rotas de autenticação em `(auth)` ficam fora do shell e redirecionam usuários autenticados conforme role.
 - A sidebar colapsa para ícones e mantém `OMDx` e `Diagnósticos` como itens separados.
 - A sidebar tem uma seção `Insights` com as seis dimensões do OMDx.
 - Quando o pathname começa com `/admin`, a sidebar muda para `Administração`, com `Módulos`, `Campanhas`, `Leads` e `Empresas`.
@@ -103,6 +118,8 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - Páginas abaixo de `/omdx` usam breadcrumb para mostrar a camada atual.
 - `/omdx/diagnosticos` usa `OMDx / Diagnósticos`.
 - `/omdx/[id]/compartilhar` usa `OMDx / Diagnósticos / Compartilhar`.
+- `/omdx/[id]/action-points` não renderiza página nem breadcrumb; retorna PDF como attachment.
+- `/omdx/[id]/relatorio` não renderiza página nem breadcrumb; retorna PDF como attachment.
 - `/insights/[dimensao]` usa `Insights / Nome da dimensão`.
 - `/metodologia` usa `Metodologia`.
 - `/docs` usa `Documentação`.

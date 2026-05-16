@@ -95,3 +95,12 @@ export function saveProfileOverrides(overrides: StoredProfileOverrides) {
   cachedOverrides = nextOverrides;
   window.dispatchEvent(new Event(profileUpdatedEventName));
 }
+
+export function clearProfileOverrides() {
+  if (!isBrowser()) return;
+
+  window.localStorage.removeItem(profileOverridesStorageKey);
+  cachedRaw = null;
+  cachedOverrides = null;
+  window.dispatchEvent(new Event(profileUpdatedEventName));
+}

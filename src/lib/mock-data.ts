@@ -3,6 +3,7 @@ import type {
   AdminModule,
   Classification,
   Diagnostic,
+  DiagnosticReportQuestion,
   DimensionInsightRecord,
   DimensionInsightSummary,
   DiagnosticTemplate,
@@ -568,6 +569,107 @@ export const dimensionInsightRecords: DimensionInsightRecord[] = [
     },
   },
 ];
+
+const reportQuestionBank = {
+  cultura: [
+    "Problemas relevantes podem ser levantados sem custo político.",
+    "O time consegue discordar de decisões quando identifica risco operacional.",
+    "Erros recorrentes são tratados como aprendizado e não como culpa individual.",
+    "Feedbacks são dados com clareza suficiente para melhorar comportamento e execução.",
+    "As pessoas pedem ajuda antes que o problema vire urgência.",
+  ],
+  visao: [
+    "A direção comunica prioridades de forma clara para todos os níveis.",
+    "Cada área entende como seu trabalho contribui para os objetivos da empresa.",
+    "As metas de curto prazo estão conectadas à visão de médio prazo.",
+    "Mudanças de prioridade são explicadas com contexto suficiente.",
+    "O time consegue tomar decisões sem depender de alinhamentos excessivos.",
+  ],
+  comunicacao: [
+    "As informações necessárias chegam a tempo para decisão e execução.",
+    "Reuniões têm pauta, decisão registrada e próximo passo definido.",
+    "Áreas diferentes mantêm alinhamento sem depender de conversas informais.",
+    "Responsáveis por decisões importantes são claros para o time.",
+    "Bloqueios de comunicação são tratados antes de impactar entrega.",
+  ],
+  processos: [
+    "Os processos críticos estão documentados em um nível útil para execução.",
+    "A operação consegue repetir entregas sem depender de improviso.",
+    "Gargalos são identificados com dados e tratados de forma recorrente.",
+    "Ferramentas e rituais sustentam o trabalho sem criar burocracia excessiva.",
+    "A empresa reduz dependência de pessoas-chave nos fluxos principais.",
+  ],
+  lideranca: [
+    "A liderança delega com contexto, critério de sucesso e autonomia.",
+    "Gestores acompanham execução sem centralizar todas as decisões.",
+    "O time recebe suporte antes que problemas de execução escalem.",
+    "Responsabilidades entre líderes e operação são claras no dia a dia.",
+    "Líderes desenvolvem capacidade do time, não apenas cobram entrega.",
+  ],
+  performance: [
+    "Métricas de sucesso são conhecidas por quem executa o trabalho.",
+    "Prioridades são protegidas quando surgem demandas paralelas.",
+    "A empresa acompanha resultado com cadência suficiente para corrigir rota.",
+    "Reconhecimento e cobrança estão conectados a entregas objetivas.",
+    "O foco operacional é preservado nos ciclos de maior pressão.",
+  ],
+} satisfies Record<DimensionId, string[]>;
+
+const reportQuestionOffsets = [-0.24, -0.08, 0.06, 0.18, 0.1] as const;
+
+function clampReportScore(score: number) {
+  return Math.min(5, Math.max(1, Number(score.toFixed(1))));
+}
+
+function roundReportNumber(value: number) {
+  return Number(value.toFixed(2));
+}
+
+function calculateLayerVariance(scores: Record<RespondentGroup, number>) {
+  const values = Object.values(scores);
+  const average = values.reduce((acc, value) => acc + value, 0) / values.length;
+
+  return (
+    values.reduce((acc, value) => acc + (value - average) ** 2, 0) /
+    values.length
+  );
+}
+
+export const diagnosticReportQuestions: DiagnosticReportQuestion[] =
+  dimensionInsightRecords.flatMap((record) => {
+    const diagnostic = diagnostics.find((item) => item.id === record.diagnosticId);
+    const responses = diagnostic?.responses.total ?? 0;
+
+    return dimensions.flatMap((dimension) => {
+      const layerBase = record.layers[dimension.id];
+
+      return reportQuestionBank[dimension.id].map((text, index) => {
+        const offset = reportQuestionOffsets[index % reportQuestionOffsets.length];
+        const layerScores = {
+          fundador: clampReportScore(layerBase.fundador + offset + 0.04),
+          lideranca: clampReportScore(layerBase.lideranca + offset),
+          operacao: clampReportScore(layerBase.operacao + offset - 0.04),
+        };
+        const values = Object.values(layerScores);
+        const score = clampReportScore(
+          values.reduce((acc, value) => acc + value, 0) / values.length,
+        );
+
+        return {
+          id: `${record.diagnosticId}_${dimension.id}_${index + 1}`,
+          diagnosticId: record.diagnosticId,
+          dimensionId: dimension.id,
+          text,
+          score,
+          variance: roundReportNumber(
+            0.36 + calculateLayerVariance(layerScores) + Math.abs(offset) / 2,
+          ),
+          responses,
+          layerScores,
+        };
+      });
+    });
+  });
 
 export function classifyScore(score: number): Classification {
   if (score <= 2.0) return "Crítico";

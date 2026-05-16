@@ -2,7 +2,7 @@
 
 Aplicação Next.js para o **OMDx — Diagnóstico de Maturidade Operacional** da Directscal.
 
-Nesta fase, o produto valida interface e fluxos com dados mockados. Não há backend, banco, autenticação real, testes E2E ou integrações externas.
+Nesta fase, o produto valida interface e fluxos com dados mockados. Não há backend, banco ou testes E2E. A autenticação principal usa Google OAuth com Auth.js/NextAuth e allowlist corporativa por variável de ambiente.
 
 ## Stack
 
@@ -12,6 +12,7 @@ Nesta fase, o produto valida interface e fluxos com dados mockados. Não há bac
 - Tailwind CSS `4`.
 - shadcn/ui `base-nova` sobre `base-ui`.
 - next-themes para tema claro/escuro.
+- Auth.js/NextAuth para Google OAuth.
 - lucide-react para ícones.
 - zod para contratos e validação de dados.
 
@@ -45,7 +46,25 @@ Convenção atual:
 
 - Páginas e componentes não devem importar arrays de `mock-data.ts` diretamente.
 - A preparação é Supabase-friendly, com contratos `Db*` em `snake_case`, domínio/UI em `camelCase` e mappers centralizados.
-- Ainda não há Supabase client, migrations, autenticação real ou API.
+- Ainda não há Supabase client, migrations ou API de dados real.
+
+## Autenticação
+
+Configure as variáveis abaixo para habilitar Google OAuth:
+
+```bash
+AUTH_SECRET=
+AUTH_GOOGLE_ID=
+AUTH_GOOGLE_SECRET=
+AUTH_ALLOWED_DOMAINS=empresa.com.br,directscal.com.br
+AUTH_ALLOWED_EMAILS=cliente@empresa.com.br,admin@directscal.com.br
+AUTH_ORG_BY_DOMAIN={"empresa.com.br":"Nome da Empresa","directscal.com.br":"Directscal"}
+AUTH_ADMIN_EMAILS=gestor@empresa.com.br
+AUTH_SUPERADMIN_EMAILS=admin@directscal.com.br
+AUTH_ENABLE_DEV_PASSWORD_LOGIN=false # habilita cadastro mockado em /criar-conta
+```
+
+O callback do Google deve apontar para `/api/auth/callback/google`, por exemplo `http://localhost:3000/api/auth/callback/google` em desenvolvimento.
 
 ## Comandos
 

@@ -60,8 +60,30 @@ const data = {
   ],
 };
 
-export function AppSidebar() {
+function getInitials(name: string) {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
+
+export function AppSidebar({
+  user = data.user,
+}: {
+  user?: {
+    avatar?: string;
+    email: string;
+    initials?: string;
+    name: string;
+  };
+}) {
   const pathname = usePathname();
+  const sidebarUser = {
+    ...user,
+    initials: user.initials ?? (getInitials(user.name) || "DS"),
+  };
   const isAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
   const modules = data.modules.map((item) => ({
     ...item,
@@ -99,7 +121,7 @@ export function AppSidebar() {
         )}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={sidebarUser} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

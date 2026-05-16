@@ -1,6 +1,13 @@
 "use client";
 
-import { Check, Copy, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import {
+  Check,
+  Copy,
+  Download,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { DeleteDiagnosticDialog } from "@/components/omdx/delete-diagnostic-dialog";
@@ -22,6 +29,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  canGenerateDiagnosticActionPlan,
+  canGenerateDiagnosticReport,
   getResponseToken,
   getRespondentGroups,
 } from "@/lib/data/omdx-data-source";
@@ -144,6 +153,14 @@ export function DiagnosticsTable({
     setDiagnosticToDelete(null);
   }
 
+  function handleDownloadReport(diagnostic: Diagnostic) {
+    window.location.assign(`/omdx/${diagnostic.id}/relatorio`);
+  }
+
+  function handleDownloadActionPoints(diagnostic: Diagnostic) {
+    window.location.assign(`/omdx/${diagnostic.id}/action-points`);
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-4">
@@ -247,6 +264,22 @@ export function DiagnosticsTable({
                         >
                           <Pencil className="size-4" />
                           Continuar configuração
+                        </DropdownMenuItem>
+                      )}
+                      {canGenerateDiagnosticReport(d) && (
+                        <DropdownMenuItem
+                          onClick={() => handleDownloadReport(d)}
+                        >
+                          <Download className="size-4" />
+                          Baixar relatório
+                        </DropdownMenuItem>
+                      )}
+                      {canGenerateDiagnosticActionPlan(d) && (
+                        <DropdownMenuItem
+                          onClick={() => handleDownloadActionPoints(d)}
+                        >
+                          <Download className="size-4" />
+                          Baixar action points
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem

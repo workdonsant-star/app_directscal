@@ -1,16 +1,25 @@
+import { redirect } from "next/navigation";
+
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { getCurrentAuthSession } from "@/lib/auth/session";
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getCurrentAuthSession();
+
+  if (!session) {
+    redirect("/entrar");
+  }
+
   return (
     <TooltipProvider delay={200}>
       <SidebarProvider>
-        <AppSidebar />
+        <AppSidebar user={session.user} />
         <SidebarInset>{children}</SidebarInset>
       </SidebarProvider>
     </TooltipProvider>

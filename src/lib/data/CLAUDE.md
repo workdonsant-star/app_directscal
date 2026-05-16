@@ -8,4 +8,5 @@ Esta pasta é a fronteira entre UI e dados. Enquanto não existe backend, ela l�
 - Esta camada pode continuar síncrona na fase mockada.
 - Quando Supabase entrar, as assinaturas públicas devem ser preservadas sempre que possível.
 - Cálculos agregados e helpers de domínio ficam aqui ou em contratos/mappers, não nos componentes.
+- Relatórios PDF devem consumir DTOs consolidados daqui, como `getDiagnosticReport()` e `getDiagnosticActionPlan()`, sem acessar mocks ou recalcular dados dentro do documento.
 - `admin-data-source.ts` expõe o snapshot mockado do superadmin, mesclando seeds com campanhas e leads salvos em `localStorage`.
