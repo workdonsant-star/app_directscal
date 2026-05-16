@@ -5,6 +5,7 @@ import ReactECharts from "echarts-for-react";
 import { useMemo } from "react";
 
 import type { DimensionResult } from "@/lib/data/omdx-overview-analytics";
+import { useChartThemeColors } from "@/components/omdx/use-chart-theme-colors";
 
 type HeatmapDatum = [number, number, number];
 
@@ -69,19 +70,6 @@ function escapeHtml(value: string) {
     .replaceAll("'", "&#039;");
 }
 
-function readCssVariables() {
-  if (typeof window === "undefined") return fallbackColors;
-
-  const styles = window.getComputedStyle(document.documentElement);
-
-  return Object.fromEntries(
-    Object.entries(fallbackColors).map(([name, fallback]) => [
-      name,
-      styles.getPropertyValue(name).trim() || fallback,
-    ]),
-  );
-}
-
 function makeHeatmapData(data: DimensionResult[]): HeatmapDatum[] {
   return data.flatMap((dimension, dimensionIndex) => [
     [0, dimensionIndex, dimension.diretoria],
@@ -135,7 +123,7 @@ function makeTooltipFormatter(dimensions: DimensionResult[]) {
 export function LayerHeatmapComparisonChart({
   data,
 }: LayerHeatmapComparisonChartProps) {
-  const colors = useMemo(() => readCssVariables(), []);
+  const colors = useChartThemeColors(fallbackColors);
   const heatmapData = useMemo(() => makeHeatmapData(data), [data]);
   const dimensions = useMemo(
     () => data.map((item) => getShortDimensionName(item.dimension)),

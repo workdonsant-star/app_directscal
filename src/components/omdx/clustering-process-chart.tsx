@@ -10,6 +10,7 @@ import {
   normalizeLikertToIndex,
   type DimensionResult,
 } from "@/lib/data/omdx-overview-analytics";
+import { useChartThemeColors } from "@/components/omdx/use-chart-theme-colors";
 
 type ClusterPoint = {
   clusterIndex: number;
@@ -68,19 +69,6 @@ function escapeHtml(value: string) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
-}
-
-function readCssVariables() {
-  if (typeof window === "undefined") return fallbackColors;
-
-  const styles = window.getComputedStyle(document.documentElement);
-
-  return Object.fromEntries(
-    Object.entries(fallbackColors).map(([name, fallback]) => [
-      name,
-      styles.getPropertyValue(name).trim() || fallback,
-    ]),
-  );
 }
 
 function getShortDimensionName(name: string) {
@@ -263,7 +251,7 @@ function makePointLabelFormatter() {
 export function ClusteringProcessChart({
   data = [],
 }: ClusteringProcessChartProps) {
-  const colors = useMemo(() => readCssVariables(), []);
+  const colors = useChartThemeColors(fallbackColors);
   const clusters = useMemo(() => buildClusters(data, colors), [colors, data]);
 
   const option = useMemo<EChartsOption>(

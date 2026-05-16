@@ -12,6 +12,7 @@ import {
   getOmdxOverviewAnalytics,
   type DimensionResult,
 } from "@/lib/data/omdx-overview-analytics";
+import { useChartThemeColors } from "@/components/omdx/use-chart-theme-colors";
 
 type TooltipParam = {
   dataIndex?: number;
@@ -89,19 +90,6 @@ function escapeHtml(value: string) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
-}
-
-function readCssVariables() {
-  if (typeof window === "undefined") return fallbackColors;
-
-  const styles = window.getComputedStyle(document.documentElement);
-
-  return Object.fromEntries(
-    Object.entries(fallbackColors).map(([name, fallback]) => [
-      name,
-      styles.getPropertyValue(name).trim() || fallback,
-    ]),
-  );
 }
 
 function getCriticalityColor(criticality: number, colors: Record<string, string>) {
@@ -195,7 +183,7 @@ function makeTooltipFormatter(data: InterventionPriorityRow[]) {
 export function InterventionPriorityChart({
   data,
 }: InterventionPriorityChartProps) {
-  const colors = useMemo(() => readCssVariables(), []);
+  const colors = useChartThemeColors(fallbackColors);
   const sourceData = data ?? getOmdxOverviewAnalytics().dimensions;
   const chartData = useMemo(() => toChartData(sourceData), [sourceData]);
   const chartHeight = Math.max(420, chartData.length * 70 + 92);
@@ -283,7 +271,6 @@ export function InterventionPriorityChart({
           data: chartData.map((item) => ({
             value: item.criticality,
             itemStyle: {
-              borderRadius: [0, 4, 4, 0],
               color: getCriticalityColor(item.criticality, colors),
             },
             label: {

@@ -9,6 +9,7 @@ import {
   identifyMaturityQuadrant,
   type DimensionResult,
 } from "@/lib/data/omdx-overview-analytics";
+import { useChartThemeColors } from "@/components/omdx/use-chart-theme-colors";
 
 type TooltipParam = {
   data?: {
@@ -54,19 +55,6 @@ function escapeHtml(value: string) {
     .replaceAll("'", "&#039;");
 }
 
-function readCssVariables() {
-  if (typeof window === "undefined") return fallbackColors;
-
-  const styles = window.getComputedStyle(document.documentElement);
-
-  return Object.fromEntries(
-    Object.entries(fallbackColors).map(([name, fallback]) => [
-      name,
-      styles.getPropertyValue(name).trim() || fallback,
-    ]),
-  );
-}
-
 function makeTooltipFormatter() {
   return (params: unknown) => {
     const param = Array.isArray(params) ? params[0] : params;
@@ -103,7 +91,7 @@ function makeTooltipFormatter() {
 export function MaturityMisalignmentChart({
   data,
 }: MaturityMisalignmentChartProps) {
-  const colors = useMemo(() => readCssVariables(), []);
+  const colors = useChartThemeColors(fallbackColors);
   const chartData = useMemo(
     () =>
       data.map((dimension) => {

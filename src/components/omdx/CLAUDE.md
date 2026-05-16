@@ -39,6 +39,7 @@ OMDx avalia maturidade operacional em **6 dimensões** (Cultura, Visão, Comunic
 | `InterventionPriorityChart` | `intervention-priority-chart.tsx` | `/omdx` | Barras horizontais ECharts para priorizar intervenção por criticidade operacional, maturidade, gap e dispersão. |
 | `TopResearchBottlenecks` | `top-research-bottlenecks.tsx` | `/omdx` | Ranking React de perguntas com maior percentual de respostas críticas, sem ECharts. |
 | `LayerHeatmapComparisonChart` | `layer-heatmap-comparison-chart.tsx` | `/omdx` | Heatmap ECharts para comparar diretoria, liderança e time por dimensão em escala de 1 a 5. |
+| `useChartThemeColors` | `use-chart-theme-colors.ts` | Charts ECharts OMDx | Hook client-side que lê tokens CSS e observa mudanças da classe `dark` no `<html>` para recalcular cores sem refresh. |
 
 ## Convenções de domínio
 
@@ -48,6 +49,7 @@ OMDx avalia maturidade operacional em **6 dimensões** (Cultura, Visão, Comunic
 - **Classificação** vem da função `classifyScore()` em `src/lib/data/omdx-data-source.ts`. Não inline a regra em componente. A régua textual do score Likert é: `<= 2.0` Crítico, `<= 3.0` Inconsistente, `<= 4.0` Atenção, acima de `4.0` Consistente.
 - **Biblioteca principal de visualização:** usar Apache ECharts via `echarts` e `echarts-for-react` para charts analíticos do OMDx. Evite shadcn/ui Charts e Recharts como base principal.
 - **Charts reutilizáveis:** componentes de visualização devem ser tipados, receber dados já preparados por props ou pela camada `src/lib/data/`, e manter opções ECharts próximas do componente de domínio que as governa.
+- **Charts e tema:** ECharts não reage sozinho a CSS variables após troca de tema. Use `useChartThemeColors()` para ler tokens e recomputar `option` quando light/dark mudar; não congele cores com `useMemo(..., [])`.
 - **Charts sem border radius:** não use `borderRadius`, `border-radius`, `rounded-*` ou cantos arredondados em barras, áreas, tooltips ou elementos internos de charts. Preserve a geometria padrão/retangular da biblioteca.
 - **Cores de score em charts:** não use vermelho/verde para maturidade. Use cores fixas por série/camada; a posição e o tamanho da barra comunicam o score.
 - **Cores por camada:** use uma paleta cyan fixa começando no peso 70 e diminuindo: diretoria cyan 70, liderança cyan 60 e time cyan 50, sem variar intensidade conforme a pontuação.
