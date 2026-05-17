@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { AcquisitionLeadStatus } from "@/lib/types";
 
 function formatDateTime(iso: string) {
   return new Date(iso).toLocaleString("pt-BR", {
@@ -22,6 +23,12 @@ function formatDateTime(iso: string) {
     minute: "2-digit",
   });
 }
+
+const leadStatusLabel: Record<AcquisitionLeadStatus, string> = {
+  account_created: "Conta criada",
+  lead: "Lead",
+  pending_company: "Empresa pendente",
+};
 
 export function AdminLeadsTable() {
   const { leads } = useAdminData();
@@ -56,6 +63,7 @@ export function AdminLeadsTable() {
               <TableHead>Empresa</TableHead>
               <TableHead>Campanha</TableHead>
               <TableHead>Origem</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Objetivo</TableHead>
               <TableHead className="text-right">Criado</TableHead>
             </TableRow>
@@ -100,6 +108,9 @@ export function AdminLeadsTable() {
                   <TableCell className="text-muted-foreground">
                     {lead.source}
                   </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {leadStatusLabel[lead.status]}
+                  </TableCell>
                   <TableCell className="max-w-[18rem] text-muted-foreground">
                     <span className="line-clamp-2">
                       {lead.objective || "—"}
@@ -115,7 +126,7 @@ export function AdminLeadsTable() {
             {leads.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
                   className="py-12 text-center text-sm text-muted-foreground"
                 >
                   Nenhum lead capturado até agora.

@@ -44,6 +44,18 @@ function displayValue(value: string | null | undefined) {
   return normalized || "—";
 }
 
+function displayLeadStatus(status: Lead["status"]) {
+  if (status === "account_created") return "Conta criada";
+  if (status === "pending_company") return "Empresa pendente";
+  return "Lead";
+}
+
+function displayProvider(provider: Lead["accountProvider"]) {
+  if (provider === "google") return "Google";
+  if (provider === "password") return "E-mail e senha";
+  return null;
+}
+
 function moduleName(moduleId: string, modules: AdminModule[]) {
   return (
     modules.find((module) => module.id === moduleId)?.shortName ?? moduleId
@@ -172,6 +184,11 @@ export function AdminLeadDetail({ leadId }: AdminLeadDetailProps) {
               />
               <InfoItem label="Campanha" value={lead.campaignName} />
               <InfoItem label="Origem" value={lead.source} />
+              <InfoItem label="Status" value={displayLeadStatus(lead.status)} />
+              <InfoItem
+                label="Acesso"
+                value={displayProvider(lead.accountProvider)}
+              />
               <InfoItem
                 label="Criado em"
                 value={formatDateTime(lead.createdAt)}

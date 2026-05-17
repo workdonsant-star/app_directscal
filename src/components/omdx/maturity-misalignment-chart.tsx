@@ -94,8 +94,11 @@ export function MaturityMisalignmentChart({
   const colors = useChartThemeColors(fallbackColors);
   const chartData = useMemo(
     () =>
-      data.map((dimension) => {
+      data.flatMap((dimension) => {
         const gap = calculateDimensionGap(dimension);
+
+        if (gap === null) return [];
+
         const quadrant = identifyMaturityQuadrant(dimension.maturity, gap);
 
         return {
@@ -243,7 +246,7 @@ export function MaturityMisalignmentChart({
     [chartData, colors],
   );
 
-  if (data.length === 0) {
+  if (chartData.length === 0) {
     return (
       <div className="text-sm text-muted-foreground">
         Ainda não há dados consolidados para cruzar maturidade e desalinhamento.

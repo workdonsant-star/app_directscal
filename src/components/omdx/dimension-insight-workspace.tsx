@@ -6,29 +6,32 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AppTopbar } from "@/components/app-topbar";
 import { DimensionDiagnosticFilter } from "@/components/omdx/dimension-diagnostic-filter";
 import { DimensionInsightDashboard } from "@/components/omdx/dimension-insight-dashboard";
-import { getDimensionInsightDiagnosticOptions } from "@/lib/data/omdx-data-source";
-import type { Dimension } from "@/lib/types";
+import type {
+  Diagnostic,
+  Dimension,
+  DimensionInsightSummary,
+  DimensionQuestionResult,
+} from "@/lib/types";
 
 type DimensionInsightWorkspaceProps = {
+  diagnosticOptions: Diagnostic[];
   dimension: Dimension;
+  questionResults: DimensionQuestionResult[];
+  selectedDiagnostic: string;
+  summary: DimensionInsightSummary;
 };
 
 export function DimensionInsightWorkspace({
+  diagnosticOptions,
   dimension,
+  questionResults,
+  selectedDiagnostic,
+  summary,
 }: DimensionInsightWorkspaceProps) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const diagnosticOptions = useMemo(
-    () => getDimensionInsightDiagnosticOptions(),
-    [],
-  );
-  const currentDiagnostic = searchParams.get("diagnostico") ?? "todos";
-  const selectedDiagnostic = diagnosticOptions.some(
-    (diagnostic) => diagnostic.id === currentDiagnostic,
-  )
-    ? currentDiagnostic
-    : "todos";
+  const validDiagnosticOptions = useMemo(() => diagnosticOptions, [diagnosticOptions]);
 
   function handleDiagnosticChange(value: string) {
     const params = new URLSearchParams(searchParams);
@@ -51,7 +54,7 @@ export function DimensionInsightWorkspace({
         breadcrumb={[{ label: "Insights" }, { label: dimension.shortName }]}
         actions={
           <DimensionDiagnosticFilter
-            diagnostics={diagnosticOptions}
+            diagnostics={validDiagnosticOptions}
             value={selectedDiagnostic}
             onChange={handleDiagnosticChange}
           />
@@ -60,8 +63,9 @@ export function DimensionInsightWorkspace({
       <main className="flex flex-1 flex-col px-6 py-8 lg:px-10">
         <div className="mx-auto w-full max-w-6xl">
           <DimensionInsightDashboard
-            dimension={dimension}
+            questionResults={questionResults}
             selectedDiagnostic={selectedDiagnostic}
+            summary={summary}
           />
         </div>
       </main>

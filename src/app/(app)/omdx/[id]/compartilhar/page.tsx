@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getDiagnosticById } from "@/lib/data/omdx-data-source";
+import { getDiagnosticShareWorkspace } from "@/lib/data/omdx-data-source";
 
 export const metadata: Metadata = {
   title: "Compartilhar diagnóstico — OMDx",
@@ -25,9 +25,9 @@ export default async function ShareDiagnosticPage({
   params,
 }: ShareDiagnosticPageProps) {
   const { id } = await params;
-  const diagnostic = getDiagnosticById(id);
+  const workspace = await getDiagnosticShareWorkspace(id);
 
-  if (!diagnostic) {
+  if (!workspace) {
     return (
       <>
         <AppTopbar
@@ -43,8 +43,8 @@ export default async function ShareDiagnosticPage({
             <CardHeader>
               <CardTitle>Diagnóstico não encontrado</CardTitle>
               <CardDescription>
-                O diagnóstico solicitado não existe nos dados mockados desta
-                fase.
+                O diagnóstico solicitado não existe no banco ou os links de
+                coleta ainda não foram gerados.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -70,7 +70,10 @@ export default async function ShareDiagnosticPage({
 
       <main className="flex flex-1 flex-col px-6 py-8 lg:px-10">
         <div className="mx-auto w-full max-w-6xl">
-          <ShareWorkspace diagnostic={diagnostic} />
+          <ShareWorkspace
+            diagnostic={workspace.diagnostic}
+            links={workspace.links}
+          />
         </div>
       </main>
     </>

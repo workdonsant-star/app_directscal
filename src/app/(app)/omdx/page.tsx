@@ -8,12 +8,10 @@ import { LayerHeatmapComparisonChart } from "@/components/omdx/layer-heatmap-com
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  getOmdxOverviewAnalytics,
-  getOmdxOverviewDiagnosticOptions,
-} from "@/lib/data/omdx-overview-analytics";
-import {
   getDiagnosticById,
   getLatestReportableDiagnostic,
+  getOmdxOverviewAnalytics,
+  getOmdxOverviewDiagnosticOptions,
 } from "@/lib/data/omdx-data-source";
 
 type OverviewPageProps = {
@@ -24,7 +22,7 @@ export default async function OverviewPage({
   searchParams,
 }: OverviewPageProps) {
   const resolvedSearchParams = await searchParams;
-  const diagnosticOptions = getOmdxOverviewDiagnosticOptions();
+  const diagnosticOptions = await getOmdxOverviewDiagnosticOptions();
   const requestedDiagnostic =
     typeof resolvedSearchParams?.diagnostico === "string"
       ? resolvedSearchParams.diagnostico
@@ -36,9 +34,9 @@ export default async function OverviewPage({
     : "todos";
   const reportDiagnostic =
     selectedDiagnostic === "todos"
-      ? getLatestReportableDiagnostic()
-      : getDiagnosticById(selectedDiagnostic);
-  const analytics = getOmdxOverviewAnalytics(selectedDiagnostic);
+      ? await getLatestReportableDiagnostic()
+      : await getDiagnosticById(selectedDiagnostic);
+  const analytics = await getOmdxOverviewAnalytics(selectedDiagnostic);
 
   return (
     <>

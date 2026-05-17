@@ -20,7 +20,8 @@ export function AppSwitcher() {
             alt=""
             width={16}
             height={16}
-            className="hidden h-4 w-auto shrink-0 object-contain group-data-[collapsible=icon]:block"
+            className="hidden shrink-0 object-contain group-data-[collapsible=icon]:block"
+            style={{ height: "16px", width: "auto" }}
             aria-hidden="true"
           />
           <Image
@@ -29,7 +30,8 @@ export function AppSwitcher() {
             width={142}
             height={16}
             priority
-            className="h-4 w-auto object-contain dark:hidden group-data-[collapsible=icon]:hidden"
+            className="object-contain dark:hidden group-data-[collapsible=icon]:hidden"
+            style={{ height: "16px", width: "auto" }}
           />
           <Image
             src="/directscal-logo-dark.svg"
@@ -37,7 +39,8 @@ export function AppSwitcher() {
             width={142}
             height={16}
             priority
-            className="hidden h-4 w-auto object-contain dark:block group-data-[collapsible=icon]:hidden"
+            className="hidden object-contain dark:block group-data-[collapsible=icon]:hidden"
+            style={{ height: "16px", width: "auto" }}
           />
         </SidebarMenuButton>
       </SidebarMenuItem>

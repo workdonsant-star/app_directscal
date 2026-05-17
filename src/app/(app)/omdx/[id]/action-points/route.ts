@@ -37,13 +37,13 @@ export async function GET(
   }
 
   const { id } = await params;
-  const diagnostic = getDiagnosticById(id);
+  const diagnostic = await getDiagnosticById(id);
 
   if (!diagnostic) {
     return new Response("Diagnóstico não encontrado.", { status: 404 });
   }
 
-  const plan = getDiagnosticActionPlan(id);
+  const plan = await getDiagnosticActionPlan(id);
 
   if (!plan) {
     return new Response("Action points indisponíveis para este diagnóstico.", {

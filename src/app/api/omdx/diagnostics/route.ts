@@ -1,9 +1,13 @@
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 
-import { userCanAccessOrganization } from "@/lib/auth/authorization";
+import { getAccessibleOrganizationIdsForUser } from "@/lib/auth/authorization";
 import { getCurrentAuthSession } from "@/lib/auth/session";
-import { createDiagnosticInputSchema } from "@/lib/contracts";
+import {
+  createDiagnosticInputSchema,
+  diagnosticShareLinkSchema,
+} from "@/lib/contracts";
+import { suggestedMessages } from "@/lib/data/omdx-domain";
 import { getPublicAppUrl } from "@/lib/env";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
@@ -42,13 +46,14 @@ export async function POST(request: Request) {
     );
   }
 
-  if (
-    !(await userCanAccessOrganization(
-      session.user.id,
-      parsed.data.organizationId,
-    ))
-  ) {
-    return NextResponse.json({ message: "Acesso negado." }, { status: 403 });
+  const access = await getAccessibleOrganizationIdsForUser(session.user.id);
+  const organizationId = access.primaryOrganizationId;
+
+  if (!organizationId) {
+    return NextResponse.json(
+      { message: "Organização não encontrada para este usuário." },
+      { status: 403 },
+    );
   }
 
   const templateId = await getTemplateId(parsed.data.templateId);
@@ -67,7 +72,7 @@ export async function POST(request: Request) {
       deadline: parsed.data.deadline ?? null,
       description: parsed.data.description ?? null,
       name: parsed.data.name,
-      organization_id: parsed.data.organizationId,
+      organization_id: organizationId,
       status: "rascunho",
       template_id: templateId,
     })
@@ -83,17 +88,19 @@ export async function POST(request: Request) {
 
   const groups = ["fundador", "lideranca", "operacao"] as const;
   const publicBaseUrl = `${getPublicAppUrl()}/r`;
-  const { error: linksError } = await supabase.from("diagnostic_share_links").insert(
-    groups.map((group) => {
-      const token = `${diagnostic.id}-${group}-${randomUUID()}`;
+  const linkRows = groups.map((group) => {
+    const token = `${diagnostic.id}-${group}-${randomUUID()}`;
 
-      return {
-        diagnostic_id: diagnostic.id,
-        group_id: group,
-        token,
-      };
-    }),
-  );
+    return {
+      diagnostic_id: diagnostic.id,
+      group_id: group,
+      token,
+    };
+  });
+  const { data: links, error: linksError } = await supabase
+    .from("diagnostic_share_links")
+    .insert(linkRows)
+    .select("diagnostic_id,group_id,token");
 
   if (linksError) {
     return NextResponse.json(
@@ -105,7 +112,17 @@ export async function POST(request: Request) {
   return NextResponse.json(
     {
       diagnosticId: diagnostic.id,
-      linksBaseUrl: publicBaseUrl,
+      links:
+        links?.map((link) =>
+          diagnosticShareLinkSchema.parse({
+            diagnosticId: link.diagnostic_id,
+            group: link.group_id,
+            token: link.token,
+            publicUrl: `${publicBaseUrl}/${link.token}`,
+            previewPath: `/r/${link.token}`,
+            suggestedMessage: suggestedMessages[link.group_id],
+          }),
+        ) ?? [],
     },
     { status: 201 },
   );

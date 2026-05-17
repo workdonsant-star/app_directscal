@@ -8,9 +8,11 @@ Componentes específicos da visão de superadministrador da Directscal. Eles adm
 
 ## Convenções
 
-- Componentes devem consumir dados por `src/lib/data/admin-data-source.ts`.
-- A persistência ainda é mockada em `localStorage`; não introduza backend, autenticação ou Supabase aqui.
-- Campanhas, leads, empresas e aquisição pública ficam fora do primeiro go-live OMDx e devem respeitar `FEATURE_ACQUISITION=false`.
+- Componentes devem consumir DTOs em camelCase vindos de `src/lib/data/admin-data-source.ts` e dos Route Handlers de admin.
+- Campanhas, leads e empresas são persistidos no Supabase; não reintroduza `localStorage` para este fluxo.
+- O link público de campanha começa por uma tela de escolha de método. Google cria um intent, encerra a sessão Auth.js anterior para forçar nova escolha de conta e completa empresa em `/a/[slug]/completar`; e-mail abre uma segunda etapa com dados da campanha e senha. Ambos criam lead, organização e membership `cliente`.
+- A interface pública de campanha segue o padrão visual das telas de autenticação: logo no topo, formulário em coluna estreita e vídeo `liquid_background.mp4` no painel lateral desktop.
+- Campanhas, leads, empresas e aquisição pública ficam disponíveis quando `FEATURE_ACQUISITION=true`; com o flag desligado, as rotas permanecem bloqueadas.
 - Use os mesmos primitives do app autenticado: `Table`, `Card`, `Button`, `Sheet`, `Select`, `Badge` e `KpiCard` compartilhado.
 - Mantenha continuidade visual com OMDx: tabelas principais de módulos, campanhas, leads e empresas ficam livres no fluxo da página, não dentro de `Card`. Use título/descrição/ações acima da tabela e apenas o wrapper `overflow-hidden rounded-lg border` na própria listagem.
 - Use `Card` no admin apenas para KPIs, drawers/modais ou blocos que sejam ferramentas enquadradas, nunca como envelope da tabela operacional principal.
@@ -28,6 +30,7 @@ Componentes específicos da visão de superadministrador da Directscal. Eles adm
 | `AdminLeadsTable` | `/admin/leads`, listagem de leads capturados com navegação por linha para o detalhe. |
 | `AdminLeadDetail` | `/admin/leads/[id]`, leitura completa de contato, empresa, aquisição e campos preenchidos. |
 | `AdminCompaniesTable` | `/admin/empresas`, empresas agrupadas a partir dos leads. |
-| `AcquisitionPublicFlow` | `/a/[token]`, formulário público configurável e preview do módulo. |
+| `AcquisitionPublicFlow` | `/a/[slug]`, escolha de método de acesso e formulário público configurável na etapa de e-mail. |
+| `AcquisitionGoogleCompleteFlow` | `/a/[slug]/completar`, coleta empresa após Google e conclui o cadastro como cliente. |
 | `AdminStatusBadge` | Status discretos de módulos/campanhas. |
-| `useAdminData` | Assinatura client-side do snapshot mockado de admin. |
+| `useAdminData` | Busca client-side do snapshot Supabase em `/api/admin/acquisition`. |

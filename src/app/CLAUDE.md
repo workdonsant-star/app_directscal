@@ -10,7 +10,8 @@ Antes de editar arquivos aqui, releia o **AGENTS.md** da raiz e este documento.
 
 ```
 src/app/
-├── (auth)/                  ← telas públicas de autenticação
+├── (auth)/  
+\                ← telas públicas de autenticação
 │   ├── entrar/page.tsx      ← login com Google OAuth + fallback mockado opcional
 │   ├── criar-conta/page.tsx ← cadastro de sessão mockada quando fallback estiver ativo
 │   └── recuperar-senha/page.tsx ← recuperação mockada de senha
@@ -21,7 +22,7 @@ src/app/
 │       ├── page.tsx          ← Overview executivo do módulo OMDx
 │       ├── diagnosticos/     ← área operacional (lista + drawer)
 │       └── [id]/
-│           ├── compartilhar/page.tsx ← central mockada de coleta
+│           ├── compartilhar/page.tsx ← central de coleta com links Supabase
 │           ├── action-points/route.ts ← download direto de PDF RACI
 │           └── relatorio/route.ts ← download direto de PDF
 │   └── insights/
@@ -32,9 +33,13 @@ src/app/
 │   └── perfil/
 │       └── page.tsx          ← perfil mockado do usuário e da empresa
 ├── r/
-│   └── [token]/page.tsx      ← prévia pública mockada do respondente
+│   └── [token]/
+│       ├── page.tsx          ← formulário público do respondente por token real
+│       └── obrigado/page.tsx ← confirmação após resposta registrada
 ├── a/
-│   └── [token]/page.tsx      ← formulário público de aquisição por campanha
+│   └── [slug]/
+│       ├── page.tsx          ← início público de aquisição por campanha
+│       └── completar/page.tsx ← conclusão Google da campanha
 ├── api/
 │   └── auth/                 ← Auth.js Google OAuth + fallback mockado
 ├── globals.css               ← tokens da Directscal mapeados para shadcn
@@ -45,9 +50,9 @@ src/app/
 ## Dados e contratos
 
 - Páginas devem consumir dados por `src/lib/data/`, não por arrays de `src/lib/mock-data.ts`.
-- `mock-data.ts` é seed temporário usado pela camada de data-source.
+- O OMDx core usa Supabase via `src/lib/data/omdx-data-source.ts`; aquisição/admin usam `src/lib/data/acquisition-data-source.ts` via Route Handlers; `mock-data.ts` permanece para seeds e superfícies ainda não migradas.
 - Contratos de API/banco ficam em `src/lib/contracts/` com schemas Zod.
-- A preparação é Supabase-friendly. A autenticação usa Auth.js/NextAuth com Google OAuth e allowlist corporativa por env; o fallback demo por e-mail/senha usa cookie mockado `httpOnly`.
+- A autenticação usa Auth.js/NextAuth com Google OAuth, Credentials para superadmin, Credentials para cadastro de campanha e allowlist corporativa por env; o fallback demo por e-mail/senha usa cookie mockado `httpOnly` apenas quando `AUTH_ENABLE_DEV_PASSWORD_LOGIN=true`.
 
 ## Convenções
 
@@ -82,7 +87,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/recuperar-senha` | `(auth)/recuperar-senha/` | Recuperação mockada de senha. |
 | `/omdx` | `(app)/omdx/` | Overview executivo do módulo; não deve conter a lista operacional completa. |
 | `/omdx/diagnosticos` | `(app)/omdx/diagnosticos/` | Área operacional acessada pela sidebar, com lista, filtros, criação e configuração em drawer lateral. |
-| `/omdx/[id]/compartilhar` | `(app)/omdx/[id]/compartilhar/` | Central de coleta mockada com links por grupo, copy sugerida e resumo compacto. |
+| `/omdx/[id]/compartilhar` | `(app)/omdx/[id]/compartilhar/` | Central de coleta persistida com links por grupo, copy sugerida e resumo compacto. |
 | `/omdx/[id]/action-points` | `(app)/omdx/[id]/action-points/` | Route Handler Node autenticado para download direto do plano de ação RACI. |
 | `/omdx/[id]/relatorio` | `(app)/omdx/[id]/relatorio/` | Route Handler Node autenticado para download direto do PDF consolidado. |
 | `/omdx/[id]/acompanhamento` | `(app)/omdx/[id]/acompanhamento/` | Coleta em andamento |
@@ -92,14 +97,16 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/insights/[dimensao]` | `(app)/insights/[dimensao]/` | Dashboard agregado por dimensão, com filtro por diagnóstico. |
 | `/docs` | `(app)/docs/` | Documentação prática em página única para uso do módulo pelo cliente administrador. |
 | `/perfil` | `(app)/perfil/` | Perfil mockado do usuário: nome, e-mail bloqueado, senha e dados básicos da empresa. |
-| `/r/[token]` | `r/[token]/` | Prévia pública mockada do respondente — **fora** do route group `(app)`, sem sidebar/topbar |
+| `/r/[token]` | `r/[token]/` | Formulário público do respondente por token real — **fora** do route group `(app)`, sem sidebar/topbar |
+| `/r/[token]/obrigado` | `r/[token]/obrigado/` | Página pública de agradecimento após resposta registrada ou navegador já marcado. |
 | `/admin` | `(app)/admin/` | Redireciona para `/admin/modulos`. |
 | `/admin/modulos` | `(app)/admin/modulos/` | Superadmin: módulos disponíveis. |
 | `/admin/campanhas` | `(app)/admin/campanhas/` | Superadmin: campanhas, links e campos de aquisição. |
 | `/admin/leads` | `(app)/admin/leads/` | Superadmin: leads capturados pelos links. |
 | `/admin/leads/[id]` | `(app)/admin/leads/[id]/` | Superadmin: detalhe completo do lead capturado. |
 | `/admin/empresas` | `(app)/admin/empresas/` | Superadmin: empresas derivadas dos leads. |
-| `/a/[token]` | `a/[token]/` | Fluxo público de aquisição por campanha — **fora** do route group `(app)`, sem sidebar/topbar |
+| `/a/[slug]` | `a/[slug]/` | Fluxo público de aquisição por campanha — **fora** do route group `(app)`, sem sidebar/topbar |
+| `/a/[slug]/completar` | `a/[slug]/completar/` | Completa dados de empresa após Google e cria lead/membership `cliente`. |
 
 ## Navegação e breadcrumb
 
@@ -145,18 +152,20 @@ Ao construir qualquer página, lembre dos estados levantados no plano original d
 2. Carregando (skeleton)
 3. Conteúdo
 4. Erro ao carregar
-5. Estados específicos do domínio (rascunho, ativo, encerrado, link inválido, link expirado, já respondeu, respostas insuficientes)
+5. Estados específicos do domínio (rascunho, ativo, encerrado, link inválido, link expirado, já respondeu, base de Fundador pendente)
 
 Estados ainda não estão todos implementados — quando construir, prefira **componentes de estado dedicados** dentro do domínio (`src/components/omdx/`) em vez de espalhar `if/else` na página.
 
-## Fluxo do respondente — quando chegar a hora
+## Fluxo do respondente
 
 A pasta `src/app/r/[token]/` será **um layout próprio**, não dentro de `(app)`:
 - Sem sidebar e sem topbar do produto.
 - Logo Directscal discreto, max-width estreito.
 - Sem auth, completamente público.
 - O grupo (sócios / liderança / time) vem do **token da URL**, não do respondente.
-- Nesta fase, `/r/[token]` é só uma prévia mockada da introdução pública; o formulário Likert completo vem depois.
+- `/r/[token]` resolve token real, valida disponibilidade da coleta e renderiza o formulário Likert completo sem coletar identificação pessoal.
+- O envio passa por `/api/omdx/responses`, que valida token, status, trava por navegador e conjunto completo de perguntas antes de gravar.
+- Depois de uma resposta registrada, o fluxo redireciona para `/r/[token]/obrigado`; se o cookie de resposta já existir, o servidor também redireciona direto para essa página.
 
 ## Anti-padrões
 

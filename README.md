@@ -63,6 +63,8 @@ AUTH_ALLOWED_EMAILS=cliente@empresa.com.br,admin@directscal.com.br
 AUTH_ORG_BY_DOMAIN={"empresa.com.br":"Nome da Empresa","directscal.com.br":"Directscal"}
 AUTH_ADMIN_EMAILS=gestor@empresa.com.br
 AUTH_SUPERADMIN_EMAILS=admin@directscal.com.br
+AUTH_ENABLE_SUPERADMIN_PASSWORD_LOGIN=false
+AUTH_SUPERADMIN_PASSWORD=
 AUTH_ENABLE_DEV_PASSWORD_LOGIN=false # habilita cadastro mockado em /criar-conta
 SUPABASE_URL=
 SUPABASE_ANON_KEY=
@@ -73,6 +75,8 @@ FEATURE_ACQUISITION=false
 ```
 
 `AUTH_SECRET` continua obrigatório em produção. Em desenvolvimento local, o app usa um segredo fixo de fallback para evitar erro `MissingSecret` quando a tela de login ou o fallback mockado são testados sem configurar OAuth completo.
+
+Para login manual de superadmin, habilite `AUTH_ENABLE_SUPERADMIN_PASSWORD_LOGIN=true`, configure `AUTH_SUPERADMIN_EMAILS` com o e-mail autorizado e guarde a senha real em `AUTH_SUPERADMIN_PASSWORD`. Essa senha é usada no servidor para provisionar/atualizar o hash em `app_private.user_password_credentials`; não versione esse valor.
 
 O callback do Google deve apontar para `/api/auth/callback/google`, por exemplo `http://localhost:3000/api/auth/callback/google` em desenvolvimento.
 

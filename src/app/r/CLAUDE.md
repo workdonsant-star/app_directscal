@@ -8,5 +8,7 @@ Rotas públicas acessadas por link de resposta do OMDx. Não usam sidebar, topba
 
 - Manter layout estreito e focado no respondente.
 - O grupo organizacional vem do token da URL, não de seleção manual.
-- Nesta fase, a rota é apenas prévia mockada da introdução pública.
-- Não adicionar backend, persistência, formulário completo ou autenticação aqui sem pedido explícito.
+- `/r/[token]` resolve token real no Supabase e renderiza o formulário Likert completo.
+- `/r/[token]/obrigado` confirma o registro da resposta e encerra a experiência do respondente.
+- Não adicionar autenticação ou shell do app nesta árvore pública.
+- A persistência acontece por `/api/omdx/responses`; componentes client não falam direto com Supabase.

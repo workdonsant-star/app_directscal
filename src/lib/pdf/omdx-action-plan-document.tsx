@@ -48,6 +48,10 @@ function formatScore(value: number) {
   });
 }
 
+function formatScoreOrNoBase(value: number | null) {
+  return value === null ? "Sem base" : formatScore(value);
+}
+
 function getScoreColor(score: number) {
   return score < 3 ? colors.negative : colors.brand;
 }
@@ -127,6 +131,10 @@ function PriorityPill({ priority }: { priority: DiagnosticActionPoint["priority"
 }
 
 function CoverPage({ plan }: { plan: DiagnosticActionPlan }) {
+  const misalignmentCopy = plan.highestMisalignment
+    ? `e o maior desalinhamento aparece em ${plan.highestMisalignment.dimensionName}.`
+    : "e a comparação entre camadas ainda está sem base suficiente.";
+
   return (
     <Page size="A4" style={styles.coverPage}>
       <View style={styles.coverTop}>
@@ -149,8 +157,7 @@ function CoverPage({ plan }: { plan: DiagnosticActionPlan }) {
           {plan.diagnostic.company} apresenta score geral de{" "}
           {formatScore(plan.generalScore)}, classificado como{" "}
           {plan.classification}. O principal gargalo está em{" "}
-          {plan.weakestDimension.shortName} e o maior desalinhamento aparece em{" "}
-          {plan.highestMisalignment.dimensionName}.
+          {plan.weakestDimension.shortName} {misalignmentCopy}
         </Text>
         <Text style={styles.readingText}>
           O plano abaixo prioriza ações que reduzem fricção operacional,
@@ -213,15 +220,17 @@ function DimensionTable({ dimensions }: { dimensions: DiagnosticActionPlanDimens
             {formatScore(dimension.score)}
           </Text>
           <Text style={styles.mediumCell}>{dimension.classification}</Text>
-          <Text style={styles.smallCell}>{formatScore(dimension.gap)}</Text>
           <Text style={styles.smallCell}>
-            {formatScore(dimension.layerScores.fundador)}
+            {formatScoreOrNoBase(dimension.gap)}
           </Text>
           <Text style={styles.smallCell}>
-            {formatScore(dimension.layerScores.lideranca)}
+            {formatScoreOrNoBase(dimension.layerScores.fundador)}
           </Text>
           <Text style={styles.smallCell}>
-            {formatScore(dimension.layerScores.operacao)}
+            {formatScoreOrNoBase(dimension.layerScores.lideranca)}
+          </Text>
+          <Text style={styles.smallCell}>
+            {formatScoreOrNoBase(dimension.layerScores.operacao)}
           </Text>
         </View>
       ))}
@@ -237,7 +246,7 @@ function LayerAverages({ plan }: { plan: DiagnosticActionPlan }) {
           <View key={group} style={styles.layerCard}>
             <Text style={styles.metricLabel}>{groupLabels[group]}</Text>
             <Text style={styles.metricValue}>
-              {formatScore(plan.layerAverages[group])}
+              {formatScoreOrNoBase(plan.layerAverages[group])}
             </Text>
             <Text style={styles.metricCaption}>Média das dimensões</Text>
           </View>
@@ -278,7 +287,7 @@ function ActionPointCard({ actionPoint }: { actionPoint: DiagnosticActionPoint }
           <Text style={styles.actionDimension}>{actionPoint.dimensionName}</Text>
           <Text style={styles.actionMeta}>
             Score {formatScore(actionPoint.score)} / Gap{" "}
-            {formatScore(actionPoint.gap)}
+            {formatScoreOrNoBase(actionPoint.gap)}
           </Text>
         </View>
         <PriorityPill priority={actionPoint.priority} />
@@ -353,13 +362,14 @@ function DimensionAnnex({
         </Text>
       </View>
       <Text style={styles.annexMeta}>
-        {dimension.classification} / Gap {formatScore(dimension.gap)}
+        {dimension.classification} / Gap {formatScoreOrNoBase(dimension.gap)}
       </Text>
       <View style={styles.annexLayerRow}>
         {(["fundador", "lideranca", "operacao"] as RespondentGroup[]).map(
           (group) => (
             <Text key={group} style={styles.annexLayerText}>
-              {groupLabels[group]} {formatScore(dimension.layerScores[group])}
+              {groupLabels[group]}{" "}
+              {formatScoreOrNoBase(dimension.layerScores[group])}
             </Text>
           ),
         )}

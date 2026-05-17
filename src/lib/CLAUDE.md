@@ -4,7 +4,7 @@ Antes de editar, releia o **AGENTS.md** da raiz e este documento.
 
 ## Propósito
 
-`src/lib` concentra a fronteira de dados do app. A UI ainda usa a camada mockada, mas a fundação Supabase de produção já existe para Auth.js, RLS e mutações server-side. Autenticação principal usa Auth.js/NextAuth com Google OAuth e regra corporativa em `auth/`.
+`src/lib` concentra a fronteira de dados do app. O OMDx core usa Supabase para leituras, mutações, compartilhamento e relatórios; superadmin e aquisição também usam Supabase via Route Handlers server-side. Perfil ainda tem partes mockadas/local-only. Autenticação principal usa Auth.js/NextAuth com Google OAuth, Credentials de campanha e regra corporativa em `auth/`.
 
 ## Estrutura
 
@@ -12,7 +12,7 @@ Antes de editar, releia o **AGENTS.md** da raiz e este documento.
 src/lib/
 ├── auth/                   ← Google OAuth, sessão e fallback mockado
 ├── contracts/              ← schemas Zod, tipos e mappers de dados
-├── data/                   ← data-source mockado + regras de produção
+├── data/                   ← data-sources, regras de domínio e agregações OMDx
 ├── supabase/               ← clients server-side Supabase
 ├── pdf/                    ← documentos PDF renderizados a partir da camada data
 ├── mock-data.ts            ← seed temporário e bruto dos dados mockados
@@ -30,7 +30,7 @@ src/lib/
 - Conversões de `Db*` para UI devem passar por `src/lib/contracts/mappers.ts`.
 - Datas de evento usam datetime ISO com offset: `createdAt`, `updatedAt`, `activatedAt`, `closedAt`.
 - Datas de prazo usam date ISO: `deadline` no formato `YYYY-MM-DD`.
-- IDs são `string` nesta fase porque os mocks usam ids como `diag_01`; a migração para UUID deve ser feita nos schemas, não nos componentes.
+- IDs continuam como `string` na UI, mas o OMDx core já recebe UUIDs do Supabase.
 
 Contratos principais:
 - `AdminModule`, `AcquisitionCampaign`, `AcquisitionFormField`, `Lead`, `LeadCompany`.
@@ -39,6 +39,7 @@ Contratos principais:
 - `DiagnosticActionPlan`, `DiagnosticActionPoint`.
 - `DiagnosticTemplate`, `Dimension`, `LikertScalePoint`, `RespondentGroupMeta`.
 - `DiagnosticShareLink`, `DiagnosticShareWorkspace`.
+- `DiagnosticResponseWorkspace`, `DiagnosticResponseDimension`, `DiagnosticResponseQuestion`.
 - `Respondent`, `ResponseSession`, `LikertAnswer`, `SubmitLikertResponseInput`.
 - `DashboardSummary`, `DimensionInsightSummary`, `DimensionQuestionResult`.
 - `DiagnosticReport`, `DiagnosticReportDimension`, `DiagnosticReportQuestion`.
@@ -52,15 +53,15 @@ Contratos principais:
 
 - Páginas e componentes devem importar dados de `src/lib/data/omdx-data-source.ts`.
 - Não importe arrays de `mock-data.ts` em componentes ou páginas.
-- `mock-data.ts` é apenas seed temporário. Ele pode ser importado pela camada `data/`, mas não pela UI.
-- `omdx-overview-analytics.ts` deriva DTOs executivos do relatório OMDx para cards, charts e rankings da homepage. Dados de distribuição Likert ainda são mockados de forma determinística a partir de score, gap e dispersão enquanto não houver respostas individuais persistidas.
-- A troca completa para Supabase deve acontecer dentro de `src/lib/data/`, preservando os contratos públicos sempre que possível.
+- `mock-data.ts` permanece apenas para superfícies ainda não migradas, como perfil e superadmin. Não use em OMDx core.
+- `omdx-overview-analytics.ts` deriva DTOs executivos de relatórios OMDx montados a partir de respostas reais. Percentuais de distribuição Likert ainda são inferidos para visualização executiva a partir de score, gap e dispersão.
+- Leituras OMDx Supabase ficam em `omdx-data-source.ts`; helpers puros compartilhados com Client Components ficam em `omdx-domain.ts`.
 - Cálculos agregados e helpers de domínio devem ficar em `data/` ou em funções puras de contrato, não em componentes.
 - Planos de ação PDF devem consumir DTOs consolidados daqui, como `getDiagnosticActionPlan()`, sem gerar regra dentro do documento PDF.
 - `profile-storage.ts` é exceção client-only para a fase mockada: persiste overrides de perfil no `localStorage` e emite evento para atualizar o shell. Deve ser substituído por backend/autenticação real no futuro.
 - `supabase/` concentra clients server-side; `SUPABASE_SERVICE_ROLE_KEY` nunca deve chegar ao client.
-- `auth/` concentra Auth.js/NextAuth, regra de domínio/e-mail corporativo, provisionamento de membership no Supabase, JWT para RLS e fallback mockado. O cookie `directscal_session` sustenta o login demo por e-mail/senha apenas em desenvolvimento.
-- `admin-data-source.ts` também usa `localStorage` na fase mockada para campanhas editadas e leads enviados pelos links `/a/[token]`.
+- `auth/` concentra Auth.js/NextAuth, regra de domínio/e-mail corporativo, validação de membership pré-existente no Supabase, JWT para RLS e fallback mockado. O cookie `directscal_session` sustenta o login demo por e-mail/senha apenas em desenvolvimento.
+- `admin-data-source.ts` concentra helpers puros do superadmin; `acquisition-data-source.ts` fala com Supabase no servidor para campanhas, leads, empresas, intents OAuth e credenciais.
 
 ## `mock-data.ts`
 
@@ -72,7 +73,7 @@ Mantém dados fictícios determinísticos para validar a interface:
 - diagnósticos;
 - registros de insights por dimensão;
 - KPIs agregados temporários.
-- módulos, campanhas e leads mockados do superadmin.
+- módulos e seeds iniciais ainda usados como fallback/estado inicial do superadmin.
 
 Os mocks devem continuar realistas, em pt-BR, sem dados pessoais reais e sem `Math.random()`.
 

@@ -172,9 +172,9 @@ export default function DocumentationPage() {
                   lista para configurar uma coleta.
                 </p>
                 <p>
-                  Nesta fase mockada, os campos essenciais são nome do
-                  diagnóstico e empresa. Descrição e prazo são opcionais. O
-                  template OMDx padrão já vem selecionado.
+                  Os campos essenciais são nome do diagnóstico e empresa da
+                  sessão. Descrição e prazo são opcionais. O template OMDx
+                  padrão já vem selecionado.
                 </p>
               </div>
               <ol className="mt-6 space-y-4">
@@ -240,7 +240,7 @@ export default function DocumentationPage() {
                     Abrir prévia
                   </p>
                   <p className="text-muted-foreground text-sm leading-7">
-                    Mostra a introdução pública mockada em `/r/[token]`.
+                    Mostra a introdução pública em `/r/[token]`.
                   </p>
                 </div>
                 <div className="grid gap-2 py-4 sm:grid-cols-[160px_1fr]">
@@ -248,7 +248,8 @@ export default function DocumentationPage() {
                     Encerrar coleta
                   </p>
                   <p className="text-muted-foreground text-sm leading-7">
-                    Altera o estado visual para encerrado nesta fase mockada.
+                    Persiste o diagnóstico como encerrado e bloqueia novas
+                    respostas.
                   </p>
                 </div>
               </div>

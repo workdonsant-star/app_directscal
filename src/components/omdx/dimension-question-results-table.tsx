@@ -56,6 +56,10 @@ function QuestionStatus({
   );
 }
 
+function formatGap(gap: DimensionQuestionResult["gap"]) {
+  return gap === null ? "Sem base" : scoreFormatter.format(gap);
+}
+
 export function DimensionQuestionResultsTable({
   questions,
 }: DimensionQuestionResultsTableProps) {
@@ -117,7 +121,7 @@ export function DimensionQuestionResultsTable({
                       <QuestionStatus classification={question.classification} />
                     </td>
                     <td className="px-4 py-4 text-right align-middle text-sm tabular-nums text-foreground">
-                      {scoreFormatter.format(question.gap)}
+                      {formatGap(question.gap)}
                     </td>
                     <td className="px-4 py-4 text-right align-middle text-sm tabular-nums text-foreground">
                       {question.responses.toLocaleString("pt-BR")}

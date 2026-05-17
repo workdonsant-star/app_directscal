@@ -10,5 +10,6 @@ Camada abaixo da área de diagnósticos para compartilhar os links públicos do 
 - Mostrar links separados para fundador, liderança e operação.
 - Mostrar mensagem sugerida por grupo e prévia pública em `/r/[token]`.
 - Mostrar resumo compacto de respostas; lista detalhada de respondentes fica para acompanhamento futuro.
-- Nesta fase, clipboard e encerramento de coleta são client-side e mockados.
+- Liberar análise e downloads quando houver pelo menos uma resposta de Fundador; liderança e operação aparecem como sem base até responderem.
+- Clipboard continua client-side; encerramento de coleta é persistido pela API OMDx.
 - A rota parte do contexto de `/omdx/diagnosticos`, não do dashboard raiz.

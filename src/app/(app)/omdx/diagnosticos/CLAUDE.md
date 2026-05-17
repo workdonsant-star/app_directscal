@@ -9,5 +9,5 @@ Página autenticada para listar, filtrar, criar e configurar diagnósticos OMDx.
 - Usar breadcrumb `Overview / Diagnósticos`.
 - Manter criação e configuração em drawer lateral, sem página dedicada.
 - Usar `DiagnosticsWorkspace` como componente client para controlar filtros, ações e drawer.
-- Continuar 100% mockado nesta fase.
+- Persistir criação, configuração, ativação e exclusão via Route Handlers OMDx e Supabase.
 - Links por grupo permanecem separados: fundador, liderança e operação.

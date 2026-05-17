@@ -2,6 +2,7 @@
 
 import { ArrowLeft, CalendarDays, Download, Lock } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { ResponseCounters } from "@/components/omdx/response-counters";
@@ -18,17 +19,35 @@ import {
 import {
   canGenerateDiagnosticActionPlan,
   canGenerateDiagnosticReport,
-} from "@/lib/data/omdx-data-source";
-import type { Diagnostic, DiagnosticStatus, RespondentGroup } from "@/lib/types";
+} from "@/lib/data/omdx-domain";
+import type {
+  Diagnostic,
+  DiagnosticShareLink,
+  DiagnosticStatus,
+  RespondentGroup,
+} from "@/lib/types";
 
 type ShareWorkspaceProps = {
   diagnostic: Diagnostic;
+  links: DiagnosticShareLink[];
 };
 
-export function ShareWorkspace({ diagnostic }: ShareWorkspaceProps) {
+type MutationResponse = {
+  message?: string;
+};
+
+async function readMutationResponse(response: Response) {
+  const data: unknown = await response.json().catch(() => null);
+
+  return data && typeof data === "object" ? (data as MutationResponse) : {};
+}
+
+export function ShareWorkspace({ diagnostic, links }: ShareWorkspaceProps) {
+  const router = useRouter();
   const [status, setStatus] = useState<DiagnosticStatus>(diagnostic.status);
   const [copiedGroup, setCopiedGroup] = useState<RespondentGroup | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
 
   const isClosed = status === "encerrado";
   const canDownloadReport = canGenerateDiagnosticReport(diagnostic);
@@ -48,10 +67,31 @@ export function ShareWorkspace({ diagnostic }: ShareWorkspaceProps) {
     }
   }
 
-  function handleCloseCollection() {
-    setStatus("encerrado");
-    setCopiedGroup(null);
-    setNotice("Coleta encerrada nesta sessão mockada.");
+  async function handleCloseCollection() {
+    try {
+      setPending(true);
+      const response = await fetch(`/api/omdx/diagnostics/${diagnostic.id}/close`, {
+        method: "POST",
+      });
+      const data = await readMutationResponse(response);
+
+      if (!response.ok) {
+        throw new Error(data.message ?? "Não foi possível encerrar a coleta.");
+      }
+
+      setStatus("encerrado");
+      setCopiedGroup(null);
+      setNotice("Coleta encerrada no banco.");
+      router.refresh();
+    } catch (error) {
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível encerrar a coleta.",
+      );
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
@@ -96,7 +136,7 @@ export function ShareWorkspace({ diagnostic }: ShareWorkspaceProps) {
           <Button
             type="button"
             variant="destructive"
-            disabled={isClosed}
+            disabled={isClosed || pending}
             onClick={handleCloseCollection}
           >
             <Lock className="size-4" />
@@ -116,15 +156,14 @@ export function ShareWorkspace({ diagnostic }: ShareWorkspaceProps) {
           <CardHeader className="border-b">
             <CardTitle>Coleta encerrada</CardTitle>
             <CardDescription>
-              Estado mockado aplicado apenas nesta sessão.
+              Novas respostas ficam bloqueadas para este diagnóstico.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex items-start gap-3">
             <CalendarDays className="mt-0.5 size-4 text-muted-foreground" />
             <p className="text-sm leading-relaxed text-muted-foreground">
-              Os links ficam visíveis para referência, mas não devem receber
-              novas respostas. Recarregar a página restaura o estado vindo dos
-              mocks.
+              Os links ficam visíveis para referência, mas a API pública não
+              aceita novas respostas depois do encerramento.
             </p>
           </CardContent>
         </Card>
@@ -133,7 +172,7 @@ export function ShareWorkspace({ diagnostic }: ShareWorkspaceProps) {
       <ResponseCounters diagnostic={diagnostic} status={status} />
 
       <ShareLinks
-        diagnostic={diagnostic}
+        links={links}
         disabled={isClosed}
         copiedGroup={copiedGroup}
         onCopy={handleCopy}

@@ -1,17 +1,41 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 
 import {
+  adminUpdatedEventName,
   getAdminDataServerSnapshot,
-  getAdminDataSnapshot,
-  subscribeAdminData,
+  type AdminDataSnapshot,
 } from "@/lib/data/admin-data-source";
 
 export function useAdminData() {
-  return useSyncExternalStore(
-    subscribeAdminData,
-    getAdminDataSnapshot,
+  const [snapshot, setSnapshot] = useState<AdminDataSnapshot>(
     getAdminDataServerSnapshot,
   );
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadSnapshot() {
+      const response = await fetch("/api/admin/acquisition", {
+        cache: "no-store",
+      });
+
+      if (!response.ok) return;
+
+      const data = (await response.json()) as AdminDataSnapshot;
+
+      if (active) setSnapshot(data);
+    }
+
+    loadSnapshot();
+    window.addEventListener(adminUpdatedEventName, loadSnapshot);
+
+    return () => {
+      active = false;
+      window.removeEventListener(adminUpdatedEventName, loadSnapshot);
+    };
+  }, []);
+
+  return snapshot;
 }

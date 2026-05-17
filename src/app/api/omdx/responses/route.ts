@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { submitLikertResponseInputSchema } from "@/lib/contracts";
 import {
   getResponseCookieName,
-  normalizeRespondentEmail,
+  hasCompleteLikertAnswerSet,
 } from "@/lib/data/omdx-production-rules";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
@@ -18,15 +18,20 @@ type ShareLinkRow = {
 type DiagnosticStatusRow = {
   closed_at: string | null;
   status: "rascunho" | "ativo" | "encerrado";
+  template_id: string;
 };
 
-type RespondentRow = {
+type QuestionIdRow = {
   id: string;
 };
 
 const submissionAttempts = new Map<string, number[]>();
 const maxAttempts = 5;
 const rateLimitWindowMs = 60_000;
+
+function logSupabaseError(scope: string, error: unknown) {
+  console.error(`[omdx/responses] ${scope}`, error);
+}
 
 function isRateLimited(key: string) {
   const now = Date.now();
@@ -38,13 +43,6 @@ function isRateLimited(key: string) {
   submissionAttempts.set(key, attempts);
 
   return attempts.length > maxAttempts;
-}
-
-function duplicateResponse() {
-  return NextResponse.json(
-    { message: "Este e-mail já respondeu por este grupo." },
-    { status: 409 },
-  );
 }
 
 export async function POST(request: Request) {
@@ -86,6 +84,8 @@ export async function POST(request: Request) {
     .maybeSingle<ShareLinkRow>();
 
   if (shareLinkError) {
+    logSupabaseError("share link validation failed", shareLinkError);
+
     return NextResponse.json(
       { message: "Não foi possível validar o link." },
       { status: 500 },
@@ -102,11 +102,13 @@ export async function POST(request: Request) {
 
   const { data: diagnostic, error: diagnosticError } = await supabase
     .from("diagnostics")
-    .select("status,closed_at")
+    .select("status,closed_at,template_id")
     .eq("id", shareLink.diagnostic_id)
     .maybeSingle<DiagnosticStatusRow>();
 
   if (diagnosticError) {
+    logSupabaseError("diagnostic validation failed", diagnosticError);
+
     return NextResponse.json(
       { message: "Não foi possível validar a coleta." },
       { status: 500 },
@@ -120,42 +122,30 @@ export async function POST(request: Request) {
     );
   }
 
-  const normalizedEmail = normalizeRespondentEmail(parsed.data.respondent.email);
-  const { data: existingRespondent, error: existingError } = await supabase
-    .from("respondents")
+  const { data: questions, error: questionsError } = await supabase
+    .from("questions")
     .select("id")
-    .eq("diagnostic_id", shareLink.diagnostic_id)
-    .eq("group_id", shareLink.group_id)
-    .eq("normalized_email", normalizedEmail)
-    .maybeSingle<RespondentRow>();
+    .eq("template_id", diagnostic.template_id)
+    .returns<QuestionIdRow[]>();
 
-  if (existingError) {
+  if (questionsError) {
+    logSupabaseError("question validation failed", questionsError);
+
     return NextResponse.json(
-      { message: "Não foi possível verificar respostas anteriores." },
+      { message: "Não foi possível validar as perguntas." },
       { status: 500 },
     );
   }
 
-  if (existingRespondent) return duplicateResponse();
-
-  const { data: respondent, error: respondentError } = await supabase
-    .from("respondents")
-    .insert({
-      diagnostic_id: shareLink.diagnostic_id,
-      email: normalizedEmail,
-      group_id: shareLink.group_id,
-      name: parsed.data.respondent.name,
-      role: parsed.data.respondent.role,
-    })
-    .select("id")
-    .single<RespondentRow>();
-
-  if (respondentError) {
-    if (respondentError.code === "23505") return duplicateResponse();
-
+  if (
+    !hasCompleteLikertAnswerSet(
+      parsed.data.answers,
+      questions.map((question) => question.id),
+    )
+  ) {
     return NextResponse.json(
-      { message: "Não foi possível registrar o respondente." },
-      { status: 500 },
+      { message: "Responda todas as perguntas antes de enviar." },
+      { status: 400 },
     );
   }
 
@@ -165,7 +155,6 @@ export async function POST(request: Request) {
     .insert({
       diagnostic_id: shareLink.diagnostic_id,
       group_id: shareLink.group_id,
-      respondent_id: respondent.id,
       share_link_id: shareLink.id,
       status: "concluido",
       submitted_at: submittedAt,
@@ -174,6 +163,8 @@ export async function POST(request: Request) {
     .single<{ id: string }>();
 
   if (sessionError) {
+    logSupabaseError("response session insert failed", sessionError);
+
     return NextResponse.json(
       { message: "Não foi possível registrar a sessão de resposta." },
       { status: 500 },
@@ -189,6 +180,8 @@ export async function POST(request: Request) {
   );
 
   if (answersError) {
+    logSupabaseError("likert answers insert failed", answersError);
+
     return NextResponse.json(
       { message: "Não foi possível registrar as respostas." },
       { status: 500 },
@@ -198,7 +191,7 @@ export async function POST(request: Request) {
   const response = NextResponse.json({ ok: true }, { status: 201 });
 
   response.cookies.set(getResponseCookieName(parsed.data.token), "1", {
-    httpOnly: false,
+    httpOnly: true,
     maxAge: 60 * 60 * 24 * 365,
     path: "/",
     sameSite: "lax",

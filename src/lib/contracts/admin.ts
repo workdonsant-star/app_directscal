@@ -4,6 +4,12 @@ import { idSchema, isoDateTimeSchema } from "./omdx";
 
 export const adminModuleStatusValues = ["ativo", "inativo"] as const;
 export const acquisitionCampaignStatusValues = ["ativo", "pausado"] as const;
+export const acquisitionLeadStatusValues = [
+  "lead",
+  "pending_company",
+  "account_created",
+] as const;
+export const acquisitionAccountProviderValues = ["google", "password"] as const;
 export const acquisitionFormFieldTypeValues = [
   "text",
   "email",
@@ -16,6 +22,10 @@ export const acquisitionFormFieldTypeValues = [
 export const adminModuleStatusSchema = z.enum(adminModuleStatusValues);
 export const acquisitionCampaignStatusSchema = z.enum(
   acquisitionCampaignStatusValues,
+);
+export const acquisitionLeadStatusSchema = z.enum(acquisitionLeadStatusValues);
+export const acquisitionAccountProviderSchema = z.enum(
+  acquisitionAccountProviderValues,
 );
 export const acquisitionFormFieldTypeSchema = z.enum(
   acquisitionFormFieldTypeValues,
@@ -53,7 +63,7 @@ export const acquisitionCampaignSchema = z.object({
   name: z.string().min(1),
   source: z.string().min(1),
   status: acquisitionCampaignStatusSchema,
-  token: z.string().min(1),
+  slug: z.string().min(1),
   publicPath: z.string().min(1),
   createdAt: isoDateTimeSchema,
   updatedAt: isoDateTimeSchema,
@@ -76,6 +86,10 @@ export const leadSchema = z.object({
   objective: z.string().nullable(),
   createdAt: isoDateTimeSchema,
   fieldValues: z.record(z.string(), z.string()),
+  status: acquisitionLeadStatusSchema.default("lead"),
+  accountProvider: acquisitionAccountProviderSchema.nullable().default(null),
+  userId: z.string().nullable().default(null),
+  organizationId: z.string().nullable().default(null),
 });
 
 export const leadCompanySchema = z.object({
@@ -90,13 +104,17 @@ export const leadCompanySchema = z.object({
 });
 
 export const acquisitionSubmissionInputSchema = z.object({
-  token: z.string().min(1),
+  slug: z.string().min(1),
   values: z.record(z.string(), z.string()),
 });
 
 export type AdminModuleStatus = z.infer<typeof adminModuleStatusSchema>;
 export type AcquisitionCampaignStatus = z.infer<
   typeof acquisitionCampaignStatusSchema
+>;
+export type AcquisitionLeadStatus = z.infer<typeof acquisitionLeadStatusSchema>;
+export type AcquisitionAccountProvider = z.infer<
+  typeof acquisitionAccountProviderSchema
 >;
 export type AcquisitionFormFieldType = z.infer<
   typeof acquisitionFormFieldTypeSchema

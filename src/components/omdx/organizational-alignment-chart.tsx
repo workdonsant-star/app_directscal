@@ -23,7 +23,7 @@ type MaturityCriticalityDatum = {
   maturityIndex: number;
   criticalityIndex: number;
   status: ExecutiveMetricStatus;
-  gap: number;
+  gap: number | null;
   dispersion: number;
   criticalPercentage: number;
   value: [number, number];
@@ -80,6 +80,10 @@ function escapeHtml(value: string) {
     .replaceAll("'", "&#039;");
 }
 
+function formatScoreOrNoBase(value: number | null) {
+  return value === null ? "Sem base" : scoreFormatter.format(value);
+}
+
 function getStatusColor(
   status: ExecutiveMetricStatus,
   colors: Record<string, string>,
@@ -132,7 +136,7 @@ function makeTooltipFormatter() {
           </div>
           <div style="display:flex;justify-content:space-between;gap:24px;">
             <span style="color:var(--muted-foreground);">Gap</span>
-            <span style="font-variant-numeric:tabular-nums;color:var(--foreground);">${scoreFormatter.format(item.gap)}</span>
+            <span style="font-variant-numeric:tabular-nums;color:var(--foreground);">${formatScoreOrNoBase(item.gap)}</span>
           </div>
           <div style="display:flex;justify-content:space-between;gap:24px;">
             <span style="color:var(--muted-foreground);">Dispersão</span>

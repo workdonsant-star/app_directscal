@@ -1,10 +1,4 @@
-import {
-  canGenerateDiagnosticReport,
-  getDiagnostics,
-  getDiagnosticReport,
-  getLatestReportableDiagnostic,
-} from "@/lib/data/omdx-data-source";
-import type { Diagnostic } from "@/lib/types";
+import type { DiagnosticReport } from "@/lib/types";
 
 export type LikertDistribution = {
   stronglyDisagree: number;
@@ -17,9 +11,9 @@ export type LikertDistribution = {
 export type DimensionResult = {
   dimension: string;
   maturity: number;
-  diretoria: number;
-  lideranca: number;
-  time: number;
+  diretoria: number | null;
+  lideranca: number | null;
+  time: number | null;
   dispersion: number;
   criticalPercentage: number;
   positivePercentage: number;
@@ -47,7 +41,7 @@ export type ExecutiveMetric = {
   title: string;
   value: string;
   suffix?: string;
-  classification: ExecutiveMetricStatus;
+  classification: ExecutiveMetricStatus | "Sem dados";
   description: string;
   technicalDetail: string;
 };
@@ -63,7 +57,7 @@ export type OverviewAnalytics = {
   metrics: ExecutiveMetric[];
 };
 
-type Report = NonNullable<ReturnType<typeof getDiagnosticReport>>;
+type Report = DiagnosticReport;
 
 const maturityCutoff = 3.5;
 const gapCutoff = 1.2;
@@ -81,6 +75,20 @@ function round(value: number, precision = 0) {
 function average(values: number[]) {
   if (values.length === 0) return 0;
   return values.reduce((acc, value) => acc + value, 0) / values.length;
+}
+
+function numericValues(values: Array<number | null>) {
+  return values.filter((value): value is number => value !== null);
+}
+
+function averageOrNull(values: Array<number | null>) {
+  const numbers = numericValues(values);
+
+  return numbers.length > 0 ? average(numbers) : null;
+}
+
+function roundOrNull(value: number | null, precision = 0) {
+  return value === null ? null : round(value, precision);
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -114,9 +122,13 @@ function distributePercentages(
   };
 }
 
-function inferCriticalPercentage(score: number, dispersion: number, gap: number) {
+function inferCriticalPercentage(
+  score: number,
+  dispersion: number,
+  gap: number | null,
+) {
   return clamp(
-    Math.round((5 - score) * 11 + dispersion * 9 + gap * 6),
+    Math.round((5 - score) * 11 + dispersion * 9 + (gap ?? 0) * 6),
     4,
     78,
   );
@@ -135,12 +147,21 @@ function toQuestionTitle(question: string) {
 }
 
 export function calculateDimensionGap(dimension: DimensionResult) {
-  return Math.max(dimension.diretoria, dimension.lideranca, dimension.time) -
-    Math.min(dimension.diretoria, dimension.lideranca, dimension.time);
+  const scores = numericValues([
+    dimension.diretoria,
+    dimension.lideranca,
+    dimension.time,
+  ]);
+
+  if (scores.length < 2) return null;
+
+  return Math.max(...scores) - Math.min(...scores);
 }
 
 export function calculateAverageGap(dimensions: DimensionResult[]) {
-  return round(average(dimensions.map(calculateDimensionGap)), 1);
+  const gaps = numericValues(dimensions.map(calculateDimensionGap));
+
+  return gaps.length > 0 ? round(average(gaps), 1) : null;
 }
 
 export function normalizeCriticality(rawCriticality: number) {
@@ -160,11 +181,12 @@ export function formatIndex(value: number): string {
 }
 
 export function calculateDimensionCriticality(dimension: DimensionResult) {
+  const gap = calculateDimensionGap(dimension);
   const criticalPercentageNormalized = dimension.criticalPercentage / 100;
   const rawCriticality =
     5 -
     dimension.maturity +
-    calculateDimensionGap(dimension) +
+    (gap ?? 0) +
     dimension.dispersion +
     criticalPercentageNormalized;
 
@@ -303,11 +325,13 @@ function buildMetrics(dimensions: DimensionResult[]): ExecutiveMetric[] {
   const maturity = round(average(dimensions.map((item) => item.maturity)), 1);
   const maturityIndex = normalizeLikertToIndex(maturity);
   const averageGap = calculateAverageGap(dimensions);
-  const misalignmentIndex = normalizeGapToIndex(averageGap);
+  const misalignmentIndex =
+    averageGap === null ? null : normalizeGapToIndex(averageGap);
   const consensus = calculateConsensus(dimensions);
-  const criticality = Math.round(
-    average(dimensions.map(calculateDimensionCriticality)),
-  );
+  const criticality =
+    averageGap === null
+      ? null
+      : Math.round(average(dimensions.map(calculateDimensionCriticality)));
 
   // Cards use normalized 0-100 executive indices for comparison.
   // Original Likert/gap values remain the calculation base.
@@ -323,22 +347,31 @@ function buildMetrics(dimensions: DimensionResult[]): ExecutiveMetric[] {
     },
     {
       title: "Criticidade Operacional",
-      value: formatIndex(criticality),
-      suffix: "/100",
-      classification: classifyCriticalityIndex(criticality),
+      value: criticality === null ? "—" : formatIndex(criticality),
+      suffix: criticality === null ? undefined : "/100",
+      classification:
+        criticality === null ? "Sem dados" : classifyCriticalityIndex(criticality),
       description:
         "Índice composto de risco operacional com base em maturidade, desalinhamento, dispersão e respostas críticas.",
       technicalDetail:
-        "Combina baixa maturidade, gap entre grupos, dispersão e percentual de respostas críticas.",
+        criticality === null
+          ? "Depende de comparação entre pelo menos duas camadas com base de respostas."
+          : "Combina baixa maturidade, gap entre grupos, dispersão e percentual de respostas críticas.",
     },
     {
       title: "Desalinhamento Organizacional",
-      value: formatIndex(misalignmentIndex),
-      suffix: "/100",
-      classification: classifyMisalignmentIndex(misalignmentIndex),
+      value: misalignmentIndex === null ? "—" : formatIndex(misalignmentIndex),
+      suffix: misalignmentIndex === null ? undefined : "/100",
+      classification:
+        misalignmentIndex === null
+          ? "Sem dados"
+          : classifyMisalignmentIndex(misalignmentIndex),
       description:
         "Índice normalizado da diferença de percepção entre diretoria, liderança e time.",
-      technicalDetail: `Baseado no gap médio original entre grupos. Valor original: ${numberFormatter.format(averageGap)}/5.`,
+      technicalDetail:
+        averageGap === null
+          ? "Depende de pelo menos duas camadas com respostas para comparar percepção."
+          : `Baseado no gap médio original entre grupos. Valor original: ${numberFormatter.format(averageGap)}/5.`,
     },
     {
       title: "Consenso Interno",
@@ -355,52 +388,48 @@ function buildMetrics(dimensions: DimensionResult[]): ExecutiveMetric[] {
 function buildDimensionResult(
   dimension: Report["dimensions"][number],
 ): DimensionResult {
-    const gap = dimension.misalignment.value;
-    const criticalPercentage = inferCriticalPercentage(
-      dimension.score,
-      dimension.variance,
-      gap,
-    );
-    const neutralPercentage = inferNeutralPercentage(
-      dimension.score,
-      dimension.variance,
-    );
-    const likertDistribution = distributePercentages(
-      dimension.score,
-      criticalPercentage,
-      neutralPercentage,
-    );
+  const gap = dimension.misalignment?.value ?? null;
+  const criticalPercentage = inferCriticalPercentage(
+    dimension.score,
+    dimension.variance,
+    gap,
+  );
+  const neutralPercentage = inferNeutralPercentage(
+    dimension.score,
+    dimension.variance,
+  );
+  const likertDistribution = distributePercentages(
+    dimension.score,
+    criticalPercentage,
+    neutralPercentage,
+  );
 
-    return {
-      dimension: dimension.name,
-      maturity: dimension.score,
-      diretoria: dimension.layerScores.fundador,
-      lideranca: dimension.layerScores.lideranca,
-      time: dimension.layerScores.operacao,
-      dispersion: dimension.variance,
-      criticalPercentage,
-      positivePercentage:
-        likertDistribution.agree + likertDistribution.stronglyAgree,
-      neutralPercentage: likertDistribution.neutral,
-      likertDistribution,
-    };
+  return {
+    dimension: dimension.name,
+    maturity: dimension.score,
+    diretoria: dimension.layerScores.fundador,
+    lideranca: dimension.layerScores.lideranca,
+    time: dimension.layerScores.operacao,
+    dispersion: dimension.variance,
+    criticalPercentage,
+    positivePercentage:
+      likertDistribution.agree + likertDistribution.stronglyAgree,
+    neutralPercentage: likertDistribution.neutral,
+    likertDistribution,
+  };
 }
 
 function buildQuestionResult(
   dimension: Report["dimensions"][number],
   question: Report["dimensions"][number]["questions"][number],
 ): QuestionResult {
+  const scores = numericValues([
+    question.layerScores.fundador,
+    question.layerScores.lideranca,
+    question.layerScores.operacao,
+  ]);
   const gap =
-    Math.max(
-      question.layerScores.fundador,
-      question.layerScores.lideranca,
-      question.layerScores.operacao,
-    ) -
-    Math.min(
-      question.layerScores.fundador,
-      question.layerScores.lideranca,
-      question.layerScores.operacao,
-    );
+    scores.length < 2 ? null : Math.max(...scores) - Math.min(...scores);
   const criticalPercentage = inferCriticalPercentage(
     question.score,
     question.variance,
@@ -461,9 +490,15 @@ function aggregateDimensions(dimensions: DimensionResult[]) {
     return {
       dimension,
       maturity: round(average(values.map((value) => value.maturity)), 1),
-      diretoria: round(average(values.map((value) => value.diretoria)), 1),
-      lideranca: round(average(values.map((value) => value.lideranca)), 1),
-      time: round(average(values.map((value) => value.time)), 1),
+      diretoria: roundOrNull(
+        averageOrNull(values.map((value) => value.diretoria)),
+        1,
+      ),
+      lideranca: roundOrNull(
+        averageOrNull(values.map((value) => value.lideranca)),
+        1,
+      ),
+      time: roundOrNull(averageOrNull(values.map((value) => value.time)), 1),
       dispersion: round(average(values.map((value) => value.dispersion)), 2),
       criticalPercentage: Math.round(
         average(values.map((value) => value.criticalPercentage)),
@@ -476,7 +511,9 @@ function aggregateDimensions(dimensions: DimensionResult[]) {
   });
 }
 
-function buildAnalyticsFromReports(reports: Report[]): OverviewAnalytics {
+export function buildOmdxOverviewAnalyticsFromReports(
+  reports: Report[],
+): OverviewAnalytics {
   if (reports.length === 0) {
     return {
       dimensions: [],
@@ -501,33 +538,4 @@ function buildAnalyticsFromReports(reports: Report[]): OverviewAnalytics {
     questions,
     metrics: buildMetrics(dimensions),
   };
-}
-
-export function getOmdxOverviewDiagnosticOptions(): Diagnostic[] {
-  return getDiagnostics().filter(canGenerateDiagnosticReport);
-}
-
-export function getOmdxOverviewAnalytics(
-  selectedDiagnostic = "todos",
-): OverviewAnalytics {
-  const reportableDiagnostics = getOmdxOverviewDiagnosticOptions();
-
-  if (selectedDiagnostic !== "todos") {
-    const report = getDiagnosticReport(selectedDiagnostic);
-
-    return buildAnalyticsFromReports(report ? [report] : []);
-  }
-
-  const reports = reportableDiagnostics
-    .map((diagnostic) => getDiagnosticReport(diagnostic.id))
-    .filter((report): report is Report => Boolean(report));
-
-  if (reports.length > 0) return buildAnalyticsFromReports(reports);
-
-  const latestDiagnostic = getLatestReportableDiagnostic();
-  const latestReport = latestDiagnostic
-    ? getDiagnosticReport(latestDiagnostic.id)
-    : undefined;
-
-  return buildAnalyticsFromReports(latestReport ? [latestReport] : []);
 }
