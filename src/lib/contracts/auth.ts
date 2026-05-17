@@ -14,6 +14,7 @@ export const authUserSchema = z.object({
 
 export const authSessionSchema = z.object({
   token: z.string().min(1),
+  supabaseAccessToken: z.string().min(1).optional(),
   user: authUserSchema,
   createdAt: isoDateTimeSchema,
   expiresAt: isoDateTimeSchema,

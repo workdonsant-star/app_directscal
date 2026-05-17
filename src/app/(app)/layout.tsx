@@ -4,6 +4,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { getCurrentAuthSession } from "@/lib/auth/session";
+import { isFeatureAcquisitionEnabled } from "@/lib/env";
 
 export default async function AppLayout({
   children,
@@ -19,7 +20,10 @@ export default async function AppLayout({
   return (
     <TooltipProvider delay={200}>
       <SidebarProvider>
-        <AppSidebar user={session.user} />
+        <AppSidebar
+          acquisitionEnabled={isFeatureAcquisitionEnabled()}
+          user={session.user}
+        />
         <SidebarInset className="bg-sidebar">{children}</SidebarInset>
       </SidebarProvider>
     </TooltipProvider>

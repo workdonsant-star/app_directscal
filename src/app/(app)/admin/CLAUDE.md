@@ -20,5 +20,6 @@ Rotas autenticadas da visão de superadministrador. Usam a mesma shell do app (`
 - Manter container `mx-auto w-full max-w-6xl` com padding `px-6 py-8 lg:px-10`.
 - Manter continuidade visual com `/omdx/diagnosticos`: páginas de listagem do admin devem renderizar tabelas livres, sem card/box externo envolvendo a tabela.
 - Dados vêm de `src/lib/data/admin-data-source.ts`.
+- Campanhas, leads e empresas ficam fora do primeiro go-live OMDx e devem respeitar `FEATURE_ACQUISITION=false`.
 - Não criar backend, autenticação real, permissões ou Supabase nesta fase.
 - Breadcrumbs devem começar por `Admin`.

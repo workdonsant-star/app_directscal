@@ -1,0 +1,5 @@
+project_id = "directscal-omdx"
+
+[api]
+schemas = ["public", "next_auth"]
+extra_search_path = ["public", "extensions"]

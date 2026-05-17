@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import { AppTopbar } from "@/components/app-topbar";
 import { AdminCompaniesTable } from "@/components/admin/admin-companies-table";
+import { isFeatureAcquisitionEnabled } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Empresas — Admin Directscal",
 };
 
 export default function AdminCompaniesPage() {
+  if (!isFeatureAcquisitionEnabled()) {
+    notFound();
+  }
+
   return (
     <>
       <AppTopbar

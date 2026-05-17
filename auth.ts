@@ -1,3 +1,4 @@
+import { SupabaseAdapter } from "@auth/supabase-adapter";
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 
@@ -5,6 +6,14 @@ import {
   isGoogleProfileAllowed,
   resolveAuthUserFromGoogleProfile,
 } from "@/lib/auth/access-control";
+import {
+  attachSupabaseAccessTokenToSession,
+  ensureSupabaseAuthUserProvisioned,
+  getSupabaseAdapterConfig,
+  resolveSupabaseAuthUser,
+} from "@/lib/auth/supabase-auth";
+
+const supabaseAdapterConfig = getSupabaseAdapterConfig();
 
 const authSecret =
   process.env.AUTH_SECRET ??
@@ -14,6 +23,11 @@ const authSecret =
     : "directscal-local-development-auth-secret");
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
+  ...(supabaseAdapterConfig
+    ? {
+        adapter: SupabaseAdapter(supabaseAdapterConfig),
+      }
+    : {}),
   secret: authSecret,
   pages: {
     error: "/entrar",
@@ -21,13 +35,26 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   },
   providers: [Google],
   session: {
-    strategy: "jwt",
+    strategy: supabaseAdapterConfig ? "database" : "jwt",
+  },
+  events: {
+    async createUser({ user }) {
+      if (!user.id) return;
+
+      await ensureSupabaseAuthUserProvisioned(user);
+    },
   },
   callbacks: {
-    signIn({ account, profile }) {
+    async signIn({ account, profile, user }) {
       if (account?.provider !== "google") return false;
 
-      return isGoogleProfileAllowed(profile);
+      if (!isGoogleProfileAllowed(profile)) return false;
+
+      if (user.id && user.email) {
+        await ensureSupabaseAuthUserProvisioned(user);
+      }
+
+      return true;
     },
     jwt({ account, profile, token }) {
       if (account?.provider === "google" && profile) {
@@ -44,9 +71,32 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
       return token;
     },
-    session({ session, token }) {
+    async session({ session, token, user }) {
+      const databaseUser =
+        user?.id || user?.email
+          ? await resolveSupabaseAuthUser(user.id, user.email)
+          : null;
+
+      if (databaseUser) {
+        session.user.id = databaseUser.id;
+        session.user.name = databaseUser.name;
+        session.user.email = databaseUser.email;
+        session.user.company = databaseUser.company;
+        session.user.role = databaseUser.role;
+        session.user.image = user.image;
+
+        attachSupabaseAccessTokenToSession({
+          email: databaseUser.email,
+          expires: session.expires,
+          session,
+          userId: databaseUser.id,
+        });
+
+        return session;
+      }
+
       if (
-        typeof token.userId === "string" &&
+        typeof token?.userId === "string" &&
         typeof token.name === "string" &&
         typeof token.email === "string" &&
         typeof token.company === "string" &&
@@ -61,6 +111,13 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         session.user.role = token.role;
         session.user.image =
           typeof token.picture === "string" ? token.picture : undefined;
+
+        attachSupabaseAccessTokenToSession({
+          email: token.email,
+          expires: session.expires,
+          session,
+          userId: token.userId,
+        });
       }
 
       return session;

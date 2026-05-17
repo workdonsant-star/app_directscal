@@ -10,3 +10,4 @@ Rotas públicas para captura de leads por links de aquisição. Não usam sideba
 - Renderizar formulário configurável pela campanha.
 - Salvar envio em `localStorage` enquanto não há backend.
 - Após envio, mostrar preview controlado do módulo; não criar conta real.
+- Em produção do OMDx v1, esta área fica protegida por `FEATURE_ACQUISITION=false`.

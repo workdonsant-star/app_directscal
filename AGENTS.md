@@ -52,7 +52,7 @@ Princípios do produto:
 - **lucide-react** para ícones.
 - Fontes Google: **Inter** (sans), **Instrument Serif** (display itálico), **JetBrains Mono** (mono — substitui IBM Plex Mono do design system original).
 
-Estado atual: **scaffold inicial + dashboard OMDx + Google OAuth com allowlist corporativa, fallback mockado de autenticação para desenvolvimento, diagnóstico, compartilhamento, relatórios PDF, insights, documentação, perfil e superadmin**. Não há ainda backend, banco, testes E2E ou unitários. A UI consome uma camada mockada em `src/lib/data/`, com contratos Zod em `src/lib/contracts/` preparados para futura integração com Supabase. A autenticação usa Auth.js/NextAuth com Google e mantém o cookie mockado `httpOnly` para o login demo por e-mail/senha.
+Estado atual: **scaffold inicial + dashboard OMDx + Google OAuth com allowlist corporativa, fallback mockado de autenticação para desenvolvimento, diagnóstico, compartilhamento, relatórios PDF, insights, documentação, perfil e superadmin**. A UI ainda consome a camada mockada em `src/lib/data/`, mas a fundação de produção já existe: Supabase migrations, Auth.js Supabase Adapter, JWT para RLS, clients server-side, route handlers iniciais de mutação e testes Vitest/Playwright. O cookie mockado fica restrito ao fallback de desenvolvimento.
 
 ## Fontes de verdade
 
@@ -137,7 +137,8 @@ src/
 └── lib/
     ├── auth/                 ← Google OAuth, sessão e fallback mockado
     ├── contracts/            ← schemas Zod, tipos e mappers Supabase-friendly
-    ├── data/                 ← data-source mockado consumido pela UI
+    ├── data/                 ← data-source mockado consumido pela UI + regras de produção
+    ├── supabase/             ← clients server-side Supabase
     ├── mock-data.ts          ← seed temporário dos dados fictícios
     ├── types.ts              ← reexports dos tipos públicos
     └── utils.ts              ← cn() (clsx + tailwind-merge)
@@ -173,7 +174,7 @@ Regras de breadcrumb no OMDx:
 
 ## Dados e mocks
 
-**A camada de dados atual é mockada.** Não existe banco. Páginas e componentes consomem `src/lib/data/`, que por enquanto lê seeds de `src/lib/mock-data.ts`. Google OAuth exige e-mail Google verificado, domínio em `AUTH_ALLOWED_DOMAINS` e e-mail em `AUTH_ALLOWED_EMAILS`. O fallback demo por senha usa `/api/auth/login` e `src/lib/auth/mock-auth.ts`; cadastro mockado em `/api/auth/register` só fica disponível quando `AUTH_ENABLE_DEV_PASSWORD_LOGIN=true`.
+**A camada de dados da UI atual ainda é mockada**, mas a base Supabase de produção já está versionada em `supabase/`. Páginas e componentes consomem `src/lib/data/`, que por enquanto lê seeds de `src/lib/mock-data.ts`; route handlers de produção em `src/app/api/omdx/` já escrevem via Supabase service role no servidor. Google OAuth exige e-mail Google verificado, domínio em `AUTH_ALLOWED_DOMAINS` e e-mail em `AUTH_ALLOWED_EMAILS`. O fallback demo por senha usa `/api/auth/login` e `src/lib/auth/mock-auth.ts`; fica disponível apenas fora de produção e quando `AUTH_ENABLE_DEV_PASSWORD_LOGIN=true`.
 
 Convenções:
 - Componentes e páginas **não devem** importar `mock-data.ts` diretamente; use `src/lib/data/omdx-data-source.ts`.
@@ -182,7 +183,7 @@ Convenções:
 - `Db*` representa formato futuro Supabase em `snake_case`; a UI usa domínio em `camelCase`.
 - Conversões de banco para UI ficam em `src/lib/contracts/mappers.ts`.
 - Dados realistas em pt-BR; nomes de empresas fictícios ("Vertex Logistics", "Lumen Health", etc.).
-- Não introduza novas chamadas a APIs externas, server actions ou Supabase neste momento. Google OAuth via Auth.js é a exceção de autenticação já configurada; fetches client são permitidos para `/api/auth/*`.
+- Não introduza novas chamadas client-side diretas ao Supabase. Service role é somente server-side; clients RLS usam JWT assinado pela sessão Auth.js.
 
 ## UI, copy e acessibilidade
 
@@ -213,10 +214,10 @@ Convenções:
 npm run dev               # dev server (Turbopack) em :3000
 npm run build             # build de produção
 npm run lint              # ESLint
+npm run test              # testes unitários Vitest
+npm run test:e2e          # testes E2E Playwright
 npx tsc --noEmit          # type-check
 ```
-
-Ainda não há `test:unit`, `test:e2e` ou similar — adicionar quando o backend entrar.
 
 Para mudanças localizadas, prefira comandos direcionados:
 ```bash

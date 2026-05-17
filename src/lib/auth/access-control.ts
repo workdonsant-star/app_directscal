@@ -76,7 +76,10 @@ function getFallbackName(email: string) {
 }
 
 export function isDevPasswordLoginEnabled() {
-  return process.env.AUTH_ENABLE_DEV_PASSWORD_LOGIN === "true";
+  return (
+    process.env.NODE_ENV !== "production" &&
+    process.env.AUTH_ENABLE_DEV_PASSWORD_LOGIN === "true"
+  );
 }
 
 export function isGoogleAuthConfigured() {
@@ -123,7 +126,6 @@ export function resolveAuthUserFromGoogleProfile(
 
   const googleProfile = profile as GoogleProfileLike;
   const email = normalizeEmail(String(googleProfile.email));
-  const domain = getEmailDomain(email);
   const name =
     typeof googleProfile.name === "string" && googleProfile.name.trim()
       ? googleProfile.name.trim()
@@ -133,11 +135,22 @@ export function resolveAuthUserFromGoogleProfile(
       ? googleProfile.sub.trim()
       : email;
 
+  return resolveAuthUserFromEmail(email, name, subject);
+}
+
+export function resolveAuthUserFromEmail(
+  email: string,
+  name = getFallbackName(email),
+  subject = email,
+): AuthUser {
+  const normalizedEmail = normalizeEmail(email);
+  const domain = getEmailDomain(normalizedEmail);
+
   return {
     id: `google:${subject}`,
     name,
-    email,
+    email: normalizedEmail,
     company: getCompanyForDomain(domain),
-    role: getRoleForEmail(email),
+    role: getRoleForEmail(normalizedEmail),
   };
 }

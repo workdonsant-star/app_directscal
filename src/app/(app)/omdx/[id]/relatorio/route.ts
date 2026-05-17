@@ -1,11 +1,7 @@
 import { renderToBuffer } from "@react-pdf/renderer";
-import { cookies } from "next/headers";
 import { createElement } from "react";
 
-import {
-  authSessionCookieName,
-  getAuthSessionFromCookie,
-} from "@/lib/auth/mock-auth";
+import { getCurrentAuthSession } from "@/lib/auth/session";
 import {
   getDiagnosticById,
   getDiagnosticReport,
@@ -29,10 +25,7 @@ function normalizeFilePart(value: string) {
 }
 
 export async function GET(_request: Request, { params }: ReportRouteContext) {
-  const cookieStore = await cookies();
-  const session = getAuthSessionFromCookie(
-    cookieStore.get(authSessionCookieName)?.value,
-  );
+  const session = await getCurrentAuthSession();
 
   if (!session) {
     return new Response("Sessão necessária para baixar o relatório.", {

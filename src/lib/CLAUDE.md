@@ -1,10 +1,10 @@
-# `src/lib` — Contratos, dados mockados e utilidades
+# `src/lib` — Contratos, dados, Supabase e utilidades
 
 Antes de editar, releia o **AGENTS.md** da raiz e este documento.
 
 ## Propósito
 
-`src/lib` concentra a fronteira de dados do app. A camada de dados ainda é mockada, mas os contratos já estão preparados para futura integração com Supabase. Autenticação principal usa Auth.js/NextAuth com Google OAuth e regra corporativa em `auth/`.
+`src/lib` concentra a fronteira de dados do app. A UI ainda usa a camada mockada, mas a fundação Supabase de produção já existe para Auth.js, RLS e mutações server-side. Autenticação principal usa Auth.js/NextAuth com Google OAuth e regra corporativa em `auth/`.
 
 ## Estrutura
 
@@ -12,7 +12,8 @@ Antes de editar, releia o **AGENTS.md** da raiz e este documento.
 src/lib/
 ├── auth/                   ← Google OAuth, sessão e fallback mockado
 ├── contracts/              ← schemas Zod, tipos e mappers de dados
-├── data/                   ← data-source mockado consumido por páginas/componentes
+├── data/                   ← data-source mockado + regras de produção
+├── supabase/               ← clients server-side Supabase
 ├── pdf/                    ← documentos PDF renderizados a partir da camada data
 ├── mock-data.ts            ← seed temporário e bruto dos dados mockados
 ├── profile-storage.ts      ← overrides locais de perfil via localStorage
@@ -47,17 +48,18 @@ Contratos principais:
 - Inputs de aquisição: `AcquisitionSubmissionInput`.
 - Inputs de autenticação: `SignInInput`, `SignUpInput`, `ResetPasswordInput`.
 
-## Data-source mockado
+## Data-source e Supabase
 
 - Páginas e componentes devem importar dados de `src/lib/data/omdx-data-source.ts`.
 - Não importe arrays de `mock-data.ts` em componentes ou páginas.
 - `mock-data.ts` é apenas seed temporário. Ele pode ser importado pela camada `data/`, mas não pela UI.
 - `omdx-overview-analytics.ts` deriva DTOs executivos do relatório OMDx para cards, charts e rankings da homepage. Dados de distribuição Likert ainda são mockados de forma determinística a partir de score, gap e dispersão enquanto não houver respostas individuais persistidas.
-- Quando Supabase entrar, a troca deve acontecer dentro de `src/lib/data/`, preservando os contratos públicos sempre que possível.
+- A troca completa para Supabase deve acontecer dentro de `src/lib/data/`, preservando os contratos públicos sempre que possível.
 - Cálculos agregados e helpers de domínio devem ficar em `data/` ou em funções puras de contrato, não em componentes.
 - Planos de ação PDF devem consumir DTOs consolidados daqui, como `getDiagnosticActionPlan()`, sem gerar regra dentro do documento PDF.
 - `profile-storage.ts` é exceção client-only para a fase mockada: persiste overrides de perfil no `localStorage` e emite evento para atualizar o shell. Deve ser substituído por backend/autenticação real no futuro.
-- `auth/` concentra Auth.js/NextAuth, regra de domínio/e-mail corporativo e fallback mockado. O cookie `directscal_session` sustenta o login demo por e-mail/senha.
+- `supabase/` concentra clients server-side; `SUPABASE_SERVICE_ROLE_KEY` nunca deve chegar ao client.
+- `auth/` concentra Auth.js/NextAuth, regra de domínio/e-mail corporativo, provisionamento de membership no Supabase, JWT para RLS e fallback mockado. O cookie `directscal_session` sustenta o login demo por e-mail/senha apenas em desenvolvimento.
 - `admin-data-source.ts` também usa `localStorage` na fase mockada para campanhas editadas e leads enviados pelos links `/a/[token]`.
 
 ## `mock-data.ts`
@@ -83,5 +85,5 @@ Os mocks devem continuar realistas, em pt-BR, sem dados pessoais reais e sem `Ma
 - Importar `mock-data.ts` em página ou componente.
 - Duplicar mappers de `Db*` dentro de UI.
 - Criar campos opcionais por conveniência sem refletir o contrato real.
-- Introduzir Supabase client, migrations ou outro provedor de autenticação nesta fase sem pedido explícito.
+- Criar Supabase client em Client Component ou expor service role.
 - Misturar validação de formulário com contrato de transporte quando o dado ainda não sai do client.

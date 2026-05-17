@@ -10,6 +10,7 @@ Componentes específicos da visão de superadministrador da Directscal. Eles adm
 
 - Componentes devem consumir dados por `src/lib/data/admin-data-source.ts`.
 - A persistência ainda é mockada em `localStorage`; não introduza backend, autenticação ou Supabase aqui.
+- Campanhas, leads, empresas e aquisição pública ficam fora do primeiro go-live OMDx e devem respeitar `FEATURE_ACQUISITION=false`.
 - Use os mesmos primitives do app autenticado: `Table`, `Card`, `Button`, `Sheet`, `Select`, `Badge` e `KpiCard` compartilhado.
 - Mantenha continuidade visual com OMDx: tabelas principais de módulos, campanhas, leads e empresas ficam livres no fluxo da página, não dentro de `Card`. Use título/descrição/ações acima da tabela e apenas o wrapper `overflow-hidden rounded-lg border` na própria listagem.
 - Use `Card` no admin apenas para KPIs, drawers/modais ou blocos que sejam ferramentas enquadradas, nunca como envelope da tabela operacional principal.

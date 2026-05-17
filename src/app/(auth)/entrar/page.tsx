@@ -3,7 +3,10 @@ import { redirect } from "next/navigation";
 
 import { AuthPageShell } from "@/components/auth/auth-page-shell";
 import { SignInForm } from "@/components/auth/sign-in-form";
-import { isGoogleAuthConfigured } from "@/lib/auth/access-control";
+import {
+  isDevPasswordLoginEnabled,
+  isGoogleAuthConfigured,
+} from "@/lib/auth/access-control";
 import { getSignedInRedirectPath } from "@/lib/auth/navigation";
 import { getCurrentAuthSession } from "@/lib/auth/session";
 
@@ -49,6 +52,7 @@ export default async function SignInPage({
             ? null
             : "Google ainda não está configurado neste ambiente."
         }
+        passwordLoginEnabled={isDevPasswordLoginEnabled()}
       />
     </AuthPageShell>
   );

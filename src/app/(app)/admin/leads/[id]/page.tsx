@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import { AdminLeadDetail } from "@/components/admin/admin-lead-detail";
 import { AppTopbar } from "@/components/app-topbar";
+import { isFeatureAcquisitionEnabled } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Detalhe do lead — Admin Directscal",
@@ -16,6 +18,10 @@ type AdminLeadDetailPageProps = {
 export default async function AdminLeadDetailPage({
   params,
 }: AdminLeadDetailPageProps) {
+  if (!isFeatureAcquisitionEnabled()) {
+    notFound();
+  }
+
   const { id } = await params;
 
   return (
@@ -36,4 +42,3 @@ export default async function AdminLeadDetailPage({
     </>
   );
 }
-

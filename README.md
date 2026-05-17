@@ -2,7 +2,7 @@
 
 Aplicação Next.js para o **OMDx — Diagnóstico de Maturidade Operacional** da Directscal.
 
-Nesta fase, o produto valida interface e fluxos com dados mockados. Não há backend, banco ou testes E2E. A autenticação principal usa Google OAuth com Auth.js/NextAuth e allowlist corporativa por variável de ambiente.
+Nesta fase, o produto mantém a interface OMDx com dados mockados, mas já possui a fundação de produção para Supabase: migrations versionadas, Auth.js com Supabase Adapter, JWT para RLS, route handlers de mutação e testes iniciais. A autenticação principal usa Google OAuth com allowlist corporativa por variável de ambiente.
 
 ## Stack
 
@@ -13,6 +13,7 @@ Nesta fase, o produto valida interface e fluxos com dados mockados. Não há bac
 - shadcn/ui `base-nova` sobre `base-ui`.
 - next-themes para tema claro/escuro.
 - Auth.js/NextAuth para Google OAuth.
+- Supabase como backend de produção planejado e versionado em `supabase/`.
 - lucide-react para ícones.
 - zod para contratos e validação de dados.
 
@@ -32,7 +33,7 @@ Regra de navegação:
 
 ## Dados
 
-Os dados da UI passam por `src/lib/data/omdx-data-source.ts`. Os contratos vivem em `src/lib/contracts/` com Zod, e `src/lib/types.ts` reexporta os tipos públicos. `src/lib/mock-data.ts` permanece como seed temporário dos dados fictícios.
+Os dados da UI ainda passam por `src/lib/data/omdx-data-source.ts` e usam `src/lib/mock-data.ts` como seed temporário. A fundação de produção vive em `supabase/` e nos route handlers `src/app/api/omdx/`, pronta para a próxima fatia trocar telas e componentes para leituras reais.
 
 Hoje existem mocks para:
 
@@ -46,7 +47,7 @@ Convenção atual:
 
 - Páginas e componentes não devem importar arrays de `mock-data.ts` diretamente.
 - A preparação é Supabase-friendly, com contratos `Db*` em `snake_case`, domínio/UI em `camelCase` e mappers centralizados.
-- Ainda não há Supabase client, migrations ou API de dados real.
+- Há clients Supabase server-side em `src/lib/supabase/`, migrations em `supabase/migrations/` e route handlers iniciais de escrita real.
 
 ## Autenticação
 
@@ -54,6 +55,7 @@ Configure as variáveis abaixo para habilitar Google OAuth:
 
 ```bash
 AUTH_SECRET=
+AUTH_URL=https://app.directscal.com
 AUTH_GOOGLE_ID=
 AUTH_GOOGLE_SECRET=
 AUTH_ALLOWED_DOMAINS=empresa.com.br,directscal.com.br
@@ -62,6 +64,12 @@ AUTH_ORG_BY_DOMAIN={"empresa.com.br":"Nome da Empresa","directscal.com.br":"Dire
 AUTH_ADMIN_EMAILS=gestor@empresa.com.br
 AUTH_SUPERADMIN_EMAILS=admin@directscal.com.br
 AUTH_ENABLE_DEV_PASSWORD_LOGIN=false # habilita cadastro mockado em /criar-conta
+SUPABASE_URL=
+SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_JWT_SECRET=
+PUBLIC_APP_URL=https://app.directscal.com
+FEATURE_ACQUISITION=false
 ```
 
 `AUTH_SECRET` continua obrigatório em produção. Em desenvolvimento local, o app usa um segredo fixo de fallback para evitar erro `MissingSecret` quando a tela de login ou o fallback mockado são testados sem configurar OAuth completo.
@@ -74,6 +82,8 @@ O callback do Google deve apontar para `/api/auth/callback/google`, por exemplo 
 npm run dev
 npm run build
 npm run lint
+npm run test
+npm run test:e2e
 npx tsc --noEmit
 ```
 

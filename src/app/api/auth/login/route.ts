@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { isDevPasswordLoginEnabled } from "@/lib/auth/access-control";
 import { signInInputSchema } from "@/lib/contracts";
 import {
   authSessionCookieName,
@@ -9,6 +10,13 @@ import {
 } from "@/lib/auth/mock-auth";
 
 export async function POST(request: Request) {
+  if (!isDevPasswordLoginEnabled()) {
+    return NextResponse.json(
+      { message: "Login por senha está desativado neste ambiente." },
+      { status: 403 },
+    );
+  }
+
   let body: unknown;
 
   try {

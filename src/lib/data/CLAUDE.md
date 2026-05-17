@@ -1,12 +1,13 @@
-# `src/lib/data` — Fonte de dados mockada
+# `src/lib/data` — Fonte de dados e regras OMDx
 
-Esta pasta é a fronteira entre UI e dados. Enquanto não existe backend, ela lê `src/lib/mock-data.ts` e expõe funções estáveis para páginas e componentes.
+Esta pasta é a fronteira entre UI e dados. A UI ainda lê `src/lib/mock-data.ts`, mas regras de produção compartilhadas já vivem aqui para deduplicação e suficiência de relatório.
 
 ## Regras
 
 - Páginas e componentes devem importar dados daqui, não de `mock-data.ts`.
 - Esta camada pode continuar síncrona na fase mockada.
-- Quando Supabase entrar, as assinaturas públicas devem ser preservadas sempre que possível.
+- Ao trocar leituras para Supabase, preserve as assinaturas públicas sempre que possível ou faça a migração de chamada em uma fatia coesa.
+- Regras como mínimo de 3 respostas por grupo e normalização de e-mail devem ficar em funções puras testáveis.
 - Cálculos agregados e helpers de domínio ficam aqui ou em contratos/mappers, não nos componentes.
 - Relatórios PDF devem consumir DTOs consolidados daqui, como `getDiagnosticReport()` e `getDiagnosticActionPlan()`, sem acessar mocks ou recalcular dados dentro do documento.
 - `admin-data-source.ts` expõe o snapshot mockado do superadmin, mesclando seeds com campanhas e leads salvos em `localStorage`.

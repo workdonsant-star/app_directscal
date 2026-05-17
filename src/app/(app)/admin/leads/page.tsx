@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import { AppTopbar } from "@/components/app-topbar";
 import { AdminLeadsTable } from "@/components/admin/admin-leads-table";
+import { isFeatureAcquisitionEnabled } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Leads — Admin Directscal",
 };
 
 export default function AdminLeadsPage() {
+  if (!isFeatureAcquisitionEnabled()) {
+    notFound();
+  }
+
   return (
     <>
       <AppTopbar

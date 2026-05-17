@@ -2,6 +2,7 @@ import type { AuthRole } from "@/lib/contracts";
 
 declare module "next-auth" {
   interface Session {
+    supabaseAccessToken?: string;
     user: {
       id: string;
       name: string;

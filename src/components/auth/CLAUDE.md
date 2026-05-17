@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Componentes das telas `/entrar`, `/criar-conta` e `/recuperar-senha`. A tela de entrada oferece formulário de e-mail/senha mockado para demo e Google OAuth via Auth.js como opção corporativa.
+Componentes das telas `/entrar`, `/criar-conta` e `/recuperar-senha`. A tela de entrada oferece formulário de e-mail/senha apenas quando o fallback de desenvolvimento está ativo e Google OAuth via Auth.js como opção corporativa.
 
 ## Convenções
 

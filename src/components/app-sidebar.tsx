@@ -68,8 +68,10 @@ function getInitials(name: string) {
 }
 
 export function AppSidebar({
+  acquisitionEnabled = false,
   user = data.user,
 }: {
+  acquisitionEnabled?: boolean;
   user?: {
     avatar?: string;
     email: string;
@@ -97,7 +99,8 @@ export function AppSidebar({
     ...item,
     isActive: pathname === item.url || pathname.startsWith(`${item.url}/`),
   }));
-  const admin = data.admin.map((item) => ({
+  const adminItems = acquisitionEnabled ? data.admin : data.admin.slice(0, 1);
+  const admin = adminItems.map((item) => ({
     ...item,
     isActive: pathname === item.url || pathname.startsWith(`${item.url}/`),
   }));

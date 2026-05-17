@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import { AdminCampaignsWorkspace } from "@/components/admin/admin-campaigns-workspace";
 import { AppTopbar } from "@/components/app-topbar";
+import { isFeatureAcquisitionEnabled } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Campanhas — Admin Directscal",
 };
 
 export default function AdminCampaignsPage() {
+  if (!isFeatureAcquisitionEnabled()) {
+    notFound();
+  }
+
   return (
     <>
       <AppTopbar

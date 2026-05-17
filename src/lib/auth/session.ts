@@ -11,9 +11,14 @@ import {
   getAuthSessionFromCookie,
 } from "@/lib/auth/mock-auth";
 
-function toAuthSession(user: AuthUser, expires: string): AuthSession {
+function toAuthSession(
+  user: AuthUser,
+  expires: string,
+  supabaseAccessToken?: string,
+): AuthSession {
   return {
     token: `authjs:${user.id}`,
+    supabaseAccessToken,
     user,
     createdAt: new Date().toISOString(),
     expiresAt: expires,
@@ -28,7 +33,11 @@ export async function getCurrentAuthSession() {
       const parsedUser = authUserSchema.safeParse(session.user);
 
       if (parsedUser.success) {
-        return toAuthSession(parsedUser.data, session.expires);
+        return toAuthSession(
+          parsedUser.data,
+          session.expires,
+          session.supabaseAccessToken,
+        );
       }
     }
   } catch {

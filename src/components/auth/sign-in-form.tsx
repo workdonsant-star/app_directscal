@@ -52,9 +52,11 @@ function GoogleIcon() {
 export function SignInForm({
   authErrorMessage,
   googleUnavailableMessage,
+  passwordLoginEnabled = true,
 }: {
   authErrorMessage?: string | null;
   googleUnavailableMessage?: string | null;
+  passwordLoginEnabled?: boolean;
 }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -125,65 +127,69 @@ export function SignInForm({
 
   return (
     <div className="grid gap-5">
-      <form className="grid gap-5" onSubmit={handleSubmit}>
-        <div className="grid gap-2">
-          <label htmlFor="email" className="text-sm font-medium">
-            E-mail
-          </label>
-          <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            className="h-11 rounded-md px-3"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-          />
-        </div>
-        <div className="grid gap-2">
-          <div className="flex items-center justify-between gap-3">
-            <label htmlFor="password" className="text-sm font-medium">
-              Senha
+      {passwordLoginEnabled ? (
+        <>
+          <form className="grid gap-5" onSubmit={handleSubmit}>
+            <div className="grid gap-2">
+              <label htmlFor="email" className="text-sm font-medium">
+                E-mail
+              </label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                className="h-11 rounded-md px-3"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <div className="flex items-center justify-between gap-3">
+                <label htmlFor="password" className="text-sm font-medium">
+                  Senha
+                </label>
+                <Link
+                  href="/recuperar-senha"
+                  className="rounded-sm text-sm font-medium text-primary outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  Esqueceu sua senha?
+                </Link>
+              </div>
+              <Input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                className="h-11 rounded-md px-3"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required
+              />
+            </div>
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <input
+                type="checkbox"
+                className="size-4 rounded border border-input accent-primary"
+                checked={remember}
+                onChange={(event) => setRemember(event.target.checked)}
+              />
+              Lembrar de mim neste dispositivo
             </label>
-            <Link
-              href="/recuperar-senha"
-              className="rounded-sm text-sm font-medium text-primary outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+            <Button
+              type="submit"
+              className="h-11 w-full"
+              disabled={isSubmitting}
             >
-              Esqueceu sua senha?
-            </Link>
+              {isSubmitting ? "Entrando" : "Entrar"}
+            </Button>
+          </form>
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <div className="h-px flex-1 bg-border" />
+            <span>Ou faça login com</span>
+            <div className="h-px flex-1 bg-border" />
           </div>
-          <Input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            className="h-11 rounded-md px-3"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-          />
-        </div>
-        <label className="flex items-center gap-2 text-sm font-medium">
-          <input
-            type="checkbox"
-            className="size-4 rounded border border-input accent-primary"
-            checked={remember}
-            onChange={(event) => setRemember(event.target.checked)}
-          />
-          Lembrar de mim neste dispositivo
-        </label>
-        <Button
-          type="submit"
-          className="h-11 w-full"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Entrando" : "Entrar"}
-        </Button>
-      </form>
-      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-        <div className="h-px flex-1 bg-border" />
-        <span>Ou faça login com</span>
-        <div className="h-px flex-1 bg-border" />
-      </div>
+        </>
+      ) : null}
       <Button
         type="button"
         variant="outline"
