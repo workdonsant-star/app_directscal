@@ -10,7 +10,8 @@ Antes de editar arquivos aqui, releia o **AGENTS.md** da raiz e este documento.
 
 ```
 src/app/
-├── (auth)/                  ← telas públicas de autenticação
+├── (auth)/  
+\                ← telas públicas de autenticação
 │   ├── entrar/page.tsx      ← login com Google OAuth + fallback mockado opcional
 │   ├── criar-conta/page.tsx ← cadastro de sessão mockada quando fallback estiver ativo
 │   └── recuperar-senha/page.tsx ← recuperação mockada de senha
