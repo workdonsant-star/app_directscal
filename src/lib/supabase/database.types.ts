@@ -44,14 +44,222 @@ export type Database = {
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };
+  app_private: {
+    Tables: {
+      user_password_credentials: {
+        Row: {
+          user_id: string;
+          password_hash: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          password_hash: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          password_hash?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      acquisition_oauth_intents: {
+        Row: {
+          id: string;
+          campaign_id: string;
+          token_hash: string;
+          expires_at: string;
+          used_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          campaign_id: string;
+          token_hash: string;
+          expires_at: string;
+          used_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          campaign_id?: string;
+          token_hash?: string;
+          expires_at?: string;
+          used_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+    };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
+  };
   public: {
     Enums: {
+      acquisition_account_provider: "google" | "password";
+      acquisition_campaign_status: "ativo" | "pausado";
+      acquisition_form_field_type:
+        | "text"
+        | "email"
+        | "phone"
+        | "number"
+        | "select"
+        | "textarea";
+      acquisition_lead_status:
+        | "lead"
+        | "pending_company"
+        | "account_created";
       auth_role: "superadmin" | "admin" | "cliente";
       diagnostic_status: "rascunho" | "ativo" | "encerrado";
       respondent_group: "fundador" | "lideranca" | "operacao";
       response_session_status: "iniciado" | "concluido";
     };
     Tables: {
+      acquisition_campaigns: {
+        Row: {
+          id: string;
+          module_id: string;
+          name: string;
+          source: string;
+          status: Database["public"]["Enums"]["acquisition_campaign_status"];
+          token: string;
+          public_path: string;
+          visits: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          module_id: string;
+          name: string;
+          source: string;
+          status?: Database["public"]["Enums"]["acquisition_campaign_status"];
+          token: string;
+          public_path: string;
+          visits?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          module_id?: string;
+          name?: string;
+          source?: string;
+          status?: Database["public"]["Enums"]["acquisition_campaign_status"];
+          token?: string;
+          public_path?: string;
+          visits?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      acquisition_campaign_fields: {
+        Row: {
+          campaign_id: string;
+          id: string;
+          label: string;
+          type: Database["public"]["Enums"]["acquisition_form_field_type"];
+          required: boolean;
+          placeholder: string | null;
+          options: Json | null;
+          order_index: number;
+        };
+        Insert: {
+          campaign_id: string;
+          id: string;
+          label: string;
+          type: Database["public"]["Enums"]["acquisition_form_field_type"];
+          required?: boolean;
+          placeholder?: string | null;
+          options?: Json | null;
+          order_index: number;
+        };
+        Update: {
+          campaign_id?: string;
+          id?: string;
+          label?: string;
+          type?: Database["public"]["Enums"]["acquisition_form_field_type"];
+          required?: boolean;
+          placeholder?: string | null;
+          options?: Json | null;
+          order_index?: number;
+        };
+        Relationships: [];
+      };
+      acquisition_leads: {
+        Row: {
+          id: string;
+          module_id: string;
+          campaign_id: string;
+          user_id: string | null;
+          organization_id: string | null;
+          name: string;
+          email: string;
+          normalized_email: string;
+          phone: string | null;
+          role: string | null;
+          company_name: string;
+          company_size: string | null;
+          objective: string | null;
+          field_values: Json;
+          status: Database["public"]["Enums"]["acquisition_lead_status"];
+          account_provider:
+            | Database["public"]["Enums"]["acquisition_account_provider"]
+            | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          module_id: string;
+          campaign_id: string;
+          user_id?: string | null;
+          organization_id?: string | null;
+          name: string;
+          email: string;
+          phone?: string | null;
+          role?: string | null;
+          company_name: string;
+          company_size?: string | null;
+          objective?: string | null;
+          field_values?: Json;
+          status?: Database["public"]["Enums"]["acquisition_lead_status"];
+          account_provider?:
+            | Database["public"]["Enums"]["acquisition_account_provider"]
+            | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          module_id?: string;
+          campaign_id?: string;
+          user_id?: string | null;
+          organization_id?: string | null;
+          name?: string;
+          email?: string;
+          phone?: string | null;
+          role?: string | null;
+          company_name?: string;
+          company_size?: string | null;
+          objective?: string | null;
+          field_values?: Json;
+          status?: Database["public"]["Enums"]["acquisition_lead_status"];
+          account_provider?:
+            | Database["public"]["Enums"]["acquisition_account_provider"]
+            | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       organizations: {
         Row: {
           id: string;
@@ -181,6 +389,84 @@ export type Database = {
         };
         Relationships: [];
       };
+      dimensions: {
+        Row: {
+          id: string;
+          slug: string;
+          number: number;
+          name: string;
+          short_name: string;
+          question: string;
+          description: string;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          number: number;
+          name: string;
+          short_name: string;
+          question: string;
+          description: string;
+        };
+        Update: {
+          id?: string;
+          slug?: string;
+          number?: number;
+          name?: string;
+          short_name?: string;
+          question?: string;
+          description?: string;
+        };
+        Relationships: [];
+      };
+      questions: {
+        Row: {
+          id: string;
+          template_id: string;
+          dimension_id: string;
+          order_index: number;
+          text: string;
+          is_locked: boolean;
+        };
+        Insert: {
+          id?: string;
+          template_id: string;
+          dimension_id: string;
+          order_index: number;
+          text: string;
+          is_locked?: boolean;
+        };
+        Update: {
+          id?: string;
+          template_id?: string;
+          dimension_id?: string;
+          order_index?: number;
+          text?: string;
+          is_locked?: boolean;
+        };
+        Relationships: [];
+      };
+      likert_scale_points: {
+        Row: {
+          id: string;
+          template_id: string;
+          value: number;
+          label: string;
+        };
+        Insert: {
+          id?: string;
+          template_id: string;
+          value: number;
+          label: string;
+        };
+        Update: {
+          id?: string;
+          template_id?: string;
+          value?: number;
+          label?: string;
+        };
+        Relationships: [];
+      };
       diagnostic_share_links: {
         Row: {
           id: string;
@@ -243,7 +529,7 @@ export type Database = {
         Row: {
           id: string;
           diagnostic_id: string;
-          respondent_id: string;
+          respondent_id: string | null;
           share_link_id: string;
           group_id: Database["public"]["Enums"]["respondent_group"];
           status: Database["public"]["Enums"]["response_session_status"];
@@ -253,7 +539,7 @@ export type Database = {
         Insert: {
           id?: string;
           diagnostic_id: string;
-          respondent_id: string;
+          respondent_id?: string | null;
           share_link_id: string;
           group_id: Database["public"]["Enums"]["respondent_group"];
           status?: Database["public"]["Enums"]["response_session_status"];
@@ -263,7 +549,7 @@ export type Database = {
         Update: {
           id?: string;
           diagnostic_id?: string;
-          respondent_id?: string;
+          respondent_id?: string | null;
           share_link_id?: string;
           group_id?: Database["public"]["Enums"]["respondent_group"];
           status?: Database["public"]["Enums"]["response_session_status"];

@@ -52,7 +52,7 @@ Princípios do produto:
 - **lucide-react** para ícones.
 - Fontes Google: **Inter** (sans), **Instrument Serif** (display itálico), **JetBrains Mono** (mono — substitui IBM Plex Mono do design system original).
 
-Estado atual: **scaffold inicial + dashboard OMDx + Google OAuth com allowlist corporativa, fallback mockado de autenticação para desenvolvimento, diagnóstico, compartilhamento, relatórios PDF, insights, documentação, perfil e superadmin**. A UI ainda consome a camada mockada em `src/lib/data/`, mas a fundação de produção já existe: Supabase migrations, Auth.js Supabase Adapter, JWT para RLS, clients server-side, route handlers iniciais de mutação e testes Vitest/Playwright. O cookie mockado fica restrito ao fallback de desenvolvimento.
+Estado atual: **scaffold inicial + dashboard OMDx + Google OAuth com allowlist corporativa, fallback mockado de autenticação para desenvolvimento, diagnóstico, compartilhamento, relatórios PDF, insights, documentação, perfil, superadmin e aquisição por campanha em Supabase**. O OMDx core e o fluxo de aquisição já usam Supabase via camada server-side; algumas superfícies como perfil ainda preservam mocks locais. O cookie mockado fica restrito ao fallback de desenvolvimento.
 
 ## Fontes de verdade
 
@@ -137,7 +137,7 @@ src/
 └── lib/
     ├── auth/                 ← Google OAuth, sessão e fallback mockado
     ├── contracts/            ← schemas Zod, tipos e mappers Supabase-friendly
-    ├── data/                 ← data-source mockado consumido pela UI + regras de produção
+    ├── data/                 ← data-sources server-side, helpers puros e regras de produção
     ├── supabase/             ← clients server-side Supabase
     ├── mock-data.ts          ← seed temporário dos dados fictícios
     ├── types.ts              ← reexports dos tipos públicos
@@ -157,7 +157,8 @@ Rotas atuais:
 - `/admin/campanhas` → campanhas, links e campos de aquisição.
 - `/admin/leads` → leads capturados por links de aquisição.
 - `/admin/empresas` → empresas derivadas dos leads.
-- `/a/[token]` → formulário público de aquisição por campanha.
+- `/a/[token]` → início público de aquisição por campanha.
+- `/a/[token]/completar` → conclusão do cadastro Google da campanha.
 
 Rotas e fluxos planejados:
 - `/omdx/diagnosticos` — área operacional com lista completa, filtros e ações, acessada pela sidebar.
@@ -174,11 +175,11 @@ Regras de breadcrumb no OMDx:
 
 ## Dados e mocks
 
-**A camada de dados da UI atual ainda é mockada**, mas a base Supabase de produção já está versionada em `supabase/`. Páginas e componentes consomem `src/lib/data/`, que por enquanto lê seeds de `src/lib/mock-data.ts`; route handlers de produção em `src/app/api/omdx/` já escrevem via Supabase service role no servidor. Google OAuth exige e-mail Google verificado, domínio em `AUTH_ALLOWED_DOMAINS` e e-mail em `AUTH_ALLOWED_EMAILS`. O fallback demo por senha usa `/api/auth/login` e `src/lib/auth/mock-auth.ts`; fica disponível apenas fora de produção e quando `AUTH_ENABLE_DEV_PASSWORD_LOGIN=true`.
+O OMDx core e a aquisição por campanha usam Supabase versionado em `supabase/`. Páginas e componentes consomem `src/lib/data/`; route handlers de produção em `src/app/api/omdx/`, `src/app/api/acquisition/` e `src/app/api/admin/` escrevem via service role no servidor. Google OAuth exige e-mail Google verificado, domínio/e-mail permitidos para login corporativo ou intent de campanha ativo para cadastro de cliente. O fallback demo por senha usa `/api/auth/login` e `src/lib/auth/mock-auth.ts`; fica disponível apenas fora de produção e quando `AUTH_ENABLE_DEV_PASSWORD_LOGIN=true`.
 
 Convenções:
 - Componentes e páginas **não devem** importar `mock-data.ts` diretamente; use `src/lib/data/omdx-data-source.ts`.
-- Superadmin e aquisição pública usam `src/lib/data/admin-data-source.ts`, que mescla seeds com campanhas editadas e leads enviados no `localStorage`.
+- Superadmin e aquisição pública usam `src/lib/data/admin-data-source.ts` para helpers/DTOs e `src/lib/data/acquisition-data-source.ts` para Supabase server-side.
 - Contratos vivem em `src/lib/contracts/` com Zod; `src/lib/types.ts` reexporta os tipos públicos.
 - `Db*` representa formato futuro Supabase em `snake_case`; a UI usa domínio em `camelCase`.
 - Conversões de banco para UI ficam em `src/lib/contracts/mappers.ts`.

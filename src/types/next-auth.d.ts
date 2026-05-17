@@ -2,6 +2,7 @@ import type { AuthRole } from "@/lib/contracts";
 
 declare module "next-auth" {
   interface Session {
+    acquisition?: boolean;
     supabaseAccessToken?: string;
     user: {
       id: string;
@@ -21,6 +22,7 @@ declare module "next-auth" {
 
 declare module "next-auth/jwt" {
   interface JWT {
+    acquisition?: boolean;
     company?: string;
     role?: AuthRole;
     userId?: string;

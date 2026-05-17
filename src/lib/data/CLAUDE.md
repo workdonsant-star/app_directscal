@@ -1,27 +1,37 @@
-# `src/lib/data` — Fonte de dados e regras OMDx
+# `src/lib/data` — Fonte de dados e regras
 
-Esta pasta é a fronteira entre UI e dados. A UI ainda lê `src/lib/mock-data.ts`, mas regras de produção compartilhadas já vivem aqui para deduplicação e suficiência de relatório.
+Esta pasta é a fronteira entre UI e dados. O OMDx core lê Supabase no servidor; superadmin e aquisição também usam Supabase via Route Handlers server-side. Perfil ainda preserva persistência mockada/local enquanto seu backend não entra no escopo.
 
 ## Regras
 
 - Páginas e componentes devem importar dados daqui, não de `mock-data.ts`.
-- Esta camada pode continuar síncrona na fase mockada.
-- Ao trocar leituras para Supabase, preserve as assinaturas públicas sempre que possível ou faça a migração de chamada em uma fatia coesa.
-- Regras como mínimo de 3 respostas por grupo e normalização de e-mail devem ficar em funções puras testáveis.
+- Leituras OMDx que falam com Supabase são assíncronas e server-side.
+- Client Components devem importar apenas helpers puros de `omdx-domain.ts`, nunca a data-source Supabase.
+- Regras como base mínima de Fundador para análise, trava local de resposta e validação de conjunto completo de respostas devem ficar em funções puras testáveis.
 - Cálculos agregados e helpers de domínio ficam aqui ou em contratos/mappers, não nos componentes.
 - Relatórios PDF devem consumir DTOs consolidados daqui, como `getDiagnosticReport()` e `getDiagnosticActionPlan()`, sem acessar mocks ou recalcular dados dentro do documento.
-- `admin-data-source.ts` expõe o snapshot mockado do superadmin, mesclando seeds com campanhas e leads salvos em `localStorage`.
+- `admin-data-source.ts` concentra helpers puros, seeds estáticos de módulos e derivação de empresas/módulos.
+- `acquisition-data-source.ts` é server-side e fala com Supabase para campanhas, leads, empresas, intents OAuth e credenciais de senha.
+- Em aquisição Google, o e-mail OAuth autenticado é a fonte canônica; valide que `userId` e e-mail pertencem à mesma linha em `next_auth.users` e não crie nova conta quando o e-mail já tem acesso ativo.
+
+## Fluxo público de resposta
+
+`getDiagnosticByResponseToken()` resolve token real de `diagnostic_share_links`, retorna diagnóstico, grupo, escala e perguntas agrupadas por dimensão para `/r/[token]`.
+
+- A página pública não fala direto com Supabase; envio passa por `/api/omdx/responses`.
+- A API valida token, coleta ativa, trava por navegador e se o payload contém exatamente as perguntas do template.
+- A resposta pública é anônima: não coleta nome, e-mail ou cargo. A trava leve do navegador usa `getResponseStorageKey()` no client e `getResponseCookieName()` no route handler.
 
 ## Cálculos dos Insights por dimensão
 
-`getDimensionQuestionResults()` expõe os resultados por pergunta para `/insights/[dimensao]`, usando `diagnosticReportQuestions` enquanto não houver respostas individuais persistidas.
+`getDimensionQuestionResults()` expõe os resultados por pergunta para `/insights/[dimensao]`, usando respostas reais em `response_sessions` + `likert_answers`.
 
 - O filtro `todos` agrega ocorrências por `dimensionId + text`, porque os ids das perguntas incluem o diagnóstico.
 - O filtro por diagnóstico retorna apenas as perguntas daquele diagnóstico.
 - `score` é a média dos scores das ocorrências consideradas.
-- `gap` é a diferença entre a maior e a menor média de camada (`fundador`, `lideranca`, `operacao`).
+- `gap` é a diferença entre a maior e a menor média de camada com base disponível; quando só Fundador respondeu, o gap fica `null`.
 - `responses` é a soma das respostas das ocorrências consideradas.
-- `priorityIndex` é `round((((5 - score) + gap) / 5) * 100)`, limitado entre `0` e `100`.
+- `priorityIndex` é `round((((5 - score) + (gap ?? 0)) / 5) * 100)`, limitado entre `0` e `100`.
 - A classificação textual de score vem de `classifyScore()`: `<= 2.0` Crítico, `<= 3.0` Inconsistente, `<= 4.0` Atenção, acima de `4.0` Consistente.
 
 ## Cálculos do Overview OMDx
@@ -32,8 +42,8 @@ Esta pasta é a fronteira entre UI e dados. A UI ainda lê `src/lib/mock-data.ts
 - `normalizeGapToIndex(gap)`: converte gap entre camadas para índice com `round((gap / 5) * 100)`, limitado entre `0` e `100`.
 - `normalizeCriticality(rawCriticality)`: converte criticidade composta para índice com `round((rawCriticality / 16) * 100)`, limitado entre `0` e `100`.
 - `Maturidade geral`: média das maturidades das dimensões, normalizada por `normalizeLikertToIndex()`. Maior é melhor.
-- `Criticidade operacional`: média de `calculateDimensionCriticality()` por dimensão. A fórmula base é `5 - maturity + gap + dispersion + criticalPercentage / 100`. Maior é pior.
-- `Desalinhamento organizacional`: gap médio entre diretoria, liderança e time, normalizado por `normalizeGapToIndex()`. Maior é pior.
+- `Criticidade operacional`: média de `calculateDimensionCriticality()` por dimensão. A fórmula base é `5 - maturity + (gap ?? 0) + dispersion + criticalPercentage / 100`. Maior é pior; quando não há comparação entre camadas, o card executivo fica `Sem dados`.
+- `Desalinhamento organizacional`: gap médio entre camadas com base, normalizado por `normalizeGapToIndex()`. Maior é pior; com apenas Fundador, fica `Sem dados`.
 - `Consenso interno`: `round(100 - (averageDispersion / 5) * 100)`. Maior é melhor.
 
 Faixas de classificação:

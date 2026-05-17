@@ -209,6 +209,10 @@ export const acquisitionLeads: Lead[] = [
     objective:
       "Organizar rituais de gestão antes de ampliar a operação comercial.",
     createdAt: "2026-05-06T10:30:00.000Z",
+    status: "lead",
+    accountProvider: null,
+    userId: null,
+    organizationId: null,
     fieldValues: {
       nome: "Marina Azevedo",
       email: "marina@atlasgrowth.com.br",
@@ -234,6 +238,10 @@ export const acquisitionLeads: Lead[] = [
     companySize: "11-50 pessoas",
     objective: "Entender gargalos de liderança e processos.",
     createdAt: "2026-05-07T15:10:00.000Z",
+    status: "lead",
+    accountProvider: null,
+    userId: null,
+    organizationId: null,
     fieldValues: {
       nome: "Rafael Nogueira",
       email: "rafael@cobaltofin.com",

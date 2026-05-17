@@ -34,13 +34,13 @@ export async function GET(_request: Request, { params }: ReportRouteContext) {
   }
 
   const { id } = await params;
-  const diagnostic = getDiagnosticById(id);
+  const diagnostic = await getDiagnosticById(id);
 
   if (!diagnostic) {
     return new Response("Diagnóstico não encontrado.", { status: 404 });
   }
 
-  const report = getDiagnosticReport(id);
+  const report = await getDiagnosticReport(id);
 
   if (!report) {
     return new Response("Relatório indisponível para este diagnóstico.", {

@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { AcquisitionPublicFlow } from "@/components/admin/acquisition-public-flow";
+import { getAcquisitionCampaignByToken } from "@/lib/data/acquisition-data-source";
+import { getAdminModuleById } from "@/lib/data/admin-data-source";
 import { isFeatureAcquisitionEnabled } from "@/lib/env";
 
 export const metadata: Metadata = {
-  title: "Acesso de teste — Directscal",
+  title: "Acesso — Directscal",
 };
 
 type AcquisitionPageProps = {
@@ -18,6 +20,14 @@ export default async function AcquisitionPage({ params }: AcquisitionPageProps) 
   }
 
   const { token } = await params;
+  const campaign = await getAcquisitionCampaignByToken(token);
+  const selectedModule = campaign ? getAdminModuleById(campaign.moduleId) : null;
 
-  return <AcquisitionPublicFlow token={token} />;
+  return (
+    <AcquisitionPublicFlow
+      campaign={campaign}
+      selectedModule={selectedModule}
+      token={token}
+    />
+  );
 }

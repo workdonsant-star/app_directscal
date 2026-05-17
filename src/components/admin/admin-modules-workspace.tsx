@@ -39,8 +39,8 @@ export function AdminModulesWorkspace() {
         <KpiCard
           label="Leads capturados"
           value={leads.length.toLocaleString("pt-BR")}
-          caption="Base mockada"
-          hint="Seeds e envios locais"
+          caption="Base Supabase"
+          hint="Cadastros de campanha"
         />
         <KpiCard
           label="Empresas mapeadas"

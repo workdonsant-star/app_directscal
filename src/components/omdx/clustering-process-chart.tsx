@@ -16,7 +16,7 @@ type ClusterPoint = {
   clusterIndex: number;
   criticalityIndex: number;
   dimension: string;
-  gap: number;
+  gap: number | null;
   maturityIndex: number;
   value: [number, number];
 };
@@ -69,6 +69,10 @@ function escapeHtml(value: string) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function formatScoreOrNoBase(value: number | null) {
+  return value === null ? "Sem base" : scoreFormatter.format(value);
 }
 
 function getShortDimensionName(name: string) {
@@ -229,7 +233,7 @@ function makeTooltipFormatter() {
           </div>
           <div style="display:flex;justify-content:space-between;gap:24px;">
             <span style="color:var(--muted-foreground);">Gap entre camadas</span>
-            <span style="font-variant-numeric:tabular-nums;color:var(--foreground);">${scoreFormatter.format(item.gap)}</span>
+            <span style="font-variant-numeric:tabular-nums;color:var(--foreground);">${formatScoreOrNoBase(item.gap)}</span>
           </div>
         </div>
       </div>

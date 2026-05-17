@@ -164,6 +164,26 @@ export const diagnosticShareWorkspaceSchema = z.object({
   responses: responsesByGroupSchema,
 });
 
+export const diagnosticResponseQuestionSchema = z.object({
+  id: idSchema,
+  dimensionId: dimensionIdSchema,
+  orderIndex: z.number().int().min(1),
+  text: z.string().min(1),
+});
+
+export const diagnosticResponseDimensionSchema = dimensionSchema.extend({
+  questions: z.array(diagnosticResponseQuestionSchema).min(1),
+});
+
+export const diagnosticResponseWorkspaceSchema = z.object({
+  token: z.string().min(1),
+  diagnostic: diagnosticDetailSchema,
+  group: respondentGroupMetaSchema,
+  expiresAt: isoDateTimeSchema.nullable(),
+  template: diagnosticTemplateSchema,
+  dimensions: z.array(diagnosticResponseDimensionSchema).length(6),
+});
+
 export const dbRespondentSchema = z.object({
   id: idSchema,
   diagnostic_id: idSchema,
@@ -192,7 +212,7 @@ export const likertAnswerSchema = z.object({
 export const responseSessionSchema = z.object({
   id: idSchema,
   diagnosticId: idSchema,
-  respondentId: idSchema,
+  respondentId: idSchema.nullable(),
   group: respondentGroupSchema,
   status: z.enum(["iniciado", "concluido"]),
   startedAt: isoDateTimeSchema,
@@ -229,7 +249,7 @@ export const dimensionQuestionResultSchema = z.object({
   dimensionId: dimensionIdSchema,
   text: z.string().min(1),
   score: z.number().min(1).max(5),
-  gap: z.number().nonnegative(),
+  gap: z.number().nonnegative().nullable(),
   responses: z.number().int().nonnegative(),
   classification: classificationSchema,
   priorityIndex: z.number().int().min(0).max(100),
@@ -249,7 +269,7 @@ export const diagnosticReportQuestionSchema = z.object({
   score: z.number().min(1).max(5),
   variance: z.number().nonnegative(),
   responses: z.number().int().nonnegative(),
-  layerScores: scoresByGroupSchema,
+  layerScores: nullableScoresByGroupSchema,
 });
 
 export const diagnosticReportDimensionSchema = z.object({
@@ -263,8 +283,8 @@ export const diagnosticReportDimensionSchema = z.object({
   classification: classificationSchema,
   variance: z.number().nonnegative(),
   responses: z.number().int().nonnegative(),
-  layerScores: scoresByGroupSchema,
-  misalignment: diagnosticReportMisalignmentSchema,
+  layerScores: nullableScoresByGroupSchema,
+  misalignment: diagnosticReportMisalignmentSchema.nullable(),
   questions: z.array(diagnosticReportQuestionSchema).min(1),
 });
 
@@ -289,9 +309,9 @@ export const diagnosticReportSchema = z.object({
   generalScore: z.number().min(1).max(5),
   classification: classificationSchema,
   responses: responsesByGroupSchema,
-  layerAverages: scoresByGroupSchema,
+  layerAverages: nullableScoresByGroupSchema,
   weakestDimension: diagnosticReportDimensionSummarySchema,
-  highestMisalignment: diagnosticReportTopMisalignmentSchema,
+  highestMisalignment: diagnosticReportTopMisalignmentSchema.nullable(),
   dimensions: z.array(diagnosticReportDimensionSchema).length(6),
 });
 
@@ -312,8 +332,8 @@ export const diagnosticActionPlanDimensionSchema = z.object({
   shortName: z.string().min(1),
   score: z.number().min(1).max(5),
   classification: classificationSchema,
-  gap: z.number().nonnegative(),
-  layerScores: scoresByGroupSchema,
+  gap: z.number().nonnegative().nullable(),
+  layerScores: nullableScoresByGroupSchema,
   criticalQuestions: z.array(diagnosticReportQuestionSchema).min(1),
 });
 
@@ -330,7 +350,7 @@ export const diagnosticActionPointSchema = z.object({
   successIndicator: z.string().min(1),
   priority: diagnosticActionPointPrioritySchema,
   score: z.number().min(1).max(5),
-  gap: z.number().nonnegative(),
+  gap: z.number().nonnegative().nullable(),
 });
 
 export const diagnosticActionPlanSchema = z.object({
@@ -340,8 +360,8 @@ export const diagnosticActionPlanSchema = z.object({
   classification: classificationSchema,
   responses: responsesByGroupSchema,
   weakestDimension: diagnosticReportDimensionSummarySchema,
-  highestMisalignment: diagnosticReportTopMisalignmentSchema,
-  layerAverages: scoresByGroupSchema,
+  highestMisalignment: diagnosticReportTopMisalignmentSchema.nullable(),
+  layerAverages: nullableScoresByGroupSchema,
   dimensions: z.array(diagnosticActionPlanDimensionSchema).length(6),
   actionPoints: z.array(diagnosticActionPointSchema).min(1),
 });
@@ -357,10 +377,8 @@ export const dashboardSummarySchema = z.object({
 });
 
 export const createDiagnosticInputSchema = z.object({
-  organizationId: idSchema,
   templateId: diagnosticTemplateIdSchema,
   name: z.string().min(1),
-  company: z.string().min(1),
   description: z.string().trim().optional().nullable(),
   deadline: isoDateSchema.optional().nullable(),
 });
@@ -385,13 +403,8 @@ export const deleteDiagnosticInputSchema = z.object({
 
 export const submitLikertResponseInputSchema = z.object({
   token: z.string().min(1),
-  respondent: z.object({
-    name: z.string().min(1),
-    email: z.string().email(),
-    role: z.string().min(1),
-  }),
   answers: z.array(likertAnswerSchema).min(1),
-});
+}).strict();
 
 export type Id = z.infer<typeof idSchema>;
 export type DiagnosticStatus = z.infer<typeof diagnosticStatusSchema>;
@@ -412,6 +425,9 @@ export type DiagnosticListItem = z.infer<typeof diagnosticListItemSchema>;
 export type DiagnosticDetail = z.infer<typeof diagnosticDetailSchema>;
 export type DiagnosticShareLink = z.infer<typeof diagnosticShareLinkSchema>;
 export type DiagnosticShareWorkspace = z.infer<typeof diagnosticShareWorkspaceSchema>;
+export type DiagnosticResponseQuestion = z.infer<typeof diagnosticResponseQuestionSchema>;
+export type DiagnosticResponseDimension = z.infer<typeof diagnosticResponseDimensionSchema>;
+export type DiagnosticResponseWorkspace = z.infer<typeof diagnosticResponseWorkspaceSchema>;
 export type DbRespondent = z.infer<typeof dbRespondentSchema>;
 export type Respondent = z.infer<typeof respondentSchema>;
 export type LikertAnswer = z.infer<typeof likertAnswerSchema>;

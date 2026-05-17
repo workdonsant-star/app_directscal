@@ -2,6 +2,7 @@
 
 import { Check, Plus } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import {
@@ -17,35 +18,75 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import type { Diagnostic, DiagnosticTemplate } from "@/lib/types";
+import type {
+  Diagnostic,
+  DiagnosticShareLink,
+  DiagnosticTemplate,
+} from "@/lib/types";
 
 type DrawerMode = "create" | "edit" | "links";
 
 type DiagnosticsWorkspaceProps = {
   diagnostics: Diagnostic[];
+  organizationName: string;
+  shareLinksByDiagnosticId: Record<string, DiagnosticShareLink[]>;
   template: DiagnosticTemplate;
 };
 
-const groupLinks = [
-  { label: "Fundador", token: "fundador" },
-  { label: "Liderança", token: "lideranca" },
-  { label: "Operação", token: "operacao" },
-];
+type GeneratedDiagnostic = {
+  id: string;
+  company: string;
+  name: string;
+};
+
+type DiagnosticMutationResponse = {
+  diagnosticId?: string;
+  links?: DiagnosticShareLink[];
+  message?: string;
+};
+
+async function readMutationResponse(response: Response) {
+  const data: unknown = await response.json().catch(() => null);
+
+  return data && typeof data === "object"
+    ? (data as DiagnosticMutationResponse)
+    : {};
+}
+
+function buildDiagnosticPayload(
+  form: DiagnosticFormState,
+  template: DiagnosticTemplate,
+) {
+  return {
+    deadline: form.deadline || null,
+    description: form.description || null,
+    name: form.name,
+    templateId: template.id,
+  };
+}
 
 export function DiagnosticsWorkspace({
   diagnostics,
+  organizationName,
+  shareLinksByDiagnosticId,
   template,
 }: DiagnosticsWorkspaceProps) {
-  const [localDiagnostics, setLocalDiagnostics] = useState(() => diagnostics);
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<DrawerMode>("create");
   const [selectedDiagnostic, setSelectedDiagnostic] =
     useState<Diagnostic | null>(null);
+  const [generatedDiagnostic, setGeneratedDiagnostic] =
+    useState<GeneratedDiagnostic | null>(null);
+  const [generatedLinks, setGeneratedLinks] = useState<DiagnosticShareLink[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
 
   function openCreate() {
     setMode("create");
     setSelectedDiagnostic(null);
+    setGeneratedDiagnostic(null);
+    setGeneratedLinks([]);
     setNotice(null);
     setOpen(true);
   }
@@ -53,6 +94,8 @@ export function DiagnosticsWorkspace({
   function openEdit(diagnostic: Diagnostic) {
     setMode("edit");
     setSelectedDiagnostic(diagnostic);
+    setGeneratedDiagnostic(null);
+    setGeneratedLinks([]);
     setNotice(null);
     setOpen(true);
   }
@@ -61,58 +104,131 @@ export function DiagnosticsWorkspace({
     setOpen(false);
   }
 
-  function handleSaveDraft() {
-    setNotice("Rascunho salvo nesta sessão mockada.");
-    setOpen(false);
-  }
+  async function saveDiagnostic(form: DiagnosticFormState) {
+    const payload = buildDiagnosticPayload(form, template);
+    const response =
+      mode === "edit" && selectedDiagnostic
+        ? await fetch(`/api/omdx/diagnostics/${selectedDiagnostic.id}`, {
+            body: JSON.stringify(payload),
+            headers: { "Content-Type": "application/json" },
+            method: "PATCH",
+          })
+        : await fetch("/api/omdx/diagnostics", {
+            body: JSON.stringify(payload),
+            headers: { "Content-Type": "application/json" },
+            method: "POST",
+          });
+    const data = await readMutationResponse(response);
 
-  function handleActivate(form: DiagnosticFormState) {
-    setSelectedDiagnostic({
-      ...(selectedDiagnostic ?? {
-        id: "diag_mock",
-        organizationId: "org_mock",
-        organizationName: form.company,
-        createdAt: "2026-05-07T00:00:00.000Z",
-        responses: {
-          total: 0,
-          fundador: 0,
-          lideranca: 0,
-          operacao: 0,
-        },
-        generalScore: null,
-      }),
-      name: form.name,
-      company: form.company,
-      organizationName: form.company,
-      description: form.description || null,
-      templateId: template.id,
-      status: "ativo",
-      updatedAt: "2026-05-07T00:00:00.000Z",
-      activatedAt: "2026-05-07T00:00:00.000Z",
-      closedAt: null,
-      deadline: form.deadline || null,
-    });
-    setMode("links");
-    setNotice("Diagnóstico ativado nesta sessão mockada.");
-  }
-
-  function handleDelete(diagnostic: Diagnostic) {
-    setLocalDiagnostics((current) =>
-      current.filter((item) => item.id !== diagnostic.id),
-    );
-
-    if (selectedDiagnostic?.id === diagnostic.id) {
-      setSelectedDiagnostic(null);
-      setOpen(false);
+    if (!response.ok) {
+      throw new Error(data.message ?? "Não foi possível salvar o diagnóstico.");
     }
 
-    setNotice("Diagnóstico excluído nesta sessão mockada.");
+    return {
+      diagnosticId: data.diagnosticId ?? selectedDiagnostic?.id,
+      links: data.links ?? [],
+    };
+  }
+
+  async function handleSaveDraft(form: DiagnosticFormState) {
+    try {
+      setPending(true);
+      await saveDiagnostic(form);
+      setNotice("Rascunho salvo no banco.");
+      setOpen(false);
+      router.refresh();
+    } catch (error) {
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível salvar o diagnóstico.",
+      );
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function handleActivate(form: DiagnosticFormState) {
+    try {
+      setPending(true);
+      const saved = await saveDiagnostic(form);
+
+      if (!saved.diagnosticId) {
+        throw new Error("Não foi possível identificar o diagnóstico.");
+      }
+
+      const activateResponse = await fetch(
+        `/api/omdx/diagnostics/${saved.diagnosticId}/activate`,
+        {
+          method: "POST",
+        },
+      );
+      const activateData = await readMutationResponse(activateResponse);
+
+      if (!activateResponse.ok) {
+        throw new Error(
+          activateData.message ?? "Não foi possível ativar o diagnóstico.",
+        );
+      }
+
+      setGeneratedDiagnostic({
+        id: saved.diagnosticId,
+        company: selectedDiagnostic?.company ?? organizationName,
+        name: form.name,
+      });
+      setGeneratedLinks(
+        saved.links.length > 0
+          ? saved.links
+          : shareLinksByDiagnosticId[saved.diagnosticId] ?? [],
+      );
+      setMode("links");
+      setNotice("Diagnóstico ativado no banco.");
+      router.refresh();
+    } catch (error) {
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível ativar o diagnóstico.",
+      );
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function handleDelete(diagnostic: Diagnostic) {
+    try {
+      setPending(true);
+      const response = await fetch(`/api/omdx/diagnostics/${diagnostic.id}`, {
+        method: "DELETE",
+      });
+      const data = await readMutationResponse(response);
+
+      if (!response.ok) {
+        throw new Error(data.message ?? "Não foi possível excluir o diagnóstico.");
+      }
+
+      if (selectedDiagnostic?.id === diagnostic.id) {
+        setSelectedDiagnostic(null);
+        setOpen(false);
+      }
+
+      setNotice("Diagnóstico excluído do banco.");
+      router.refresh();
+    } catch (error) {
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível excluir o diagnóstico.",
+      );
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
     <div className="flex flex-col gap-5">
       <div className="flex justify-end">
-        <Button onClick={openCreate}>
+        <Button onClick={openCreate} disabled={pending}>
           <Plus className="size-4" />
           Criar diagnóstico
         </Button>
@@ -126,18 +242,20 @@ export function DiagnosticsWorkspace({
       )}
 
       <DiagnosticsTable
-        diagnostics={localDiagnostics}
+        diagnostics={diagnostics}
+        shareLinksByDiagnosticId={shareLinksByDiagnosticId}
         onConfigure={openEdit}
         onDelete={handleDelete}
       />
 
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent className="overflow-y-auto data-[side=right]:!w-[min(100vw,56rem)] data-[side=right]:!max-w-none">
-          {mode === "links" && selectedDiagnostic ? (
+          {mode === "links" && generatedDiagnostic ? (
             <GeneratedLinks
-              diagnostic={selectedDiagnostic}
+              diagnostic={generatedDiagnostic}
+              links={generatedLinks}
               onBack={() => {
-                setMode(selectedDiagnostic.status === "rascunho" ? "edit" : "create");
+                setMode(selectedDiagnostic?.status === "rascunho" ? "edit" : "create");
               }}
             />
           ) : (
@@ -155,6 +273,7 @@ export function DiagnosticsWorkspace({
                 <DiagnosticForm
                   mode={mode === "edit" ? "edit" : "create"}
                   diagnostic={selectedDiagnostic ?? undefined}
+                  organizationName={organizationName}
                   template={template}
                   onSaveDraft={handleSaveDraft}
                   onActivate={handleActivate}
@@ -171,9 +290,11 @@ export function DiagnosticsWorkspace({
 
 function GeneratedLinks({
   diagnostic,
+  links,
   onBack,
 }: {
-  diagnostic: Diagnostic;
+  diagnostic: GeneratedDiagnostic;
+  links: DiagnosticShareLink[];
   onBack: () => void;
 }) {
   return (
@@ -195,16 +316,20 @@ function GeneratedLinks({
           </p>
         </div>
 
-        {groupLinks.map((group) => (
+        {links.map((link) => (
           <div
-            key={group.token}
+            key={link.group}
             className="flex flex-col gap-2 rounded-lg border bg-card p-3"
           >
             <span className="text-foreground text-sm font-medium">
-              {group.label}
+              {link.group === "fundador"
+                ? "Fundador"
+                : link.group === "lideranca"
+                  ? "Liderança"
+                  : "Operação"}
             </span>
             <code className="text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap rounded-md bg-muted px-2 py-1 text-xs">
-              {`https://omdx.directscal.com/r/${diagnostic.id}-${group.token}`}
+              {link.publicUrl}
             </code>
           </div>
         ))}

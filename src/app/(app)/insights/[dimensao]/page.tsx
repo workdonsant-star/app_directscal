@@ -11,7 +11,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getDimensionById, isDimensionId } from "@/lib/data/omdx-data-source";
+import {
+  getDimensionById,
+  getDimensionInsightDiagnosticOptions,
+  getDimensionInsightSummary,
+  getDimensionQuestionResults,
+} from "@/lib/data/omdx-data-source";
+import { isDimensionId } from "@/lib/data/omdx-domain";
 
 export const metadata: Metadata = {
   title: "Insights — OMDx",
@@ -19,10 +25,12 @@ export const metadata: Metadata = {
 
 type DimensionInsightPageProps = {
   params: Promise<{ dimensao: string }>;
+  searchParams?: Promise<{ diagnostico?: string | string[] }>;
 };
 
 export default async function DimensionInsightPage({
   params,
+  searchParams,
 }: DimensionInsightPageProps) {
   const { dimensao } = await params;
 
@@ -49,7 +57,30 @@ export default async function DimensionInsightPage({
     );
   }
 
-  const dimension = getDimensionById(dimensao);
+  const resolvedSearchParams = await searchParams;
+  const dimension = await getDimensionById(dimensao);
+  const diagnosticOptions = await getDimensionInsightDiagnosticOptions();
+  const requestedDiagnostic =
+    typeof resolvedSearchParams?.diagnostico === "string"
+      ? resolvedSearchParams.diagnostico
+      : "todos";
+  const selectedDiagnostic = diagnosticOptions.some(
+    (diagnostic) => diagnostic.id === requestedDiagnostic,
+  )
+    ? requestedDiagnostic
+    : "todos";
+  const [summary, questionResults] = await Promise.all([
+    getDimensionInsightSummary(dimension.id, selectedDiagnostic),
+    getDimensionQuestionResults(dimension.id, selectedDiagnostic),
+  ]);
 
-  return <DimensionInsightWorkspace dimension={dimension} />;
+  return (
+    <DimensionInsightWorkspace
+      diagnosticOptions={diagnosticOptions}
+      dimension={dimension}
+      questionResults={questionResults}
+      selectedDiagnostic={selectedDiagnostic}
+      summary={summary}
+    />
+  );
 }

@@ -1,5 +1,5 @@
 import { getLayerColor } from "@/components/omdx/chart-colors";
-import { getRespondentGroups } from "@/lib/data/omdx-data-source";
+import { getRespondentGroups } from "@/lib/data/omdx-domain";
 import type { RespondentGroup } from "@/lib/types";
 
 type LayerInsightComparisonProps = {

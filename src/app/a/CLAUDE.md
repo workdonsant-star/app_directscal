@@ -8,6 +8,6 @@ Rotas públicas para captura de leads por links de aquisição. Não usam sideba
 
 - Resolver campanha pelo token da URL.
 - Renderizar formulário configurável pela campanha.
-- Salvar envio em `localStorage` enquanto não há backend.
-- Após envio, mostrar preview controlado do módulo; não criar conta real.
-- Em produção do OMDx v1, esta área fica protegida por `FEATURE_ACQUISITION=false`.
+- Persistir lead, organização e membership `cliente` no Supabase por Route Handlers server-side.
+- Começar por uma tela de escolha de método. Google cria um intent httpOnly e completa empresa em `/a/[token]/completar`; e-mail renderiza a etapa com dados da campanha e senha.
+- A rota pública fica disponível quando `FEATURE_ACQUISITION=true`; com o flag desligado, retorna `notFound()`.

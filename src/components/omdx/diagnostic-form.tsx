@@ -19,33 +19,32 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { getRespondentGroups } from "@/lib/data/omdx-data-source";
+import { getRespondentGroups } from "@/lib/data/omdx-domain";
 import type { Diagnostic, DiagnosticTemplate } from "@/lib/types";
 
 type DiagnosticFormProps = {
   mode: "create" | "edit";
   diagnostic?: Diagnostic;
+  organizationName: string;
   template: DiagnosticTemplate;
-  onSaveDraft: () => void;
+  onSaveDraft: (form: FormState) => void;
   onActivate: (form: FormState) => void;
   onCancel: () => void;
 };
 
 export type DiagnosticFormState = {
   name: string;
-  company: string;
   description: string;
   deadline: string;
 };
 
 type FormState = DiagnosticFormState;
 
-type FormErrors = Partial<Record<"name" | "company", string>>;
+type FormErrors = Partial<Record<"name", string>>;
 
 function getInitialFormState(diagnostic?: Diagnostic): FormState {
   return {
     name: diagnostic?.name ?? "",
-    company: diagnostic?.company ?? "",
     description: diagnostic?.description ?? "",
     deadline: diagnostic?.deadline ?? "",
   };
@@ -54,6 +53,7 @@ function getInitialFormState(diagnostic?: Diagnostic): FormState {
 export function DiagnosticForm({
   mode,
   diagnostic,
+  organizationName,
   template,
   onSaveDraft,
   onActivate,
@@ -66,7 +66,7 @@ export function DiagnosticForm({
 
   function updateField(field: keyof FormState, value: string) {
     setForm((current) => ({ ...current, [field]: value }));
-    if (field === "name" || field === "company") {
+    if (field === "name") {
       setErrors((current) => ({ ...current, [field]: undefined }));
     }
   }
@@ -78,17 +78,13 @@ export function DiagnosticForm({
       nextErrors.name = "Informe o nome do diagnóstico.";
     }
 
-    if (!form.company.trim()) {
-      nextErrors.company = "Informe a empresa.";
-    }
-
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   }
 
   function handleSaveDraft() {
     if (!validate()) return;
-    onSaveDraft();
+    onSaveDraft(form);
   }
 
   function handleActivate() {
@@ -98,7 +94,6 @@ export function DiagnosticForm({
 
   const title = mode === "edit" ? "Configurar rascunho" : "Novo diagnóstico";
   const summaryName = form.name.trim() || "Diagnóstico sem nome";
-  const summaryCompany = form.company.trim() || "Empresa não definida";
   const respondentGroups = getRespondentGroups();
 
   return (
@@ -144,16 +139,10 @@ export function DiagnosticForm({
                 </label>
                 <Input
                   id="diagnostic-company"
-                  value={form.company}
-                  aria-invalid={Boolean(errors.company)}
-                  placeholder="Ex.: Vertex Logistics"
-                  onChange={(event) =>
-                    updateField("company", event.target.value)
-                  }
+                  value={organizationName}
+                  readOnly
+                  aria-readonly
                 />
-                {errors.company && (
-                  <p className="text-destructive text-xs">{errors.company}</p>
-                )}
               </div>
             </div>
 
@@ -244,7 +233,7 @@ export function DiagnosticForm({
                 <div>
                   <p className="text-foreground font-medium">{summaryName}</p>
                   <p className="text-muted-foreground text-xs">
-                    {summaryCompany}
+                    {organizationName}
                   </p>
                 </div>
               </div>

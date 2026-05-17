@@ -9,26 +9,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  getDiagnosticShareLinks,
-  getRespondentGroups,
-} from "@/lib/data/omdx-data-source";
-import type { Diagnostic, RespondentGroup } from "@/lib/types";
+import { getRespondentGroups } from "@/lib/data/omdx-domain";
+import type { DiagnosticShareLink, RespondentGroup } from "@/lib/types";
 
 type ShareLinksProps = {
-  diagnostic: Diagnostic;
   disabled: boolean;
+  links: DiagnosticShareLink[];
   copiedGroup: RespondentGroup | null;
   onCopy: (group: RespondentGroup, value: string) => void;
 };
 
 export function ShareLinks({
-  diagnostic,
   disabled,
+  links,
   copiedGroup,
   onCopy,
 }: ShareLinksProps) {
-  const shareLinks = getDiagnosticShareLinks(diagnostic);
   const respondentGroups = getRespondentGroups();
 
   return (
@@ -41,7 +37,7 @@ export function ShareLinks({
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 xl:grid-cols-3">
-        {shareLinks.map((link) => {
+        {links.map((link) => {
           const copied = copiedGroup === link.group;
           const group = respondentGroups.find((item) => item.id === link.group);
 

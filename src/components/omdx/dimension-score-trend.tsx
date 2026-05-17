@@ -1,5 +1,5 @@
 import { getNeutralScoreColor } from "@/components/omdx/chart-colors";
-import { classifyScore } from "@/lib/data/omdx-data-source";
+import { classifyScore } from "@/lib/data/omdx-domain";
 import type { DimensionInsightTrendPoint } from "@/lib/types";
 
 type DimensionScoreTrendProps = {

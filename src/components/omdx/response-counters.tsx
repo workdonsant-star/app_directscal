@@ -8,7 +8,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getRespondentGroups } from "@/lib/data/omdx-data-source";
+import {
+  canGenerateDiagnosticReport,
+  getRespondentGroups,
+} from "@/lib/data/omdx-domain";
 import type { Diagnostic, DiagnosticStatus } from "@/lib/types";
 
 type ResponseCountersProps = {
@@ -20,7 +23,7 @@ export function ResponseCounters({
   diagnostic,
   status,
 }: ResponseCountersProps) {
-  const isReadyForAnalysis = diagnostic.generalScore !== null;
+  const isReadyForAnalysis = canGenerateDiagnosticReport(diagnostic);
   const respondentGroups = getRespondentGroups();
 
   return (
@@ -30,7 +33,7 @@ export function ResponseCounters({
           <div>
             <CardTitle>Resumo da coleta</CardTitle>
             <CardDescription>
-              Base compacta para decidir se a coleta já pode avançar.
+              Base compacta para acompanhar quando o diagnóstico já pode ser analisado.
             </CardDescription>
           </div>
           <StatusBadge status={status} />
@@ -73,12 +76,12 @@ export function ResponseCounters({
               <p className="text-sm font-medium text-foreground">
                 {isReadyForAnalysis
                   ? "Base suficiente para consolidação"
-                  : "Respostas ainda insuficientes para análise"}
+                  : "Base de Fundador ainda pendente"}
               </p>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                 {isReadyForAnalysis
-                  ? "O resultado já pode ser analisado de forma agregada quando a coleta for encerrada."
-                  : "Mantenha os links ativos até equilibrar a leitura entre fundador, liderança e operação."}
+                  ? "Os dados já podem ser analisados. Liderança e operação aparecem como sem base até receberem respostas."
+                  : "A análise é liberada quando houver ao menos uma resposta de Fundador."}
               </p>
             </div>
           </div>

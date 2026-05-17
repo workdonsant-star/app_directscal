@@ -4,21 +4,18 @@ import {
 } from "@/components/omdx/overview-executive-cards";
 import { DimensionQuestionResultsTable } from "@/components/omdx/dimension-question-results-table";
 import {
-  getDimensionInsightSummary,
-  getDimensionQuestionResults,
-} from "@/lib/data/omdx-data-source";
-import {
   classifyMaturityIndex,
   classifyMisalignmentIndex,
   formatIndex,
   normalizeGapToIndex,
   normalizeLikertToIndex,
 } from "@/lib/data/omdx-overview-analytics";
-import type { Dimension } from "@/lib/types";
+import type { DimensionInsightSummary, DimensionQuestionResult } from "@/lib/types";
 
 type DimensionInsightDashboardProps = {
-  dimension: Dimension;
+  questionResults: DimensionQuestionResult[];
   selectedDiagnostic: string;
+  summary: DimensionInsightSummary;
 };
 
 function formatScore(value: number | null) {
@@ -26,7 +23,7 @@ function formatScore(value: number | null) {
 }
 
 function buildDimensionMetrics(
-  summary: ReturnType<typeof getDimensionInsightSummary>,
+  summary: DimensionInsightSummary,
   selectedDiagnostic: string,
 ): ExecutiveCardMetric[] {
   const maturityIndex =
@@ -79,15 +76,11 @@ function buildDimensionMetrics(
 }
 
 export function DimensionInsightDashboard({
-  dimension,
+  questionResults,
   selectedDiagnostic,
+  summary,
 }: DimensionInsightDashboardProps) {
-  const summary = getDimensionInsightSummary(dimension.id, selectedDiagnostic);
   const metrics = buildDimensionMetrics(summary, selectedDiagnostic);
-  const questionResults = getDimensionQuestionResults(
-    dimension.id,
-    selectedDiagnostic,
-  );
 
   return (
     <div className="flex flex-col gap-6">

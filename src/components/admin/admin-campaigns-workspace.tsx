@@ -92,16 +92,16 @@ export function AdminCampaignsWorkspace() {
           hint="Links de aquisição configurados"
         />
         <KpiCard
-          label="Visitas mockadas"
+          label="Visitas"
           value={totalVisits.toLocaleString("pt-BR")}
           caption="Entrada por campanha"
-          hint="Base seed nesta fase"
+          hint="Registradas no Supabase"
         />
         <KpiCard
           label="Leads capturados"
           value={leads.length.toLocaleString("pt-BR")}
-          caption="Seeds e envios locais"
-          hint="Persistidos no navegador"
+          caption="Cadastros por campanha"
+          hint="Persistidos no Supabase"
         />
         <KpiCard
           label="Conversão média"

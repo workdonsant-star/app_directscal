@@ -71,11 +71,17 @@ function escapeHtml(value: string) {
 }
 
 function makeHeatmapData(data: DimensionResult[]): HeatmapDatum[] {
-  return data.flatMap((dimension, dimensionIndex) => [
-    [0, dimensionIndex, dimension.diretoria],
-    [1, dimensionIndex, dimension.lideranca],
-    [2, dimensionIndex, dimension.time],
-  ]);
+  return data.flatMap((dimension, dimensionIndex) => {
+    const candidates: Array<[number, number, number | null]> = [
+      [0, dimensionIndex, dimension.diretoria],
+      [1, dimensionIndex, dimension.lideranca],
+      [2, dimensionIndex, dimension.time],
+    ];
+
+    return candidates.flatMap(([layerIndex, index, score]) =>
+      score === null ? [] : ([[layerIndex, index, score]] as HeatmapDatum[]),
+    );
+  });
 }
 
 function getHeatmapDatum(value: unknown): HeatmapDatum | null {
@@ -259,6 +265,14 @@ export function LayerHeatmapComparisonChart({
     return (
       <div className="text-sm text-muted-foreground">
         Ainda não há percepção por camada para exibir.
+      </div>
+    );
+  }
+
+  if (heatmapData.length === 0) {
+    return (
+      <div className="text-sm text-muted-foreground">
+        Ainda não há base por camada para exibir.
       </div>
     );
   }

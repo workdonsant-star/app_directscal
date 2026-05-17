@@ -50,6 +50,10 @@ function formatScore(value: number) {
   });
 }
 
+function formatScoreOrNoBase(value: number | null) {
+  return value === null ? "Sem base" : formatScore(value);
+}
+
 function formatNumber(value: number) {
   return value.toLocaleString("pt-BR", {
     minimumFractionDigits: 2,
@@ -153,18 +157,20 @@ function Metric({
   );
 }
 
-function ScoreBar({ score }: { score: number }) {
+function ScoreBar({ score }: { score: number | null }) {
   return (
     <View style={styles.barTrack}>
-      <View
-        style={[
-          styles.barFill,
-          {
-            width: (score / 5) * 120,
-            backgroundColor: getScoreColor(score),
-          },
-        ]}
-      />
+      {score !== null && (
+        <View
+          style={[
+            styles.barFill,
+            {
+              width: (score / 5) * 120,
+              backgroundColor: getScoreColor(score),
+            },
+          ]}
+        />
+      )}
     </View>
   );
 }
@@ -172,7 +178,7 @@ function ScoreBar({ score }: { score: number }) {
 function LayerScoreRows({
   scores,
 }: {
-  scores: Record<RespondentGroup, number>;
+  scores: Record<RespondentGroup, number | null>;
 }) {
   return (
     <View style={styles.layerRows}>
@@ -181,7 +187,9 @@ function LayerScoreRows({
           <View key={group} style={styles.layerRow}>
             <Text style={styles.layerName}>{groupLabels[group]}</Text>
             <ScoreBar score={scores[group]} />
-            <Text style={styles.layerScore}>{formatScore(scores[group])}</Text>
+            <Text style={styles.layerScore}>
+              {formatScoreOrNoBase(scores[group])}
+            </Text>
           </View>
         ),
       )}
@@ -190,6 +198,10 @@ function LayerScoreRows({
 }
 
 function ExecutiveReading({ report }: { report: DiagnosticReport }) {
+  const misalignmentCopy = report.highestMisalignment
+    ? `enquanto o maior desalinhamento de percepção aparece em ${report.highestMisalignment.dimensionName}.`
+    : "enquanto a comparação entre camadas ainda está sem base suficiente.";
+
   return (
     <View style={styles.readingBox}>
       <Text style={styles.readingLabel}>Leitura executiva</Text>
@@ -197,8 +209,7 @@ function ExecutiveReading({ report }: { report: DiagnosticReport }) {
         {report.diagnostic.company} apresenta score geral de{" "}
         {formatScore(report.generalScore)}, classificado como{" "}
         {report.classification}. O principal gargalo está em{" "}
-        {report.weakestDimension.shortName}, enquanto o maior desalinhamento de
-        percepção aparece em {report.highestMisalignment.dimensionName}.
+        {report.weakestDimension.shortName}, {misalignmentCopy}
       </Text>
       <Text style={styles.readingText}>
         A recomendação inicial é priorizar a dimensão mais frágil antes de
@@ -244,8 +255,8 @@ function CoverPage({ report }: { report: DiagnosticReport }) {
         />
         <Metric
           label="Maior desalinhamento"
-          value={formatScore(report.highestMisalignment.value)}
-          caption={report.highestMisalignment.dimensionName}
+          value={formatScoreOrNoBase(report.highestMisalignment?.value ?? null)}
+          caption={report.highestMisalignment?.dimensionName ?? "Sem base por camada"}
         />
       </View>
 
@@ -301,9 +312,11 @@ function OverviewPage({ report }: { report: DiagnosticReport }) {
               {dimension.responses.toLocaleString("pt-BR")}
             </Text>
             <Text style={[styles.colGap, styles.cellText]}>
-              {formatScore(dimension.misalignment.value)} entre{" "}
-              {groupLabels[dimension.misalignment.highestGroup]} e{" "}
-              {groupLabels[dimension.misalignment.lowestGroup]}
+              {dimension.misalignment
+                ? `${formatScore(dimension.misalignment.value)} entre ${
+                    groupLabels[dimension.misalignment.highestGroup]
+                  } e ${groupLabels[dimension.misalignment.lowestGroup]}`
+                : "Sem base"}
             </Text>
           </View>
         ))}
@@ -328,9 +341,9 @@ function MatrixPage({ report }: { report: DiagnosticReport }) {
           <View style={styles.layerAverageBox}>
             <Text style={styles.metricLabel}>Média por camada</Text>
             <Text style={styles.layerAverageText}>
-              Fundador {formatScore(report.layerAverages.fundador)} / Liderança{" "}
-              {formatScore(report.layerAverages.lideranca)} / Operação{" "}
-              {formatScore(report.layerAverages.operacao)}
+              Fundador {formatScoreOrNoBase(report.layerAverages.fundador)} /
+              Liderança {formatScoreOrNoBase(report.layerAverages.lideranca)} /
+              Operação {formatScoreOrNoBase(report.layerAverages.operacao)}
             </Text>
           </View>
         </View>
@@ -361,13 +374,13 @@ function MatrixPage({ report }: { report: DiagnosticReport }) {
                 <View key={group} style={styles.matrixLayerCol}>
                   <ScoreBar score={dimension.layerScores[group]} />
                   <Text style={styles.matrixScore}>
-                    {formatScore(dimension.layerScores[group])}
+                    {formatScoreOrNoBase(dimension.layerScores[group])}
                   </Text>
                 </View>
               ),
             )}
             <Text style={styles.matrixGapCol}>
-              {formatScore(dimension.misalignment.value)}
+              {formatScoreOrNoBase(dimension.misalignment?.value ?? null)}
             </Text>
           </View>
         ))}
@@ -405,13 +418,13 @@ function QuestionTable({ questions }: { questions: DiagnosticReportQuestion[] })
         <View key={question.id} style={styles.questionRow}>
           <Text style={styles.questionTextCol}>{question.text}</Text>
           <Text style={styles.questionNumberCol}>
-            {formatScore(question.layerScores.fundador)}
+            {formatScoreOrNoBase(question.layerScores.fundador)}
           </Text>
           <Text style={styles.questionNumberCol}>
-            {formatScore(question.layerScores.lideranca)}
+            {formatScoreOrNoBase(question.layerScores.lideranca)}
           </Text>
           <Text style={styles.questionNumberCol}>
-            {formatScore(question.layerScores.operacao)}
+            {formatScoreOrNoBase(question.layerScores.operacao)}
           </Text>
           <Text style={styles.questionNumberCol}>
             {formatScore(question.score)}
@@ -466,9 +479,11 @@ function DimensionPage({
             <View style={styles.gapBox}>
               <Text style={styles.metricLabel}>Maior desalinhamento</Text>
               <Text style={styles.gapText}>
-                {formatScore(dimension.misalignment.value)} entre{" "}
-                {groupLabels[dimension.misalignment.highestGroup]} e{" "}
-                {groupLabels[dimension.misalignment.lowestGroup]}
+                {dimension.misalignment
+                  ? `${formatScore(dimension.misalignment.value)} entre ${
+                      groupLabels[dimension.misalignment.highestGroup]
+                    } e ${groupLabels[dimension.misalignment.lowestGroup]}`
+                  : "Sem base por camada"}
               </Text>
             </View>
           </View>

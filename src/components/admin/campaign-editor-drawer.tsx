@@ -24,7 +24,7 @@ import {
   createAcquisitionSlug,
   fieldTypeLabel,
   isCoreAcquisitionField,
-  saveAcquisitionCampaign,
+  notifyAdminDataChanged,
 } from "@/lib/data/admin-data-source";
 import type {
   AcquisitionCampaign,
@@ -91,6 +91,8 @@ export function CampaignEditorDrawer({
   onOpenChange,
 }: CampaignEditorDrawerProps) {
   const [draft, setDraft] = useState<AcquisitionCampaign | null>(campaign);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const moduleOptions = modules.map((module) => ({
     value: module.id,
     label: module.shortName,
@@ -157,16 +159,41 @@ export function CampaignEditorDrawer({
     });
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!draft) return;
-    saveAcquisitionCampaign({
+    setIsSaving(true);
+    setSaveError(null);
+
+    const nextDraft = {
       ...draft,
       fields: sortFields(draft.fields).map((field, index) => ({
         ...field,
         order: index,
       })),
-    });
-    onOpenChange(false);
+    };
+
+    try {
+      const response = await fetch("/api/admin/campaigns", {
+        method: mode === "create" ? "POST" : "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(nextDraft),
+      });
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as
+          | { message?: string }
+          | null;
+        setSaveError(data?.message ?? "Não foi possível salvar a campanha.");
+        setIsSaving(false);
+        return;
+      }
+
+      notifyAdminDataChanged();
+      onOpenChange(false);
+    } catch {
+      setSaveError("Não foi possível salvar a campanha agora.");
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -450,13 +477,23 @@ export function CampaignEditorDrawer({
               </div>
             </section>
 
+            {saveError ? (
+              <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {saveError}
+              </p>
+            ) : null}
+
             <div className="sticky bottom-0 -mx-4 -mb-4 flex justify-end gap-2 border-t bg-popover p-4">
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Cancelar
               </Button>
-              <Button onClick={handleSave}>
+              <Button disabled={isSaving} onClick={handleSave}>
                 <Save className="size-4" />
-                {mode === "create" ? "Criar campanha" : "Salvar configuração"}
+                {isSaving
+                  ? "Salvando"
+                  : mode === "create"
+                    ? "Criar campanha"
+                    : "Salvar configuração"}
               </Button>
             </div>
           </div>

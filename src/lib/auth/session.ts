@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 
 import { auth } from "../../../auth";
+import { isDevPasswordLoginEnabled } from "@/lib/auth/access-control";
 import {
   authUserSchema,
   type AuthSession,
@@ -15,8 +16,10 @@ function toAuthSession(
   user: AuthUser,
   expires: string,
   supabaseAccessToken?: string,
+  acquisition?: boolean,
 ): AuthSession {
   return {
+    acquisition: acquisition ? true : undefined,
     token: `authjs:${user.id}`,
     supabaseAccessToken,
     user,
@@ -37,13 +40,16 @@ export async function getCurrentAuthSession() {
           parsedUser.data,
           session.expires,
           session.supabaseAccessToken,
+          session.acquisition,
         );
       }
     }
   } catch {
-    // Google OAuth may be unconfigured in local demos; the mock cookie remains
-    // available so the interface can still be explored with seeded users.
+    // Google OAuth may be unconfigured in local demos. The mock cookie is only
+    // honored when the explicit development password fallback is enabled.
   }
+
+  if (!isDevPasswordLoginEnabled()) return null;
 
   const cookieStore = await cookies();
 

@@ -32,7 +32,7 @@ export function DeleteDiagnosticDialog({
           <DialogTitle>Excluir diagnóstico</DialogTitle>
           <DialogDescription>
             {diagnostic
-              ? `Tem certeza que deseja excluir “${diagnostic.name}”? Esta ação remove o diagnóstico apenas desta sessão mockada.`
+              ? `Tem certeza que deseja excluir “${diagnostic.name}”? Esta ação remove o diagnóstico e os links de coleta vinculados.`
               : "Tem certeza que deseja excluir este diagnóstico?"}
           </DialogDescription>
         </DialogHeader>

@@ -82,6 +82,19 @@ export function isDevPasswordLoginEnabled() {
   );
 }
 
+export function isSuperadminEmail(email: string) {
+  return normalizeList(process.env.AUTH_SUPERADMIN_EMAILS).includes(
+    normalizeEmail(email),
+  );
+}
+
+export function isSuperadminPasswordLoginEnabled() {
+  return (
+    process.env.AUTH_ENABLE_SUPERADMIN_PASSWORD_LOGIN === "true" &&
+    Boolean(process.env.AUTH_SUPERADMIN_PASSWORD)
+  );
+}
+
 export function isGoogleAuthConfigured() {
   return Boolean(
     (process.env.AUTH_SECRET ||
@@ -98,13 +111,11 @@ export function isCorporateEmailAllowed(email: string) {
   const allowedDomains = normalizeList(process.env.AUTH_ALLOWED_DOMAINS);
   const allowedEmails = normalizeList(process.env.AUTH_ALLOWED_EMAILS);
 
-  if (!domain || allowedDomains.length === 0 || allowedEmails.length === 0) {
-    return false;
-  }
+  if (!domain || allowedDomains.length === 0) return false;
+  if (!allowedDomains.includes(domain)) return false;
+  if (allowedEmails.length > 0) return allowedEmails.includes(normalizedEmail);
 
-  return (
-    allowedDomains.includes(domain) && allowedEmails.includes(normalizedEmail)
-  );
+  return true;
 }
 
 export function isGoogleProfileAllowed(profile: unknown) {

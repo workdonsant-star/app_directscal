@@ -6,9 +6,11 @@ import { SignInForm } from "@/components/auth/sign-in-form";
 import {
   isDevPasswordLoginEnabled,
   isGoogleAuthConfigured,
+  isSuperadminPasswordLoginEnabled,
 } from "@/lib/auth/access-control";
 import { getSignedInRedirectPath } from "@/lib/auth/navigation";
 import { getCurrentAuthSession } from "@/lib/auth/session";
+import { isSupabaseConfigured } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Entrar — Directscal OMDx",
@@ -18,7 +20,15 @@ function getAuthErrorMessage(error?: string | string[]) {
   const errorCode = Array.isArray(error) ? error[0] : error;
 
   if (errorCode === "AccessDenied") {
-    return "Este e-mail não está autorizado para acessar o OMDx.";
+    return "Este e-mail ainda não tem um cadastro ativo no OMDx.";
+  }
+
+  if (errorCode === "OAuthAccountNotLinked") {
+    return "Este e-mail ainda não tem um vínculo ativo com Google no OMDx.";
+  }
+
+  if (errorCode === "CallbackRouteError" || errorCode === "Configuration") {
+    return "Não foi possível validar a entrada com Google neste ambiente.";
   }
 
   if (errorCode) {
@@ -40,6 +50,8 @@ export default async function SignInPage({
   }
 
   const resolvedSearchParams = await searchParams;
+  const superadminPasswordLoginEnabled =
+    isSuperadminPasswordLoginEnabled() && isSupabaseConfigured();
 
   return (
     <AuthPageShell
@@ -52,7 +64,12 @@ export default async function SignInPage({
             ? null
             : "Google ainda não está configurado neste ambiente."
         }
-        passwordLoginEnabled={isDevPasswordLoginEnabled()}
+        passwordLoginEnabled={
+          superadminPasswordLoginEnabled || isDevPasswordLoginEnabled()
+        }
+        passwordLoginMode={
+          superadminPasswordLoginEnabled ? "superadmin" : "dev"
+        }
       />
     </AuthPageShell>
   );

@@ -19,7 +19,7 @@ Rotas autenticadas da visão de superadministrador. Usam a mesma shell do app (`
 
 - Manter container `mx-auto w-full max-w-6xl` com padding `px-6 py-8 lg:px-10`.
 - Manter continuidade visual com `/omdx/diagnosticos`: páginas de listagem do admin devem renderizar tabelas livres, sem card/box externo envolvendo a tabela.
-- Dados vêm de `src/lib/data/admin-data-source.ts`.
-- Campanhas, leads e empresas ficam fora do primeiro go-live OMDx e devem respeitar `FEATURE_ACQUISITION=false`.
-- Não criar backend, autenticação real, permissões ou Supabase nesta fase.
+- Dados vêm de `/api/admin/acquisition`, montados no servidor a partir do Supabase.
+- Campanhas, leads e empresas ficam disponíveis quando `FEATURE_ACQUISITION=true`; com o flag desligado, as rotas retornam `notFound()`.
+- Rotas `/admin/*` exigem role `superadmin`; usuários `cliente` devem ser redirecionados para `/omdx`.
 - Breadcrumbs devem começar por `Admin`.

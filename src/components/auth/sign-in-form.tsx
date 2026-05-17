@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getSignedInRedirectPath } from "@/lib/auth/navigation";
 
+type PasswordLoginMode = "dev" | "superadmin";
+
 async function getResponseMessage(response: Response, fallback: string) {
   const data: unknown = await response.json().catch(() => null);
 
@@ -53,10 +55,12 @@ export function SignInForm({
   authErrorMessage,
   googleUnavailableMessage,
   passwordLoginEnabled = true,
+  passwordLoginMode = "dev",
 }: {
   authErrorMessage?: string | null;
   googleUnavailableMessage?: string | null;
   passwordLoginEnabled?: boolean;
+  passwordLoginMode?: PasswordLoginMode;
 }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -66,6 +70,7 @@ export function SignInForm({
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
   const displayedError = error ?? authErrorMessage;
+  const isDevPasswordLogin = passwordLoginMode === "dev";
 
   async function handleGoogleSignIn() {
     setError(null);
@@ -87,6 +92,26 @@ export function SignInForm({
     event.preventDefault();
     setError(null);
     setIsSubmitting(true);
+
+    if (passwordLoginMode === "superadmin") {
+      const result = await signIn("credentials", {
+        callbackUrl: "/admin/modulos",
+        email,
+        flow: "app",
+        password,
+        redirect: false,
+      }).catch(() => null);
+
+      if (!result || result.error) {
+        setError("E-mail ou senha inválidos.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      router.push(getSignedInRedirectPath({ role: "superadmin" }));
+      router.refresh();
+      return;
+    }
 
     const response = await fetch("/api/auth/login", {
       method: "POST",
@@ -149,12 +174,14 @@ export function SignInForm({
                 <label htmlFor="password" className="text-sm font-medium">
                   Senha
                 </label>
-                <Link
-                  href="/recuperar-senha"
-                  className="rounded-sm text-sm font-medium text-primary outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-                >
-                  Esqueceu sua senha?
-                </Link>
+                {isDevPasswordLogin ? (
+                  <Link
+                    href="/recuperar-senha"
+                    className="rounded-sm text-sm font-medium text-primary outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                  >
+                    Esqueceu sua senha?
+                  </Link>
+                ) : null}
               </div>
               <Input
                 id="password"
@@ -166,15 +193,17 @@ export function SignInForm({
                 required
               />
             </div>
-            <label className="flex items-center gap-2 text-sm font-medium">
-              <input
-                type="checkbox"
-                className="size-4 rounded border border-input accent-primary"
-                checked={remember}
-                onChange={(event) => setRemember(event.target.checked)}
-              />
-              Lembrar de mim neste dispositivo
-            </label>
+            {isDevPasswordLogin ? (
+              <label className="flex items-center gap-2 text-sm font-medium">
+                <input
+                  type="checkbox"
+                  className="size-4 rounded border border-input accent-primary"
+                  checked={remember}
+                  onChange={(event) => setRemember(event.target.checked)}
+                />
+                Lembrar de mim neste dispositivo
+              </label>
+            ) : null}
             <Button
               type="submit"
               className="h-11 w-full"

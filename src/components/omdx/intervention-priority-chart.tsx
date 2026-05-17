@@ -9,7 +9,6 @@ import {
   calculateDimensionGap,
   classifyCriticality,
   getCriticalityReading,
-  getOmdxOverviewAnalytics,
   type DimensionResult,
 } from "@/lib/data/omdx-overview-analytics";
 import { useChartThemeColors } from "@/components/omdx/use-chart-theme-colors";
@@ -21,7 +20,7 @@ type TooltipParam = {
 };
 
 type InterventionPriorityRow = DimensionResult & {
-  gap: number;
+  gap: number | null;
   criticality: number;
   classification: string;
   reading: string;
@@ -92,6 +91,10 @@ function escapeHtml(value: string) {
     .replaceAll("'", "&#039;");
 }
 
+function formatScoreOrNoBase(value: number | null) {
+  return value === null ? "Sem base" : scoreFormatter.format(value);
+}
+
 function getCriticalityColor(criticality: number, colors: Record<string, string>) {
   if (criticality <= 25) return colors["--omdx-dimension-cool-gray-30"];
   if (criticality <= 50) return colors["--omdx-dimension-cool-gray-50"];
@@ -159,7 +162,7 @@ function makeTooltipFormatter(data: InterventionPriorityRow[]) {
           </div>
           <div style="display:flex;justify-content:space-between;gap:24px;">
             <span style="color:var(--muted-foreground);">Gap</span>
-            <span style="font-variant-numeric:tabular-nums;color:var(--foreground);">${scoreFormatter.format(item.gap)}</span>
+            <span style="font-variant-numeric:tabular-nums;color:var(--foreground);">${formatScoreOrNoBase(item.gap)}</span>
           </div>
           <div style="display:flex;justify-content:space-between;gap:24px;">
             <span style="color:var(--muted-foreground);">Dispersão</span>
@@ -184,7 +187,7 @@ export function InterventionPriorityChart({
   data,
 }: InterventionPriorityChartProps) {
   const colors = useChartThemeColors(fallbackColors);
-  const sourceData = data ?? getOmdxOverviewAnalytics().dimensions;
+  const sourceData = useMemo(() => data ?? [], [data]);
   const chartData = useMemo(() => toChartData(sourceData), [sourceData]);
   const chartHeight = Math.max(420, chartData.length * 70 + 92);
 

@@ -31,10 +31,14 @@ import {
 import {
   canGenerateDiagnosticActionPlan,
   canGenerateDiagnosticReport,
-  getResponseToken,
   getRespondentGroups,
-} from "@/lib/data/omdx-data-source";
-import type { Diagnostic, DiagnosticStatus, RespondentGroup } from "@/lib/types";
+} from "@/lib/data/omdx-domain";
+import type {
+  Diagnostic,
+  DiagnosticShareLink,
+  DiagnosticStatus,
+  RespondentGroup,
+} from "@/lib/types";
 
 type Filter = "todos" | DiagnosticStatus;
 
@@ -57,6 +61,7 @@ function formatDate(iso: string) {
 
 type DiagnosticsTableProps = {
   diagnostics: Diagnostic[];
+  shareLinksByDiagnosticId: Record<string, DiagnosticShareLink[]>;
   onConfigure?: (diagnostic: Diagnostic) => void;
   onDelete?: (diagnostic: Diagnostic) => void;
 };
@@ -81,14 +86,16 @@ function ResponseLinkCell({
   copiedKey,
   diagnostic,
   groupId,
+  link,
   onCopy,
 }: {
   copiedKey: string | null;
   diagnostic: Diagnostic;
   groupId: RespondentGroup;
-  onCopy: (diagnostic: Diagnostic, groupId: RespondentGroup) => void;
+  link?: DiagnosticShareLink;
+  onCopy: (diagnostic: Diagnostic, link: DiagnosticShareLink) => void;
 }) {
-  if (diagnostic.status === "rascunho") {
+  if (diagnostic.status === "rascunho" || !link) {
     return <span className="text-muted-foreground">—</span>;
   }
 
@@ -99,7 +106,7 @@ function ResponseLinkCell({
     <Button
       variant="outline"
       size="xs"
-      onClick={() => onCopy(diagnostic, groupId)}
+      onClick={() => onCopy(diagnostic, link)}
       aria-label={`Copiar link de ${groupId}`}
     >
       {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
@@ -110,6 +117,7 @@ function ResponseLinkCell({
 
 export function DiagnosticsTable({
   diagnostics,
+  shareLinksByDiagnosticId,
   onConfigure,
   onDelete,
 }: DiagnosticsTableProps) {
@@ -138,13 +146,10 @@ export function DiagnosticsTable({
 
   async function handleCopyResponseLink(
     diagnostic: Diagnostic,
-    groupId: RespondentGroup,
+    link: DiagnosticShareLink,
   ) {
-    const token = getResponseToken(diagnostic.id, groupId);
-    const url = `${window.location.origin}/r/${token}`;
-
-    await navigator.clipboard.writeText(url);
-    setCopiedKey(`${diagnostic.id}-${groupId}`);
+    await navigator.clipboard.writeText(link.publicUrl);
+    setCopiedKey(`${diagnostic.id}-${link.group}`);
     window.setTimeout(() => setCopiedKey(null), 1800);
   }
 
@@ -220,6 +225,9 @@ export function DiagnosticsTable({
                       copiedKey={copiedKey}
                       diagnostic={d}
                       groupId={group.id}
+                      link={shareLinksByDiagnosticId[d.id]?.find(
+                        (link) => link.group === group.id,
+                      )}
                       onCopy={handleCopyResponseLink}
                     />
                   </TableCell>
