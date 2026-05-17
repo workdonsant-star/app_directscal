@@ -10,10 +10,16 @@ import {
   authSessionCookieName,
   getAuthCookieOptions,
 } from "@/lib/auth/mock-auth";
+import { clearAuthJsSessionCookies } from "@/lib/auth/authjs-cookies";
 
 const oauthIntentInputSchema = z.object({
-  token: z.string().min(1),
+  slug: z.string().min(1).optional(),
+  token: z.string().min(1).optional(),
 });
+
+function resolveCampaignSlug(input: z.infer<typeof oauthIntentInputSchema>) {
+  return input.slug ?? input.token ?? null;
+}
 
 function clearMockSession(response: NextResponse) {
   response.cookies.set(authSessionCookieName, "", {
@@ -35,8 +41,9 @@ export async function POST(request: Request) {
   }
 
   const parsed = oauthIntentInputSchema.safeParse(body);
+  const slug = parsed.success ? resolveCampaignSlug(parsed.data) : null;
 
-  if (!parsed.success) {
+  if (!parsed.success || !slug) {
     return NextResponse.json(
       { message: "Campanha inválida." },
       { status: 400 },
@@ -44,7 +51,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const intent = await createAcquisitionOauthIntent(parsed.data.token);
+    const intent = await createAcquisitionOauthIntent(slug);
     const response = NextResponse.json(
       {
         callbackUrl: intent.campaign.publicPath.concat("/completar"),
@@ -60,6 +67,7 @@ export async function POST(request: Request) {
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
     });
+    clearAuthJsSessionCookies(response);
     clearMockSession(response);
 
     return response;

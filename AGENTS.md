@@ -119,7 +119,7 @@ src/
 │   │       ├── page.tsx      ← dashboard executivo do OMDx
 │   │       ├── diagnosticos/ ← área operacional de diagnósticos
 │   │       └── [id]/         ← camadas de detalhe/compartilhamento
-│   ├── a/[token]/            ← aquisição pública por campanha
+│   ├── a/[slug]/             ← aquisição pública por campanha
 │   ├── api/auth/             ← Auth.js Google OAuth + endpoints mockados de fallback
 │   ├── globals.css           ← tokens da Directscal mapeados p/ shadcn
 │   ├── layout.tsx            ← root layout, ThemeProvider, fontes
@@ -157,8 +157,8 @@ Rotas atuais:
 - `/admin/campanhas` → campanhas, links e campos de aquisição.
 - `/admin/leads` → leads capturados por links de aquisição.
 - `/admin/empresas` → empresas derivadas dos leads.
-- `/a/[token]` → início público de aquisição por campanha.
-- `/a/[token]/completar` → conclusão do cadastro Google da campanha.
+- `/a/[slug]` → início público de aquisição por campanha.
+- `/a/[slug]/completar` → conclusão do cadastro Google da campanha.
 
 Rotas e fluxos planejados:
 - `/omdx/diagnosticos` — área operacional com lista completa, filtros e ações, acessada pela sidebar.

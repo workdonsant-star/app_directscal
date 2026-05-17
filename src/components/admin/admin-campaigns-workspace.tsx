@@ -38,7 +38,7 @@ function conversionRate(leads: number, visits: number) {
 
 export function AdminCampaignsWorkspace() {
   const { campaigns, leads, modules } = useAdminData();
-  const [copiedToken, setCopiedToken] = useState<string | null>(null);
+  const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const [selectedCampaign, setSelectedCampaign] =
     useState<AcquisitionCampaign | null>(null);
   const [drawerMode, setDrawerMode] = useState<"create" | "edit">("edit");
@@ -64,8 +64,8 @@ export function AdminCampaignsWorkspace() {
     const origin = window.location.origin;
     const url = `${origin}${campaign.publicPath}`;
     await navigator.clipboard.writeText(url);
-    setCopiedToken(campaign.token);
-    window.setTimeout(() => setCopiedToken(null), 1800);
+    setCopiedSlug(campaign.slug);
+    window.setTimeout(() => setCopiedSlug(null), 1800);
   }
 
   function openCreateCampaign() {
@@ -158,7 +158,7 @@ export function AdminCampaignsWorkspace() {
             <TableBody>
               {campaigns.map((campaign) => {
                 const leadsCount = campaignLeadCounts[campaign.id] ?? 0;
-                const copied = copiedToken === campaign.token;
+                const copied = copiedSlug === campaign.slug;
 
                 return (
                   <TableRow key={campaign.id}>

@@ -105,15 +105,15 @@ export function CampaignEditorDrawer({
     setDraft((current) => (current ? { ...current, [key]: value } : current));
   }
 
-  function updateToken(value: string) {
-    const token = createAcquisitionSlug(value);
+  function updateSlug(value: string) {
+    const slug = createAcquisitionSlug(value);
 
     setDraft((current) =>
       current
         ? {
             ...current,
-            token,
-            publicPath: `/a/${token}`,
+            slug,
+            publicPath: `/a/${slug}`,
           }
         : current,
     );
@@ -302,7 +302,7 @@ export function CampaignEditorDrawer({
 
               <div className="flex flex-col gap-2 lg:col-span-2">
                 <label
-                  htmlFor="campaign-token"
+                  htmlFor="campaign-slug"
                   className="text-sm font-medium text-foreground"
                 >
                   Slug de aquisição
@@ -312,10 +312,10 @@ export function CampaignEditorDrawer({
                     /a/
                   </span>
                   <Input
-                    id="campaign-token"
+                    id="campaign-slug"
                     className="h-8 border-0 bg-transparent focus-visible:ring-0"
-                    value={draft.token}
-                    onChange={(event) => updateToken(event.target.value)}
+                    value={draft.slug}
+                    onChange={(event) => updateSlug(event.target.value)}
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">

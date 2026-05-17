@@ -10,7 +10,7 @@ Componentes específicos da visão de superadministrador da Directscal. Eles adm
 
 - Componentes devem consumir DTOs em camelCase vindos de `src/lib/data/admin-data-source.ts` e dos Route Handlers de admin.
 - Campanhas, leads e empresas são persistidos no Supabase; não reintroduza `localStorage` para este fluxo.
-- O link público de campanha começa por uma tela de escolha de método. Google cria um intent, encerra a sessão Auth.js anterior para forçar nova escolha de conta e completa empresa em `/a/[token]/completar`; e-mail abre uma segunda etapa com dados da campanha e senha. Ambos criam lead, organização e membership `cliente`.
+- O link público de campanha começa por uma tela de escolha de método. Google cria um intent, encerra a sessão Auth.js anterior para forçar nova escolha de conta e completa empresa em `/a/[slug]/completar`; e-mail abre uma segunda etapa com dados da campanha e senha. Ambos criam lead, organização e membership `cliente`.
 - A interface pública de campanha segue o padrão visual das telas de autenticação: logo no topo, formulário em coluna estreita e vídeo `liquid_background.mp4` no painel lateral desktop.
 - Campanhas, leads, empresas e aquisição pública ficam disponíveis quando `FEATURE_ACQUISITION=true`; com o flag desligado, as rotas permanecem bloqueadas.
 - Use os mesmos primitives do app autenticado: `Table`, `Card`, `Button`, `Sheet`, `Select`, `Badge` e `KpiCard` compartilhado.
@@ -30,7 +30,7 @@ Componentes específicos da visão de superadministrador da Directscal. Eles adm
 | `AdminLeadsTable` | `/admin/leads`, listagem de leads capturados com navegação por linha para o detalhe. |
 | `AdminLeadDetail` | `/admin/leads/[id]`, leitura completa de contato, empresa, aquisição e campos preenchidos. |
 | `AdminCompaniesTable` | `/admin/empresas`, empresas agrupadas a partir dos leads. |
-| `AcquisitionPublicFlow` | `/a/[token]`, escolha de método de acesso e formulário público configurável na etapa de e-mail. |
-| `AcquisitionGoogleCompleteFlow` | `/a/[token]/completar`, coleta empresa após Google e conclui o cadastro como cliente. |
+| `AcquisitionPublicFlow` | `/a/[slug]`, escolha de método de acesso e formulário público configurável na etapa de e-mail. |
+| `AcquisitionGoogleCompleteFlow` | `/a/[slug]/completar`, coleta empresa após Google e conclui o cadastro como cliente. |
 | `AdminStatusBadge` | Status discretos de módulos/campanhas. |
 | `useAdminData` | Busca client-side do snapshot Supabase em `/api/admin/acquisition`. |

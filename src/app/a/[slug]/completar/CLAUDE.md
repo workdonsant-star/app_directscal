@@ -1,4 +1,4 @@
-# `/a/[token]/completar` — Completar campanha Google
+# `/a/[slug]/completar` — Completar campanha Google
 
 ## Propósito
 
@@ -7,7 +7,7 @@ Etapa pública autenticada por Google para completar o cadastro vindo de uma cam
 ## Convenções locais
 
 - Usa sessão Auth.js real; cookie mockado não deve liberar esta etapa.
-- Exige intent httpOnly ativo e `session.acquisition === true`; sessão corporativa antiga deve voltar para `/a/[token]`.
+- Exige intent httpOnly ativo e `session.acquisition === true`; sessão corporativa antiga deve voltar para `/a/[slug]`.
 - O e-mail exibido e gravado vem do Google OAuth autenticado, não de campo digitado na campanha.
-- O token da campanha precisa permanecer ativo.
+- A slug da campanha precisa permanecer ativa.
 - A pessoa nunca é enviada para `/admin` por este fluxo, mesmo usando e-mail corporativo da Directscal.

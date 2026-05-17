@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 type AcquisitionCompletePageProps = {
-  params: Promise<{ token: string }>;
+  params: Promise<{ slug: string }>;
 };
 
 export default async function AcquisitionCompletePage({
@@ -27,25 +27,25 @@ export default async function AcquisitionCompletePage({
     notFound();
   }
 
-  const { token } = await params;
+  const { slug } = await params;
   const session = await auth();
   const cookieStore = await cookies();
   const intent = await getAcquisitionOauthIntent(
     cookieStore.get(acquisitionOauthIntentCookieName)?.value,
   );
 
-  if (!intent || intent.campaign.token !== token) {
-    redirect(`/a/${token}`);
+  if (!intent || intent.campaign.slug !== slug) {
+    redirect(`/a/${slug}`);
   }
 
   if (!session?.user || session.acquisition !== true) {
-    redirect(`/a/${token}`);
+    redirect(`/a/${slug}`);
   }
 
   const parsedUser = authUserSchema.safeParse(session.user);
 
   if (!parsedUser.success) {
-    redirect(`/a/${token}`);
+    redirect(`/a/${slug}`);
   }
 
   const campaign = intent.campaign;
@@ -55,7 +55,7 @@ export default async function AcquisitionCompletePage({
     <AcquisitionGoogleCompleteFlow
       campaign={campaign}
       selectedModule={selectedModule}
-      token={token}
+      slug={slug}
       user={parsedUser.data}
     />
   );

@@ -36,7 +36,7 @@ src/app/
 │       ├── page.tsx          ← formulário público do respondente por token real
 │       └── obrigado/page.tsx ← confirmação após resposta registrada
 ├── a/
-│   └── [token]/
+│   └── [slug]/
 │       ├── page.tsx          ← início público de aquisição por campanha
 │       └── completar/page.tsx ← conclusão Google da campanha
 ├── api/
@@ -104,8 +104,8 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/admin/leads` | `(app)/admin/leads/` | Superadmin: leads capturados pelos links. |
 | `/admin/leads/[id]` | `(app)/admin/leads/[id]/` | Superadmin: detalhe completo do lead capturado. |
 | `/admin/empresas` | `(app)/admin/empresas/` | Superadmin: empresas derivadas dos leads. |
-| `/a/[token]` | `a/[token]/` | Fluxo público de aquisição por campanha — **fora** do route group `(app)`, sem sidebar/topbar |
-| `/a/[token]/completar` | `a/[token]/completar/` | Completa dados de empresa após Google e cria lead/membership `cliente`. |
+| `/a/[slug]` | `a/[slug]/` | Fluxo público de aquisição por campanha — **fora** do route group `(app)`, sem sidebar/topbar |
+| `/a/[slug]/completar` | `a/[slug]/completar/` | Completa dados de empresa após Google e cria lead/membership `cliente`. |
 
 ## Navegação e breadcrumb
 

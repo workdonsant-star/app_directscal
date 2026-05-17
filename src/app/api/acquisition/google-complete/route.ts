@@ -16,9 +16,14 @@ import {
 } from "@/lib/auth/mock-auth";
 
 const googleCompleteInputSchema = z.object({
-  token: z.string().min(1),
+  slug: z.string().min(1).optional(),
+  token: z.string().min(1).optional(),
   values: z.record(z.string(), z.string()),
 });
+
+function resolveCampaignSlug(input: z.infer<typeof googleCompleteInputSchema>) {
+  return input.slug ?? input.token ?? null;
+}
 
 function clearCampaignCookies(response: NextResponse) {
   response.cookies.set(authSessionCookieName, "", {
@@ -63,8 +68,9 @@ export async function POST(request: Request) {
   }
 
   const parsed = googleCompleteInputSchema.safeParse(body);
+  const slug = parsed.success ? resolveCampaignSlug(parsed.data) : null;
 
-  if (!parsed.success) {
+  if (!parsed.success || !slug) {
     return NextResponse.json(
       { message: "Revise os dados da empresa." },
       { status: 400 },
@@ -75,7 +81,7 @@ export async function POST(request: Request) {
   const intentToken = cookieStore.get(acquisitionOauthIntentCookieName)?.value;
   const intent = await getAcquisitionOauthIntent(intentToken);
 
-  if (!intent || intent.campaign.token !== parsed.data.token) {
+  if (!intent || intent.campaign.slug !== slug) {
     return NextResponse.json(
       { message: "A sessão de campanha expirou. Abra o link novamente." },
       { status: 409 },
@@ -86,7 +92,7 @@ export async function POST(request: Request) {
     const lead = await completeAcquisitionGoogleLead({
       email: session.user.email,
       name: session.user.name,
-      token: parsed.data.token,
+      slug,
       userId: session.user.id,
       values: parsed.data.values,
     });

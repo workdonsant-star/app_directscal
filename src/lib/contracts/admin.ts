@@ -63,7 +63,7 @@ export const acquisitionCampaignSchema = z.object({
   name: z.string().min(1),
   source: z.string().min(1),
   status: acquisitionCampaignStatusSchema,
-  token: z.string().min(1),
+  slug: z.string().min(1),
   publicPath: z.string().min(1),
   createdAt: isoDateTimeSchema,
   updatedAt: isoDateTimeSchema,
@@ -104,7 +104,7 @@ export const leadCompanySchema = z.object({
 });
 
 export const acquisitionSubmissionInputSchema = z.object({
-  token: z.string().min(1),
+  slug: z.string().min(1),
   values: z.record(z.string(), z.string()),
 });
 

@@ -31,8 +31,9 @@ import { cn } from "@/lib/utils";
 
 type AcquisitionPublicFlowProps = {
   campaign: AcquisitionCampaign | null;
+  initialAuthError?: string | null;
   selectedModule: AdminModule | null;
-  token: string;
+  slug: string;
 };
 
 type AcquisitionStep = "choice" | "email";
@@ -95,14 +96,14 @@ async function getResponseMessage(response: Response, fallback: string) {
 
 export async function startCampaignGoogleSignIn({
   createIntent,
+  slug,
   signInWithGoogle,
   signOutCurrentSession,
-  token,
 }: {
   createIntent: () => Promise<Response>;
+  slug: string;
   signInWithGoogle: (callbackUrl: string) => Promise<unknown>;
   signOutCurrentSession: () => Promise<unknown>;
-  token: string;
 }) {
   const response = await createIntent();
 
@@ -124,7 +125,7 @@ export async function startCampaignGoogleSignIn({
   const callbackUrl =
     typeof callbackCandidate === "string"
       ? callbackCandidate
-      : `/a/${token}/completar`;
+      : `/a/${slug}/completar`;
 
   await signOutCurrentSession();
   await signInWithGoogle(callbackUrl);
@@ -156,8 +157,9 @@ function sortedFields(fields: AcquisitionFormField[]) {
 
 export function AcquisitionPublicFlow({
   campaign,
+  initialAuthError = null,
   selectedModule,
-  token,
+  slug,
 }: AcquisitionPublicFlowProps) {
   const router = useRouter();
   const fields = useMemo(
@@ -166,7 +168,7 @@ export function AcquisitionPublicFlow({
   );
   const [values, setValues] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [authError, setAuthError] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(initialAuthError);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [step, setStep] = useState<AcquisitionStep>("choice");
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
@@ -251,12 +253,12 @@ export function AcquisitionPublicFlow({
           fetch("/api/acquisition/oauth-intents", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ token }),
+            body: JSON.stringify({ slug }),
           }),
         signInWithGoogle: (callbackUrl) =>
           signIn("google", { callbackUrl }, { prompt: "select_account" }),
         signOutCurrentSession: () => signOut({ redirect: false }),
-        token,
+        slug,
       });
 
       if (!result.ok) {
@@ -304,7 +306,7 @@ export function AcquisitionPublicFlow({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           password,
-          token,
+          slug,
           values,
         }),
       });

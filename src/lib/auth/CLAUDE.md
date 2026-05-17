@@ -9,7 +9,8 @@ Esta pasta concentra o fluxo de autenticação do app. Google OAuth via Auth.js/
 - Não importar helpers server-only em Client Components. Componentes client devem usar Auth.js client (`next-auth/react`) ou falar com `/api/auth/*` para o fallback mockado.
 - `access-control.ts` é a fonte da regra de domínio/e-mail. Não duplique essa validação em componentes.
 - Usuários Google corporativos só entram com `email_verified=true`, domínio em `AUTH_ALLOWED_DOMAINS`, e-mail em `AUTH_ALLOWED_EMAILS` e, quando Supabase estiver configurado, acesso ativo real; linha órfã em `next_auth.users` não libera login.
-- Usuários Google vindos de `/a/[token]` entram com intent de campanha ativo, sessão marcada como `acquisition`, completam empresa em `/a/[token]/completar` e permanecem como `cliente`.
+- Usuários Google vindos de `/a/[slug]` entram com intent de campanha ativo, sessão marcada como `acquisition`, completam empresa em `/a/[slug]/completar` e permanecem como `cliente`.
+- OAuth de campanha deve começar sem cookie de sessão Auth.js ativo. Se um superadmin ou usuário corporativo estiver logado, limpe a sessão antes do redirect ao Google para evitar vínculo da conta escolhida ao usuário anterior.
 - `AUTH_ADMIN_EMAILS` e `AUTH_SUPERADMIN_EMAILS` definem role após o e-mail já ter sido permitido.
 - `AUTH_ENABLE_SUPERADMIN_PASSWORD_LOGIN=true` habilita e-mail/senha real para superadmin quando Supabase estiver configurado. A senha vem de `AUTH_SUPERADMIN_PASSWORD`, é gravada apenas como hash em `app_private.user_password_credentials` e não deve ser versionada.
 - `AUTH_ORG_BY_DOMAIN` pode mapear domínio para nome da empresa exibido na sessão.

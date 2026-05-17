@@ -163,19 +163,19 @@ export function createAcquisitionCampaignDraft(
   module: AdminModule,
 ): AcquisitionCampaign {
   const createdAt = new Date().toISOString();
-  const token = createAcquisitionSlug(`${module.slug}-${Date.now().toString(36)}`);
+  const slug = createAcquisitionSlug(`${module.slug}-${Date.now().toString(36)}`);
   const defaultFields = sortAcquisitionFields(seedCampaigns[0]?.fields ?? []).map(
     (field) => ({ ...field }),
   );
 
   return acquisitionCampaignSchema.parse({
-    id: `camp_${token}`,
+    id: `camp_${slug}`,
     moduleId: module.id,
     name: `Nova campanha — ${module.shortName}`,
     source: "Origem não definida",
     status: "ativo",
-    token,
-    publicPath: `/a/${token}`,
+    slug,
+    publicPath: `/a/${slug}`,
     createdAt,
     updatedAt: createdAt,
     visits: 0,

@@ -18,7 +18,7 @@ describe("campaign Google sign-in flow", () => {
       signOutCurrentSession: async () => {
         calls.push("signOut");
       },
-      token: "omdx-site",
+      slug: "omdx-site",
     });
 
     expect(result).toEqual({ ok: true });
@@ -34,7 +34,7 @@ describe("campaign Google sign-in flow", () => {
         calls.push(callbackUrl);
       },
       signOutCurrentSession: async () => undefined,
-      token: "omdx-site",
+      slug: "omdx-site",
     });
 
     expect(calls).toEqual(["/a/omdx-site/completar"]);

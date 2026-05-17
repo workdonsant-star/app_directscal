@@ -149,7 +149,7 @@ function toCampaign(
     name: row.name,
     source: row.source,
     status: row.status,
-    token: row.token,
+    slug: row.token,
     publicPath: row.public_path,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -225,14 +225,14 @@ export async function getAdminAcquisitionSnapshot(): Promise<AdminDataSnapshot> 
   return buildAdminDataSnapshot({ campaigns, leads });
 }
 
-export async function getAcquisitionCampaignByToken(token: string) {
+export async function getAcquisitionCampaignBySlug(slug: string) {
   const supabase = createSupabaseAdminClient();
-  const normalizedToken = token.trim();
+  const normalizedSlug = slug.trim();
 
   const { data: campaignRow, error: campaignError } = await supabase
     .from("acquisition_campaigns")
     .select("*")
-    .eq("token", normalizedToken)
+    .eq("token", normalizedSlug)
     .maybeSingle();
 
   assertNoSupabaseError(campaignError);
@@ -255,7 +255,7 @@ export async function saveAcquisitionCampaignToSupabase(
 ) {
   const parsed = acquisitionCampaignSchema.parse({
     ...campaign,
-    publicPath: `/a/${campaign.token}`,
+    publicPath: `/a/${campaign.slug}`,
     updatedAt: new Date().toISOString(),
     fields: sortAcquisitionFields(campaign.fields).map((field, index) => ({
       ...field,
@@ -274,7 +274,7 @@ export async function saveAcquisitionCampaignToSupabase(
         public_path: parsed.publicPath,
         source: parsed.source,
         status: parsed.status,
-        token: parsed.token,
+        token: parsed.slug,
         visits: parsed.visits,
       },
       { onConflict: "id" },
@@ -691,7 +691,7 @@ export async function registerAcquisitionPasswordUser(
     .extend({ password: z.string().min(8) })
     .parse(input);
 
-  const campaign = await getAcquisitionCampaignByToken(parsedInput.token);
+  const campaign = await getAcquisitionCampaignBySlug(parsedInput.slug);
   if (!campaign || campaign.status !== "ativo") {
     throw new Error("Campanha indisponível.");
   }
@@ -860,8 +860,8 @@ export async function resolveAcquisitionAuthUser(
   return parsedUser.success ? parsedUser.data : null;
 }
 
-export async function createAcquisitionOauthIntent(token: string) {
-  const campaign = await getAcquisitionCampaignByToken(token);
+export async function createAcquisitionOauthIntent(slug: string) {
+  const campaign = await getAcquisitionCampaignBySlug(slug);
 
   if (!campaign || campaign.status !== "ativo") {
     throw new Error("Campanha indisponível.");
@@ -937,7 +937,7 @@ export async function consumeAcquisitionOauthIntent(rawToken?: string | null) {
 export async function completeAcquisitionGoogleLead({
   email,
   name,
-  token,
+  slug,
   userId,
   values,
 }: AcquisitionSubmissionInput & {
@@ -945,7 +945,7 @@ export async function completeAcquisitionGoogleLead({
   name: string;
   userId: string;
 }) {
-  const campaign = await getAcquisitionCampaignByToken(token);
+  const campaign = await getAcquisitionCampaignBySlug(slug);
   if (!campaign || campaign.status !== "ativo") {
     throw new Error("Campanha indisponível.");
   }

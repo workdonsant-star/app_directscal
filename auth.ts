@@ -9,6 +9,8 @@ import {
   isCorporateEmailAllowed,
   resolveAuthUserFromGoogleProfile,
 } from "@/lib/auth/access-control";
+import { resolvePendingAcquisitionGoogleUser } from "@/lib/auth/acquisition-session";
+import { isAuthJsSessionCookieName } from "@/lib/auth/authjs-cookies";
 import {
   attachSupabaseAccessTokenToSession,
   authenticateSuperadminPasswordUser,
@@ -46,8 +48,29 @@ async function getActiveAcquisitionOauthIntent() {
   }
 }
 
+async function hasAuthJsSessionCookie() {
+  try {
+    const cookieStore = await cookies();
+
+    return cookieStore
+      .getAll()
+      .some(
+        (cookie) =>
+          Boolean(cookie.value) && isAuthJsSessionCookieName(cookie.name),
+      );
+  } catch {
+    return false;
+  }
+}
+
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
+}
+
+function getCampaignOauthErrorPath(publicPath: string, error: string) {
+  const params = new URLSearchParams({ erro: error });
+
+  return `${publicPath}?${params.toString()}`;
 }
 
 function writeTokenUser({
@@ -126,7 +149,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     },
   },
   callbacks: {
-    async signIn({ account, profile }) {
+    async signIn({ account, profile, user }) {
       if (account?.provider === "credentials") return true;
       if (account?.provider !== "google") return false;
 
@@ -137,7 +160,26 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       const email = normalizeEmail(googleProfile.email);
 
       const acquisitionIntent = await getActiveAcquisitionOauthIntent();
-      if (acquisitionIntent) return true;
+      if (acquisitionIntent) {
+        if (await hasAuthJsSessionCookie()) {
+          return getCampaignOauthErrorPath(
+            acquisitionIntent.campaign.publicPath,
+            "sessao-google",
+          );
+        }
+
+        const linkedEmail =
+          typeof user?.email === "string" ? normalizeEmail(user.email) : null;
+
+        if (linkedEmail && linkedEmail !== email) {
+          return getCampaignOauthErrorPath(
+            acquisitionIntent.campaign.publicPath,
+            "conta-google",
+          );
+        }
+
+        return true;
+      }
 
       if (supabaseAdapterConfig) {
         const hasActiveAccess = await checkUserHasActiveAccess(email).catch(
@@ -179,29 +221,23 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           typeof googleProfile.email === "string"
             ? normalizeEmail(googleProfile.email)
             : null;
-        const userId =
-          typeof user?.id === "string"
-            ? user.id
-            : typeof token.sub === "string"
-              ? token.sub
-              : null;
+        const userId = typeof user?.id === "string" ? user.id : null;
         const acquisitionIntent = await getActiveAcquisitionOauthIntent();
 
-        if (acquisitionIntent && email && userId) {
+        if (acquisitionIntent) {
+          const acquisitionUser = resolvePendingAcquisitionGoogleUser({
+            email,
+            name: googleProfile.name,
+            userEmail: user?.email,
+            userId,
+          });
+
+          if (!acquisitionUser) return null;
+
           writeTokenUser({
             acquisition: true,
             token,
-            user: {
-              company: "Empresa pendente",
-              email,
-              id: userId,
-              name:
-                typeof googleProfile.name === "string" &&
-                googleProfile.name.trim()
-                  ? googleProfile.name.trim()
-                  : email,
-              role: "cliente",
-            },
+            user: acquisitionUser,
           });
         } else {
           const databaseUser = await resolveSupabaseAuthUser(userId, email);

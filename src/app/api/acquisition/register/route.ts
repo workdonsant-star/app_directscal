@@ -10,14 +10,21 @@ import {
   authSessionCookieName,
   getAuthCookieOptions,
 } from "@/lib/auth/mock-auth";
+import { clearAuthJsSessionCookies } from "@/lib/auth/authjs-cookies";
 
 const registerInputSchema = z.object({
   password: z.string().min(8),
-  token: z.string().min(1),
+  slug: z.string().min(1).optional(),
+  token: z.string().min(1).optional(),
   values: z.record(z.string(), z.string()),
 });
 
+function resolveCampaignSlug(input: z.infer<typeof registerInputSchema>) {
+  return input.slug ?? input.token ?? null;
+}
+
 function clearCampaignCookies(response: NextResponse) {
+  clearAuthJsSessionCookies(response);
   response.cookies.set(authSessionCookieName, "", {
     ...getAuthCookieOptions(false),
     maxAge: 0,
@@ -44,8 +51,9 @@ export async function POST(request: Request) {
   }
 
   const parsed = registerInputSchema.safeParse(body);
+  const slug = parsed.success ? resolveCampaignSlug(parsed.data) : null;
 
-  if (!parsed.success) {
+  if (!parsed.success || !slug) {
     return NextResponse.json(
       { message: "Revise os dados e use uma senha com pelo menos 8 caracteres." },
       { status: 400 },
@@ -53,7 +61,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    const registration = await registerAcquisitionPasswordUser(parsed.data);
+    const registration = await registerAcquisitionPasswordUser({
+      password: parsed.data.password,
+      slug,
+      values: parsed.data.values,
+    });
     const response = NextResponse.json(
       {
         email: registration.lead.email,

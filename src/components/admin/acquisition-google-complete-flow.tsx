@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 type AcquisitionGoogleCompleteFlowProps = {
   campaign: AcquisitionCampaign | null;
   selectedModule: AdminModule | null;
-  token: string;
+  slug: string;
   user: AuthUser;
 };
 
@@ -78,7 +78,7 @@ async function getResponseMessage(response: Response, fallback: string) {
 export function AcquisitionGoogleCompleteFlow({
   campaign,
   selectedModule,
-  token,
+  slug,
   user,
 }: AcquisitionGoogleCompleteFlowProps) {
   const router = useRouter();
@@ -153,7 +153,7 @@ export function AcquisitionGoogleCompleteFlow({
       const response = await fetch("/api/acquisition/google-complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, values }),
+        body: JSON.stringify({ slug, values }),
       });
 
       if (!response.ok) {
