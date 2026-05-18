@@ -25,7 +25,7 @@ OMDx avalia maturidade operacional em **6 dimensões** (Cultura, Visão, Comunic
 | `ShareWorkspace` | `share-workspace.tsx` | `/omdx/[id]/compartilhar` | Central client-side de coleta com cópia local e encerramento persistido via API. |
 | `ShareLinks` | `share-links.tsx` | Compartilhamento | Cards por grupo com link, prévia e mensagem sugerida. |
 | `ResponseCounters` | `response-counters.tsx` | Compartilhar e acompanhamento futuro | Total de respostas, respostas por grupo e aviso de base de Fundador para análise. |
-| `PublicResponseForm` | `public-response-form.tsx` | `/r/[token]` | Formulário público anônimo com 30 perguntas Likert, progresso, envio para API, trava leve em `localStorage` e redirecionamento para `/r/[token]/obrigado` após sucesso. |
+| `PublicResponseForm` | `public-response-form.tsx` | `/r/[token]` | Formulário público anônimo em lista contínua minimalista, com perguntas embaralhadas por carregamento, controle Likert em linha exibindo todos os rótulos, modal inicial, progresso discreto, validação com âncora na primeira pendência, envio para API, trava leve em `localStorage` e redirecionamento para `/r/[token]/obrigado` após sucesso. |
 | `DimensionInsightWorkspace` | `dimension-insight-workspace.tsx` | `/insights/[dimensao]` | Controla o filtro da dimensão, renderiza topbar e injeta o dashboard. |
 | `DimensionInsightDashboard` | `dimension-insight-dashboard.tsx` | `/insights/[dimensao]` | Dashboard compacto por dimensão, recebendo o diagnóstico filtrado por prop. |
 | `DimensionDiagnosticFilter` | `dimension-diagnostic-filter.tsx` | Topbar de Insights | Select do sistema para alternar entre todos os diagnósticos e diagnóstico individual. Deve ser usado apenas na topbar. |

@@ -1,7 +1,9 @@
+import { randomUUID } from "node:crypto";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { ShieldCheck } from "lucide-react";
 
 import { PublicResponseForm } from "@/components/omdx/public-response-form";
 import { Badge } from "@/components/ui/badge";
@@ -62,7 +64,7 @@ export default async function PublicResponsePreviewPage({
     );
   }
 
-  const { diagnostic, expiresAt, group } = resolved;
+  const { diagnostic, expiresAt } = resolved;
   const cookieStore = await cookies();
   const alreadySubmitted = Boolean(
     cookieStore.get(getResponseCookieName(token))?.value,
@@ -89,11 +91,13 @@ export default async function PublicResponsePreviewPage({
     );
   }
 
+  const questionOrderSeed = randomUUID();
+
   return (
-    <main className="min-h-dvh px-4 py-8">
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-        <header className="flex flex-col gap-6">
-          <div className="flex items-center justify-between gap-3">
+    <main className="min-h-dvh bg-background">
+      <nav className="border-b bg-background">
+        <div className="mx-auto flex h-16 w-full max-w-3xl items-center justify-between gap-3 px-4">
+          <div className="shrink-0">
             <Image
               src="/directscal-logo.svg"
               alt="Directscal"
@@ -112,59 +116,35 @@ export default async function PublicResponsePreviewPage({
               className="hidden dark:block"
               style={{ height: "auto", width: "132px" }}
             />
+          </div>
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <Badge variant="outline">OMDx</Badge>
+            <Badge variant="outline">
+              <ShieldCheck aria-hidden="true" className="size-3" />
+              Resposta anônima
+            </Badge>
           </div>
+        </div>
+      </nav>
 
-          <div className="flex flex-col gap-2">
-            <p className="text-sm font-medium text-primary">
-              Diagnóstico de maturidade operacional
-            </p>
-            <h1 className="text-2xl font-medium tracking-normal text-foreground md:text-3xl">
-              {diagnostic.name}
-            </h1>
-            <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              {diagnostic.company} está coletando percepções para identificar
-              gargalos de execução, alinhamento e foco operacional.
-            </p>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-lg border bg-background p-3">
-              <p className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
-                Grupo
-              </p>
-              <p className="mt-2 text-sm font-medium text-foreground">
-                {group.label}
-              </p>
-            </div>
-            <div className="rounded-lg border bg-background p-3">
-              <p className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
-                Tempo estimado
-              </p>
-              <p className="mt-2 text-sm font-medium text-foreground">
-                8 a 10 minutos
-              </p>
-            </div>
-            <div className="rounded-lg border bg-background p-3">
-              <p className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
-                Uso das respostas
-              </p>
-              <p className="mt-2 text-sm font-medium text-foreground">
-                Anônimo
-              </p>
-            </div>
-          </div>
-
-          <div className="rounded-lg border bg-muted/30 p-4 text-sm leading-relaxed text-muted-foreground">
-            <p>
-              O formulário não coleta nome, e-mail ou cargo. As respostas serão
-              analisadas de forma consolidada por grupo para orientar decisões
-              de estruturação.
-            </p>
-          </div>
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 pb-10 pt-10 md:pt-12">
+        <header className="flex flex-col gap-2">
+          <p className="text-sm font-medium text-primary">
+            Diagnóstico de maturidade operacional
+          </p>
+          <h1 className="text-2xl font-medium tracking-normal text-foreground md:text-3xl">
+            {diagnostic.name}
+          </h1>
+          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            {diagnostic.company} está coletando percepções para identificar
+            gargalos de execução, alinhamento e foco operacional.
+          </p>
         </header>
 
-        <PublicResponseForm workspace={resolved} />
+        <PublicResponseForm
+          questionOrderSeed={questionOrderSeed}
+          workspace={resolved}
+        />
       </div>
     </main>
   );

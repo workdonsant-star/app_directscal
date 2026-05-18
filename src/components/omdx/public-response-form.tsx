@@ -3,9 +3,17 @@
 import { AlertCircle, CheckCircle2, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { getResponseStorageKey } from "@/lib/data/omdx-production-rules";
 import { cn } from "@/lib/utils";
 import type {
@@ -16,11 +24,17 @@ import type {
 
 type PublicResponseFormProps = {
   alreadySubmitted?: boolean;
+  questionOrderSeed: string;
   workspace: DiagnosticResponseWorkspace;
 };
 
 type LikertValue = LikertAnswer["value"];
 type SubmissionState = "idle" | "submitting" | "submitted" | "error";
+type PublicQuestion =
+  DiagnosticResponseWorkspace["dimensions"][number]["questions"][number] & {
+    dimensionName: string;
+    dimensionNumber: number;
+  };
 
 type MutationResponse = {
   message?: string;
@@ -43,20 +57,57 @@ function getScaleLabel(scale: LikertScalePoint[], value: LikertValue) {
   return scale.find((item) => item.value === value)?.label ?? String(value);
 }
 
+function hashSeed(seed: string) {
+  let hash = 2166136261;
+
+  for (let index = 0; index < seed.length; index += 1) {
+    hash ^= seed.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return hash >>> 0;
+}
+
+function createSeededRandom(seed: string) {
+  let state = hashSeed(seed) || 1;
+
+  return () => {
+    state = Math.imul(state, 1664525) + 1013904223;
+    return (state >>> 0) / 4294967296;
+  };
+}
+
+function shuffleItems<T>(items: T[], seed: string) {
+  const shuffled = [...items];
+  const random = createSeededRandom(seed);
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const targetIndex = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[targetIndex]] = [
+      shuffled[targetIndex],
+      shuffled[index],
+    ];
+  }
+
+  return shuffled;
+}
+
 export function PublicResponseForm({
   alreadySubmitted = false,
+  questionOrderSeed,
   workspace,
 }: PublicResponseFormProps) {
   const router = useRouter();
-  const questions = workspace.dimensions.flatMap((dimension) =>
+  const questionElementsRef = useRef(new Map<string, HTMLFieldSetElement>());
+  const questions: PublicQuestion[] = workspace.dimensions.flatMap((dimension) =>
     dimension.questions.map((question) => ({
       ...question,
       dimensionName: dimension.name,
       dimensionNumber: dimension.number,
     })),
   );
-  const questionIndexById = new Map(
-    questions.map((question, index) => [question.id, index + 1]),
+  const [orderedQuestions] = useState(() =>
+    shuffleItems(questions, questionOrderSeed),
   );
   const responseStorageKey = getResponseStorageKey(workspace.token);
   const storedSubmission = useSyncExternalStore(
@@ -71,6 +122,10 @@ export function PublicResponseForm({
     useState<SubmissionState>(alreadySubmitted ? "submitted" : "idle");
   const [message, setMessage] = useState<string | null>(
     alreadySubmitted ? alreadySubmittedMessage : null,
+  );
+  const [introDialogOpen, setIntroDialogOpen] = useState(!alreadySubmitted);
+  const [invalidQuestionId, setInvalidQuestionId] = useState<string | null>(
+    null,
   );
   const answeredCount = questions.filter(
     (question) => answers[question.id] !== undefined,
@@ -87,11 +142,64 @@ export function PublicResponseForm({
     }
   }, [router, storedSubmission, workspace.token]);
 
+  useEffect(() => {
+    const elements = Array.from(questionElementsRef.current.values());
+
+    if (!("IntersectionObserver" in window)) {
+      elements.forEach((element) => {
+        element.dataset.visible = "true";
+      });
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+
+          const element = entry.target as HTMLElement;
+          element.dataset.visible = "true";
+          observer.unobserve(element);
+        });
+      },
+      { rootMargin: "0px 0px -10% 0px", threshold: 0.08 },
+    );
+
+    elements.forEach((element) => observer.observe(element));
+
+    return () => observer.disconnect();
+  }, [orderedQuestions]);
+
   function updateAnswer(questionId: string, value: LikertValue) {
     setAnswers((current) => ({
       ...current,
       [questionId]: value,
     }));
+
+    if (invalidQuestionId === questionId) {
+      setInvalidQuestionId(null);
+      setMessage(null);
+      setSubmissionState("idle");
+    }
+  }
+
+  function scrollToQuestion(questionId: string) {
+    const element = questionElementsRef.current.get(questionId);
+
+    if (!element) return;
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    element.dataset.visible = "true";
+    element.scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+      block: "center",
+    });
+    window.setTimeout(() => {
+      element.focus({ preventScroll: true });
+    }, prefersReducedMotion ? 0 : 240);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -105,8 +213,18 @@ export function PublicResponseForm({
     }
 
     if (answeredCount !== questions.length) {
+      const firstUnansweredQuestion = orderedQuestions.find(
+        (question) => answers[question.id] === undefined,
+      );
+
       setSubmissionState("error");
-      setMessage("Responda todas as perguntas antes de enviar.");
+      setMessage("Responda a pergunta destacada antes de enviar.");
+
+      if (firstUnansweredQuestion) {
+        setInvalidQuestionId(firstUnansweredQuestion.id);
+        scrollToQuestion(firstUnansweredQuestion.id);
+      }
+
       return;
     }
 
@@ -149,128 +267,175 @@ export function PublicResponseForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-      <section className="rounded-lg border bg-card p-4">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-base font-medium text-foreground">
-            Resposta anônima
-          </h2>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            O formulário não solicita nome, e-mail ou cargo. Após o envio, este
-            navegador será marcado para evitar uma nova resposta pelo mesmo link.
-          </p>
-        </div>
-
-        <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-          A marcação fica restrita a este navegador e não carrega dados pessoais.
-        </p>
-      </section>
-
-      <section className="rounded-lg border bg-card p-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <div className="flex flex-col gap-1">
-            <h2 className="text-base font-medium text-foreground">
-              Escala de resposta
-            </h2>
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              Escolha uma opção de 1 a 5 para cada afirmação.
+      <Dialog open={introDialogOpen} onOpenChange={setIntroDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Como responder</DialogTitle>
+            <DialogDescription>
+              Leia cada afirmação e marque a alternativa que melhor representa
+              sua percepção atual da operação.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-2 text-sm leading-relaxed text-muted-foreground">
+            <p>
+              As perguntas aparecem em ordem aleatória e todas precisam ser
+              respondidas antes do envio.
+            </p>
+            <p>
+              A resposta é anônima, consolidada por grupo e não solicita nome,
+              e-mail ou cargo.
             </p>
           </div>
-          <div className="text-sm text-muted-foreground tabular-nums">
-            {answeredCount}/{questions.length} respostas
-          </div>
-        </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              className="w-full sm:w-auto"
+              onClick={() => setIntroDialogOpen(false)}
+            >
+              Começar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-        <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full bg-primary transition-[width]"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
+      <div
+        aria-label="Progresso de respostas"
+        aria-valuemax={questions.length}
+        aria-valuemin={0}
+        aria-valuenow={answeredCount}
+        className="h-1 overflow-hidden bg-muted"
+        role="progressbar"
+      >
+        <div
+          className="h-full bg-primary transition-[width] duration-200"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
 
-        <div className="mt-4 grid gap-2 sm:grid-cols-5">
-          {workspace.template.scale.map((item) => (
-            <div key={item.value} className="rounded-lg border bg-background p-2">
-              <div className="text-sm font-semibold tabular-nums">
-                {item.value}
-              </div>
-              <div className="mt-1 text-xs leading-snug text-muted-foreground">
-                {item.label}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <div className="divide-y border-y">
+        {orderedQuestions.map((question, index) => {
+          const selectedValue = answers[question.id];
+          const isInvalid = invalidQuestionId === question.id;
+          const errorId = `question-${question.id}-error`;
 
-      {workspace.dimensions.map((dimension) => (
-        <section
-          key={dimension.id}
-          className="overflow-hidden rounded-lg border bg-card"
-        >
-          <div className="border-b bg-muted/30 px-4 py-3">
-            <div className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
-              Dimensão {dimension.number}
-            </div>
-            <h2 className="mt-1 text-base font-medium text-foreground">
-              {dimension.name}
-            </h2>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              {dimension.description}
-            </p>
-          </div>
+          return (
+            <fieldset
+              key={question.id}
+              ref={(element) => {
+                if (element) {
+                  questionElementsRef.current.set(question.id, element);
+                } else {
+                  questionElementsRef.current.delete(question.id);
+                }
+              }}
+              aria-describedby={isInvalid ? errorId : undefined}
+              aria-invalid={isInvalid || undefined}
+              className={cn(
+                "grid scroll-mt-24 gap-7 px-0 py-8 opacity-0 outline-none transition-[background-color,box-shadow,opacity,transform] duration-200 ease-out data-[visible=true]:translate-y-0 data-[visible=true]:opacity-100 motion-reduce:translate-y-0 motion-reduce:transition-none",
+                "translate-y-2 hover:bg-muted/20 focus-visible:ring-3 focus-visible:ring-ring/50",
+                isInvalid &&
+                  "bg-destructive/5 text-destructive ring-1 ring-destructive/35 hover:bg-destructive/5",
+              )}
+              tabIndex={-1}
+            >
+              <legend
+                className={cn(
+                  "w-full text-sm font-semibold leading-relaxed text-foreground sm:text-base",
+                  isInvalid && "text-destructive",
+                )}
+              >
+                <span className="sr-only">
+                  Dimensão {question.dimensionNumber}: {question.dimensionName}.{" "}
+                </span>
+                <span className="mr-2 text-muted-foreground tabular-nums">
+                  {index + 1}.
+                </span>
+                {question.text}
+              </legend>
 
-          <div className="divide-y">
-            {dimension.questions.map((question) => {
-              const selectedValue = answers[question.id];
-
-              return (
-                <fieldset key={question.id} className="grid gap-3 px-4 py-4">
-                  <legend className="text-sm font-medium leading-relaxed text-foreground">
-                    <span className="mr-2 text-muted-foreground tabular-nums">
-                      {questionIndexById.get(question.id)}.
-                    </span>
-                    {question.text}
-                  </legend>
-
+              <div
+                role="radiogroup"
+                aria-label={question.text}
+                className="grid gap-3"
+              >
+                <div className="relative">
                   <div
-                    role="radiogroup"
-                    aria-label={question.text}
-                    className="grid grid-cols-5 gap-1.5"
-                  >
-                    {workspace.template.scale.map((item) => (
-                      <label key={item.value} className="min-w-0">
-                        <input
-                          className="peer sr-only"
-                          type="radio"
-                          name={`question-${question.id}`}
-                          value={item.value}
-                          checked={selectedValue === item.value}
-                          onChange={() => updateAnswer(question.id, item.value)}
-                          disabled={isSubmitting || isSubmitted}
-                        />
-                        <span
+                    aria-hidden="true"
+                    className={cn(
+                      "pointer-events-none absolute left-[10%] right-[10%] top-2 h-px bg-border",
+                      isInvalid && "bg-destructive/40",
+                    )}
+                  />
+                  <div className="grid grid-cols-5">
+                    {workspace.template.scale.map((item) => {
+                      const itemLabel = getScaleLabel(
+                        workspace.template.scale,
+                        item.value,
+                      );
+                      const isSelected = selectedValue === item.value;
+
+                      return (
+                        <label
+                          key={item.value}
                           className={cn(
-                            "flex h-9 cursor-pointer items-center justify-center rounded-lg border text-sm font-medium tabular-nums transition-colors peer-focus-visible:border-ring peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50",
-                            selectedValue === item.value
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border bg-background text-foreground hover:bg-muted",
+                            "group/option relative z-10 flex min-w-0 cursor-pointer flex-col items-center gap-4 text-center",
                             (isSubmitting || isSubmitted) &&
-                              "cursor-not-allowed opacity-60 hover:bg-background",
+                              "cursor-not-allowed",
                           )}
                         >
-                          {item.value}
-                          <span className="sr-only">
-                            {getScaleLabel(workspace.template.scale, item.value)}
+                          <input
+                            aria-describedby={isInvalid ? errorId : undefined}
+                            className="peer sr-only"
+                            type="radio"
+                            name={`question-${question.id}`}
+                            value={item.value}
+                            checked={isSelected}
+                            onChange={() =>
+                              updateAnswer(question.id, item.value)
+                            }
+                            disabled={isSubmitting || isSubmitted}
+                          />
+                          <span
+                            aria-hidden="true"
+                            className={cn(
+                              "size-4 rounded-full border bg-background transition-[background-color,border-color,box-shadow] peer-focus-visible:border-ring peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50",
+                              isSelected
+                                ? "border-primary bg-primary ring-3 ring-primary/15"
+                                : "border-border group-hover/option:border-muted-foreground/60",
+                              isInvalid &&
+                                !isSelected &&
+                                "border-destructive/50",
+                              (isSubmitting || isSubmitted) && "opacity-60",
+                            )}
+                          />
+                          <span
+                            className={cn(
+                              "max-w-full px-1 text-[0.68rem] leading-snug text-muted-foreground transition-colors peer-checked:text-foreground sm:text-xs",
+                              isInvalid && "text-destructive",
+                              (isSubmitting || isSubmitted) && "opacity-60",
+                            )}
+                          >
+                            {itemLabel}
                           </span>
-                        </span>
-                      </label>
-                    ))}
+                        </label>
+                      );
+                    })}
                   </div>
-                </fieldset>
-              );
-            })}
-          </div>
-        </section>
-      ))}
+                </div>
+
+                {isInvalid && (
+                  <p
+                    id={errorId}
+                    className="text-xs font-medium text-destructive"
+                  >
+                    Selecione uma alternativa para esta pergunta.
+                  </p>
+                )}
+              </div>
+            </fieldset>
+          );
+        })}
+      </div>
 
       {visibleMessage && (
         <div
@@ -291,16 +456,12 @@ export function PublicResponseForm({
         </div>
       )}
 
-      <div className="sticky bottom-0 -mx-4 border-t bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            Ao enviar, sua resposta entra na base consolidada do diagnóstico
-            OMDx e este navegador fica bloqueado para novo envio deste link.
-          </p>
+      <div className="border-t pt-4">
+        <div className="flex justify-center">
           <Button
             type="submit"
             disabled={isSubmitting || isSubmitted}
-            className="w-full sm:w-auto"
+            className="h-12 w-full sm:w-auto sm:min-w-56"
           >
             <Send className="size-4" />
             {isSubmitting
