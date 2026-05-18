@@ -31,6 +31,7 @@ import {
   type DimensionId,
   type DimensionInsightSummary,
   type DimensionQuestionResult,
+  type AuthUser,
   type ProfileSettingsData,
   type RespondentGroup,
   type ResponsesByGroup,
@@ -856,8 +857,14 @@ async function loadShareLinks(diagnosticIds: string[]) {
   );
 }
 
-export function getProfileSettingsData(): ProfileSettingsData {
-  return profileSettingsDataSchema.parse(mockUserProfile);
+export function getProfileSettingsData(user: AuthUser): ProfileSettingsData {
+  return profileSettingsDataSchema.parse({
+    ...mockUserProfile,
+    company: user.company,
+    email: user.email,
+    id: user.id,
+    name: user.name,
+  });
 }
 
 export async function getDimensions(): Promise<Dimension[]> {

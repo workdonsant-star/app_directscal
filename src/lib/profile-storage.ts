@@ -7,11 +7,16 @@ export type StoredProfileOverrides = {
 export const profileOverridesStorageKey = "directscal:user-profile-overrides";
 export const profileUpdatedEventName = "directscal:profile-updated";
 
+let cachedStorageKey: string | undefined;
 let cachedRaw: string | null | undefined;
 let cachedOverrides: StoredProfileOverrides | null = null;
 
 function isBrowser() {
   return typeof window !== "undefined";
+}
+
+function getProfileOverridesStorageKey(userId: string) {
+  return `${profileOverridesStorageKey}:${encodeURIComponent(userId)}`;
 }
 
 function parseProfileOverrides(raw: string | null) {
@@ -43,15 +48,17 @@ function parseProfileOverrides(raw: string | null) {
   }
 }
 
-export function getProfileOverridesSnapshot() {
+export function getProfileOverridesSnapshot(userId: string) {
   if (!isBrowser()) return null;
 
-  const raw = window.localStorage.getItem(profileOverridesStorageKey);
+  const storageKey = getProfileOverridesStorageKey(userId);
+  const raw = window.localStorage.getItem(storageKey);
 
-  if (raw === cachedRaw) {
+  if (storageKey === cachedStorageKey && raw === cachedRaw) {
     return cachedOverrides;
   }
 
+  cachedStorageKey = storageKey;
   cachedRaw = raw;
   cachedOverrides = parseProfileOverrides(raw);
 
@@ -62,11 +69,13 @@ export function getProfileOverridesServerSnapshot() {
   return null;
 }
 
-export function subscribeProfileOverrides(callback: () => void) {
+export function subscribeProfileOverrides(userId: string, callback: () => void) {
   if (!isBrowser()) return () => {};
 
+  const storageKey = getProfileOverridesStorageKey(userId);
+
   function handleStorage(event: StorageEvent) {
-    if (event.key === profileOverridesStorageKey) {
+    if (event.key === storageKey) {
       callback();
     }
   }
@@ -80,9 +89,13 @@ export function subscribeProfileOverrides(callback: () => void) {
   };
 }
 
-export function saveProfileOverrides(overrides: StoredProfileOverrides) {
+export function saveProfileOverrides(
+  userId: string,
+  overrides: StoredProfileOverrides,
+) {
   if (!isBrowser()) return;
 
+  const storageKey = getProfileOverridesStorageKey(userId);
   const nextOverrides: StoredProfileOverrides = {
     avatarUrl: overrides.avatarUrl ?? null,
     employeeCount: overrides.employeeCount,
@@ -90,16 +103,22 @@ export function saveProfileOverrides(overrides: StoredProfileOverrides) {
   };
 
   const raw = JSON.stringify(nextOverrides);
-  window.localStorage.setItem(profileOverridesStorageKey, raw);
+  window.localStorage.setItem(storageKey, raw);
+  window.localStorage.removeItem(profileOverridesStorageKey);
+  cachedStorageKey = storageKey;
   cachedRaw = raw;
   cachedOverrides = nextOverrides;
   window.dispatchEvent(new Event(profileUpdatedEventName));
 }
 
-export function clearProfileOverrides() {
+export function clearProfileOverrides(userId: string) {
   if (!isBrowser()) return;
 
+  const storageKey = getProfileOverridesStorageKey(userId);
+
+  window.localStorage.removeItem(storageKey);
   window.localStorage.removeItem(profileOverridesStorageKey);
+  cachedStorageKey = storageKey;
   cachedRaw = null;
   cachedOverrides = null;
   window.dispatchEvent(new Event(profileUpdatedEventName));

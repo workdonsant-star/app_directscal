@@ -53,8 +53,8 @@ function getInitials(name: string) {
 
 export function ProfileSettings({ profile }: ProfileSettingsProps) {
   const storedOverrides = useSyncExternalStore(
-    subscribeProfileOverrides,
-    getProfileOverridesSnapshot,
+    (callback) => subscribeProfileOverrides(profile.id, callback),
+    () => getProfileOverridesSnapshot(profile.id),
     getProfileOverridesServerSnapshot,
   );
   const [draft, setDraft] = useState<ProfileDraft>({});
@@ -141,7 +141,7 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
       setConfirmPassword("");
     }
 
-    saveProfileOverrides({
+    saveProfileOverrides(profile.id, {
       avatarUrl: avatarPreviewUrl ?? null,
       employeeCount: employeeCountValue,
       name: trimmedName,

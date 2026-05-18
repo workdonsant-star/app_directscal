@@ -31,7 +31,7 @@ src/app/
 │   └── docs/
 │       └── page.tsx          ← manual prático de uso do módulo OMDx
 │   └── perfil/
-│       └── page.tsx          ← perfil mockado do usuário e da empresa
+│       └── page.tsx          ← perfil iniciado pela sessão, com edição local
 ├── r/
 │   └── [token]/
 │       ├── page.tsx          ← formulário público do respondente por token real
@@ -96,7 +96,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/insights` | `(app)/insights/` | Redireciona para `/insights/cultura`. |
 | `/insights/[dimensao]` | `(app)/insights/[dimensao]/` | Dashboard agregado por dimensão, com filtro por diagnóstico. |
 | `/docs` | `(app)/docs/` | Documentação prática em página única para uso do módulo pelo cliente administrador. |
-| `/perfil` | `(app)/perfil/` | Perfil mockado do usuário: nome, e-mail bloqueado, senha e dados básicos da empresa. |
+| `/perfil` | `(app)/perfil/` | Perfil iniciado pela sessão autenticada: e-mail e empresa bloqueados, edição local de nome, senha simulada e dados básicos da empresa. |
 | `/r/[token]` | `r/[token]/` | Formulário público do respondente por token real — **fora** do route group `(app)`, sem sidebar/topbar |
 | `/r/[token]/obrigado` | `r/[token]/obrigado/` | Página pública de agradecimento após resposta registrada ou navegador já marcado. |
 | `/admin` | `(app)/admin/` | Redireciona para `/admin/modulos`. |

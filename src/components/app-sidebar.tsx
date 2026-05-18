@@ -31,6 +31,7 @@ import {
 
 const data = {
   user: {
+    id: "user_daniel",
     name: "Daniel Santos",
     email: "work.donsant@gmail.com",
     initials: "DS",
@@ -75,6 +76,7 @@ export function AppSidebar({
   user?: {
     avatar?: string;
     email: string;
+    id: string;
     initials?: string;
     name: string;
   };

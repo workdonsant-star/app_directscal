@@ -46,10 +46,11 @@ export function NavUser({
   user,
 }: {
   user: {
-    name: string;
-    email: string;
     avatar?: string;
+    email: string;
+    id: string;
     initials: string;
+    name: string;
   };
 }) {
   const router = useRouter();
@@ -57,8 +58,8 @@ export function NavUser({
   const { resolvedTheme, setTheme } = useTheme();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const storedOverrides = useSyncExternalStore(
-    subscribeProfileOverrides,
-    getProfileOverridesSnapshot,
+    (callback) => subscribeProfileOverrides(user.id, callback),
+    () => getProfileOverridesSnapshot(user.id),
     getProfileOverridesServerSnapshot,
   );
   const mounted = useSyncExternalStore(
@@ -82,7 +83,7 @@ export function NavUser({
     await signOut({ callbackUrl: "/entrar", redirect: false }).catch(
       () => null,
     );
-    clearProfileOverrides();
+    clearProfileOverrides(user.id);
     router.push("/entrar");
     router.refresh();
   }

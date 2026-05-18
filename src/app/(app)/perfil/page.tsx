@@ -1,13 +1,22 @@
+import { redirect } from "next/navigation";
+
 import { AppTopbar } from "@/components/app-topbar";
 import { ProfileSettings } from "@/components/profile/profile-settings";
+import { getCurrentAuthSession } from "@/lib/auth/session";
 import { getProfileSettingsData } from "@/lib/data/omdx-data-source";
 
 export const metadata = {
   title: "Perfil — Directscal",
 };
 
-export default function ProfilePage() {
-  const profile = getProfileSettingsData();
+export default async function ProfilePage() {
+  const session = await getCurrentAuthSession();
+
+  if (!session) {
+    redirect("/entrar");
+  }
+
+  const profile = getProfileSettingsData(session.user);
 
   return (
     <>

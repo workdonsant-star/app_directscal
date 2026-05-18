@@ -4,7 +4,8 @@ Página autenticada para editar dados básicos do usuário e da empresa.
 
 ## Propósito
 
-- Permitir ajuste local do nome do usuário.
+- Iniciar o perfil com nome, e-mail e empresa vindos da sessão autenticada.
+- Permitir ajuste local do nome do usuário nesta sessão.
 - Exibir e-mail bloqueado.
 - Simular alteração de senha sem backend.
 - Exibir empresa bloqueada e permitir alteração da quantidade de funcionários.
@@ -12,6 +13,6 @@ Página autenticada para editar dados básicos do usuário e da empresa.
 ## Convenções
 
 - Usar breadcrumb `Perfil`.
-- A página pode ser Server Component e delegar interatividade para `ProfileSettings`.
-- Tudo é mockado nesta fase; não adicionar autenticação real, API, sessão ou persistência.
+- A página é Server Component, lê `getCurrentAuthSession()` e delega interatividade para `ProfileSettings`.
+- Persistência de edição continua mockada/local por usuário; não adicionar API ou escrita em backend nesta fase.
 - O acesso principal fica no menu do usuário na sidebar, não como item de navegação principal.

@@ -16,7 +16,7 @@ src/lib/
 ├── supabase/               ← clients server-side Supabase
 ├── pdf/                    ← documentos PDF renderizados a partir da camada data
 ├── mock-data.ts            ← seed temporário e bruto dos dados mockados
-├── profile-storage.ts      ← overrides locais de perfil via localStorage
+├── profile-storage.ts      ← overrides locais de perfil por usuário via localStorage
 ├── types.ts                ← reexports dos tipos públicos de contracts/
 └── utils.ts                ← cn() (clsx + tailwind-merge)
 ```
@@ -58,7 +58,7 @@ Contratos principais:
 - Leituras OMDx Supabase ficam em `omdx-data-source.ts`; helpers puros compartilhados com Client Components ficam em `omdx-domain.ts`.
 - Cálculos agregados e helpers de domínio devem ficar em `data/` ou em funções puras de contrato, não em componentes.
 - Planos de ação PDF devem consumir DTOs consolidados daqui, como `getDiagnosticActionPlan()`, sem gerar regra dentro do documento PDF.
-- `profile-storage.ts` é exceção client-only para a fase mockada: persiste overrides de perfil no `localStorage` e emite evento para atualizar o shell. Deve ser substituído por backend/autenticação real no futuro.
+- `profile-storage.ts` é exceção client-only para a fase mockada: persiste overrides de perfil no `localStorage` com chave escopada por `user.id` e emite evento para atualizar o shell. Deve ser substituído por backend/autenticação real no futuro.
 - `supabase/` concentra clients server-side; `SUPABASE_SERVICE_ROLE_KEY` nunca deve chegar ao client.
 - `auth/` concentra Auth.js/NextAuth, regra de domínio/e-mail corporativo, validação de membership pré-existente no Supabase, JWT para RLS e fallback mockado. O cookie `directscal_session` sustenta o login demo por e-mail/senha apenas em desenvolvimento.
 - `admin-data-source.ts` concentra helpers puros do superadmin; `acquisition-data-source.ts` fala com Supabase no servidor para campanhas, leads, empresas, intents OAuth e credenciais.

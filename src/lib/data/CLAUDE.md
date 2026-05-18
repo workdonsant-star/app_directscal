@@ -1,6 +1,6 @@
 # `src/lib/data` — Fonte de dados e regras
 
-Esta pasta é a fronteira entre UI e dados. O OMDx core lê Supabase no servidor; superadmin e aquisição também usam Supabase via Route Handlers server-side. Perfil ainda preserva persistência mockada/local enquanto seu backend não entra no escopo.
+Esta pasta é a fronteira entre UI e dados. O OMDx core lê Supabase no servidor; superadmin e aquisição também usam Supabase via Route Handlers server-side. Perfil deriva identidade da sessão autenticada, mas ainda preserva persistência mockada/local enquanto seu backend não entra no escopo.
 
 ## Regras
 

@@ -8,7 +8,7 @@ Endpoints HTTP usados pelas telas públicas de autenticação. A rota dinâmica 
 
 - Use Route Handlers para mutações de sessão.
 - Google OAuth deve validar domínio/e-mail em `src/lib/auth/access-control.ts`, não dentro do Route Handler.
-- Credentials com `flow: "app"` são exclusivos para superadmin em `src/lib/auth/supabase-auth.ts`; Credentials com `flow: "acquisition"` continuam no fluxo de campanha.
+- Credentials com `flow: "app"` atendem a tela `/entrar`: resolvem superadmin primeiro em `src/lib/auth/supabase-auth.ts` e depois contas de aquisição por senha. Credentials com `flow: "acquisition"` continuam no fluxo de campanha após cadastro.
 - `login` deve aceitar os usuários mockados apenas quando `AUTH_ENABLE_DEV_PASSWORD_LOGIN=true` e fora de produção. `register` segue a mesma restrição.
 - Respostas de erro devem ser curtas e em pt-BR.
 - O cookie precisa permanecer `httpOnly`, `sameSite: "lax"`, `path: "/"` e `secure` em produção.

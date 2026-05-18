@@ -126,7 +126,15 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         if (!email || !password) return null;
 
         if (flow === "app") {
-          return authenticateSuperadminPasswordUser({ email, password });
+          const superadminUser = await authenticateSuperadminPasswordUser({
+            email,
+            password,
+          });
+
+          return (
+            superadminUser ??
+            authenticateAcquisitionPasswordUser({ email, password })
+          );
         }
 
         if (flow !== "acquisition") return null;
