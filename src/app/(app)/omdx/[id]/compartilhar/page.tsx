@@ -48,7 +48,10 @@ export default async function ShareDiagnosticPage({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button render={<Link href="/omdx/diagnosticos" />}>
+              <Button
+                nativeButton={false}
+                render={<Link href="/omdx/diagnosticos" />}
+              >
                 Voltar para diagnósticos
               </Button>
             </CardContent>

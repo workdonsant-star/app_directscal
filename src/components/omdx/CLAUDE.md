@@ -31,10 +31,11 @@ OMDx avalia maturidade operacional em **6 dimensões** (Cultura, Visão, Comunic
 | `DimensionDiagnosticFilter` | `dimension-diagnostic-filter.tsx` | Topbar de Insights | Select do sistema para alternar entre todos os diagnósticos e diagnóstico individual. Deve ser usado apenas na topbar. |
 | `DimensionScoreTrend` | `dimension-score-trend.tsx` | Disponível para telas futuras | Barras comparando a dimensão entre diagnósticos. Não é exibido no dashboard atual de Insights. |
 | `LayerInsightComparison` | `layer-insight-comparison.tsx` | Disponível para telas futuras | Comparação entre fundador, liderança e operação. Não é exibido no dashboard atual de Insights. |
-| `DimensionQuestionResultsTable` | `dimension-question-results-table.tsx` | Insights | Tabela por pergunta da dimensão, respeitando o filtro de diagnóstico e ordenando por prioridade operacional. |
+| `DimensionQuestionResultsTable` | `dimension-question-results-table.tsx` | Insights | Tabela por pergunta da dimensão, respeitando o filtro de diagnóstico e exibindo pergunta, pontuação, status, gap e respostas. |
 | `OverviewExecutiveCards` | `overview-executive-cards.tsx` | `/omdx` e `/insights/[dimensao]` | Indicadores executivos em gauges dentro de `Card`, com número e detalhes técnicos no tooltip do ícone de informação. A classificação orienta a cor do gauge, mas não aparece como chip. No Overview recebe maturidade, criticidade, desalinhamento e consenso; em Insights recebe métricas compactas da dimensão. |
 | `OverviewDiagnosticFilter` | `overview-diagnostic-filter.tsx` | `/omdx` | Wrapper client do filtro de diagnósticos na topbar do Overview, reutilizando `DimensionDiagnosticFilter`. |
-| `ClusteringProcessChart` | `clustering-process-chart.tsx` | `/omdx` | Scatter ECharts com agrupamento k-means determinístico de dimensões por maturidade e criticidade. A UI chama a leitura de `Agrupamento operacional` e não exibe centroides. |
+| `OverviewDimensionResultsTable` | `overview-dimension-results-table.tsx` | `/omdx` | Tabela compacta de leitura executiva por dimensão, exibindo dimensão, pontuação consolidada, status e gap entre camadas. |
+| `LayerStackedScoreChart` | `layer-stacked-score-chart.tsx` | `/omdx` | Barras verticais empilhadas por dimensão, com Fundador, Liderança e Operação, labels internos e total acumulado no topo. |
 | `OrganizationalAlignmentChart` | `organizational-alignment-chart.tsx` | Disponível para telas futuras | Scatter ECharts de maturidade e criticidade por dimensão. Não é exibido no overview atual. |
 | `MaturityMisalignmentChart` | `maturity-misalignment-chart.tsx` | `/omdx` | Scatter plot ECharts com quadrantes de maturidade média e gap de percepção. |
 | `InterventionPriorityChart` | `intervention-priority-chart.tsx` | `/omdx` | Barras horizontais ECharts para priorizar intervenção por criticidade operacional, maturidade, gap e dispersão. |
@@ -117,8 +118,8 @@ Para o respondente, prever:
 - Filtros de página ficam na `AppTopbar`, usando a área `actions`. Não renderize filtros globais dentro do corpo do dashboard.
 - O filtro de diagnóstico em Insights controla a query string `?diagnostico=...`; `todos` remove o parâmetro.
 - O MVP deve permanecer compacto: KPIs e tabela de perguntas.
-- A tabela de perguntas usa `getDimensionQuestionResults()` e deve respeitar o filtro atual. Em `Todos os diagnósticos`, agrega por `dimensionId + text`; em diagnóstico individual, mostra apenas as perguntas daquele diagnóstico. As colunas visíveis são `Pergunta`, `Score`, `Status`, `Gap`, `Respostas` e `Prioridade`.
-- A prioridade da tabela é `round((((5 - score) + (gap ?? 0)) / 5) * 100)`, limitada entre `0` e `100`. A barra deve ser retangular, sem `rounded-*`.
+- A tabela de perguntas usa `getDimensionQuestionResults()` e deve respeitar o filtro atual. Em `Todos os diagnósticos`, agrega por `dimensionId + text`; em diagnóstico individual, mostra apenas as perguntas daquele diagnóstico. As colunas visíveis são `Pergunta`, `Pontuação`, `Status`, `Gap` e `Respostas`.
+- A prioridade continua calculada na camada de dados para ordenar internamente as perguntas, mas não aparece como coluna visual.
 - Não adicionar recomendações profundas, riscos ou análise por item nesta etapa.
 
 ## Cálculo dos cards executivos

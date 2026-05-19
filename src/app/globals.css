@@ -238,9 +238,9 @@
 /* ===== DARK THEME ===== */
 .dark {
   /* Surfaces */
-  --background: #101010;       /* neutral-950 */
+  --background: #0b0b0b;       /* neutral-950 */
   --foreground: #FAFAFA;       /* neutral-025 */
-  --card: #111114;             /* neutral-900 */
+  --card: #181818;             /* neutral-900 */
   --card-foreground: #FAFAFA;
   --popover: #111114;
   --popover-foreground: #FAFAFA;
@@ -265,7 +265,7 @@
   --destructive: #E5564C;
 
   /* Borders */
-  --border: #1C1C20;           /* neutral-800 */
+  --border: #2a2a2a;           /* neutral-800 */
   --input: #1C1C20;
   --ring: #185EFF;
 
@@ -334,8 +334,9 @@
   --omdx-score-text-on-light: #161616;
   --omdx-score-text-on-dark: #FFFFFF;
 
-  /* Sidebar — slightly raised vs background */
-  --sidebar: #101010;
+  /* Sidebar follows the main app canvas in dark mode */
+  --sidebar: #0b0b0b;
+;
   --sidebar-foreground: #FAFAFA;
   --sidebar-primary: #185EFF;
   --sidebar-primary-foreground: #FFFFFF;

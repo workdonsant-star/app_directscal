@@ -1,8 +1,12 @@
-import type { DimensionQuestionResult } from "@/lib/types";
+import {
+  calculateDimensionGap,
+  type DimensionResult,
+} from "@/lib/data/omdx-overview-analytics";
+import { classifyScore } from "@/lib/data/omdx-domain";
 import { cn } from "@/lib/utils";
 
-type DimensionQuestionResultsTableProps = {
-  questions: DimensionQuestionResult[];
+type OverviewDimensionResultsTableProps = {
+  data: DimensionResult[];
 };
 
 const scoreFormatter = new Intl.NumberFormat("pt-BR", {
@@ -29,11 +33,8 @@ const statusStyles: Record<string, { dot: string; text: string }> = {
   },
 };
 
-function QuestionStatus({
-  classification,
-}: {
-  classification: DimensionQuestionResult["classification"];
-}) {
+function DimensionStatus({ score }: { score: number }) {
+  const classification = classifyScore(score);
   const style = statusStyles[classification];
 
   return (
@@ -55,72 +56,81 @@ function QuestionStatus({
   );
 }
 
-function formatGap(gap: DimensionQuestionResult["gap"]) {
+function formatGap(dimension: DimensionResult) {
+  const gap = calculateDimensionGap(dimension);
+
   return gap === null ? "Sem base" : scoreFormatter.format(gap);
 }
 
-export function DimensionQuestionResultsTable({
-  questions,
-}: DimensionQuestionResultsTableProps) {
+export function OverviewDimensionResultsTable({
+  data,
+}: OverviewDimensionResultsTableProps) {
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <h2 className="text-foreground text-xl font-semibold tracking-tight">
-          Resultado das perguntas
+          Resultado por dimensão
         </h2>
         <p className="text-muted-foreground max-w-2xl text-sm">
-          Perguntas da dimensão com pontuação, status, gap e base de respostas.
+          Pontuação média, status e gap entre camadas para cada dimensão
+          avaliada.
         </p>
       </div>
 
-      {questions.length === 0 ? (
+      {data.length === 0 ? (
         <div className="border bg-muted/40 p-4 text-sm text-muted-foreground">
-          Nenhuma pergunta consolidada para esta dimensão no filtro atual.
+          Nenhuma dimensão consolidada no filtro atual.
         </div>
       ) : (
         <div className="overflow-hidden rounded-lg border bg-card">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[800px] caption-bottom text-sm">
+            <table className="w-full min-w-[680px] caption-bottom text-sm">
               <thead className="border-b bg-muted/30">
                 <tr>
-                  <th className="h-11 px-4 text-left font-medium text-foreground">
-                    Pergunta
+                  <th
+                    scope="col"
+                    className="h-11 px-4 text-left font-medium text-foreground"
+                  >
+                    Dimensão
                   </th>
-                  <th className="h-11 w-28 px-4 text-right font-medium text-foreground">
+                  <th
+                    scope="col"
+                    className="h-11 w-32 px-4 text-right font-medium text-foreground"
+                  >
                     Pontuação
                   </th>
-                  <th className="h-11 w-36 px-4 text-left font-medium text-foreground">
+                  <th
+                    scope="col"
+                    className="h-11 w-36 px-4 text-left font-medium text-foreground"
+                  >
                     Status
                   </th>
-                  <th className="h-11 w-24 px-4 text-right font-medium text-foreground">
+                  <th
+                    scope="col"
+                    className="h-11 w-28 px-4 text-right font-medium text-foreground"
+                  >
                     Gap
-                  </th>
-                  <th className="h-11 w-28 px-4 text-right font-medium text-foreground">
-                    Respostas
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {questions.map((question) => (
-                  <tr key={question.id} className="hover:bg-muted/30">
-                    <td className="min-w-[360px] px-4 py-4 align-middle">
+                {data.map((dimension) => (
+                  <tr key={dimension.dimension} className="hover:bg-muted/30">
+                    <td className="px-4 py-4 align-middle">
                       <p className="text-foreground text-sm font-medium leading-snug">
-                        {question.text}
+                        {dimension.dimension}
                       </p>
                     </td>
                     <td className="px-4 py-4 text-right align-middle">
                       <span className="text-foreground text-base font-semibold tabular-nums">
-                        {scoreFormatter.format(question.score)}
+                        {scoreFormatter.format(dimension.maturity)}
                       </span>
                     </td>
                     <td className="px-4 py-4 align-middle">
-                      <QuestionStatus classification={question.classification} />
+                      <DimensionStatus score={dimension.maturity} />
                     </td>
                     <td className="px-4 py-4 text-right align-middle text-sm tabular-nums text-foreground">
-                      {formatGap(question.gap)}
-                    </td>
-                    <td className="px-4 py-4 text-right align-middle text-sm tabular-nums text-foreground">
-                      {question.responses.toLocaleString("pt-BR")}
+                      {formatGap(dimension)}
                     </td>
                   </tr>
                 ))}

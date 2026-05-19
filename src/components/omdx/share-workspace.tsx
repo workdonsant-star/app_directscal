@@ -109,7 +109,11 @@ export function ShareWorkspace({ diagnostic, links }: ShareWorkspaceProps) {
         </div>
 
         <div className="flex flex-col gap-2 sm:flex-row">
-          <Button variant="outline" render={<Link href="/omdx/diagnosticos" />}>
+          <Button
+            variant="outline"
+            nativeButton={false}
+            render={<Link href="/omdx/diagnosticos" />}
+          >
             <ArrowLeft className="size-4" />
             Voltar para diagnósticos
           </Button>

@@ -24,7 +24,7 @@ export default async function AppLayout({
           acquisitionEnabled={isFeatureAcquisitionEnabled()}
           user={session.user}
         />
-        <SidebarInset className="bg-sidebar">{children}</SidebarInset>
+        <SidebarInset className="bg-background">{children}</SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
   );

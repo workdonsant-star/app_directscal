@@ -1,10 +1,11 @@
 import { Download } from "lucide-react";
 
 import { AppTopbar } from "@/components/app-topbar";
-import { ClusteringProcessChart } from "@/components/omdx/clustering-process-chart";
-import { OverviewDiagnosticFilter } from "@/components/omdx/overview-diagnostic-filter";
-import { OverviewExecutiveCards } from "@/components/omdx/overview-executive-cards";
 import { LayerHeatmapComparisonChart } from "@/components/omdx/layer-heatmap-comparison-chart";
+import { LayerStackedScoreChart } from "@/components/omdx/layer-stacked-score-chart";
+import { OverviewDiagnosticFilter } from "@/components/omdx/overview-diagnostic-filter";
+import { OverviewDimensionResultsTable } from "@/components/omdx/overview-dimension-results-table";
+import { OverviewExecutiveCards } from "@/components/omdx/overview-executive-cards";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -69,14 +70,14 @@ export default async function OverviewPage({
           <section className="grid gap-8 xl:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Agrupamento operacional</CardTitle>
+                <CardTitle>Composição por camada</CardTitle>
                 <p className="text-muted-foreground text-sm">
-                  Organiza dimensões por proximidade entre maturidade e
-                  criticidade para indicar foco de gestão.
+                  Empilha as médias de Fundador, Liderança e Operação para
+                  mostrar a composição do score por dimensão.
                 </p>
               </CardHeader>
               <CardContent>
-                <ClusteringProcessChart data={analytics.dimensions} />
+                <LayerStackedScoreChart data={analytics.dimensions} />
               </CardContent>
             </Card>
 
@@ -93,6 +94,8 @@ export default async function OverviewPage({
               </CardContent>
             </Card>
           </section>
+
+          <OverviewDimensionResultsTable data={analytics.dimensions} />
         </div>
       </main>
     </>

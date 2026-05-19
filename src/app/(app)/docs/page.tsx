@@ -299,7 +299,10 @@ export default function DocumentationPage() {
                 </p>
               </div>
               <div className="mt-8 flex flex-wrap gap-2">
-                <Button render={<Link href="/omdx/diagnosticos" />}>
+                <Button
+                  nativeButton={false}
+                  render={<Link href="/omdx/diagnosticos" />}
+                >
                   Abrir diagnósticos
                 </Button>
               </div>

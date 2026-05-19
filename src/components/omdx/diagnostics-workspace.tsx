@@ -338,7 +338,10 @@ function GeneratedLinks({
           <Button variant="outline" onClick={onBack}>
             Voltar para configuração
           </Button>
-          <Button render={<Link href={`/omdx/${diagnostic.id}/compartilhar`} />}>
+          <Button
+            nativeButton={false}
+            render={<Link href={`/omdx/${diagnostic.id}/compartilhar`} />}
+          >
             Abrir compartilhamento
           </Button>
         </div>

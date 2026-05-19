@@ -47,7 +47,10 @@ export default async function DimensionInsightPage({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button render={<Link href="/insights/cultura" />}>
+              <Button
+                nativeButton={false}
+                render={<Link href="/insights/cultura" />}
+              >
                 Voltar para Cultura
               </Button>
             </CardContent>

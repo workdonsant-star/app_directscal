@@ -87,6 +87,7 @@ export function ShareLinks({
                 ) : (
                   <Button
                     variant="ghost"
+                    nativeButton={false}
                     render={<Link href={link.previewPath} />}
                   >
                     <ExternalLink className="size-4" />
