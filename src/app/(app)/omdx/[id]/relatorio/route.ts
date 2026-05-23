@@ -6,6 +6,7 @@ import {
   getDiagnosticById,
   getDiagnosticReport,
 } from "@/lib/data/omdx-data-source";
+import { buildDiagnosticReportCsv } from "@/lib/data/omdx-report-csv";
 import { OmdxReportDocument } from "@/lib/pdf/omdx-report-document";
 
 export const runtime = "nodejs";
@@ -24,7 +25,7 @@ function normalizeFilePart(value: string) {
     .toLowerCase();
 }
 
-export async function GET(_request: Request, { params }: ReportRouteContext) {
+export async function GET(request: Request, { params }: ReportRouteContext) {
   const session = await getCurrentAuthSession();
 
   if (!session) {
@@ -48,11 +49,28 @@ export async function GET(_request: Request, { params }: ReportRouteContext) {
     });
   }
 
+  const format = new URL(request.url).searchParams.get("formato");
+  const company = normalizeFilePart(report.diagnostic.company);
+
+  if (format === "csv") {
+    const csv = buildDiagnosticReportCsv(report);
+    const csvBuffer = new TextEncoder().encode(csv);
+    const filename = `relatorio-omdx-${company}-${report.diagnostic.id}.csv`;
+
+    return new Response(csvBuffer, {
+      headers: {
+        "Cache-Control": "no-store",
+        "Content-Disposition": `attachment; filename="${filename}"`,
+        "Content-Length": String(csvBuffer.byteLength),
+        "Content-Type": "text/csv; charset=utf-8",
+      },
+    });
+  }
+
   const document = createElement(OmdxReportDocument, {
     report,
   }) as Parameters<typeof renderToBuffer>[0];
   const pdfBuffer = await renderToBuffer(document);
-  const company = normalizeFilePart(report.diagnostic.company);
   const filename = `relatorio-omdx-${company}-${report.diagnostic.id}.pdf`;
 
   return new Response(new Uint8Array(pdfBuffer), {

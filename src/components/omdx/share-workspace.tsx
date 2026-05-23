@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { ReportDownloadMenu } from "@/components/omdx/report-download-menu";
 import { ResponseCounters } from "@/components/omdx/response-counters";
 import { ShareLinks } from "@/components/omdx/share-links";
 import { StatusBadge } from "@/components/omdx/status-badge";
@@ -118,14 +119,10 @@ export function ShareWorkspace({ diagnostic, links }: ShareWorkspaceProps) {
             Voltar para diagnósticos
           </Button>
           {canDownloadReport && (
-            <Button
+            <ReportDownloadMenu
+              diagnosticId={diagnostic.id}
               variant="outline"
-              nativeButton={false}
-              render={<a href={`/omdx/${diagnostic.id}/relatorio`} />}
-            >
-              <Download className="size-4" />
-              Baixar relatório
-            </Button>
+            />
           )}
           {canDownloadActionPlan && (
             <Button

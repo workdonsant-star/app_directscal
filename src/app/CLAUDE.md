@@ -24,7 +24,12 @@ src/app/
 │       └── [id]/
 │           ├── compartilhar/page.tsx ← central de coleta com links Supabase
 │           ├── action-points/route.ts ← download direto de PDF RACI
+<<<<<<< Updated upstream
 │           └── relatorio/route.ts ← download direto de PDF
+=======
+│           ├── respostas/route.ts ← download direto de CSV anônimo
+│           └── relatorio/route.ts ← download direto de relatório PDF ou CSV consolidado
+>>>>>>> Stashed changes
 │   └── insights/
 │       ├── page.tsx          ← redirect para /insights/cultura
 │       └── [dimensao]/page.tsx ← dashboard compacto por dimensão
@@ -89,7 +94,12 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/omdx/diagnosticos` | `(app)/omdx/diagnosticos/` | Área operacional acessada pela sidebar, com lista, filtros, criação e configuração em drawer lateral. |
 | `/omdx/[id]/compartilhar` | `(app)/omdx/[id]/compartilhar/` | Central de coleta persistida com links por grupo, copy sugerida e resumo compacto. |
 | `/omdx/[id]/action-points` | `(app)/omdx/[id]/action-points/` | Route Handler Node autenticado para download direto do plano de ação RACI. |
+<<<<<<< Updated upstream
 | `/omdx/[id]/relatorio` | `(app)/omdx/[id]/relatorio/` | Route Handler Node autenticado para download direto do PDF consolidado. |
+=======
+| `/omdx/[id]/respostas` | `(app)/omdx/[id]/respostas/` | Route Handler Node autenticado para download direto do CSV anônimo de respostas brutas. |
+| `/omdx/[id]/relatorio` | `(app)/omdx/[id]/relatorio/` | Route Handler Node autenticado para download direto do relatório consolidado em PDF ou CSV. |
+>>>>>>> Stashed changes
 | `/omdx/[id]/acompanhamento` | `(app)/omdx/[id]/acompanhamento/` | Coleta em andamento |
 | `/omdx/[id]/resultado` | `(app)/omdx/[id]/resultado/` | Visão executiva |
 | `/omdx/[id]/resultado/[dimensao]` | `(app)/omdx/[id]/resultado/[dimensao]/` | Detalhe por dimensão |
@@ -123,7 +133,12 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - `/omdx/diagnosticos` usa `Overview / Diagnósticos`.
 - `/omdx/[id]/compartilhar` usa `Overview / Diagnósticos / Compartilhar`.
 - `/omdx/[id]/action-points` não renderiza página nem breadcrumb; retorna PDF como attachment.
+<<<<<<< Updated upstream
 - `/omdx/[id]/relatorio` não renderiza página nem breadcrumb; retorna PDF como attachment.
+=======
+- `/omdx/[id]/respostas` não renderiza página nem breadcrumb; retorna CSV anônimo como attachment.
+- `/omdx/[id]/relatorio` não renderiza página nem breadcrumb; retorna PDF como attachment por padrão e CSV consolidado quando recebe `?formato=csv`.
+>>>>>>> Stashed changes
 - `/insights/[dimensao]` usa `Insights / Nome da dimensão`.
 - `/docs` usa `Documentação`.
 - `/perfil` usa `Perfil`.

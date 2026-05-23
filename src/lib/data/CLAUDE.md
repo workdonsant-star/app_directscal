@@ -10,6 +10,12 @@ Esta pasta é a fronteira entre UI e dados. O OMDx core lê Supabase no servidor
 - Regras como base mínima de Fundador para análise, trava local de resposta e validação de conjunto completo de respostas devem ficar em funções puras testáveis.
 - Cálculos agregados e helpers de domínio ficam aqui ou em contratos/mappers, não nos componentes.
 - Relatórios PDF devem consumir DTOs consolidados daqui, como `getDiagnosticReport()` e `getDiagnosticActionPlan()`, sem acessar mocks ou recalcular dados dentro do documento.
+<<<<<<< Updated upstream
+=======
+- Exportações CSV devem consumir dados preparados daqui: respostas brutas anônimas via `getDiagnosticResponseExport()` e relatório consolidado via `buildDiagnosticReportCsv()`.
+- `omdx-data-source.ts` pode usar `cache()` do React apenas para memoização por request de sessão, autorização, modelo OMDx e bundles derivados. Não use `unstable_cache`, `use cache`, CDN cache ou cache global/persistente para sessão, organizações, diagnósticos, respostas, tokens, cookies, JWT ou resultados obtidos com service role.
+- Helpers memoizados que dependem de usuário devem receber `userId` explicitamente. Não dependa de variável global mutável para decidir escopo de organização ou acesso.
+>>>>>>> Stashed changes
 - `admin-data-source.ts` concentra helpers puros, seeds estáticos de módulos e derivação de empresas/módulos.
 - `acquisition-data-source.ts` é server-side e fala com Supabase para campanhas, leads, empresas, intents OAuth e credenciais de senha.
 - Em aquisição Google, o e-mail OAuth autenticado é a fonte canônica; valide que `userId` e e-mail pertencem à mesma linha em `next_auth.users` e não crie nova conta quando o e-mail já tem acesso ativo.
@@ -34,6 +40,26 @@ Esta pasta é a fronteira entre UI e dados. O OMDx core lê Supabase no servidor
 - `priorityIndex` é `round((((5 - score) + (gap ?? 0)) / 5) * 100)`, limitado entre `0` e `100`.
 - A classificação textual de score vem de `classifyScore()`: `<= 2.0` Crítico, `<= 3.0` Inconsistente, `<= 4.0` Atenção, acima de `4.0` Consistente.
 
+<<<<<<< Updated upstream
+=======
+## Exportação CSV de respostas
+
+`getDiagnosticResponseExport()` expõe as respostas brutas de um diagnóstico em formato longo para `/omdx/[id]/respostas`.
+
+- Cada linha representa uma pergunta respondida.
+- O respondente é identificado apenas por alias anônimo por grupo, como `fundador-001`.
+- A ordenação segue sessão enviada, dimensão e ordem original da pergunta.
+- A exportação usa dados reais de `response_sessions` + `likert_answers` e não consulta a tabela `respondents`.
+
+## Exportação CSV de relatório
+
+`buildDiagnosticReportCsv()` transforma um `DiagnosticReport` já consolidado em CSV para `/omdx/[id]/relatorio?formato=csv`.
+
+- O helper é puro, não consulta Supabase e não altera a regra de disponibilidade do relatório.
+- O CSV usa UTF-8 com BOM, separador `;` e uma estrutura longa com `secao = resumo | dimensao | pergunta`.
+- As perguntas exportadas são agregados do relatório consolidado, não respostas individuais por respondente.
+
+>>>>>>> Stashed changes
 ## Cálculos do Overview OMDx
 
 `omdx-overview-analytics.ts` consolida os cards executivos do Overview e os dados dos gráficos. Os cards usam índices normalizados em escala `0-100`; os valores Likert originais continuam como base de cálculo e entram no `technicalDetail` quando útil.

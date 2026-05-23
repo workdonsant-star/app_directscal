@@ -24,6 +24,7 @@ OMDx avalia maturidade operacional em **6 dimensões** (Cultura, Visão, Comunic
 | `DiagnosticsWorkspace` | `diagnostics-workspace.tsx` | `/omdx/diagnosticos` | Controla lista, ações e drawer de criação/configuração. |
 | `ShareWorkspace` | `share-workspace.tsx` | `/omdx/[id]/compartilhar` | Central client-side de coleta com cópia local e encerramento persistido via API. |
 | `ShareLinks` | `share-links.tsx` | Compartilhamento | Cards por grupo com link, prévia e mensagem sugerida. |
+| `ReportDownloadMenu` | `report-download-menu.tsx` | Overview e Compartilhar | Menu contextual para baixar o relatório consolidado em PDF ou CSV. O CSV usa `/omdx/[id]/relatorio?formato=csv`. |
 | `ResponseCounters` | `response-counters.tsx` | Compartilhar e acompanhamento futuro | Total de respostas, respostas por grupo e aviso de base de Fundador para análise. |
 | `PublicResponseForm` | `public-response-form.tsx` | `/r/[token]` | Formulário público anônimo em lista contínua minimalista, com perguntas embaralhadas por carregamento, controle Likert em linha exibindo todos os rótulos, modal inicial, progresso discreto, validação com âncora na primeira pendência, envio para API, trava leve em `localStorage` e redirecionamento para `/r/[token]/obrigado` após sucesso. |
 | `DimensionInsightWorkspace` | `dimension-insight-workspace.tsx` | `/insights/[dimensao]` | Controla o filtro da dimensão, renderiza topbar e injeta o dashboard. |
@@ -98,7 +99,7 @@ Para o respondente, prever:
 - `Ativar diagnóstico` valida e mostra, no próprio drawer, os 3 links por grupo: fundador, liderança e operação.
 - A tabela operacional também deve expor ações de copiar link por grupo em colunas próprias quando o diagnóstico não estiver em rascunho.
 - O menu de três pontos da tabela deve ser enxuto: `Continuar configuração` apenas em rascunhos e `Excluir` para todos os diagnósticos, sempre com confirmação.
-- `Baixar relatório` e `Baixar action points` aparecem na tabela para diagnósticos com resultado consolidável (`generalScore` e ao menos uma resposta de Fundador).
+- `Baixar relatório PDF`, `Baixar relatório CSV` e `Baixar action points` aparecem na tabela para diagnósticos com resultado consolidável (`generalScore` e ao menos uma resposta de Fundador).
 - O dashboard não deve exibir CTA para `/omdx/diagnosticos`; a navegação principal fica na sidebar.
 - Não criar páginas visíveis para criação/configuração; se rotas antigas existirem, tratá-las como temporárias/deprecated.
 
@@ -108,7 +109,12 @@ Para o respondente, prever:
 - Mostrar 3 links por grupo: fundador, liderança e operação.
 - Cada link deve ter mensagem sugerida própria e ação de prévia pública em `/r/[token]`.
 - `Encerrar coleta` chama a API e persiste `status = encerrado` no Supabase.
+<<<<<<< Updated upstream
 - `Baixar relatório` e `Baixar action points` aparecem como ações contextuais quando o diagnóstico já possui base de Fundador e relatório consolidável.
+=======
+- `Baixar relatório` abre opções de PDF e CSV; `Baixar action points` aparece como ação contextual quando o diagnóstico já possui base de Fundador e relatório consolidável.
+- `Baixar respostas CSV` aparece quando houver ao menos uma resposta, pois exporta dados brutos anônimos e não depende de base consolidável.
+>>>>>>> Stashed changes
 - Acompanhamento detalhado e lista de respondentes ficam para `/omdx/[id]/acompanhamento`.
 
 ## Insights por dimensão

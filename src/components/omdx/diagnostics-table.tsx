@@ -162,6 +162,10 @@ export function DiagnosticsTable({
     window.location.assign(`/omdx/${diagnostic.id}/relatorio`);
   }
 
+  function handleDownloadReportCsv(diagnostic: Diagnostic) {
+    window.location.assign(`/omdx/${diagnostic.id}/relatorio?formato=csv`);
+  }
+
   function handleDownloadActionPoints(diagnostic: Diagnostic) {
     window.location.assign(`/omdx/${diagnostic.id}/action-points`);
   }
@@ -279,7 +283,15 @@ export function DiagnosticsTable({
                           onClick={() => handleDownloadReport(d)}
                         >
                           <Download className="size-4" />
-                          Baixar relatório
+                          Baixar relatório PDF
+                        </DropdownMenuItem>
+                      )}
+                      {canGenerateDiagnosticReport(d) && (
+                        <DropdownMenuItem
+                          onClick={() => handleDownloadReportCsv(d)}
+                        >
+                          <Download className="size-4" />
+                          Baixar relatório CSV
                         </DropdownMenuItem>
                       )}
                       {canGenerateDiagnosticActionPlan(d) && (

@@ -1,12 +1,14 @@
-import { Download } from "lucide-react";
-
 import { AppTopbar } from "@/components/app-topbar";
 import { LayerHeatmapComparisonChart } from "@/components/omdx/layer-heatmap-comparison-chart";
+<<<<<<< Updated upstream
 import { LayerStackedScoreChart } from "@/components/omdx/layer-stacked-score-chart";
 import { OverviewDiagnosticFilter } from "@/components/omdx/overview-diagnostic-filter";
 import { OverviewDimensionResultsTable } from "@/components/omdx/overview-dimension-results-table";
 import { OverviewExecutiveCards } from "@/components/omdx/overview-executive-cards";
 import { Button } from "@/components/ui/button";
+=======
+import { ReportDownloadMenu } from "@/components/omdx/report-download-menu";
+>>>>>>> Stashed changes
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   getDiagnosticById,
@@ -49,15 +51,11 @@ export default async function OverviewPage({
               value={selectedDiagnostic}
             />
             {reportDiagnostic && (
-              <Button
+              <ReportDownloadMenu
+                diagnosticId={reportDiagnostic.id}
+                hideLabelOnMobile
                 size="sm"
-                aria-label="Baixar relatório"
-                nativeButton={false}
-                render={<a href={`/omdx/${reportDiagnostic.id}/relatorio`} />}
-              >
-                <Download className="size-4" />
-                <span className="hidden sm:inline">Baixar relatório</span>
-              </Button>
+              />
             )}
           </div>
         }
