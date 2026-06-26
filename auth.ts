@@ -1,6 +1,7 @@
 import { SupabaseAdapter } from "@auth/supabase-adapter";
 import { cookies } from "next/headers";
 import NextAuth from "next-auth";
+import type { Session } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
@@ -25,7 +26,7 @@ import {
   getAcquisitionOauthIntent,
   resolveAcquisitionAuthUser,
 } from "@/lib/data/acquisition-data-source";
-import type { AuthUser } from "@/lib/contracts";
+import type { AuthRole, AuthUser } from "@/lib/contracts";
 
 const supabaseAdapterConfig = getSupabaseAdapterConfig();
 
@@ -88,6 +89,56 @@ function writeTokenUser({
   token.email = user.email;
   token.company = user.company;
   token.role = user.role;
+}
+
+function isAuthRole(value: unknown): value is AuthRole {
+  return value === "superadmin" || value === "admin" || value === "cliente";
+}
+
+function getTokenAuthUser(token: JWT): AuthUser | null {
+  if (
+    typeof token.userId !== "string" ||
+    typeof token.name !== "string" ||
+    typeof token.email !== "string" ||
+    typeof token.company !== "string" ||
+    !isAuthRole(token.role)
+  ) {
+    return null;
+  }
+
+  return {
+    id: token.userId,
+    name: token.name,
+    email: token.email,
+    company: token.company,
+    role: token.role,
+  };
+}
+
+function writeSessionUser({
+  session,
+  user,
+  image,
+}: {
+  image?: string;
+  session: Session;
+  user: AuthUser;
+}) {
+  session.user.id = user.id;
+  session.user.name = user.name;
+  session.user.email = user.email;
+  session.user.company = user.company;
+  session.user.role = user.role;
+  session.user.image = image;
+
+  attachSupabaseAccessTokenToSession({
+    email: user.email,
+    expires: session.expires,
+    session,
+    userId: user.id,
+  });
+
+  return session;
 }
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
@@ -263,6 +314,21 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     async session({ session, token, user }) {
       session.acquisition = token.acquisition === true;
 
+      const tokenUser = getTokenAuthUser(token);
+
+      if (tokenUser) {
+        return writeSessionUser({
+          image:
+            typeof user?.image === "string"
+              ? user.image
+              : typeof token.picture === "string"
+                ? token.picture
+                : undefined,
+          session,
+          user: tokenUser,
+        });
+      }
+
       const tokenUserId =
         typeof token?.userId === "string" ? token.userId : undefined;
       const tokenEmail =
@@ -277,26 +343,16 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       const databaseUser = sessionUser;
 
       if (databaseUser) {
-        session.user.id = databaseUser.id;
-        session.user.name = databaseUser.name;
-        session.user.email = databaseUser.email;
-        session.user.company = databaseUser.company;
-        session.user.role = databaseUser.role;
-        session.user.image =
-          typeof user?.image === "string"
-            ? user.image
-            : typeof token.picture === "string"
-              ? token.picture
-              : undefined;
-
-        attachSupabaseAccessTokenToSession({
-          email: databaseUser.email,
-          expires: session.expires,
+        return writeSessionUser({
+          image:
+            typeof user?.image === "string"
+              ? user.image
+              : typeof token.picture === "string"
+                ? token.picture
+                : undefined,
           session,
-          userId: databaseUser.id,
+          user: databaseUser,
         });
-
-        return session;
       }
 
       if (
@@ -308,19 +364,16 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           token.role === "admin" ||
           token.role === "cliente")
       ) {
-        session.user.id = token.userId;
-        session.user.name = token.name;
-        session.user.email = token.email;
-        session.user.company = token.company;
-        session.user.role = token.role;
-        session.user.image =
-          typeof token.picture === "string" ? token.picture : undefined;
-
-        attachSupabaseAccessTokenToSession({
-          email: token.email,
-          expires: session.expires,
+        writeSessionUser({
+          image: typeof token.picture === "string" ? token.picture : undefined,
           session,
-          userId: token.userId,
+          user: {
+            id: token.userId,
+            name: token.name,
+            email: token.email,
+            company: token.company,
+            role: token.role,
+          },
         });
       }
 

@@ -1,9 +1,10 @@
 "use client";
 
 import type { EChartsOption } from "echarts";
-import ReactECharts from "echarts-for-react";
+import ReactEChartsCore from "echarts-for-react/lib/core";
 import { useMemo } from "react";
 
+import { echarts } from "@/components/omdx/echarts-core";
 import { useChartThemeColors } from "@/components/omdx/use-chart-theme-colors";
 import type { DimensionResult } from "@/lib/data/omdx-overview-analytics";
 
@@ -225,7 +226,7 @@ export function LayerStackedScoreChart({ data }: LayerStackedScoreChartProps) {
         enabled: true,
         label: {
           description:
-            "Barras empilhadas com as médias de Fundador, Liderança e Operação por dimensão do OMDx.",
+            "Barras empilhadas com as médias de Fundador, Liderança e Operação por dimensão de Maturidade.",
         },
       },
       grid: {
@@ -375,7 +376,8 @@ export function LayerStackedScoreChart({ data }: LayerStackedScoreChartProps) {
   }
 
   return (
-    <ReactECharts
+    <ReactEChartsCore
+      echarts={echarts}
       option={option}
       notMerge
       lazyUpdate

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { getCurrentAuthSession } from "@/lib/auth/session";
+import { getCurrentAppAccessContext } from "@/lib/auth/authorization";
 import { isFeatureAcquisitionEnabled } from "@/lib/env";
 
 export default async function AppLayout({
@@ -11,9 +11,9 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getCurrentAuthSession();
+  const accessContext = await getCurrentAppAccessContext();
 
-  if (!session) {
+  if (!accessContext) {
     redirect("/entrar");
   }
 
@@ -22,7 +22,8 @@ export default async function AppLayout({
       <SidebarProvider>
         <AppSidebar
           acquisitionEnabled={isFeatureAcquisitionEnabled()}
-          user={session.user}
+          enabledModuleIds={accessContext.enabledModuleIds}
+          user={accessContext.session.user}
         />
         <SidebarInset className="bg-background">{children}</SidebarInset>
       </SidebarProvider>

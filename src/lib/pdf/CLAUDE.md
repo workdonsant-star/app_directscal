@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Esta pasta concentra documentos e helpers de geração de PDF do app. As responsabilidades atuais são o relatório executivo do OMDx e o documento de action points RACI, ambos renderizados com `@react-pdf/renderer` a partir dos DTOs consolidados em `src/lib/data/`.
+Esta pasta concentra documentos e helpers de geração de PDF do app. As responsabilidades atuais são o relatório executivo de Maturidade e o documento de action points RACI, ambos renderizados com `@react-pdf/renderer` a partir dos DTOs consolidados em `src/lib/data/`.
 
 ## Convenções
 

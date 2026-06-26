@@ -1,14 +1,14 @@
-# `src/components/omdx` — Componentes do módulo OMDx
+# `src/components/omdx` — Componentes do módulo Maturidade
 
 Antes de editar, releia o **AGENTS.md** da raiz, o `CLAUDE.md` de `src/components/` e este documento.
 
 ## Propósito
 
-Componentes específicos do **OMDx — Diagnóstico de Maturidade Operacional**. São compostos a partir dos primitives em `src/components/ui/` e consomem dados pela fronteira `src/lib/data/`, nunca diretamente pelos arrays de `src/lib/mock-data.ts`.
+Componentes específicos do módulo **Maturidade**. São compostos a partir dos primitives em `src/components/ui/` e consomem dados pela fronteira `src/lib/data/`, nunca diretamente pelos arrays de `src/lib/mock-data.ts`.
 
 ## Domínio em uma frase
 
-OMDx avalia maturidade operacional em **6 dimensões** (Cultura, Visão, Comunicação, Processos, Liderança, Performance), respondidas via formulário Likert 1-5 por **3 grupos** (Sócios, Liderança, Time/Operação) — cada grupo com seu link público anônimo. O cliente administrador acompanha a coleta e lê o resultado executivo.
+Maturidade avalia maturidade operacional em **6 dimensões** (Cultura, Visão, Comunicação, Processos, Liderança, Performance), respondidas via formulário Likert 1-5 por **3 grupos** (Sócios, Liderança, Time/Operação) — cada grupo com seu link público anônimo. O cliente administrador acompanha a coleta e lê o resultado executivo.
 
 ## Componentes atuais
 
@@ -37,12 +37,14 @@ OMDx avalia maturidade operacional em **6 dimensões** (Cultura, Visão, Comunic
 | `OverviewDiagnosticFilter` | `overview-diagnostic-filter.tsx` | `/omdx` | Wrapper client do filtro de diagnósticos na topbar do Overview, reutilizando `DimensionDiagnosticFilter`. |
 | `OverviewDimensionResultsTable` | `overview-dimension-results-table.tsx` | `/omdx` | Tabela compacta de leitura executiva por dimensão, exibindo dimensão, pontuação consolidada, status e gap entre camadas. |
 | `LayerStackedScoreChart` | `layer-stacked-score-chart.tsx` | `/omdx` | Barras verticais empilhadas por dimensão, com Fundador, Liderança e Operação, labels internos e total acumulado no topo. |
+| `OverviewCharts` | `overview-charts.tsx` | `/omdx` | Wrapper client mínimo que carrega os charts ECharts do Overview por dynamic import, preservando o shell inicial leve. |
 | `OrganizationalAlignmentChart` | `organizational-alignment-chart.tsx` | Disponível para telas futuras | Scatter ECharts de maturidade e criticidade por dimensão. Não é exibido no overview atual. |
 | `MaturityMisalignmentChart` | `maturity-misalignment-chart.tsx` | `/omdx` | Scatter plot ECharts com quadrantes de maturidade média e gap de percepção. |
 | `InterventionPriorityChart` | `intervention-priority-chart.tsx` | `/omdx` | Barras horizontais ECharts para priorizar intervenção por criticidade operacional, maturidade, gap e dispersão. |
 | `TopResearchBottlenecks` | `top-research-bottlenecks.tsx` | `/omdx` | Ranking React de perguntas com maior percentual de respostas críticas, sem ECharts. |
 | `LayerHeatmapComparisonChart` | `layer-heatmap-comparison-chart.tsx` | `/omdx` | Heatmap ECharts para comparar diretoria, liderança e time por dimensão em escala de 1 a 5. |
-| `useChartThemeColors` | `use-chart-theme-colors.ts` | Charts ECharts OMDx | Hook client-side que lê tokens CSS e observa mudanças da classe `dark` no `<html>` para recalcular cores sem refresh. |
+| `useChartThemeColors` | `use-chart-theme-colors.ts` | Charts ECharts Maturidade | Hook client-side que lê tokens CSS e observa mudanças da classe `dark` no `<html>` para recalcular cores sem refresh. |
+| `OperationalMemberRegistrationForm` | `operational-member-registration-form.tsx` | `/o/[token]` | Formulário público curto para a própria pessoa informar área, papel operacional e responsabilidades percebidas. Após cadastro aceito, mostra confirmação sem redirecionar automaticamente para pesquisa. |
 
 ## Convenções de domínio
 
@@ -50,7 +52,7 @@ OMDx avalia maturidade operacional em **6 dimensões** (Cultura, Visão, Comunic
 - **Sentence case** em títulos, botões e labels. Sem ponto de exclamação.
 - **Score 1-5** sempre formatado com **uma casa decimal** (`(3.4).toFixed(1)`), com vírgula em pt-BR quando aplicável (formatação automática se vier de `toLocaleString("pt-BR")`).
 - **Classificação** vem da função `classifyScore()` em `src/lib/data/omdx-domain.ts`. Não inline a regra em componente. A régua textual do score Likert é: `<= 2.0` Crítico, `<= 3.0` Inconsistente, `<= 4.0` Atenção, acima de `4.0` Consistente.
-- **Biblioteca principal de visualização:** usar Apache ECharts via `echarts` e `echarts-for-react` para charts analíticos do OMDx. Evite shadcn/ui Charts e Recharts como base principal.
+- **Biblioteca principal de visualização:** usar Apache ECharts via `echarts` e `echarts-for-react` para charts analíticos de Maturidade. Evite shadcn/ui Charts e Recharts como base principal.
 - **Charts reutilizáveis:** componentes de visualização devem ser tipados, receber dados já preparados por props ou pela camada `src/lib/data/`, e manter opções ECharts próximas do componente de domínio que as governa.
 - **Charts e tema:** ECharts não reage sozinho a CSS variables após troca de tema. Use `useChartThemeColors()` para ler tokens e recomputar `option` quando light/dark mudar; não congele cores com `useMemo(..., [])`.
 - **Charts sem border radius:** não use `borderRadius`, `border-radius`, `rounded-*` ou cantos arredondados em barras, áreas, tooltips ou elementos internos de charts. Preserve a geometria padrão/retangular da biblioteca.

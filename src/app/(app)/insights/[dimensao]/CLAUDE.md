@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Página dinâmica para visualizar o resumo agregado de uma dimensão do OMDx e filtrar por diagnóstico específico.
+Página dinâmica para visualizar o resumo agregado de uma dimensão de Maturidade e filtrar por diagnóstico específico.
 
 ## Convenções locais
 

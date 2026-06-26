@@ -1,11 +1,12 @@
 "use client";
 
 import type { EChartsOption } from "echarts";
-import ReactECharts from "echarts-for-react";
+import ReactEChartsCore from "echarts-for-react/lib/core";
 import { useMemo } from "react";
 
-import type { DimensionResult } from "@/lib/data/omdx-overview-analytics";
+import { echarts } from "@/components/omdx/echarts-core";
 import { useChartThemeColors } from "@/components/omdx/use-chart-theme-colors";
+import type { DimensionResult } from "@/lib/data/omdx-overview-analytics";
 
 type HeatmapDatum = [number, number, number];
 
@@ -143,7 +144,7 @@ export function LayerHeatmapComparisonChart({
         enabled: true,
         label: {
           description:
-            "Heatmap das percepções de diretoria, liderança e time por dimensão do OMDx em escala de 1 a 5.",
+            "Heatmap das percepções de diretoria, liderança e time por dimensão de Maturidade em escala de 1 a 5.",
         },
       },
       grid: {
@@ -278,7 +279,8 @@ export function LayerHeatmapComparisonChart({
   }
 
   return (
-    <ReactECharts
+    <ReactEChartsCore
+      echarts={echarts}
       option={option}
       notMerge
       lazyUpdate

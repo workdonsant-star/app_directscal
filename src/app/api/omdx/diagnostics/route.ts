@@ -60,7 +60,7 @@ export async function POST(request: Request) {
 
   if (!templateId) {
     return NextResponse.json(
-      { message: "Template OMDx indisponível." },
+      { message: "Template de Maturidade indisponível." },
       { status: 409 },
     );
   }

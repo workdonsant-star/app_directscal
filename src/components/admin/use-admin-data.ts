@@ -9,8 +9,12 @@ import {
 } from "@/lib/data/admin-data-source";
 
 export function useAdminData() {
+  return useAdminDataSnapshot();
+}
+
+export function useAdminDataSnapshot(initialSnapshot?: AdminDataSnapshot) {
   const [snapshot, setSnapshot] = useState<AdminDataSnapshot>(
-    getAdminDataServerSnapshot,
+    () => initialSnapshot ?? getAdminDataServerSnapshot(),
   );
 
   useEffect(() => {
@@ -28,14 +32,16 @@ export function useAdminData() {
       if (active) setSnapshot(data);
     }
 
-    loadSnapshot();
+    if (!initialSnapshot) {
+      loadSnapshot();
+    }
     window.addEventListener(adminUpdatedEventName, loadSnapshot);
 
     return () => {
       active = false;
       window.removeEventListener(adminUpdatedEventName, loadSnapshot);
     };
-  }, []);
+  }, [initialSnapshot]);
 
   return snapshot;
 }

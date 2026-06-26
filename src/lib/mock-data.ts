@@ -77,14 +77,30 @@ export const adminModules: AdminModule[] = [
   {
     id: "module_omdx",
     slug: "omdx",
-    name: "OMDx — Diagnóstico de Maturidade Operacional",
-    shortName: "OMDx",
+    name: "Maturidade",
+    shortName: "Maturidade",
     description:
       "Diagnóstico de maturidade operacional usado como porta de entrada para mapear empresas com demanda de estruturação.",
     status: "ativo",
     productPath: "/omdx",
     createdAt: "2026-04-01T00:00:00.000Z",
     updatedAt: "2026-05-08T00:00:00.000Z",
+    campaignsCount: 0,
+    activeCampaigns: 0,
+    leadCount: 0,
+    companyCount: 0,
+  },
+  {
+    id: "module_people",
+    slug: "pessoas",
+    name: "Pessoas",
+    shortName: "Pessoas",
+    description:
+      "Estrutura de pessoas, vínculos, custos, pendências e fechamento mensal para operações digitais em crescimento.",
+    status: "ativo",
+    productPath: "/pessoas",
+    createdAt: "2026-06-24T00:00:00.000Z",
+    updatedAt: "2026-06-24T00:00:00.000Z",
     campaignsCount: 0,
     activeCampaigns: 0,
     leadCount: 0,
@@ -168,7 +184,7 @@ export const acquisitionCampaigns: AcquisitionCampaign[] = [
   {
     id: "camp_omdx_site",
     moduleId: "module_omdx",
-    name: "Diagnóstico OMDx — Site",
+    name: "Maturidade — Site",
     source: "Site institucional",
     status: "ativo",
     slug: "omdx-site",
@@ -181,7 +197,7 @@ export const acquisitionCampaigns: AcquisitionCampaign[] = [
   {
     id: "camp_omdx_outbound",
     moduleId: "module_omdx",
-    name: "Diagnóstico OMDx — Outbound",
+    name: "Maturidade — Outbound",
     source: "Outbound consultivo",
     status: "ativo",
     slug: "omdx-outbound",
@@ -198,7 +214,7 @@ export const acquisitionLeads: Lead[] = [
     id: "lead_01",
     moduleId: "module_omdx",
     campaignId: "camp_omdx_site",
-    campaignName: "Diagnóstico OMDx — Site",
+    campaignName: "Maturidade — Site",
     source: "Site institucional",
     name: "Marina Azevedo",
     email: "marina@atlasgrowth.com.br",
@@ -228,7 +244,7 @@ export const acquisitionLeads: Lead[] = [
     id: "lead_02",
     moduleId: "module_omdx",
     campaignId: "camp_omdx_outbound",
-    campaignName: "Diagnóstico OMDx — Outbound",
+    campaignName: "Maturidade — Outbound",
     source: "Outbound consultivo",
     name: "Rafael Nogueira",
     email: "rafael@cobaltofin.com",
@@ -332,7 +348,7 @@ export const dimensions: Dimension[] = [
 export const diagnosticTemplates: DiagnosticTemplate[] = [
   {
     id: "omdx-v1",
-    name: "OMDx padrão",
+    name: "Maturidade padrão",
     description:
       "Diagnóstico de maturidade operacional com seis dimensões e escala Likert de 1 a 5.",
     dimensions: dimensions.map((dimension) => dimension.id),
@@ -351,7 +367,7 @@ export const diagnostics: Diagnostic[] = [
     id: "diag_01",
     organizationId: "org_vertex",
     organizationName: "Vertex Logistics",
-    name: "OMDx — Q2 2026",
+    name: "Maturidade — Q2 2026",
     company: "Vertex Logistics",
     description:
       "Coleta trimestral para avaliar prontidão operacional antes do próximo ciclo comercial.",
@@ -397,7 +413,7 @@ export const diagnostics: Diagnostic[] = [
     id: "diag_03",
     organizationId: "org_northbound",
     organizationName: "Northbound Capital",
-    name: "OMDx — onboarding C-level",
+    name: "Maturidade — onboarding C-level",
     company: "Northbound Capital",
     description:
       "Diagnóstico rápido para alinhar nova liderança sobre gargalos de execução.",
@@ -465,7 +481,7 @@ export const diagnostics: Diagnostic[] = [
     id: "diag_06",
     organizationId: "org_vertex",
     organizationName: "Vertex Logistics",
-    name: "OMDx — Liderança expandida",
+    name: "Maturidade — Liderança expandida",
     company: "Vertex Logistics",
     description:
       "Rascunho para ampliar a leitura de liderança antes do planejamento do semestre.",

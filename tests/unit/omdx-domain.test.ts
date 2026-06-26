@@ -14,7 +14,7 @@ function buildDiagnostic(overrides: Partial<Diagnostic> = {}): Diagnostic {
     organizationId: "00000000-0000-4000-8000-000000000301",
     organizationName: "Directscal",
     company: "Directscal",
-    name: "OMDx",
+    name: "Maturidade",
     description: null,
     templateId: "omdx-v1",
     status: "ativo",
@@ -34,8 +34,8 @@ function buildDiagnostic(overrides: Partial<Diagnostic> = {}): Diagnostic {
   };
 }
 
-describe("OMDx domain helpers", () => {
-  it("classifies scores using the OMDx scale", () => {
+describe("Maturidade domain helpers", () => {
+  it("classifies scores using the Maturidade scale", () => {
     expect(classifyScore(2)).toBe("Crítico");
     expect(classifyScore(3)).toBe("Inconsistente");
     expect(classifyScore(4)).toBe("Atenção");

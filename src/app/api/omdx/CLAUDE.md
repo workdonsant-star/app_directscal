@@ -1,8 +1,8 @@
-# `src/app/api/omdx` — Route Handlers OMDx
+# `src/app/api/omdx` — Route Handlers Maturidade
 
 ## Propósito
 
-Endpoints server-side para mutações reais do OMDx em produção.
+Endpoints server-side para mutações reais de Maturidade em produção.
 
 ## Convenções
 

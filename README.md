@@ -1,8 +1,8 @@
-# Directscal OMDx
+# Directscal Maturidade
 
-Aplicação Next.js para o **OMDx — Diagnóstico de Maturidade Operacional** da Directscal.
+Aplicação Next.js para o módulo **Maturidade** da Directscal.
 
-Nesta fase, o produto mantém a interface OMDx com dados mockados, mas já possui a fundação de produção para Supabase: migrations versionadas, Auth.js com Supabase Adapter, JWT para RLS, route handlers de mutação e testes iniciais. A autenticação principal usa Google OAuth com allowlist corporativa por variável de ambiente.
+Nesta fase, o produto mantém a interface Maturidade com dados mockados, mas já possui a fundação de produção para Supabase: migrations versionadas, Auth.js com Supabase Adapter, JWT para RLS, route handlers de mutação e testes iniciais. A autenticação principal usa Google OAuth com allowlist corporativa por variável de ambiente.
 
 ## Stack
 
@@ -17,7 +17,7 @@ Nesta fase, o produto mantém a interface OMDx com dados mockados, mas já possu
 - lucide-react para ícones.
 - zod para contratos e validação de dados.
 
-## Fluxo OMDx
+## Fluxo Maturidade
 
 - `/omdx` é o dashboard executivo do módulo.
 - `/omdx/diagnosticos` é a área operacional para lista, filtros, criação e configuração, acessada pela sidebar.
@@ -28,7 +28,7 @@ Nesta fase, o produto mantém a interface OMDx com dados mockados, mas já possu
 Regra de navegação:
 
 - O dashboard raiz `/omdx` não usa breadcrumb.
-- Camadas abaixo usam breadcrumb, como `OMDx / Diagnósticos` e `OMDx / Diagnósticos / Compartilhar`.
+- Camadas abaixo usam breadcrumb, como `Maturidade / Diagnósticos` e `Maturidade / Diagnósticos / Compartilhar`.
 - `Diagnósticos` é navegação lateral, não CTA dentro do dashboard.
 
 ## Dados
@@ -37,9 +37,9 @@ Os dados da UI ainda passam por `src/lib/data/omdx-data-source.ts` e usam `src/l
 
 Hoje existem mocks para:
 
-- Dimensões do OMDx.
+- Dimensões de Maturidade.
 - Diagnósticos em rascunho, ativos e encerrados.
-- Template padrão `OMDx padrão`.
+- Template padrão `Maturidade padrão`.
 - Escala Likert de 1 a 5.
 - KPIs agregados do dashboard.
 

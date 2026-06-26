@@ -104,7 +104,7 @@ function ReportHeader({
   return (
     <View style={styles.header} fixed>
       <View>
-        <Text style={styles.headerKicker}>OMDx</Text>
+        <Text style={styles.headerKicker}>Maturidade</Text>
         <Text style={styles.headerTitle}>{section}</Text>
       </View>
       <View style={styles.headerMeta}>
@@ -229,7 +229,7 @@ function CoverPage({ report }: { report: DiagnosticReport }) {
 
       <View style={styles.coverMain}>
         <Text style={styles.coverKicker}>Relatório de diagnóstico</Text>
-        <Text style={styles.coverTitle}>OMDx</Text>
+        <Text style={styles.coverTitle}>Maturidade</Text>
         <Text style={styles.coverSubtitle}>
           Diagnóstico de Maturidade Operacional
         </Text>
@@ -502,7 +502,7 @@ function DimensionPage({
 export function OmdxReportDocument({ report }: { report: DiagnosticReport }) {
   return (
     <Document
-      title={`Relatório OMDx — ${report.diagnostic.company}`}
+      title={`Relatório de Maturidade — ${report.diagnostic.company}`}
       author="Directscal"
       subject="Diagnóstico de Maturidade Operacional"
     >

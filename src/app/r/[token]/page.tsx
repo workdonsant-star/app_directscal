@@ -18,7 +18,7 @@ import { getDiagnosticByResponseToken } from "@/lib/data/omdx-data-source";
 import { getResponseCookieName } from "@/lib/data/omdx-production-rules";
 
 export const metadata: Metadata = {
-  title: "Responder OMDx — Directscal",
+  title: "Responder Maturidade — Directscal",
 };
 
 type PublicResponsePreviewPageProps = {
@@ -41,7 +41,7 @@ function PublicResponseState({
         </CardHeader>
         <CardContent>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Solicite um novo link para a pessoa responsável pela coleta OMDx.
+            Solicite um novo link para a pessoa responsável pela coleta Maturidade.
           </p>
         </CardContent>
       </Card>
@@ -118,7 +118,7 @@ export default async function PublicResponsePreviewPage({
             />
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
-            <Badge variant="outline">OMDx</Badge>
+            <Badge variant="outline">Maturidade</Badge>
             <Badge variant="outline">
               <ShieldCheck aria-hidden="true" className="size-3" />
               Resposta anônima

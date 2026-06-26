@@ -1,15 +1,16 @@
 "use client";
 
 import type { EChartsOption } from "echarts";
-import ReactECharts from "echarts-for-react";
+import ReactEChartsCore from "echarts-for-react/lib/core";
 import { useMemo } from "react";
 
+import { echarts } from "@/components/omdx/echarts-core";
+import { useChartThemeColors } from "@/components/omdx/use-chart-theme-colors";
 import {
   calculateDimensionGap,
   identifyMaturityQuadrant,
   type DimensionResult,
 } from "@/lib/data/omdx-overview-analytics";
-import { useChartThemeColors } from "@/components/omdx/use-chart-theme-colors";
 
 type TooltipParam = {
   data?: {
@@ -120,7 +121,7 @@ export function MaturityMisalignmentChart({
         enabled: true,
         label: {
           description:
-            "Maturidade versus desalinhamento, posicionando dimensões do OMDx por maturidade média e gap entre grupos.",
+            "Maturidade versus desalinhamento, posicionando dimensões de Maturidade por maturidade média e gap entre grupos.",
         },
       },
       grid: {
@@ -255,7 +256,8 @@ export function MaturityMisalignmentChart({
   }
 
   return (
-    <ReactECharts
+    <ReactEChartsCore
+      echarts={echarts}
       option={option}
       notMerge
       lazyUpdate

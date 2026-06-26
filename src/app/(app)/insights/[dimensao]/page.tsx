@@ -13,14 +13,12 @@ import {
 } from "@/components/ui/card";
 import {
   getDimensionById,
-  getDimensionInsightDiagnosticOptions,
-  getDimensionInsightSummary,
-  getDimensionQuestionResults,
+  getDimensionInsightPageData,
 } from "@/lib/data/omdx-data-source";
 import { isDimensionId } from "@/lib/data/omdx-domain";
 
 export const metadata: Metadata = {
-  title: "Insights — OMDx",
+  title: "Insights — Maturidade",
 };
 
 type DimensionInsightPageProps = {
@@ -43,7 +41,7 @@ export default async function DimensionInsightPage({
             <CardHeader>
               <CardTitle>Dimensão não encontrada</CardTitle>
               <CardDescription>
-                A dimensão solicitada não existe no modelo OMDx desta fase.
+                A dimensão solicitada não existe no modelo de Maturidade desta fase.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -61,29 +59,22 @@ export default async function DimensionInsightPage({
   }
 
   const resolvedSearchParams = await searchParams;
-  const dimension = await getDimensionById(dimensao);
-  const diagnosticOptions = await getDimensionInsightDiagnosticOptions();
   const requestedDiagnostic =
     typeof resolvedSearchParams?.diagnostico === "string"
       ? resolvedSearchParams.diagnostico
       : "todos";
-  const selectedDiagnostic = diagnosticOptions.some(
-    (diagnostic) => diagnostic.id === requestedDiagnostic,
-  )
-    ? requestedDiagnostic
-    : "todos";
-  const [summary, questionResults] = await Promise.all([
-    getDimensionInsightSummary(dimension.id, selectedDiagnostic),
-    getDimensionQuestionResults(dimension.id, selectedDiagnostic),
+  const [dimension, pageData] = await Promise.all([
+    getDimensionById(dimensao),
+    getDimensionInsightPageData(dimensao, requestedDiagnostic),
   ]);
 
   return (
     <DimensionInsightWorkspace
-      diagnosticOptions={diagnosticOptions}
+      diagnosticOptions={pageData.diagnosticOptions}
       dimension={dimension}
-      questionResults={questionResults}
-      selectedDiagnostic={selectedDiagnostic}
-      summary={summary}
+      questionResults={pageData.questionResults}
+      selectedDiagnostic={pageData.selectedDiagnostic}
+      summary={pageData.summary}
     />
   );
 }

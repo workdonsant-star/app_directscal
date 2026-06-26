@@ -11,7 +11,7 @@ import {
 import { getSignedInRedirectPath } from "@/lib/auth/navigation";
 
 export const metadata: Metadata = {
-  title: "Recuperar senha — Directscal OMDx",
+  title: "Recuperar senha — Directscal Maturidade",
 };
 
 export default async function PasswordResetPage() {

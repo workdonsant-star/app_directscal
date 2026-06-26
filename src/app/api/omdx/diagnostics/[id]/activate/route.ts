@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
 
-import { userCanAccessDiagnostic } from "@/lib/auth/authorization";
+import {
+  getDiagnosticOrganizationId,
+  userCanAccessDiagnostic,
+} from "@/lib/auth/authorization";
 import { getCurrentAuthSession } from "@/lib/auth/session";
 import { activateDiagnosticInputSchema } from "@/lib/contracts";
+import {
+  assertOperationalOnboardingAllowsAssessment,
+  isOperationalOnboardingRequiredError,
+} from "@/lib/data/operational-onboarding-data-source";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 type RouteContext = {
@@ -29,6 +36,31 @@ export async function POST(_request: Request, { params }: RouteContext) {
 
   if (!parsed.success) {
     return NextResponse.json({ message: "Diagnóstico inválido." }, { status: 400 });
+  }
+
+  const organizationId = await getDiagnosticOrganizationId(id);
+
+  if (!organizationId) {
+    return NextResponse.json(
+      { message: "Organização não encontrada para este diagnóstico." },
+      { status: 404 },
+    );
+  }
+
+  try {
+    await assertOperationalOnboardingAllowsAssessment(organizationId);
+  } catch (error) {
+    if (isOperationalOnboardingRequiredError(error)) {
+      return NextResponse.json(
+        {
+          message: error.message,
+          redirectTo: "/pessoas/diretorio",
+        },
+        { status: 409 },
+      );
+    }
+
+    throw error;
   }
 
   const supabase = createSupabaseAdminClient();

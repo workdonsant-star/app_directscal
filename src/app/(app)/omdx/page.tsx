@@ -1,21 +1,13 @@
+import { redirect } from "next/navigation";
+
 import { AppTopbar } from "@/components/app-topbar";
-import { LayerHeatmapComparisonChart } from "@/components/omdx/layer-heatmap-comparison-chart";
-<<<<<<< Updated upstream
-import { LayerStackedScoreChart } from "@/components/omdx/layer-stacked-score-chart";
+import { OverviewCharts } from "@/components/omdx/overview-charts";
 import { OverviewDiagnosticFilter } from "@/components/omdx/overview-diagnostic-filter";
 import { OverviewDimensionResultsTable } from "@/components/omdx/overview-dimension-results-table";
 import { OverviewExecutiveCards } from "@/components/omdx/overview-executive-cards";
-import { Button } from "@/components/ui/button";
-=======
 import { ReportDownloadMenu } from "@/components/omdx/report-download-menu";
->>>>>>> Stashed changes
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  getDiagnosticById,
-  getLatestReportableDiagnostic,
-  getOmdxOverviewAnalytics,
-  getOmdxOverviewDiagnosticOptions,
-} from "@/lib/data/omdx-data-source";
+import { getOmdxOverviewPageData } from "@/lib/data/omdx-data-source";
+import { getOperationalOnboardingGateForCurrentUser } from "@/lib/data/operational-onboarding-data-source";
 
 type OverviewPageProps = {
   searchParams?: Promise<{ diagnostico?: string | string[] }>;
@@ -25,21 +17,22 @@ export default async function OverviewPage({
   searchParams,
 }: OverviewPageProps) {
   const resolvedSearchParams = await searchParams;
-  const diagnosticOptions = await getOmdxOverviewDiagnosticOptions();
   const requestedDiagnostic =
     typeof resolvedSearchParams?.diagnostico === "string"
       ? resolvedSearchParams.diagnostico
       : "todos";
-  const selectedDiagnostic = diagnosticOptions.some(
-    (diagnostic) => diagnostic.id === requestedDiagnostic,
-  )
-    ? requestedDiagnostic
-    : "todos";
-  const reportDiagnostic =
-    selectedDiagnostic === "todos"
-      ? await getLatestReportableDiagnostic()
-      : await getDiagnosticById(selectedDiagnostic);
-  const analytics = await getOmdxOverviewAnalytics(selectedDiagnostic);
+  const onboardingGate = await getOperationalOnboardingGateForCurrentUser();
+
+  if (onboardingGate.required) {
+    redirect("/pessoas/diretorio");
+  }
+
+  const {
+    analytics,
+    diagnosticOptions,
+    reportDiagnostic,
+    selectedDiagnostic,
+  } = await getOmdxOverviewPageData(requestedDiagnostic);
 
   return (
     <>
@@ -65,33 +58,7 @@ export default async function OverviewPage({
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
           <OverviewExecutiveCards metrics={analytics.metrics} />
 
-          <section className="grid gap-8 xl:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Composição por camada</CardTitle>
-                <p className="text-muted-foreground text-sm">
-                  Empilha as médias de Fundador, Liderança e Operação para
-                  mostrar a composição do score por dimensão.
-                </p>
-              </CardHeader>
-              <CardContent>
-                <LayerStackedScoreChart data={analytics.dimensions} />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Visão por camada</CardTitle>
-                <p className="text-muted-foreground text-sm">
-                  Compara diretoria, liderança e time por dimensão em escala de
-                  1 a 5.
-                </p>
-              </CardHeader>
-              <CardContent>
-                <LayerHeatmapComparisonChart data={analytics.dimensions} />
-              </CardContent>
-            </Card>
-          </section>
+          <OverviewCharts data={analytics.dimensions} />
 
           <OverviewDimensionResultsTable data={analytics.dimensions} />
         </div>

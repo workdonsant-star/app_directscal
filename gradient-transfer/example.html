@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exemplo do gradiente DirectScal</title>
+  <link rel="stylesheet" href="./gradient-effect.css">
+  <script src="./stripe-gradient.js" defer></script>
+  <script src="./hero-scroll.js" defer></script>
+</head>
+<body>
+  <main>
+    <section class="hero" aria-labelledby="hero-card-title">
+      <div class="hero-card-stage" data-expand-stage>
+        <article class="hero-card" aria-labelledby="hero-card-title" data-expand-card>
+          <canvas id="gradient-canvas" class="hero-card__gradient" data-gradient-canvas aria-hidden="true"></canvas>
+
+          <div class="hero-card__inner">
+            <div class="hero-card__copy">
+              <h2 id="hero-card-title">O melhor organograma para operacoes digitais</h2>
+
+              <div class="hero-card__bottom">
+                <p>Troque este texto pelo conteudo do outro site. O efeito animado fica no canvas atras do conteudo.</p>
+                <a class="cta-btn cta-btn--light hero-card__cta" href="#">
+                  Iniciar Diagnostico
+                  <svg class="HoverArrow" viewBox="0 0 10 10" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                    <path class="HoverArrow__linePath" d="M0 5h7" />
+                    <path class="HoverArrow__tipPath" d="M1 1l4 4-4 4" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            <figure class="hero-card__portrait">
+              <img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=900&q=80" alt="">
+            </figure>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

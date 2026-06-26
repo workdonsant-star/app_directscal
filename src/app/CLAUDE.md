@@ -19,7 +19,7 @@ src/app/
 │   ├── layout.tsx            ← gate de sessão + shell autenticado com sidebar
 │   ├── admin/                ← visão de superadmin
 │   └── omdx/
-│       ├── page.tsx          ← Overview executivo do módulo OMDx
+│       ├── page.tsx          ← Overview executivo do módulo Maturidade
 │       ├── diagnosticos/     ← área operacional (lista + drawer)
 │       └── [id]/
 │           ├── compartilhar/page.tsx ← central de coleta com links Supabase
@@ -34,9 +34,22 @@ src/app/
 │       ├── page.tsx          ← redirect para /insights/cultura
 │       └── [dimensao]/page.tsx ← dashboard compacto por dimensão
 │   └── docs/
-│       └── page.tsx          ← manual prático de uso do módulo OMDx
+│       └── page.tsx          ← manual prático de uso do módulo Maturidade
+│   └── gantt/
+│       └── page.tsx          ← Cronograma operacional em formato Gantt
 │   └── perfil/
 │       └── page.tsx          ← perfil iniciado pela sessão, com edição local
+│   └── pessoas/
+│       ├── page.tsx          ← Overview executivo de Pessoas
+│       ├── diretorio/page.tsx ← diretório operacional e financeiro
+│       ├── [id]/page.tsx     ← perfil individual da pessoa
+│       ├── fechamento/page.tsx ← fechamento mensal simples
+│       └── configuracoes/page.tsx ← parâmetros mínimos do MVP
+│   └── ativos-de-gestao/
+│       ├── page.tsx          ← rota legada inativa; redirect para /omdx
+│       └── sops/page.tsx     ← rota legada inativa; redirect para /omdx
+│   └── sops/
+│       └── page.tsx          ← redirect legado para /omdx
 ├── r/
 │   └── [token]/
 │       ├── page.tsx          ← formulário público do respondente por token real
@@ -55,7 +68,7 @@ src/app/
 ## Dados e contratos
 
 - Páginas devem consumir dados por `src/lib/data/`, não por arrays de `src/lib/mock-data.ts`.
-- O OMDx core usa Supabase via `src/lib/data/omdx-data-source.ts`; aquisição/admin usam `src/lib/data/acquisition-data-source.ts` via Route Handlers; `mock-data.ts` permanece para seeds e superfícies ainda não migradas.
+- O core de Maturidade usa Supabase via `src/lib/data/omdx-data-source.ts`; aquisição/admin usam `src/lib/data/acquisition-data-source.ts` via Route Handlers; `mock-data.ts` permanece para seeds e superfícies ainda não migradas.
 - Contratos de API/banco ficam em `src/lib/contracts/` com schemas Zod.
 - A autenticação usa Auth.js/NextAuth com Google OAuth, Credentials para superadmin, Credentials para cadastro de campanha e allowlist corporativa por env; o fallback demo por e-mail/senha usa cookie mockado `httpOnly` apenas quando `AUTH_ENABLE_DEV_PASSWORD_LOGIN=true`.
 
@@ -92,6 +105,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/recuperar-senha` | `(auth)/recuperar-senha/` | Recuperação mockada de senha. |
 | `/omdx` | `(app)/omdx/` | Overview executivo do módulo; não deve conter a lista operacional completa. |
 | `/omdx/diagnosticos` | `(app)/omdx/diagnosticos/` | Área operacional acessada pela sidebar, com lista, filtros, criação e configuração em drawer lateral. |
+| `/gantt` | `(app)/gantt/` | Cronograma operacional em formato Gantt, exposto dentro do módulo Maturidade na sidebar. |
 | `/omdx/[id]/compartilhar` | `(app)/omdx/[id]/compartilhar/` | Central de coleta persistida com links por grupo, copy sugerida e resumo compacto. |
 | `/omdx/[id]/action-points` | `(app)/omdx/[id]/action-points/` | Route Handler Node autenticado para download direto do plano de ação RACI. |
 <<<<<<< Updated upstream
@@ -107,6 +121,16 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/insights/[dimensao]` | `(app)/insights/[dimensao]/` | Dashboard agregado por dimensão, com filtro por diagnóstico. |
 | `/docs` | `(app)/docs/` | Documentação prática em página única para uso do módulo pelo cliente administrador. |
 | `/perfil` | `(app)/perfil/` | Perfil iniciado pela sessão autenticada: e-mail e empresa bloqueados, edição local de nome, senha simulada e dados básicos da empresa. |
+| `/pessoas` | `(app)/pessoas/` | Overview executivo do módulo Pessoas, com custo, pendências e alertas. |
+| `/pessoas/diretorio` | `(app)/pessoas/diretorio/` | Diretório operacional e financeiro de pessoas, com ação para copiar o link público de cadastro. |
+| `/pessoas/[id]` | `(app)/pessoas/[id]/` | Perfil individual como fonte primária de vínculo, remuneração, documentos e pagamentos. |
+| `/pessoas/fechamento` | `(app)/pessoas/fechamento/` | Fechamento mensal simples com linhas de pagamento, pendências e valores aprováveis. |
+| `/pessoas/pagamentos` | `(app)/pessoas/pagamentos/` | Redirect para `/pessoas/fechamento` no MVP. |
+| `/pessoas/configuracoes` | `(app)/pessoas/configuracoes/` | Parâmetros mínimos de vínculos, centros de custo, documentos e status de pagamento. |
+| `/omdx/membros-da-operacao` | `(app)/omdx/membros-da-operacao/` | Redirect legado para `/pessoas/diretorio`. |
+| `/ativos-de-gestao` | `(app)/ativos-de-gestao/` | Rota legada inativa; redireciona para `/omdx`. |
+| `/ativos-de-gestao/sops` | `(app)/ativos-de-gestao/sops/` | Rota legada inativa; redireciona para `/omdx`. |
+| `/sops` | `(app)/sops/` | Redirect legado para `/omdx`. |
 | `/r/[token]` | `r/[token]/` | Formulário público do respondente por token real — **fora** do route group `(app)`, sem sidebar/topbar |
 | `/r/[token]/obrigado` | `r/[token]/obrigado/` | Página pública de agradecimento após resposta registrada ou navegador já marcado. |
 | `/admin` | `(app)/admin/` | Redireciona para `/admin/modulos`. |
@@ -123,8 +147,9 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - O shell autenticado usa o bloco shadcn `sidebar-07` como base visual, adaptado para Directscal.
 - O route group `(app)` valida o cookie de sessão no layout antes de renderizar sidebar/topbar.
 - As rotas de autenticação em `(auth)` ficam fora do shell e redirecionam usuários autenticados conforme role.
-- A sidebar colapsa para ícones e mantém `Overview` e `Diagnósticos` como itens separados.
-- A sidebar tem uma seção `Insights` com as seis dimensões do OMDx.
+- A sidebar colapsa para ícones e agrupa funcionalidades por módulo. `Maturidade` contém Overview, Diagnósticos, Cronograma e Insights; `Pessoas` contém Overview, Diretório, Fechamento e Configurações. O link público de cadastro de pessoas é uma ação dentro do Diretório. `Ativos de gestão` foi removido da navegação e do catálogo de módulos.
+- `Cronograma` aparece dentro de `Maturidade` e aponta para `/gantt`; a rota usa o plano de ação mais recente quando houver diagnóstico consolidável.
+- A sidebar tem uma seção `Insights` com as seis dimensões de Maturidade.
 - Quando o pathname começa com `/admin`, a sidebar muda para `Administração`, com `Módulos`, `Campanhas`, `Leads` e `Empresas`.
 - `Empresas` e `Relatórios` não fazem parte da navegação principal nesta fase.
 - A topbar é limpa: trigger da sidebar, separador e breadcrumb quando houver camada.
@@ -141,7 +166,10 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 >>>>>>> Stashed changes
 - `/insights/[dimensao]` usa `Insights / Nome da dimensão`.
 - `/docs` usa `Documentação`.
+- `/gantt` usa `Cronograma`.
 - `/perfil` usa `Perfil`.
+- `/ativos-de-gestao`, `/ativos-de-gestao/sops` e `/sops` redirecionam para `/omdx` e não renderizam breadcrumb.
+- `/omdx/membros-da-operacao` redireciona para `/pessoas/diretorio` e não renderiza breadcrumb.
 - `/admin/modulos` usa `Admin / Módulos`.
 - `/admin/campanhas` usa `Admin / Campanhas`.
 - `/admin/leads` usa `Admin / Leads`.
@@ -161,7 +189,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 
 ## Estados a prever em cada página
 
-Ao construir qualquer página, lembre dos estados levantados no plano original do OMDx:
+Ao construir qualquer página, lembre dos estados levantados no plano original de Maturidade:
 
 1. Sem dado / empty state
 2. Carregando (skeleton)

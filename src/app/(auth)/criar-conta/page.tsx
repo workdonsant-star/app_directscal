@@ -8,7 +8,7 @@ import { getSignedInRedirectPath } from "@/lib/auth/navigation";
 import { getCurrentAuthSession } from "@/lib/auth/session";
 
 export const metadata: Metadata = {
-  title: "Criar conta — Directscal OMDx",
+  title: "Criar conta — Directscal Maturidade",
 };
 
 export default async function SignUpPage() {
@@ -25,7 +25,7 @@ export default async function SignUpPage() {
   return (
     <AuthPageShell
       title="Crie seu acesso"
-      description="Registre uma conta para navegar pela operação mockada do OMDx."
+      description="Registre uma conta para navegar pela operação mockada de Maturidade."
     >
       <SignUpForm />
     </AuthPageShell>

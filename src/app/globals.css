@@ -108,12 +108,17 @@
   --color-brand-500: #185EFF;
   --color-brand-600: #1450DB;
   --color-brand-700: #0F3FAE;
+  --color-auth-gradient-purple: var(--auth-gradient-purple);
+  --color-auth-gradient-lime: var(--auth-gradient-lime);
 
   /* Type */
   --font-sans: var(--font-inter);
   --font-serif: var(--font-instrument-serif);
   --font-mono: var(--font-jetbrains-mono);
   --font-heading: var(--font-inter);
+  --font-figma-heading: var(--font-plus-jakarta-sans);
+  --font-figma-copy: var(--font-instrument-sans);
+  --font-figma-flex: var(--font-roboto-flex);
 
   /* Radius (Directscal: 6/10/14/20) */
   --radius-sm: calc(var(--radius) * 0.6);
@@ -158,6 +163,11 @@
   --border: #E2E2E5;           /* neutral-200 */
   --input: #E2E2E5;
   --ring: #185EFF;             /* focus ring = brand */
+  --auth-gradient-purple: #7E1AFF;
+  --auth-gradient-lime: #ADE517;
+  --auth-quote-card: #050505;
+  --auth-quote-foreground: #F7F7F8;
+  --auth-quote-muted: #D5D5DB;
 
   /* Charts */
   --chart-1: #0F62FE;
@@ -224,8 +234,8 @@
   --omdx-score-text-on-light: #161616;
   --omdx-score-text-on-dark: #FFFFFF;
 
-  /* Sidebar — slightly off-white to separate from main canvas */
-  --sidebar: #FAFAFA;          /* neutral-025 */
+  /* Sidebar — light gray to separate from main canvas */
+  --sidebar: #f7f7f7;
   --sidebar-foreground: #111114;
   --sidebar-primary: #185EFF;
   --sidebar-primary-foreground: #FFFFFF;
@@ -268,6 +278,11 @@
   --border: #2a2a2a;           /* neutral-800 */
   --input: #1C1C20;
   --ring: #185EFF;
+  --auth-gradient-purple: #7E1AFF;
+  --auth-gradient-lime: #ADE517;
+  --auth-quote-card: #050505;
+  --auth-quote-foreground: #F7F7F8;
+  --auth-quote-muted: #D5D5DB;
 
   /* Charts */
   --chart-1: #0F62FE;
@@ -412,5 +427,152 @@
   /* Tabular numerals for KPIs and data */
   .tabular-nums {
     font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  .auth-gradient-stage {
+    --feature-progress: 0;
+    --feature-width: 1300;
+    --feature-height: 586;
+    --feature-radius: 7;
+    --feature-pad-x: 100;
+    --feature-cta-opacity: 1;
+    --feature-cta-y: 0px;
+    --feature-shadow-alpha: 0;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: var(--foreground);
+  }
+
+  .auth-gradient-card {
+    position: relative;
+    isolation: isolate;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse at 9% 39%, color-mix(in srgb, var(--auth-gradient-lime) 78%, transparent) 0, color-mix(in srgb, var(--auth-gradient-lime) 48%, transparent) 13%, transparent 36%),
+      radial-gradient(ellipse at 91% 55%, color-mix(in srgb, var(--auth-gradient-lime) 92%, transparent) 0, color-mix(in srgb, var(--auth-gradient-lime) 68%, transparent) 12%, transparent 32%),
+      linear-gradient(160deg, var(--auth-gradient-purple) 0%, color-mix(in srgb, var(--auth-gradient-purple) 88%, var(--auth-gradient-lime) 12%) 52%, var(--auth-gradient-purple) 100%);
+  }
+
+  .auth-gradient-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      radial-gradient(ellipse at 24% 78%, color-mix(in srgb, var(--auth-gradient-lime) 40%, transparent), transparent 42%),
+      linear-gradient(118deg, rgba(5, 7, 18, 0.08) 0%, rgba(5, 7, 18, 0.02) 52%, rgba(5, 7, 18, 0.12) 100%);
+    pointer-events: none;
+  }
+
+  .auth-gradient-canvas {
+    --gradient-color-1: var(--auth-gradient-purple);
+    --gradient-color-2: var(--auth-gradient-lime);
+    --gradient-color-3: var(--auth-gradient-purple);
+    --gradient-color-4: var(--auth-gradient-lime);
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .auth-gradient-vignette {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background:
+      linear-gradient(90deg, rgba(5, 7, 18, 0.02), transparent 34%),
+      linear-gradient(180deg, transparent, rgba(5, 7, 18, 0.1));
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .auth-gradient-canvas {
+      display: none;
+    }
+  }
+
+  .sop-editor h2 {
+    margin-block: 1.75rem 0.5rem;
+    color: var(--foreground);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+
+  .sop-editor h2:first-child {
+    margin-top: 0;
+  }
+
+  .sop-editor p {
+    max-width: 72ch;
+    margin-block: 0.75rem;
+    color: var(--foreground);
+  }
+
+  .sop-editor ul,
+  .sop-editor ol {
+    max-width: 72ch;
+    margin-block: 0.75rem;
+    padding-left: 1.25rem;
+    color: var(--foreground);
+  }
+
+  .sop-editor ul {
+    list-style: disc;
+  }
+
+  .sop-editor ol {
+    list-style: decimal;
+  }
+
+  .sop-editor li {
+    padding-left: 0.25rem;
+  }
+
+  .sop-editor li + li {
+    margin-top: 0.5rem;
+  }
+
+  .gantt-detail-dialog {
+    translate: -50% -50%;
+    scale: 1 !important;
+    animation: gantt-detail-dialog-rise 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .gantt-detail-dialog[data-ending-style] {
+    animation: gantt-detail-dialog-rise 160ms ease-in reverse;
+  }
+
+  @keyframes gantt-detail-dialog-rise {
+    from {
+      opacity: 0;
+      translate: -50% calc(-50% + 7rem);
+    }
+
+    to {
+      opacity: 1;
+      translate: -50% -50%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gantt-detail-dialog,
+    .gantt-detail-dialog[data-ending-style] {
+      animation: none;
+    }
+  }
+
+  .gantt-detail-dialog[data-starting-style],
+  .gantt-detail-dialog[data-ending-style] {
+    scale: 1 !important;
   }
 }

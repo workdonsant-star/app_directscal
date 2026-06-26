@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Seção autenticada para analisar dados agregados do OMDx por dimensão, cruzando todos os diagnósticos com opção de filtro por diagnóstico individual.
+Seção autenticada para analisar dados agregados de Maturidade por dimensão, cruzando todos os diagnósticos com opção de filtro por diagnóstico individual.
 
 ## Convenções locais
 

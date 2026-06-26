@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Rotas públicas acessadas por link de resposta do OMDx. Não usam sidebar, topbar, autenticação ou navegação do cliente administrador.
+Rotas públicas acessadas por link de resposta de Maturidade. Não usam sidebar, topbar, autenticação ou navegação do cliente administrador.
 
 ## Convenções locais
 

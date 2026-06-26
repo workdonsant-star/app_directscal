@@ -22,7 +22,7 @@ Estrutura esperada:
     ├── app/CLAUDE.md                  ← rotas, layouts, route groups, App Router
     ├── components/CLAUDE.md           ← padrões visuais por domínio
     │   ├── ui/CLAUDE.md               ← primitives shadcn/ui (base-ui)
-    │   └── omdx/CLAUDE.md             ← componentes do módulo OMDx
+    │   └── omdx/CLAUDE.md             ← componentes do módulo Maturidade
     └── lib/CLAUDE.md                  ← contratos, data-source, mocks e utils
 ```
 
@@ -32,7 +32,7 @@ Ao criar uma pasta nova com responsabilidade clara (novo módulo, novo domínio,
 
 **Directscal** é uma empresa de serviços e tecnologia focada em estruturação de negócios digitais que precisam crescer. A marca opera na tensão deliberada **metodologia tradicional, execução moderna** — rigor de consultoria com a densidade de produto Vercel/shadcn.
 
-Este repositório implementa o **OMDx** — Diagnóstico de Maturidade Operacional. O OMDx avalia empresas em seis dimensões (Cultura, Visão, Comunicação, Processos, Liderança, Performance) a partir da percepção de três grupos: Fundador, Liderança e Operação.
+Este repositório implementa o módulo **Maturidade**. Ele avalia empresas em seis dimensões (Cultura, Visão, Comunicação, Processos, Liderança, Performance) a partir da percepção de três grupos: Fundador, Liderança e Operação.
 
 Princípios do produto:
 - **Linguagem consultiva, não corporativa.** Frases diretas, números fazem o trabalho, sem hype.
@@ -52,7 +52,7 @@ Princípios do produto:
 - **lucide-react** para ícones.
 - Fontes Google: **Inter** (sans), **Instrument Serif** (display itálico), **JetBrains Mono** (mono — substitui IBM Plex Mono do design system original).
 
-Estado atual: **scaffold inicial + dashboard OMDx + Google OAuth com allowlist corporativa, fallback mockado de autenticação para desenvolvimento, diagnóstico, compartilhamento, relatórios PDF, insights, documentação, perfil, superadmin e aquisição por campanha em Supabase**. O OMDx core e o fluxo de aquisição já usam Supabase via camada server-side; algumas superfícies como perfil ainda preservam mocks locais. O cookie mockado fica restrito ao fallback de desenvolvimento.
+Estado atual: **scaffold inicial + dashboard Maturidade + Google OAuth com allowlist corporativa, fallback mockado de autenticação para desenvolvimento, diagnóstico, compartilhamento, relatórios PDF, insights, documentação, perfil, superadmin e aquisição por campanha em Supabase**. O core de Maturidade e o fluxo de aquisição já usam Supabase via camada server-side; algumas superfícies como perfil ainda preservam mocks locais. O cookie mockado fica restrito ao fallback de desenvolvimento.
 
 ## Fontes de verdade
 
@@ -64,7 +64,7 @@ Estado atual: **scaffold inicial + dashboard OMDx + Google OAuth com allowlist c
 | Rotas, layouts, App Router | `src/app/CLAUDE.md` |
 | Padrões de componentes | `src/components/CLAUDE.md` |
 | Primitives shadcn/ui | `src/components/ui/CLAUDE.md` |
-| Componentes do módulo OMDx | `src/components/omdx/CLAUDE.md` |
+| Componentes do módulo Maturidade | `src/components/omdx/CLAUDE.md` |
 | Contratos, data-source, mocks e utils | `src/lib/CLAUDE.md` |
 
 A pasta `Directscal Design System/` é **fonte canônica de marca** (cores, tipografia, voz, componentes de referência). Não edite arquivos lá dentro sem motivo claro — eles foram gerados a partir do logo e da definição de marca da empresa.
@@ -77,6 +77,7 @@ A pasta `Directscal Design System/` é **fonte canônica de marca** (cores, tipo
 - **Não copie padrões antigos sem validar.** Esta é uma stack nova (Next 16, React 19, Tailwind 4, shadcn base-ui) — boa parte da memória de treinamento é obsoleta.
 - **Não exponha segredos**, tokens, dados pessoais reais ou valores de produção.
 - **Se alterar comportamento, ajuste a documentação local** (`CLAUDE.md` da pasta) na mesma mudança.
+- **Registre mudanças estruturais no Notion.** Toda mudança que altere como o app funciona, introduza nova funcionalidade, crie novo fluxo, mude arquitetura, dados, permissões ou integração deve ser registrada e documentada no Notion na mesma entrega. Se o agente não tiver acesso ao Notion, deixe a pendência explícita no fechamento da tarefa com o resumo pronto para copiar.
 - **Antes de "consertar" algo, entenda a causa raiz.** Não mascare sintomas.
 - **Foco em interface e fluxos primeiro.** Não introduza motor de API, banco ou autenticação real até o usuário pedir explicitamente.
 
@@ -115,8 +116,9 @@ src/
 │   ├── (app)/                ← route group autenticado (sidebar + topbar)
 │   │   ├── layout.tsx        ← valida sessão + SidebarProvider + AppSidebar + SidebarInset
 │   │   ├── admin/            ← visão de superadmin
+│   │   ├── pessoas/          ← módulo Pessoas
 │   │   └── omdx/
-│   │       ├── page.tsx      ← dashboard executivo do OMDx
+│   │       ├── page.tsx      ← dashboard executivo de Maturidade
 │   │       ├── diagnosticos/ ← área operacional de diagnósticos
 │   │       └── [id]/         ← camadas de detalhe/compartilhamento
 │   ├── a/[slug]/             ← aquisição pública por campanha
@@ -128,7 +130,7 @@ src/
 │   ├── ui/                   ← primitives shadcn (button, card, sidebar, …)
 │   ├── admin/                ← componentes do superadmin e aquisição
 │   ├── auth/                 ← componentes do fluxo de autenticação
-│   ├── omdx/                 ← componentes do módulo OMDx
+│   ├── omdx/                 ← componentes do módulo Maturidade
 │   ├── app-sidebar.tsx       ← sidebar global do app autenticado
 │   ├── app-topbar.tsx        ← topbar com breadcrumb + ações
 │   ├── kpi-card.tsx          ← card compartilhado de KPI
@@ -149,9 +151,12 @@ Rotas atuais:
 - `/entrar` → tela pública de login com Google OAuth e fallback mockado opcional.
 - `/criar-conta` → cadastro mockado com criação de sessão, apenas quando `AUTH_ENABLE_DEV_PASSWORD_LOGIN=true`.
 - `/recuperar-senha` → recuperação mockada de senha.
-- `/omdx` → dashboard executivo do OMDx.
+- `/omdx` → dashboard executivo de Maturidade.
 - `/omdx/[id]/compartilhar` → compartilhamento mockado por grupo.
 - `/omdx/[id]/relatorio` → download autenticado do PDF consolidado.
+- `/ativos-de-gestao` → rota legada inativa; redireciona para `/omdx`.
+- `/ativos-de-gestao/sops` → rota legada inativa; redireciona para `/omdx`.
+- `/sops` → redirect legado para `/omdx`.
 - `/admin` → redireciona para `/admin/modulos`.
 - `/admin/modulos` → superadmin para módulos disponíveis.
 - `/admin/campanhas` → campanhas, links e campos de aquisição.
@@ -167,15 +172,15 @@ Rotas e fluxos planejados:
 - `/omdx/[id]/resultado` e `/omdx/[id]/resultado/[dimensao]` — resultado executivo.
 - `/r/[token]` (público, sem auth) — fluxo do respondente.
 
-Regras de breadcrumb no OMDx:
+Regras de breadcrumb no Maturidade:
 - `/omdx` não usa breadcrumb; é a raiz executiva do módulo.
-- Camadas abaixo usam breadcrumb, por exemplo `OMDx / Diagnósticos` e `OMDx / Diagnósticos / Compartilhar`.
+- Camadas abaixo usam breadcrumb, por exemplo `Maturidade / Diagnósticos` e `Maturidade / Diagnósticos / Compartilhar`.
 - Drawers de criação/configuração não têm breadcrumb próprio.
 - `Diagnósticos` é item próprio na sidebar; não deve depender de CTA dentro do dashboard.
 
 ## Dados e mocks
 
-O OMDx core e a aquisição por campanha usam Supabase versionado em `supabase/`. Páginas e componentes consomem `src/lib/data/`; route handlers de produção em `src/app/api/omdx/`, `src/app/api/acquisition/` e `src/app/api/admin/` escrevem via service role no servidor. Google OAuth exige e-mail Google verificado, domínio/e-mail permitidos para login corporativo ou intent de campanha ativo para cadastro de cliente. O fallback demo por senha usa `/api/auth/login` e `src/lib/auth/mock-auth.ts`; fica disponível apenas fora de produção e quando `AUTH_ENABLE_DEV_PASSWORD_LOGIN=true`.
+O core de Maturidade e a aquisição por campanha usam Supabase versionado em `supabase/`. Páginas e componentes consomem `src/lib/data/`; route handlers de produção em `src/app/api/omdx/`, `src/app/api/acquisition/` e `src/app/api/admin/` escrevem via service role no servidor. Google OAuth exige e-mail Google verificado, domínio/e-mail permitidos para login corporativo ou intent de campanha ativo para cadastro de cliente. O fallback demo por senha usa `/api/auth/login` e `src/lib/auth/mock-auth.ts`; fica disponível apenas fora de produção e quando `AUTH_ENABLE_DEV_PASSWORD_LOGIN=true`.
 
 Convenções:
 - Componentes e páginas **não devem** importar `mock-data.ts` diretamente; use `src/lib/data/omdx-data-source.ts`.
@@ -254,6 +259,7 @@ Uma entrega está pronta quando:
 - O problema real foi resolvido — não apenas mascarado.
 - O código continua consistente com os padrões locais (lidos no `CLAUDE.md` da pasta).
 - A documentação relevante foi atualizada na mesma mudança.
+- Mudanças estruturais, novas funcionalidades e alterações de fluxo foram registradas no Notion, ou a pendência foi reportada com resumo acionável quando não houver acesso ao Notion.
 - `npx tsc --noEmit` e `npm run lint` passam.
 - A interface foi verificada visualmente em light **e** dark, em pelo menos uma largura desktop e — se for página pública — em mobile.
 - Nenhuma mudança alheia foi revertida.

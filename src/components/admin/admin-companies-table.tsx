@@ -21,18 +21,25 @@ function formatDate(iso: string) {
   });
 }
 
+function formatEmployeeCount(value: number | null) {
+  return value ? `${value.toLocaleString("pt-BR")} pessoas` : "Não informado";
+}
+
 export function AdminCompaniesTable() {
-  const { companies } = useAdminData();
+  const { companies, modules } = useAdminData();
+  const moduleNameById = new Map(
+    modules.map((module) => [module.id, module.shortName]),
+  );
 
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex flex-col gap-1">
           <h2 className="text-foreground text-base font-semibold">
-            Empresas mapeadas
+            Clientes cadastrados
           </h2>
           <p className="text-muted-foreground text-sm">
-            Empresas agrupadas a partir dos leads cadastrados.
+            Organizações com conta criada e histórico de aquisição associado.
           </p>
         </div>
         <Button
@@ -51,7 +58,7 @@ export function AdminCompaniesTable() {
             <TableRow>
               <TableHead>Empresa</TableHead>
               <TableHead>Tamanho</TableHead>
-              <TableHead>Módulos</TableHead>
+              <TableHead>Acessos ativos</TableHead>
               <TableHead>Origens</TableHead>
               <TableHead className="text-right">Leads</TableHead>
               <TableHead className="text-right">Último lead</TableHead>
@@ -64,19 +71,22 @@ export function AdminCompaniesTable() {
                   {company.name}
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {company.companySize ?? "Não informado"}
+                  {company.companySize ?? formatEmployeeCount(company.employeeCount)}
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {company.moduleNames.join(", ")}
+                  {company.moduleAccess
+                    .filter((access) => access.enabled)
+                    .map((access) => moduleNameById.get(access.moduleId) ?? access.moduleId)
+                    .join(", ") || "Nenhum"}
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {company.sources.join(", ")}
+                  {company.sources.join(", ") || "Sem campanha"}
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
                   {company.leadCount}
                 </TableCell>
                 <TableCell className="text-right text-muted-foreground tabular-nums">
-                  {formatDate(company.lastLeadAt)}
+                  {company.lastLeadAt ? formatDate(company.lastLeadAt) : "Sem leads"}
                 </TableCell>
               </TableRow>
             ))}

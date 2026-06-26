@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { cache } from "react";
 
 import { auth } from "../../../auth";
 import { isDevPasswordLoginEnabled } from "@/lib/auth/access-control";
@@ -28,7 +29,7 @@ function toAuthSession(
   };
 }
 
-export async function getCurrentAuthSession() {
+export const getCurrentAuthSession = cache(async function getCurrentAuthSession() {
   try {
     const session = await auth();
 
@@ -54,4 +55,4 @@ export async function getCurrentAuthSession() {
   const cookieStore = await cookies();
 
   return getAuthSessionFromCookie(cookieStore.get(authSessionCookieName)?.value);
-}
+});

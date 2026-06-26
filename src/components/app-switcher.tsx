@@ -1,48 +1,94 @@
-import Image from "next/image";
+"use client";
 
+import Link from "next/link";
+import type { LucideIcon } from "lucide-react";
+import { Check, ChevronsUpDown } from "lucide-react";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
-export function AppSwitcher() {
+export type AppSwitcherModule = {
+  icon: LucideIcon;
+  id: string;
+  isActive: boolean;
+  subtitle: string;
+  title: string;
+  url: string;
+};
+
+export function AppSwitcher({ modules }: { modules: AppSwitcherModule[] }) {
+  const { isMobile } = useSidebar();
+  const activeModule = modules.find((module) => module.isActive) ?? modules[0];
+  const ActiveIcon = activeModule.icon;
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <SidebarMenuButton
-          size="lg"
-          className="cursor-default hover:bg-transparent hover:text-sidebar-foreground active:bg-transparent active:text-sidebar-foreground"
-          aria-label="Directscal"
-        >
-          <Image
-            src="/favicon.svg.svg"
-            alt=""
-            width={16}
-            height={16}
-            className="hidden shrink-0 object-contain group-data-[collapsible=icon]:block"
-            style={{ height: "16px", width: "auto" }}
-            aria-hidden="true"
-          />
-          <Image
-            src="/directscal-logo.svg"
-            alt="Directscal"
-            width={142}
-            height={16}
-            priority
-            className="object-contain dark:hidden group-data-[collapsible=icon]:hidden"
-            style={{ height: "16px", width: "auto" }}
-          />
-          <Image
-            src="/directscal-logo-dark.svg"
-            alt="Directscal"
-            width={142}
-            height={16}
-            priority
-            className="hidden object-contain dark:block group-data-[collapsible=icon]:hidden"
-            style={{ height: "16px", width: "auto" }}
-          />
-        </SidebarMenuButton>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <SidebarMenuButton
+                size="lg"
+                className="aria-expanded:bg-muted"
+                aria-label="Selecionar módulo"
+              />
+            }
+          >
+            <div className="flex size-8 items-center justify-center rounded-lg bg-foreground text-background">
+              <ActiveIcon className="size-4" />
+            </div>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-medium">{activeModule.title}</span>
+              <span className="truncate text-xs text-muted-foreground">
+                {activeModule.subtitle}
+              </span>
+            </div>
+            <ChevronsUpDown className="ml-auto size-4" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="min-w-56 rounded-lg"
+            side={isMobile ? "bottom" : "right"}
+            align="start"
+            sideOffset={4}
+          >
+            {modules.map((module) => {
+              const ModuleIcon = module.icon;
+
+              return (
+                <DropdownMenuItem
+                  key={module.id}
+                  render={<Link href={module.url} />}
+                  className="cursor-pointer p-0 focus:bg-accent focus:text-accent-foreground"
+                >
+                  <div className="flex w-full items-center gap-2 rounded-md px-1 py-1.5 text-left text-sm">
+                    <div className="flex size-8 items-center justify-center rounded-lg border bg-background text-foreground">
+                      <ModuleIcon className="size-4" />
+                    </div>
+                    <div className="grid flex-1 text-left text-sm leading-tight">
+                      <span className="truncate font-medium">
+                        {module.title}
+                      </span>
+                      <span className="truncate text-xs text-muted-foreground">
+                        {module.subtitle}
+                      </span>
+                    </div>
+                    {module.isActive && <Check className="size-4" />}
+                  </div>
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
   );

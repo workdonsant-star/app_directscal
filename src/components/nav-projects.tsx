@@ -17,7 +17,7 @@ export function NavProjects({
   projects,
 }: {
   hideWhenCollapsed?: boolean;
-  label?: string;
+  label?: string | null;
   projects: {
     name: string;
     url: string;
@@ -29,7 +29,7 @@ export function NavProjects({
     <SidebarGroup
       className={hideWhenCollapsed ? "group-data-[collapsible=icon]:hidden" : undefined}
     >
-      <SidebarGroupLabel>{label}</SidebarGroupLabel>
+      {label ? <SidebarGroupLabel>{label}</SidebarGroupLabel> : null}
       <SidebarMenu>
         {projects.map((item) => (
           <SidebarMenuItem key={item.name}>

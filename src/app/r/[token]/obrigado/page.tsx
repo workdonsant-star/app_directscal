@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 
 export const metadata: Metadata = {
-  title: "Obrigado — OMDx",
+  title: "Obrigado — Maturidade",
 };
 
 export default function PublicResponseThankYouPage() {
@@ -39,7 +39,7 @@ export default function PublicResponseThankYouPage() {
               style={{ height: "auto", width: "132px" }}
             />
           </div>
-          <Badge variant="outline">OMDx</Badge>
+          <Badge variant="outline">Maturidade</Badge>
         </header>
 
         <Card>

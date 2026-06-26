@@ -43,6 +43,7 @@ type DiagnosticMutationResponse = {
   diagnosticId?: string;
   links?: DiagnosticShareLink[];
   message?: string;
+  redirectTo?: string;
 };
 
 async function readMutationResponse(response: Response) {
@@ -166,6 +167,11 @@ export function DiagnosticsWorkspace({
       const activateData = await readMutationResponse(activateResponse);
 
       if (!activateResponse.ok) {
+        if (activateData.redirectTo) {
+          router.push(activateData.redirectTo);
+          return;
+        }
+
         throw new Error(
           activateData.message ?? "Não foi possível ativar o diagnóstico.",
         );

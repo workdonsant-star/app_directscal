@@ -1,12 +1,12 @@
-# `/docs` — Documentação do OMDx
+# `/docs` — Documentação de Maturidade
 
 Página autenticada de recurso para orientar o cliente administrador no uso do sistema.
 
 ## Propósito
 
 - Funcionar como manual prático do produto, não como documentação técnica interna.
-- Explicar onde cada área fica, para que serve e como operar o fluxo OMDx de ponta a ponta.
-- Consolidar orientação operacional e conceitual do OMDx em uma única página de documentação.
+- Explicar onde cada área fica, para que serve e como operar o fluxo Maturidade de ponta a ponta.
+- Consolidar orientação operacional e conceitual de Maturidade em uma única página de documentação.
 
 ## Convenções
 

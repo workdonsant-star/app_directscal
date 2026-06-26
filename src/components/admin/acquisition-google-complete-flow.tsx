@@ -305,7 +305,7 @@ export function AcquisitionGoogleCompleteFlow({
             ) : null}
 
             <Button type="submit" className="h-11 w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Liberando acesso" : "Entrar no OMDx"}
+              {isSubmitting ? "Liberando acesso" : "Acessar Maturidade"}
             </Button>
           </form>
         </div>

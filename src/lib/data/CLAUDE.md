@@ -1,23 +1,26 @@
 # `src/lib/data` — Fonte de dados e regras
 
-Esta pasta é a fronteira entre UI e dados. O OMDx core lê Supabase no servidor; superadmin e aquisição também usam Supabase via Route Handlers server-side. Perfil deriva identidade da sessão autenticada, mas ainda preserva persistência mockada/local enquanto seu backend não entra no escopo.
+Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no servidor; superadmin e aquisição também usam Supabase via Route Handlers server-side. Perfil deriva identidade da sessão autenticada, mas ainda preserva persistência mockada/local enquanto seu backend não entra no escopo.
 
 ## Regras
 
 - Páginas e componentes devem importar dados daqui, não de `mock-data.ts`.
-- Leituras OMDx que falam com Supabase são assíncronas e server-side.
+- Leituras Maturidade que falam com Supabase são assíncronas e server-side.
 - Client Components devem importar apenas helpers puros de `omdx-domain.ts`, nunca a data-source Supabase.
 - Regras como base mínima de Fundador para análise, trava local de resposta e validação de conjunto completo de respostas devem ficar em funções puras testáveis.
 - Cálculos agregados e helpers de domínio ficam aqui ou em contratos/mappers, não nos componentes.
 - Relatórios PDF devem consumir DTOs consolidados daqui, como `getDiagnosticReport()` e `getDiagnosticActionPlan()`, sem acessar mocks ou recalcular dados dentro do documento.
+- `action-plan-gantt.ts` converte `DiagnosticActionPlan` em tarefas de cronograma (`GanttTask`) para a rota `/gantt`, preservando os metadados do action point usados no modal de detalhes. É um motor determinístico baseado apenas nos dados quantitativos consolidados, sem API de IA e sem persistência de tarefas. A rota aparece na sidebar dentro de `Maturidade`.
 <<<<<<< Updated upstream
 =======
 - Exportações CSV devem consumir dados preparados daqui: respostas brutas anônimas via `getDiagnosticResponseExport()` e relatório consolidado via `buildDiagnosticReportCsv()`.
-- `omdx-data-source.ts` pode usar `cache()` do React apenas para memoização por request de sessão, autorização, modelo OMDx e bundles derivados. Não use `unstable_cache`, `use cache`, CDN cache ou cache global/persistente para sessão, organizações, diagnósticos, respostas, tokens, cookies, JWT ou resultados obtidos com service role.
+- `omdx-data-source.ts` pode usar `cache()` do React apenas para memoização por request de sessão, autorização, modelo Maturidade e bundles derivados. Não use `unstable_cache`, `use cache`, CDN cache ou cache global/persistente para sessão, organizações, diagnósticos, respostas, tokens, cookies, JWT ou resultados obtidos com service role.
 - Helpers memoizados que dependem de usuário devem receber `userId` explicitamente. Não dependa de variável global mutável para decidir escopo de organização ou acesso.
 >>>>>>> Stashed changes
 - `admin-data-source.ts` concentra helpers puros, seeds estáticos de módulos e derivação de empresas/módulos.
 - `acquisition-data-source.ts` é server-side e fala com Supabase para campanhas, leads, empresas, intents OAuth e credenciais de senha.
+- `operational-onboarding-data-source.ts` concentra o cadastro operacional: domínio autorizado, link público, lista de pessoas cadastradas, exclusão autenticada, critério mínimo de pessoa aprovada e bloqueio antes da ativação do diagnóstico.
+- `pessoas-data-source.ts` concentra o MVP de Pessoas: Overview, diretório, perfil, fechamento mensal e configurações mínimas. Ele compõe seeds mockados com `operational_members` server-side quando a organização possui cadastros; não cria persistência própria nem faz cálculo legal de CLT.
 - Em aquisição Google, o e-mail OAuth autenticado é a fonte canônica; valide que `userId` e e-mail pertencem à mesma linha em `next_auth.users` e não crie nova conta quando o e-mail já tem acesso ativo.
 
 ## Fluxo público de resposta
@@ -60,7 +63,7 @@ Esta pasta é a fronteira entre UI e dados. O OMDx core lê Supabase no servidor
 - As perguntas exportadas são agregados do relatório consolidado, não respostas individuais por respondente.
 
 >>>>>>> Stashed changes
-## Cálculos do Overview OMDx
+## Cálculos do Overview Maturidade
 
 `omdx-overview-analytics.ts` consolida os cards executivos do Overview e os dados dos gráficos. Os cards usam índices normalizados em escala `0-100`; os valores Likert originais continuam como base de cálculo e entram no `technicalDetail` quando útil.
 

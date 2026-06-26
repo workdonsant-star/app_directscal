@@ -1,9 +1,11 @@
 "use client";
 
 import type { EChartsOption } from "echarts";
-import ReactECharts from "echarts-for-react";
+import ReactEChartsCore from "echarts-for-react/lib/core";
 import { useMemo } from "react";
 
+import { echarts } from "@/components/omdx/echarts-core";
+import { useChartThemeColors } from "@/components/omdx/use-chart-theme-colors";
 import {
   calculateDimensionCriticality,
   calculateDimensionGap,
@@ -12,7 +14,6 @@ import {
   type DimensionResult,
   type ExecutiveMetricStatus,
 } from "@/lib/data/omdx-overview-analytics";
-import { useChartThemeColors } from "@/components/omdx/use-chart-theme-colors";
 
 type TooltipParam = {
   data?: MaturityCriticalityDatum;
@@ -199,7 +200,7 @@ export function OrganizationalAlignmentChart({
         enabled: true,
         label: {
           description:
-            "Mapa de maturidade e criticidade, posicionando dimensões do OMDx por maturidade e criticidade operacional em escala de 0 a 100.",
+            "Mapa de maturidade e criticidade, posicionando dimensões de Maturidade por maturidade e criticidade operacional em escala de 0 a 100.",
         },
       },
       legend: {
@@ -379,7 +380,8 @@ export function OrganizationalAlignmentChart({
   }
 
   return (
-    <ReactECharts
+    <ReactEChartsCore
+      echarts={echarts}
       option={option}
       notMerge
       lazyUpdate

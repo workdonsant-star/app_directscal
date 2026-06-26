@@ -13,18 +13,18 @@ import { getCurrentAuthSession } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/env";
 
 export const metadata: Metadata = {
-  title: "Entrar — Directscal OMDx",
+  title: "Entrar — Directscal Maturidade",
 };
 
 function getAuthErrorMessage(error?: string | string[]) {
   const errorCode = Array.isArray(error) ? error[0] : error;
 
   if (errorCode === "AccessDenied") {
-    return "Este e-mail ainda não tem um cadastro ativo no OMDx.";
+    return "Este e-mail ainda não tem um cadastro ativo no módulo Maturidade.";
   }
 
   if (errorCode === "OAuthAccountNotLinked") {
-    return "Este e-mail ainda não tem um vínculo ativo com Google no OMDx.";
+    return "Este e-mail ainda não tem um vínculo ativo com Google no módulo Maturidade.";
   }
 
   if (errorCode === "CallbackRouteError" || errorCode === "Configuration") {
@@ -55,7 +55,14 @@ export default async function SignInPage({
 
   return (
     <AuthPageShell
-      title="Acesse sua conta"
+      title={
+        <>
+          Analise seus dados{" "}
+          <br />e controle sua operação
+        </>
+      }
+      description="Acesse o que construímos para sua operação crescer com solidez."
+      visualVariant="app"
     >
       <SignInForm
         authErrorMessage={getAuthErrorMessage(resolvedSearchParams?.error)}

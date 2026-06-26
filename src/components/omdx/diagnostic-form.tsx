@@ -122,7 +122,7 @@ export function DiagnosticForm({
                   id="diagnostic-name"
                   value={form.name}
                   aria-invalid={Boolean(errors.name)}
-                  placeholder="Ex.: OMDx - Q3 2026"
+                  placeholder="Ex.: Maturidade - Q3 2026"
                   onChange={(event) => updateField("name", event.target.value)}
                 />
                 {errors.name && (

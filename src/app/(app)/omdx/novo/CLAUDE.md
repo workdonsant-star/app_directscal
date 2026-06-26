@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Esta rota não é mais o fluxo principal de criação do OMDx.
+Esta rota não é mais o fluxo principal de criação de Maturidade.
 
 A decisão atual é criar e configurar diagnósticos dentro de `/omdx/diagnosticos`, em um drawer lateral, mantendo o usuário no contexto da lista operacional.
 

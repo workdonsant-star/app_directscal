@@ -57,6 +57,12 @@ export const adminModuleSchema = z.object({
   companyCount: z.number().int().nonnegative(),
 });
 
+export const clientModuleAccessSchema = z.object({
+  moduleId: idSchema,
+  enabled: z.boolean(),
+  updatedAt: isoDateTimeSchema.nullable().default(null),
+});
+
 export const acquisitionCampaignSchema = z.object({
   id: idSchema,
   moduleId: idSchema,
@@ -94,13 +100,22 @@ export const leadSchema = z.object({
 
 export const leadCompanySchema = z.object({
   id: idSchema,
+  organizationId: idSchema.nullable().default(null),
   name: z.string().min(1),
   companySize: z.string().nullable(),
+  employeeCount: z.number().int().positive().nullable().default(null),
   leadCount: z.number().int().nonnegative(),
   moduleNames: z.array(z.string().min(1)),
   sources: z.array(z.string().min(1)),
-  firstLeadAt: isoDateTimeSchema,
-  lastLeadAt: isoDateTimeSchema,
+  moduleAccess: z.array(clientModuleAccessSchema).default([]),
+  firstLeadAt: isoDateTimeSchema.nullable(),
+  lastLeadAt: isoDateTimeSchema.nullable(),
+});
+
+export const adminModuleAccessInputSchema = z.object({
+  organizationId: idSchema,
+  moduleId: idSchema,
+  enabled: z.boolean(),
 });
 
 export const acquisitionSubmissionInputSchema = z.object({
@@ -121,9 +136,13 @@ export type AcquisitionFormFieldType = z.infer<
 >;
 export type AcquisitionFormField = z.infer<typeof acquisitionFormFieldSchema>;
 export type AdminModule = z.infer<typeof adminModuleSchema>;
+export type ClientModuleAccess = z.infer<typeof clientModuleAccessSchema>;
 export type AcquisitionCampaign = z.infer<typeof acquisitionCampaignSchema>;
 export type Lead = z.infer<typeof leadSchema>;
 export type LeadCompany = z.infer<typeof leadCompanySchema>;
+export type AdminModuleAccessInput = z.infer<
+  typeof adminModuleAccessInputSchema
+>;
 export type AcquisitionSubmissionInput = z.infer<
   typeof acquisitionSubmissionInputSchema
 >;

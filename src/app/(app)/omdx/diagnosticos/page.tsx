@@ -10,7 +10,7 @@ import {
 } from "@/lib/data/omdx-data-source";
 
 export const metadata: Metadata = {
-  title: "Diagnósticos — OMDx",
+  title: "Diagnósticos — Maturidade",
 };
 
 export default async function DiagnosticsPage() {

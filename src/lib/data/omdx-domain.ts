@@ -31,11 +31,11 @@ const respondentGroups: RespondentGroupMeta[] = [
 
 export const suggestedMessages: Record<RespondentGroup, string> = {
   fundador:
-    "Olá. Estamos rodando o OMDx para medir a maturidade operacional da empresa a partir da leitura de fundadores. Responda pelo link abaixo. A análise será consolidada de forma agregada.",
+    "Olá. Estamos rodando o diagnóstico Maturidade para medir a maturidade operacional da empresa a partir da leitura de fundadores. Responda pelo link abaixo. A análise será consolidada de forma agregada.",
   lideranca:
-    "Olá. Estamos rodando o OMDx para entender como a liderança percebe a maturidade operacional da empresa. Use o link abaixo para responder. A análise será consolidada de forma agregada.",
+    "Olá. Estamos rodando o diagnóstico Maturidade para entender como a liderança percebe a maturidade operacional da empresa. Use o link abaixo para responder. A análise será consolidada de forma agregada.",
   operacao:
-    "Olá. Estamos rodando o OMDx para entender como a operação percebe clareza, processos, liderança e foco no dia a dia. Responda pelo link abaixo. A análise será consolidada de forma agregada.",
+    "Olá. Estamos rodando o diagnóstico Maturidade para entender como a operação percebe clareza, processos, liderança e foco no dia a dia. Responda pelo link abaixo. A análise será consolidada de forma agregada.",
 };
 
 export function classifyScore(score: number): Classification {

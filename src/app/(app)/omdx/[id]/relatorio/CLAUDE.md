@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Route Handler autenticado para baixar o relatório consolidado de um diagnóstico OMDx em PDF ou CSV.
+Route Handler autenticado para baixar o relatório consolidado de um diagnóstico Maturidade em PDF ou CSV.
 
 ## Convenções locais
 

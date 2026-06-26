@@ -11,5 +11,7 @@ Componentes das telas `/entrar`, `/criar-conta` e `/recuperar-senha`. A tela de 
 - Use `Input`, `Button` e tokens do design system; não criar hero de marketing.
 - Links entre telas de autenticação usam `next/link`.
 - Não reimplementar regra de domínio/e-mail no client; essa decisão é server-side em `src/lib/auth/access-control.ts`.
-- A tela `/entrar` deve mostrar e-mail/senha primeiro quando houver login por senha, depois divisor "Ou faça login com" e botão "Google" com ícone.
+- A tela `/entrar` mantém o botão Google primeiro, divisor "ou", depois e-mail/senha quando houver login por senha habilitado.
+- `AuthPageShell` mantém o vídeo líquido como padrão, mas aceita `visualVariant="app"` para o login com formulário à esquerda e painel visual lateral à direita. Essa variante usa o gradiente animado original via `AuthGradientVisual`, com paleta Figma `#7E1AFF` + `#ADE517` declarada em `globals.css`; o formulário do login usa título compacto, texto `text-sm`, controles de `45px` e tokens semânticos.
+- Assets locais `auth-figma-*` podem ser usados quando forem parte da identidade ou de provedores externos, mas não devem impor fonte, cor ou proporção fora do design system.
 - No modo real, o formulário usa Auth.js Credentials com `flow: "app"`; o servidor resolve superadmin primeiro e depois credenciais de contas de aquisição. No fallback dev, continua usando `/api/auth/login`.

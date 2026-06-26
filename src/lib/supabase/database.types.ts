@@ -117,6 +117,10 @@ export type Database = {
         | "account_created";
       auth_role: "superadmin" | "admin" | "cliente";
       diagnostic_status: "rascunho" | "ativo" | "encerrado";
+      operational_member_status:
+        | "aprovado"
+        | "pendente_aprovacao"
+        | "rejeitado";
       respondent_group: "fundador" | "lideranca" | "operacao";
       response_session_status: "iniciado" | "concluido";
     };
@@ -266,6 +270,8 @@ export type Database = {
           name: string;
           employee_count: number;
           domain: string | null;
+          operational_onboarding_required: boolean;
+          operational_onboarding_completed_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -274,6 +280,8 @@ export type Database = {
           name: string;
           employee_count?: number;
           domain?: string | null;
+          operational_onboarding_required?: boolean;
+          operational_onboarding_completed_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -282,8 +290,89 @@ export type Database = {
           name?: string;
           employee_count?: number;
           domain?: string | null;
+          operational_onboarding_required?: boolean;
+          operational_onboarding_completed_at?: string | null;
           created_at?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      operational_onboarding_links: {
+        Row: {
+          id: string;
+          organization_id: string;
+          token: string;
+          created_by: string | null;
+          created_at: string;
+          disabled_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          token: string;
+          created_by?: string | null;
+          created_at?: string;
+          disabled_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          token?: string;
+          created_by?: string | null;
+          created_at?: string;
+          disabled_at?: string | null;
+        };
+        Relationships: [];
+      };
+      operational_members: {
+        Row: {
+          id: string;
+          organization_id: string;
+          onboarding_link_id: string | null;
+          name: string;
+          email: string;
+          normalized_email: string;
+          area: string;
+          operational_role: string;
+          perceived_responsibilities: string;
+          participates_in_area_decisions: boolean;
+          status: Database["public"]["Enums"]["operational_member_status"];
+          submitted_at: string;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          rejection_reason: string | null;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          onboarding_link_id?: string | null;
+          name: string;
+          email: string;
+          area: string;
+          operational_role: string;
+          perceived_responsibilities: string;
+          participates_in_area_decisions: boolean;
+          status?: Database["public"]["Enums"]["operational_member_status"];
+          submitted_at?: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          rejection_reason?: string | null;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          onboarding_link_id?: string | null;
+          name?: string;
+          email?: string;
+          area?: string;
+          operational_role?: string;
+          perceived_responsibilities?: string;
+          participates_in_area_decisions?: boolean;
+          status?: Database["public"]["Enums"]["operational_member_status"];
+          submitted_at?: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          rejection_reason?: string | null;
         };
         Relationships: [];
       };
@@ -309,6 +398,30 @@ export type Database = {
           organization_id?: string;
           user_id?: string;
           role?: Database["public"]["Enums"]["auth_role"];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      organization_module_access: {
+        Row: {
+          organization_id: string;
+          module_id: string;
+          enabled: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          organization_id: string;
+          module_id: string;
+          enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          organization_id?: string;
+          module_id?: string;
+          enabled?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -584,7 +697,35 @@ export type Database = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      omdx_question_aggregates: {
+        Args: {
+          diagnostic_ids: string[];
+        };
+        Returns: {
+          diagnostic_id: string;
+          dimension_id: string;
+          dimension_slug: string;
+          dimension_number: number;
+          dimension_name: string;
+          dimension_short_name: string;
+          dimension_question: string;
+          dimension_description: string;
+          question_id: string;
+          question_order_index: number;
+          question_text: string;
+          response_count: number;
+          founder_count: number;
+          leadership_count: number;
+          operation_count: number;
+          score: number | null;
+          variance: number | null;
+          founder_score: number | null;
+          leadership_score: number | null;
+          operation_score: number | null;
+        }[];
+      };
+    };
     CompositeTypes: Record<string, never>;
   };
 };

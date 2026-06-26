@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Route Handler autenticado para baixar o PDF A4 retrato com plano de ação RACI do diagnóstico OMDx.
+Route Handler autenticado para baixar o PDF A4 retrato com plano de ação RACI do diagnóstico Maturidade.
 
 ## Convenções locais
 

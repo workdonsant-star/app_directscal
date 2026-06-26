@@ -1,18 +1,36 @@
 import {
   acquisitionCampaigns as seedCampaigns,
   adminModules as seedModules,
+  mockOrganizations as seedOrganizations,
 } from "@/lib/mock-data";
 import {
   acquisitionCampaignSchema,
   adminModuleSchema,
+  clientModuleAccessSchema,
   leadCompanySchema,
   type AcquisitionCampaign,
   type AcquisitionFormField,
   type AcquisitionFormFieldType,
   type AdminModule,
+  type ClientModuleAccess,
   type Lead,
   type LeadCompany,
 } from "@/lib/contracts";
+
+type AdminOrganization = {
+  id: string;
+  name: string;
+  employeeCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type OrganizationModuleAccessRecord = {
+  organizationId: string;
+  moduleId: string;
+  enabled: boolean;
+  updatedAt: string | null;
+};
 
 export type AdminDataSnapshot = {
   modules: AdminModule[];
@@ -56,38 +74,122 @@ export function createAcquisitionSlug(value: string) {
   );
 }
 
-function deriveCompanies(leads: Lead[]): LeadCompany[] {
+function moduleAccessForOrganization(
+  organizationId: string,
+  accessRecords: OrganizationModuleAccessRecord[],
+): ClientModuleAccess[] {
+  return seedModules.map((module) => {
+    const record = accessRecords.find(
+      (item) =>
+        item.organizationId === organizationId && item.moduleId === module.id,
+    );
+
+    return clientModuleAccessSchema.parse({
+      moduleId: module.id,
+      enabled: record?.enabled ?? module.status === "ativo",
+      updatedAt: record?.updatedAt ?? null,
+    });
+  });
+}
+
+function isCompanyModuleEnabled(company: LeadCompany, moduleId: string) {
+  return (
+    company.moduleAccess.find((access) => access.moduleId === moduleId)
+      ?.enabled ?? true
+  );
+}
+
+function deriveCompanies({
+  accessRecords,
+  leads,
+  organizations,
+}: {
+  accessRecords: OrganizationModuleAccessRecord[];
+  leads: Lead[];
+  organizations: AdminOrganization[];
+}): LeadCompany[] {
   const grouped = new Map<string, Lead[]>();
 
   leads.forEach((lead) => {
-    const key = lead.companyName.trim().toLowerCase();
+    const key =
+      lead.organizationId ?? `lead:${lead.companyName.trim().toLowerCase()}`;
     grouped.set(key, [...(grouped.get(key) ?? []), lead]);
   });
 
-  return [...grouped.values()]
-    .map((items) => {
-      const ordered = [...items].sort(
-        (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-      );
-      const latest = ordered[ordered.length - 1];
-      const moduleNames = [...new Set(items.map((lead) => moduleNameById(lead.moduleId)))];
-      const sources = [...new Set(items.map((lead) => lead.source))];
+  const companiesById = new Map<string, LeadCompany>();
 
-      return leadCompanySchema.parse({
-        id: `company_${createAcquisitionSlug(latest.companyName) || latest.id}`,
-        name: latest.companyName,
-        companySize: latest.companySize,
+  organizations.forEach((organization) => {
+    const items = grouped.get(organization.id) ?? [];
+    const ordered = [...items].sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
+    const latest = ordered[ordered.length - 1];
+    const moduleNames = [...new Set(items.map((lead) => moduleNameById(lead.moduleId)))];
+    const sources = [...new Set(items.map((lead) => lead.source))];
+
+    companiesById.set(
+      organization.id,
+      leadCompanySchema.parse({
+        id: `company_${organization.id}`,
+        organizationId: organization.id,
+        name: organization.name,
+        companySize: latest?.companySize ?? null,
+        employeeCount: organization.employeeCount,
         leadCount: items.length,
         moduleNames,
         sources,
+        moduleAccess: moduleAccessForOrganization(organization.id, accessRecords),
+        firstLeadAt: ordered[0]?.createdAt ?? null,
+        lastLeadAt: latest?.createdAt ?? null,
+      }),
+    );
+  });
+
+  grouped.forEach((items, key) => {
+    if (!key.startsWith("lead:")) return;
+
+    const ordered = [...items].sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
+    const latest = ordered[ordered.length - 1];
+    const moduleNames = [...new Set(items.map((lead) => moduleNameById(lead.moduleId)))];
+    const sources = [...new Set(items.map((lead) => lead.source))];
+
+    companiesById.set(
+      key,
+      leadCompanySchema.parse({
+        id: `company_${createAcquisitionSlug(latest.companyName) || latest.id}`,
+        organizationId: null,
+        name: latest.companyName,
+        companySize: latest.companySize,
+        employeeCount: null,
+        leadCount: items.length,
+        moduleNames,
+        sources,
+        moduleAccess: [],
         firstLeadAt: ordered[0].createdAt,
         lastLeadAt: latest.createdAt,
-      });
-    })
+      }),
+    );
+  });
+
+  return [...companiesById.values()]
     .sort(
-      (a, b) =>
-        new Date(b.lastLeadAt).getTime() - new Date(a.lastLeadAt).getTime(),
+      (a, b) => {
+        if (a.lastLeadAt && b.lastLeadAt) {
+          return (
+            new Date(b.lastLeadAt).getTime() -
+            new Date(a.lastLeadAt).getTime()
+          );
+        }
+
+        if (a.lastLeadAt) return -1;
+        if (b.lastLeadAt) return 1;
+
+        return a.name.localeCompare(b.name, "pt-BR");
+      },
     );
 }
 
@@ -111,18 +213,30 @@ function deriveModules(
       ).length,
       leadCount: moduleLeads.length,
       companyCount: companies.filter((company) =>
-        companyNames.has(company.name),
+        company.organizationId
+          ? isCompanyModuleEnabled(company, module.id)
+          : companyNames.has(company.name),
       ).length,
     });
   });
 }
 
 export function buildAdminDataSnapshot({
+  accessRecords = [],
   campaigns,
   leads,
+  organizations = seedOrganizations.map((organization) => ({
+    id: organization.id,
+    name: organization.name,
+    employeeCount: organization.employeeCount,
+    createdAt: organization.createdAt,
+    updatedAt: organization.updatedAt,
+  })),
 }: {
+  accessRecords?: OrganizationModuleAccessRecord[];
   campaigns: AcquisitionCampaign[];
   leads: Lead[];
+  organizations?: AdminOrganization[];
 }): AdminDataSnapshot {
   const parsedCampaigns = campaigns
     .map((campaign) =>
@@ -135,7 +249,7 @@ export function buildAdminDataSnapshot({
       (a, b) =>
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
     );
-  const companies = deriveCompanies(leads);
+  const companies = deriveCompanies({ accessRecords, leads, organizations });
   const modules = deriveModules(parsedCampaigns, leads, companies);
 
   return {

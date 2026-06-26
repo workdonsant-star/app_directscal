@@ -85,7 +85,7 @@ function ReportHeader({
   return (
     <View style={styles.header} fixed>
       <View>
-        <Text style={styles.headerKicker}>OMDx</Text>
+        <Text style={styles.headerKicker}>Maturidade</Text>
         <Text style={styles.headerTitle}>{section}</Text>
       </View>
       <View style={styles.headerMeta}>
@@ -144,7 +144,7 @@ function CoverPage({ plan }: { plan: DiagnosticActionPlan }) {
 
       <View style={styles.coverMain}>
         <Text style={styles.coverKicker}>Plano de ação</Text>
-        <Text style={styles.coverTitle}>OMDx Action Points</Text>
+        <Text style={styles.coverTitle}>Action points Maturidade</Text>
         <Text style={styles.coverSubtitle}>
           Resultados, leitura da pesquisa e plano RACI
         </Text>
@@ -414,8 +414,8 @@ export function OmdxActionPlanDocument({
   return (
     <Document
       author="Directscal"
-      subject="Plano de ação OMDx"
-      title={`Action points OMDx — ${plan.diagnostic.company}`}
+      subject="Plano de ação de Maturidade"
+      title={`Action points Maturidade — ${plan.diagnostic.company}`}
     >
       <CoverPage plan={plan} />
       <ResultsPage plan={plan} />

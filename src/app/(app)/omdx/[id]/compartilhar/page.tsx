@@ -14,7 +14,7 @@ import {
 import { getDiagnosticShareWorkspace } from "@/lib/data/omdx-data-source";
 
 export const metadata: Metadata = {
-  title: "Compartilhar diagnóstico — OMDx",
+  title: "Compartilhar diagnóstico — Maturidade",
 };
 
 type ShareDiagnosticPageProps = {
@@ -32,7 +32,7 @@ export default async function ShareDiagnosticPage({
       <>
         <AppTopbar
           breadcrumb={[
-            { label: "OMDx", href: "/omdx" },
+            { label: "Maturidade", href: "/omdx" },
             { label: "Diagnósticos", href: "/omdx/diagnosticos" },
             { label: "Compartilhar" },
           ]}
@@ -65,7 +65,7 @@ export default async function ShareDiagnosticPage({
     <>
       <AppTopbar
         breadcrumb={[
-          { label: "OMDx", href: "/omdx" },
+          { label: "Maturidade", href: "/omdx" },
           { label: "Diagnósticos", href: "/omdx/diagnosticos" },
           { label: "Compartilhar" },
         ]}

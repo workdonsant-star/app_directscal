@@ -55,7 +55,7 @@ function buildFounderOnlyReport() {
       organizationId: "00000000-0000-4000-8000-000000000301",
       organizationName: "Directscal",
       company: "Directscal",
-      name: "OMDx",
+      name: "Maturidade",
       description: null,
       templateId: "omdx-v1",
       status: "ativo",
@@ -99,7 +99,7 @@ function buildFounderOnlyReport() {
   });
 }
 
-describe("OMDx founder analysis base", () => {
+describe("Maturidade founder analysis base", () => {
   it("accepts founder-only reports without inventing layer scores", () => {
     const report = buildFounderOnlyReport();
 

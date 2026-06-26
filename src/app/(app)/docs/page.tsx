@@ -5,12 +5,12 @@ import { DocumentTableOfContents } from "@/components/document-table-of-contents
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
-  title: "Documentação — OMDx",
+  title: "Documentação — Maturidade",
 };
 
 const tableOfContents = [
   { href: "#visao-geral", label: "Visão geral" },
-  { href: "#dashboard", label: "Dashboard OMDx" },
+  { href: "#dashboard", label: "Dashboard Maturidade" },
   { href: "#diagnosticos", label: "Diagnósticos" },
   { href: "#criacao", label: "Criação e configuração" },
   { href: "#compartilhamento", label: "Compartilhamento" },
@@ -20,7 +20,7 @@ const tableOfContents = [
 
 const areas = [
   {
-    name: "OMDx",
+    name: "Maturidade",
     path: "/omdx",
     description:
       "Visão executiva do módulo, com KPIs, maturidade por dimensão e leitura geral.",
@@ -72,7 +72,7 @@ export default function DocumentationPage() {
                   links de resposta.
                 </p>
                 <p>
-                  A sidebar é a entrada principal. Use `OMDx` para leitura
+                  A sidebar é a entrada principal. Use `Maturidade` para leitura
                   geral, `Diagnósticos` para operar coletas e `Insights` para
                   aprofundar cada dimensão do modelo.
                 </p>
@@ -104,7 +104,7 @@ export default function DocumentationPage() {
 
             <section id="dashboard" className="scroll-mt-24 border-b py-10">
               <h2 className="text-foreground text-2xl font-semibold tracking-tight">
-                Dashboard OMDx
+                Dashboard Maturidade
               </h2>
               <div className="mt-5 space-y-4 text-sm leading-7 text-muted-foreground">
                 <p>
@@ -173,7 +173,7 @@ export default function DocumentationPage() {
                 </p>
                 <p>
                   Os campos essenciais são nome do diagnóstico e empresa da
-                  sessão. Descrição e prazo são opcionais. O template OMDx
+                  sessão. Descrição e prazo são opcionais. O template de Maturidade
                   padrão já vem selecionado.
                 </p>
               </div>
@@ -220,7 +220,7 @@ export default function DocumentationPage() {
                   respostas e ação para encerrar a coleta.
                 </p>
                 <p>
-                  O OMDx usa três links separados: fundador, liderança e
+                  O módulo Maturidade usa três links separados: fundador, liderança e
                   operação. Essa separação preserva a leitura por camada e evita
                   que o respondente precise escolher seu grupo no formulário
                   público.
@@ -289,7 +289,7 @@ export default function DocumentationPage() {
               <div className="mt-5 space-y-4 text-sm leading-7 text-muted-foreground">
                 <p>
                   Use esta documentação quando a dúvida for operacional ou
-                  conceitual: onde cada área fica, o que o OMDx mede, como a
+                  conceitual: onde cada área fica, o que Maturidade mede, como a
                   escala é lida e por que a leitura por camada importa.
                 </p>
                 <p>

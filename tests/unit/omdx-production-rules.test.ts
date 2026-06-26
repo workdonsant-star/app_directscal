@@ -9,7 +9,7 @@ import {
   minimumFounderResponsesForAnalysis,
 } from "@/lib/data/omdx-production-rules";
 
-describe("OMDx production rules", () => {
+describe("Maturidade production rules", () => {
   it("requires at least one founder response before analysis", () => {
     expect(
       hasFounderAnalysisBase({

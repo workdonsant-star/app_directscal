@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { getAccessibleOrganizationIdsForUser } from "@/lib/auth/authorization";
 import { getCurrentAuthSession } from "@/lib/auth/session";
 import {
@@ -31,11 +33,13 @@ import {
   type DimensionId,
   type DimensionInsightSummary,
   type DimensionQuestionResult,
+  type GanttWorkspaceData,
   type AuthUser,
   type ProfileSettingsData,
   type RespondentGroup,
   type ResponsesByGroup,
 } from "@/lib/contracts";
+import { buildGanttWorkspaceDataFromActionPlan } from "@/lib/data/action-plan-gantt";
 import {
   canGenerateDiagnosticActionPlan,
   canGenerateDiagnosticReport,
@@ -65,6 +69,9 @@ export {
 
 type OrganizationRow = Database["public"]["Tables"]["organizations"]["Row"];
 type DiagnosticRow = Database["public"]["Tables"]["diagnostics"]["Row"];
+type DiagnosticWithOrganizationRow = DiagnosticRow & {
+  organizations: OrganizationRow | null;
+};
 type DiagnosticTemplateRow =
   Database["public"]["Tables"]["diagnostic_templates"]["Row"];
 type DimensionRow = Database["public"]["Tables"]["dimensions"]["Row"];
@@ -77,7 +84,13 @@ type ResponseSessionRow = Omit<
   Database["public"]["Tables"]["response_sessions"]["Row"],
   "respondent_id"
 >;
+type ResponseCountRow = Pick<
+  ResponseSessionRow,
+  "diagnostic_id" | "group_id"
+>;
 type LikertAnswerRow = Database["public"]["Tables"]["likert_answers"]["Row"];
+type OmdxQuestionAggregateRow =
+  Database["public"]["Functions"]["omdx_question_aggregates"]["Returns"][number];
 
 type OmdxModel = {
   dimensions: Dimension[];
@@ -102,6 +115,8 @@ const reportThreshold = 3;
 const highGapThreshold = 1;
 const mediumScoreThreshold = 3.5;
 const varianceThreshold = 0.6;
+const diagnosticSelectColumns =
+  "id,organization_id,template_id,name,description,status,created_at,updated_at,activated_at,closed_at,deadline,general_score";
 
 function getSupabase() {
   return createSupabaseAdminClient();
@@ -122,6 +137,10 @@ function roundReportScore(value: number) {
 
 function roundReportNumber(value: number) {
   return Number(value.toFixed(2));
+}
+
+function roundReportScoreOrNull(value: number | null) {
+  return value === null ? null : roundReportScore(value);
 }
 
 function average(values: number[]) {
@@ -182,7 +201,7 @@ function calculatePriorityIndex(score: number, gap: number | null) {
 
 function toDimension(row: DimensionRow): Dimension {
   if (!isDimensionId(row.slug)) {
-    throw new Error(`Dimensão OMDx inválida no banco: ${row.slug}`);
+    throw new Error(`Dimensão de Maturidade inválida no banco: ${row.slug}`);
   }
 
   return dimensionSchema.parse({
@@ -202,7 +221,38 @@ function toLikertScalePoint(row: LikertScalePointRow) {
   };
 }
 
-async function loadOmdxModel(): Promise<OmdxModel> {
+const loadDimensionRows = cache(async function loadDimensionRows() {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("dimensions")
+    .select("id,slug,number,name,short_name,question,description")
+    .order("number", { ascending: true })
+    .returns<DimensionRow[]>();
+
+  if (error) throw error;
+
+  return data;
+});
+
+function toFiniteNumber(value: number | string | null): number | null {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  if (typeof value === "string") {
+    const numericValue = Number(value);
+
+    return Number.isFinite(numericValue) ? numericValue : null;
+  }
+
+  return null;
+}
+
+function toInteger(value: number | string | null) {
+  return Math.trunc(toFiniteNumber(value) ?? 0);
+}
+
+const loadOmdxModel = cache(async function loadOmdxModel(): Promise<OmdxModel> {
   const supabase = getSupabase();
   const { data: templateRow, error: templateError } = await supabase
     .from("diagnostic_templates")
@@ -213,12 +263,8 @@ async function loadOmdxModel(): Promise<OmdxModel> {
 
   if (templateError) throw templateError;
 
-  const [dimensionsResult, scaleResult, questionsResult] = await Promise.all([
-    supabase
-      .from("dimensions")
-      .select("id,slug,number,name,short_name,question,description")
-      .order("number", { ascending: true })
-      .returns<DimensionRow[]>(),
+  const [dimensionRows, scaleResult, questionsResult] = await Promise.all([
+    loadDimensionRows(),
     supabase
       .from("likert_scale_points")
       .select("id,template_id,value,label")
@@ -233,13 +279,12 @@ async function loadOmdxModel(): Promise<OmdxModel> {
       .returns<QuestionRow[]>(),
   ]);
 
-  if (dimensionsResult.error) throw dimensionsResult.error;
   if (scaleResult.error) throw scaleResult.error;
   if (questionsResult.error) throw questionsResult.error;
 
-  const dimensions = dimensionsResult.data.map(toDimension);
+  const dimensions = dimensionRows.map(toDimension);
   const dimensionsByDbId = new Map(
-    dimensionsResult.data.map((row, index) => [row.id, dimensions[index]]),
+    dimensionRows.map((row, index) => [row.id, dimensions[index]]),
   );
   const template = diagnosticTemplateSchema.parse({
     id: templateRow.slug,
@@ -266,74 +311,153 @@ async function loadOmdxModel(): Promise<OmdxModel> {
     template,
     templateRow,
   };
-}
+});
 
-async function loadAuthorizedOrganizations() {
+const loadAuthorizedOrganizationRows = cache(
+  async function loadAuthorizedOrganizationRows(userId: string) {
+    const access = await getAccessibleOrganizationIdsForUser(userId);
+
+    if (access.organizationIds.length === 0) {
+      return [] as OrganizationRow[];
+    }
+
+    const supabase = getSupabase();
+    const { data, error } = await supabase
+      .from("organizations")
+      .select("id,name,employee_count,domain,created_at,updated_at")
+      .in("id", access.organizationIds)
+      .order("name", { ascending: true })
+      .returns<OrganizationRow[]>();
+
+    if (error) throw error;
+
+    return data;
+  },
+);
+
+const loadAuthorizedDiagnosticRows = cache(
+  async function loadAuthorizedDiagnosticRows(userId: string, id = "") {
+    const organizationRows = await loadAuthorizedOrganizationRows(userId);
+
+    if (organizationRows.length === 0) {
+      return {
+        diagnosticRows: [] as DiagnosticRow[],
+        organizationRows,
+      };
+    }
+
+    const organizationIds = organizationRows.map((organization) => organization.id);
+    const supabase = getSupabase();
+    let query = supabase
+      .from("diagnostics")
+      .select(diagnosticSelectColumns)
+      .in("organization_id", organizationIds)
+      .order("updated_at", { ascending: false });
+
+    if (id) query = query.eq("id", id);
+
+    const { data, error } = await query.returns<DiagnosticRow[]>();
+
+    if (error) throw error;
+
+    return {
+      diagnosticRows: data,
+      organizationRows,
+    };
+  },
+);
+
+const loadAllDiagnosticRows = cache(
+  async function loadAllDiagnosticRows(id = "") {
+    const supabase = getSupabase();
+    let query = supabase
+      .from("diagnostics")
+      .select(
+        `${diagnosticSelectColumns},organizations(id,name,employee_count,domain,created_at,updated_at)`,
+      )
+      .order("updated_at", { ascending: false });
+
+    if (id) query = query.eq("id", id);
+
+    const { data, error } = await query.returns<DiagnosticWithOrganizationRow[]>();
+
+    if (error) throw error;
+
+    const organizationRows = Array.from(
+      new Map(
+        data
+          .map((diagnostic) => diagnostic.organizations)
+          .filter(
+            (organization): organization is OrganizationRow =>
+              organization !== null,
+          )
+          .map((organization) => [organization.id, organization]),
+      ).values(),
+    ).sort((a, b) => a.name.localeCompare(b.name));
+    const diagnosticRows: DiagnosticRow[] = data.map((diagnostic) => {
+      const { organizations, ...row } = diagnostic;
+
+      void organizations;
+
+      return row;
+    });
+
+    return {
+      diagnosticRows,
+      organizationRows,
+    };
+  },
+);
+
+async function loadAuthorizedDiagnostics(id?: string) {
   const session = await getCurrentAuthSession();
 
   if (!session) {
     return {
-      organizationRows: [] as OrganizationRow[],
-      session: null,
-    };
-  }
-
-  const access = await getAccessibleOrganizationIdsForUser(session.user.id);
-
-  if (access.organizationIds.length === 0) {
-    return {
-      organizationRows: [] as OrganizationRow[],
-      session,
-    };
-  }
-
-  const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from("organizations")
-    .select("id,name,employee_count,domain,created_at,updated_at")
-    .in("id", access.organizationIds)
-    .order("name", { ascending: true })
-    .returns<OrganizationRow[]>();
-
-  if (error) throw error;
-
-  return {
-    organizationRows: data,
-    session,
-  };
-}
-
-async function loadAuthorizedDiagnostics(id?: string) {
-  const { organizationRows, session } = await loadAuthorizedOrganizations();
-
-  if (!session || organizationRows.length === 0) {
-    return {
       diagnosticRows: [] as DiagnosticRow[],
-      organizationRows,
+      organizationRows: [] as OrganizationRow[],
     };
   }
 
-  const organizationIds = organizationRows.map((organization) => organization.id);
-  const supabase = getSupabase();
-  let query = supabase
-    .from("diagnostics")
-    .select(
-      "id,organization_id,template_id,name,description,status,created_at,updated_at,activated_at,closed_at,deadline,general_score",
-    )
-    .in("organization_id", organizationIds)
-    .order("updated_at", { ascending: false });
+  if (session.user.role === "superadmin") {
+    return loadAllDiagnosticRows(id ?? "");
+  }
 
-  if (id) query = query.eq("id", id);
-
-  const { data, error } = await query.returns<DiagnosticRow[]>();
-
-  if (error) throw error;
-
-  return {
-    diagnosticRows: data,
-    organizationRows,
-  };
+  return loadAuthorizedDiagnosticRows(session.user.id, id ?? "");
 }
+
+const loadDiagnosticResponseCounts = cache(
+  async function loadDiagnosticResponseCounts(diagnosticIdsKey: string) {
+    const diagnosticIds = diagnosticIdsKey.split(",").filter(Boolean);
+    const responsesByDiagnosticId = new Map<string, ResponsesByGroup>(
+      diagnosticIds.map((diagnosticId) => [diagnosticId, getEmptyResponses()]),
+    );
+
+    if (diagnosticIds.length === 0) return responsesByDiagnosticId;
+
+    const supabase = getSupabase();
+    const { data, error } = await supabase
+      .from("response_sessions")
+      .select("diagnostic_id,group_id")
+      .in("diagnostic_id", diagnosticIds)
+      .eq("status", "concluido")
+      .returns<ResponseCountRow[]>();
+
+    if (error) throw error;
+
+    data.forEach((session) => {
+      const responses =
+        responsesByDiagnosticId.get(session.diagnostic_id) ??
+        getEmptyResponses();
+
+      responses.total += 1;
+      responses[session.group_id] += 1;
+      responsesByDiagnosticId.set(session.diagnostic_id, responses);
+    });
+
+    return responsesByDiagnosticId;
+  },
+);
 
 function createResponseMap(diagnostics: DiagnosticRow[]) {
   return new Map(
@@ -480,7 +604,7 @@ function buildReportDimensions({
     : null;
 }
 
-async function loadDiagnosticComputations(
+const loadDiagnosticComputations = cache(async function loadDiagnosticComputations(
   diagnostics: DiagnosticRow[],
   model: OmdxModel,
 ) {
@@ -569,7 +693,7 @@ async function loadDiagnosticComputations(
   });
 
   return computations;
-}
+});
 
 function mapDiagnostic({
   computation,
@@ -580,7 +704,7 @@ function mapDiagnostic({
   computation: DiagnosticComputation | undefined;
   diagnostic: DiagnosticRow;
   organization: OrganizationRow;
-  template: DiagnosticTemplateRow;
+  template?: Pick<DiagnosticTemplateRow, "slug">;
 }): Diagnostic {
   return diagnosticSchema.parse({
     id: diagnostic.id,
@@ -589,7 +713,7 @@ function mapDiagnostic({
     company: organization.name,
     name: diagnostic.name,
     description: diagnostic.description,
-    templateId: template.slug,
+    templateId: template?.slug ?? omdxTemplateSlug,
     status: diagnostic.status,
     createdAt: diagnostic.created_at,
     updatedAt: diagnostic.updated_at,
@@ -597,7 +721,7 @@ function mapDiagnostic({
     closedAt: diagnostic.closed_at,
     deadline: diagnostic.deadline,
     responses: computation?.responses ?? getEmptyResponses(),
-    generalScore: computation?.generalScore ?? null,
+    generalScore: computation?.generalScore ?? diagnostic.general_score,
   });
 }
 
@@ -815,6 +939,294 @@ function buildReportFromDimensions({
   });
 }
 
+function isMissingAggregateRpcError(
+  error: { code?: string; message?: string } | null,
+) {
+  return (
+    Boolean(error) &&
+    (/omdx_question_aggregates|schema cache|could not find the function/i.test(
+      error?.message ?? "",
+    ) ||
+      error?.code === "PGRST202")
+  );
+}
+
+const loadOmdxQuestionAggregateRows = cache(
+  async function loadOmdxQuestionAggregateRows(diagnosticIdsKey: string) {
+    const diagnosticIds = diagnosticIdsKey.split(",").filter(Boolean);
+
+    if (diagnosticIds.length === 0) return [] as OmdxQuestionAggregateRow[];
+
+    const supabase = getSupabase();
+    const { data, error } = await supabase.rpc("omdx_question_aggregates", {
+      diagnostic_ids: diagnosticIds,
+    });
+
+    if (isMissingAggregateRpcError(error)) return null;
+    if (error) throw error;
+
+    return data;
+  },
+);
+
+function getDimensionFromAggregateRow(row: OmdxQuestionAggregateRow) {
+  return toDimension({
+    id: row.dimension_id,
+    slug: row.dimension_slug,
+    number: row.dimension_number,
+    name: row.dimension_name,
+    short_name: row.dimension_short_name,
+    question: row.dimension_question,
+    description: row.dimension_description,
+  });
+}
+
+function getResponsesFromAggregateRows(
+  rows: OmdxQuestionAggregateRow[],
+): ResponsesByGroup {
+  return rows.reduce(
+    (responses, row) => ({
+      total: Math.max(responses.total, toInteger(row.response_count)),
+      fundador: Math.max(responses.fundador, toInteger(row.founder_count)),
+      lideranca: Math.max(responses.lideranca, toInteger(row.leadership_count)),
+      operacao: Math.max(responses.operacao, toInteger(row.operation_count)),
+    }),
+    getEmptyResponses(),
+  );
+}
+
+function buildQuestionFromAggregateRow({
+  dimensionId,
+  row,
+}: {
+  dimensionId: DimensionId;
+  row: OmdxQuestionAggregateRow;
+}): DiagnosticReportQuestion | null {
+  const score = toFiniteNumber(row.score);
+
+  if (score === null || toInteger(row.response_count) === 0) return null;
+
+  return {
+    id: row.question_id,
+    diagnosticId: row.diagnostic_id,
+    dimensionId,
+    text: row.question_text,
+    score: roundReportScore(score),
+    variance: roundReportNumber(toFiniteNumber(row.variance) ?? 0),
+    responses: toInteger(row.response_count),
+    layerScores: {
+      fundador: roundReportScoreOrNull(toFiniteNumber(row.founder_score)),
+      lideranca: roundReportScoreOrNull(toFiniteNumber(row.leadership_score)),
+      operacao: roundReportScoreOrNull(toFiniteNumber(row.operation_score)),
+    },
+  };
+}
+
+function buildReportDimensionsFromAggregateRows(
+  rows: OmdxQuestionAggregateRow[],
+  responses: ResponsesByGroup,
+) {
+  if (!hasFounderAnalysisBase(responses)) return null;
+
+  const rowsByDimensionId = new Map<string, OmdxQuestionAggregateRow[]>();
+
+  rows.forEach((row) => {
+    rowsByDimensionId.set(row.dimension_id, [
+      ...(rowsByDimensionId.get(row.dimension_id) ?? []),
+      row,
+    ]);
+  });
+
+  const reportDimensions = Array.from(rowsByDimensionId.values())
+    .sort((a, b) => a[0].dimension_number - b[0].dimension_number)
+    .map((dimensionRows) => {
+      const dimension = getDimensionFromAggregateRow(dimensionRows[0]);
+      const questionSummaries = dimensionRows
+        .sort((a, b) => a.question_order_index - b.question_order_index)
+        .map((row) =>
+          buildQuestionFromAggregateRow({
+            dimensionId: dimension.id,
+            row,
+          }),
+        )
+        .filter(
+          (question): question is DiagnosticReportQuestion =>
+            question !== null,
+        );
+
+      if (questionSummaries.length !== dimensionRows.length) return null;
+
+      const score = roundReportScore(
+        average(questionSummaries.map((question) => question.score)),
+      );
+      const layerScores = getRespondentGroups().reduce(
+        (acc, group) => {
+          const score = averageOrNull(
+            questionSummaries.map((question) => question.layerScores[group.id]),
+          );
+
+          acc[group.id] = score === null ? null : roundReportScore(score);
+
+          return acc;
+        },
+        {} as Record<RespondentGroup, number | null>,
+      );
+
+      return {
+        ...dimension,
+        score,
+        classification: classifyScore(score),
+        variance: roundReportNumber(
+          average(questionSummaries.map((question) => question.variance)),
+        ),
+        responses: responses.total,
+        layerScores,
+        misalignment: calculateMisalignment(layerScores),
+        questions: questionSummaries,
+      };
+    })
+    .filter(
+      (dimension): dimension is DiagnosticReportDimension => dimension !== null,
+    );
+
+  return reportDimensions.length === rowsByDimensionId.size
+    ? reportDimensions
+    : null;
+}
+
+function buildReportsFromAggregateRows({
+  aggregateRows,
+  diagnosticRows,
+  generatedAt,
+  organizationRows,
+}: {
+  aggregateRows: OmdxQuestionAggregateRow[];
+  diagnosticRows: DiagnosticRow[];
+  generatedAt: string;
+  organizationRows: OrganizationRow[];
+}) {
+  const rowsByDiagnosticId = new Map<string, OmdxQuestionAggregateRow[]>();
+
+  aggregateRows.forEach((row) => {
+    rowsByDiagnosticId.set(row.diagnostic_id, [
+      ...(rowsByDiagnosticId.get(row.diagnostic_id) ?? []),
+      row,
+    ]);
+  });
+
+  return diagnosticRows
+    .map((diagnosticRow) => {
+      const rows = rowsByDiagnosticId.get(diagnosticRow.id) ?? [];
+      const organization = organizationRows.find(
+        (item) => item.id === diagnosticRow.organization_id,
+      );
+
+      if (!organization || rows.length === 0) return undefined;
+
+      const responses = getResponsesFromAggregateRows(rows);
+      const reportDimensions = buildReportDimensionsFromAggregateRows(
+        rows,
+        responses,
+      );
+
+      if (!reportDimensions) return undefined;
+
+      const computedGeneralScore = roundReportScore(
+        average(reportDimensions.map((dimension) => dimension.score)),
+      );
+      const diagnostic = mapDiagnostic({
+        computation: {
+          generalScore: diagnosticRow.general_score ?? computedGeneralScore,
+          reportDimensions,
+          responses,
+        },
+        diagnostic: diagnosticRow,
+        organization,
+      });
+
+      return buildReportFromDimensions({
+        diagnostic,
+        generatedAt,
+        reportDimensions,
+      });
+    })
+    .filter((report): report is DiagnosticReport => Boolean(report));
+}
+
+function buildDiagnosticReportFromRow({
+  computation,
+  diagnosticRow,
+  generatedAt,
+  model,
+  organizationRows,
+}: {
+  computation: DiagnosticComputation | undefined;
+  diagnosticRow: DiagnosticRow;
+  generatedAt: string;
+  model: OmdxModel;
+  organizationRows: OrganizationRow[];
+}) {
+  if (!computation?.reportDimensions) return undefined;
+
+  const organization = organizationRows.find(
+    (item) => item.id === diagnosticRow.organization_id,
+  );
+
+  if (!organization) return undefined;
+
+  const diagnostic = mapDiagnostic({
+    computation,
+    diagnostic: diagnosticRow,
+    organization,
+    template: model.templateRow,
+  });
+
+  return buildReportFromDimensions({
+    diagnostic,
+    generatedAt,
+    reportDimensions: computation.reportDimensions,
+  });
+}
+
+async function buildReportsFromRows({
+  diagnosticRows,
+  generatedAt,
+  organizationRows,
+}: {
+  diagnosticRows: DiagnosticRow[];
+  generatedAt: string;
+  organizationRows: OrganizationRow[];
+}) {
+  const diagnosticIdsKey = diagnosticRows
+    .map((diagnostic) => diagnostic.id)
+    .join(",");
+  const aggregateRows = await loadOmdxQuestionAggregateRows(diagnosticIdsKey);
+
+  if (aggregateRows) {
+    return buildReportsFromAggregateRows({
+      aggregateRows,
+      diagnosticRows,
+      generatedAt,
+      organizationRows,
+    });
+  }
+
+  const model = await loadOmdxModel();
+  const computations = await loadDiagnosticComputations(diagnosticRows, model);
+
+  return diagnosticRows
+    .map((diagnosticRow) =>
+      buildDiagnosticReportFromRow({
+        computation: computations.get(diagnosticRow.id),
+        diagnosticRow,
+        generatedAt,
+        model,
+        organizationRows,
+      }),
+    )
+    .filter((report): report is DiagnosticReport => Boolean(report));
+}
+
 function buildShareLink(row: DiagnosticShareLinkRow): DiagnosticShareLink {
   return diagnosticShareLinkSchema.parse({
     diagnosticId: row.diagnostic_id,
@@ -867,11 +1279,11 @@ export function getProfileSettingsData(user: AuthUser): ProfileSettingsData {
   });
 }
 
-export async function getDimensions(): Promise<Dimension[]> {
-  const model = await loadOmdxModel();
+export const getDimensions = cache(async function getDimensions(): Promise<Dimension[]> {
+  const dimensionRows = await loadDimensionRows();
 
-  return model.dimensions;
-}
+  return dimensionRows.map(toDimension);
+});
 
 export async function getDimensionById(id: DimensionId): Promise<Dimension> {
   const dimensions = await getDimensions();
@@ -882,25 +1294,26 @@ export async function getDimensionById(id: DimensionId): Promise<Dimension> {
   return dimensionSchema.parse(dimension);
 }
 
-export async function getDefaultDiagnosticTemplate(): Promise<DiagnosticTemplate> {
+export const getDefaultDiagnosticTemplate = cache(
+  async function getDefaultDiagnosticTemplate(): Promise<DiagnosticTemplate> {
   const model = await loadOmdxModel();
 
   return model.template;
-}
+  },
+);
 
 export async function getDiagnosticTemplates(): Promise<DiagnosticTemplate[]> {
   return [await getDefaultDiagnosticTemplate()];
 }
 
-export async function getDiagnostics(): Promise<Diagnostic[]> {
-  const [{ diagnosticRows, organizationRows }, model] = await Promise.all([
-    loadAuthorizedDiagnostics(),
-    loadOmdxModel(),
-  ]);
+export const getDiagnostics = cache(async function getDiagnostics(): Promise<Diagnostic[]> {
+  const { diagnosticRows, organizationRows } = await loadAuthorizedDiagnostics();
   const organizationsById = new Map(
     organizationRows.map((organization) => [organization.id, organization]),
   );
-  const computations = await loadDiagnosticComputations(diagnosticRows, model);
+  const responseCounts = await loadDiagnosticResponseCounts(
+    diagnosticRows.map((diagnostic) => diagnostic.id).join(","),
+  );
 
   return diagnosticRows
     .map((diagnostic) => {
@@ -909,22 +1322,23 @@ export async function getDiagnostics(): Promise<Diagnostic[]> {
       if (!organization) return null;
 
       return mapDiagnostic({
-        computation: computations.get(diagnostic.id),
+        computation: {
+          generalScore: diagnostic.general_score,
+          reportDimensions: null,
+          responses:
+            responseCounts.get(diagnostic.id) ?? getEmptyResponses(),
+        },
         diagnostic,
         organization,
-        template: model.templateRow,
       });
     })
     .filter((diagnostic): diagnostic is Diagnostic => diagnostic !== null);
-}
+});
 
-export async function getDiagnosticById(
+export const getDiagnosticById = cache(async function getDiagnosticById(
   id: string,
 ): Promise<Diagnostic | undefined> {
-  const [{ diagnosticRows, organizationRows }, model] = await Promise.all([
-    loadAuthorizedDiagnostics(id),
-    loadOmdxModel(),
-  ]);
+  const { diagnosticRows, organizationRows } = await loadAuthorizedDiagnostics(id);
   const diagnostic = diagnosticRows[0];
 
   if (!diagnostic) return undefined;
@@ -935,15 +1349,18 @@ export async function getDiagnosticById(
 
   if (!organization) return undefined;
 
-  const computations = await loadDiagnosticComputations([diagnostic], model);
+  const responseCounts = await loadDiagnosticResponseCounts(diagnostic.id);
 
   return mapDiagnostic({
-    computation: computations.get(diagnostic.id),
+    computation: {
+      generalScore: diagnostic.general_score,
+      reportDimensions: null,
+      responses: responseCounts.get(diagnostic.id) ?? getEmptyResponses(),
+    },
     diagnostic,
     organization,
-    template: model.templateRow,
   });
-}
+});
 
 export async function getDiagnosticShareLinksByDiagnosticIds(
   diagnosticIds: string[],
@@ -1046,42 +1463,24 @@ export async function getDiagnosticByResponseToken(
   });
 }
 
-export async function getDiagnosticReport(
+export const getDiagnosticReport = cache(async function getDiagnosticReport(
   diagnosticId: string,
   generatedAt = new Date().toISOString(),
 ): Promise<DiagnosticReport | undefined> {
-  const [{ diagnosticRows, organizationRows }, model] = await Promise.all([
-    loadAuthorizedDiagnostics(diagnosticId),
-    loadOmdxModel(),
-  ]);
+  const { diagnosticRows, organizationRows } =
+    await loadAuthorizedDiagnostics(diagnosticId);
   const diagnosticRow = diagnosticRows[0];
 
   if (!diagnosticRow) return undefined;
 
-  const organization = organizationRows.find(
-    (item) => item.id === diagnosticRow.organization_id,
-  );
-
-  if (!organization) return undefined;
-
-  const computations = await loadDiagnosticComputations([diagnosticRow], model);
-  const computation = computations.get(diagnosticRow.id);
-
-  if (!computation?.reportDimensions) return undefined;
-
-  const diagnostic = mapDiagnostic({
-    computation,
-    diagnostic: diagnosticRow,
-    organization,
-    template: model.templateRow,
-  });
-
-  return buildReportFromDimensions({
-    diagnostic,
+  const reports = await buildReportsFromRows({
+    diagnosticRows: [diagnosticRow],
     generatedAt,
-    reportDimensions: computation.reportDimensions,
+    organizationRows,
   });
-}
+
+  return reports[0];
+});
 
 export async function getDiagnosticActionPlan(
   diagnosticId: string,
@@ -1134,43 +1533,80 @@ export async function getDiagnosticActionPlan(
   });
 }
 
-export async function getLatestReportableDiagnostic(): Promise<
-  Diagnostic | undefined
-> {
-  return (await getDiagnostics())
-    .filter(canGenerateDiagnosticReport)
-    .sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-    )[0];
-}
+export const getLatestReportableDiagnostic = cache(
+  async function getLatestReportableDiagnostic(): Promise<
+    Diagnostic | undefined
+  > {
+    return (await getDiagnostics())
+      .filter(canGenerateDiagnosticReport)
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      )[0];
+  },
+);
 
-async function getReportsForFilter(filter: "todos" | string = "todos") {
-  const diagnostics =
-    filter === "todos"
-      ? (await getDiagnostics()).filter(canGenerateDiagnosticReport)
-      : [await getDiagnosticById(filter)].filter(
-          (diagnostic): diagnostic is Diagnostic =>
-            diagnostic !== undefined && canGenerateDiagnosticReport(diagnostic),
-        );
-  const reports = await Promise.all(
-    diagnostics.map((diagnostic) => getDiagnosticReport(diagnostic.id)),
+export async function getLatestActionPlanGanttWorkspace(
+  generatedAt = new Date().toISOString(),
+): Promise<GanttWorkspaceData> {
+  const reports = await getReportsForFilter("todos");
+  const latestReport = [...reports].sort(
+    (a, b) =>
+      new Date(b.diagnostic.updatedAt).getTime() -
+      new Date(a.diagnostic.updatedAt).getTime(),
+  )[0];
+
+  if (!latestReport) {
+    return {
+      source: null,
+      tasks: [],
+    };
+  }
+
+  const plan = await getDiagnosticActionPlan(
+    latestReport.diagnostic.id,
+    generatedAt,
   );
 
-  return reports.filter((report): report is DiagnosticReport => Boolean(report));
+  if (!plan) {
+    return {
+      source: null,
+      tasks: [],
+    };
+  }
+
+  return buildGanttWorkspaceDataFromActionPlan(plan, generatedAt.slice(0, 10));
 }
 
-export async function getDimensionInsightDiagnosticOptions(): Promise<
-  Diagnostic[]
-> {
-  return (await getDiagnostics()).filter(canGenerateDiagnosticReport);
-}
+const getReportsForFilter = cache(
+  async function getReportsForFilter(filter: "todos" | string = "todos") {
+    const { diagnosticRows, organizationRows } = await loadAuthorizedDiagnostics(
+      filter === "todos" ? undefined : filter,
+    );
 
-export async function getDimensionInsightSummary(
-  dimensionId: DimensionId,
-  filter: "todos" | string = "todos",
-): Promise<DimensionInsightSummary> {
-  const reports = await getReportsForFilter(filter);
+    return buildReportsFromRows({
+      diagnosticRows,
+      generatedAt: new Date().toISOString(),
+      organizationRows,
+    });
+  },
+);
+
+export const getDimensionInsightDiagnosticOptions = cache(
+  async function getDimensionInsightDiagnosticOptions(): Promise<Diagnostic[]> {
+    return (await getReportsForFilter("todos")).map((report) => report.diagnostic);
+  },
+);
+
+function buildDimensionInsightSummaryFromReports({
+  dimensionId,
+  filter,
+  reports,
+}: {
+  dimensionId: DimensionId;
+  filter: "todos" | string;
+  reports: DiagnosticReport[];
+}): DimensionInsightSummary {
   const trend = reports
     .map((report) => {
       const dimension = report.dimensions.find((item) => item.id === dimensionId);
@@ -1230,11 +1666,22 @@ export async function getDimensionInsightSummary(
   });
 }
 
-export async function getDimensionQuestionResults(
+export async function getDimensionInsightSummary(
   dimensionId: DimensionId,
   filter: "todos" | string = "todos",
-): Promise<DimensionQuestionResult[]> {
+): Promise<DimensionInsightSummary> {
   const reports = await getReportsForFilter(filter);
+
+  return buildDimensionInsightSummaryFromReports({ dimensionId, filter, reports });
+}
+
+function buildDimensionQuestionResultsFromReports({
+  dimensionId,
+  reports,
+}: {
+  dimensionId: DimensionId;
+  reports: DiagnosticReport[];
+}): DimensionQuestionResult[] {
   const questions = reports.flatMap((report) =>
     report.dimensions.flatMap((dimension) =>
       dimension.id === dimensionId ? dimension.questions : [],
@@ -1294,17 +1741,96 @@ export async function getDimensionQuestionResults(
     });
 }
 
-export async function getOmdxOverviewDiagnosticOptions(): Promise<Diagnostic[]> {
-  return (await getDiagnostics()).filter(canGenerateDiagnosticReport);
+export async function getDimensionQuestionResults(
+  dimensionId: DimensionId,
+  filter: "todos" | string = "todos",
+): Promise<DimensionQuestionResult[]> {
+  const reports = await getReportsForFilter(filter);
+
+  return buildDimensionQuestionResultsFromReports({ dimensionId, reports });
 }
 
-export async function getOmdxOverviewAnalytics(
-  selectedDiagnostic = "todos",
-): Promise<OverviewAnalytics> {
-  const reports = await getReportsForFilter(selectedDiagnostic);
+export const getDimensionInsightPageData = cache(
+  async function getDimensionInsightPageData(
+    dimensionId: DimensionId,
+    requestedDiagnostic = "todos",
+  ) {
+    const allReports = await getReportsForFilter("todos");
+    const diagnosticOptions = allReports.map((report) => report.diagnostic);
+    const selectedDiagnostic = diagnosticOptions.some(
+      (diagnostic) => diagnostic.id === requestedDiagnostic,
+    )
+      ? requestedDiagnostic
+      : "todos";
+    const reports =
+      selectedDiagnostic === "todos"
+        ? allReports
+        : allReports.filter((report) => report.diagnostic.id === selectedDiagnostic);
 
-  return buildOmdxOverviewAnalyticsFromReports(reports);
-}
+    return {
+      diagnosticOptions,
+      questionResults: buildDimensionQuestionResultsFromReports({
+        dimensionId,
+        reports,
+      }),
+      selectedDiagnostic,
+      summary: buildDimensionInsightSummaryFromReports({
+        dimensionId,
+        filter: selectedDiagnostic,
+        reports,
+      }),
+    };
+  },
+);
+
+export const getOmdxOverviewDiagnosticOptions = cache(
+  async function getOmdxOverviewDiagnosticOptions(): Promise<Diagnostic[]> {
+    return (await getReportsForFilter("todos")).map((report) => report.diagnostic);
+  },
+);
+
+export const getOmdxOverviewAnalytics = cache(
+  async function getOmdxOverviewAnalytics(
+    selectedDiagnostic = "todos",
+  ): Promise<OverviewAnalytics> {
+    const reports = await getReportsForFilter(selectedDiagnostic);
+
+    return buildOmdxOverviewAnalyticsFromReports(reports);
+  },
+);
+
+export const getOmdxOverviewPageData = cache(
+  async function getOmdxOverviewPageData(requestedDiagnostic = "todos") {
+    const allReports = await getReportsForFilter("todos");
+    const diagnosticOptions = allReports.map((report) => report.diagnostic);
+    const selectedDiagnostic = diagnosticOptions.some(
+      (diagnostic) => diagnostic.id === requestedDiagnostic,
+    )
+      ? requestedDiagnostic
+      : "todos";
+    const reports =
+      selectedDiagnostic === "todos"
+        ? allReports
+        : allReports.filter((report) => report.diagnostic.id === selectedDiagnostic);
+    const analytics = buildOmdxOverviewAnalyticsFromReports(reports);
+    const reportDiagnostic =
+      selectedDiagnostic === "todos"
+        ? [...diagnosticOptions].sort(
+            (a, b) =>
+              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+          )[0]
+        : diagnosticOptions.find(
+            (diagnostic) => diagnostic.id === selectedDiagnostic,
+          );
+
+    return {
+      analytics,
+      diagnosticOptions,
+      reportDiagnostic,
+      selectedDiagnostic,
+    };
+  },
+);
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
   const diagnostics = await getDiagnostics();

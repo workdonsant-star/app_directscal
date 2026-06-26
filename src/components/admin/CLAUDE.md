@@ -14,7 +14,7 @@ Componentes específicos da visão de superadministrador da Directscal. Eles adm
 - A interface pública de campanha segue o padrão visual das telas de autenticação: logo no topo, formulário em coluna estreita e vídeo `liquid_background.mp4` no painel lateral desktop.
 - Campanhas, leads, empresas e aquisição pública ficam disponíveis quando `FEATURE_ACQUISITION=true`; com o flag desligado, as rotas permanecem bloqueadas.
 - Use os mesmos primitives do app autenticado: `Table`, `Card`, `Button`, `Sheet`, `Select`, `Badge` e `KpiCard` compartilhado.
-- Mantenha continuidade visual com OMDx: tabelas principais de módulos, campanhas, leads e empresas ficam livres no fluxo da página, não dentro de `Card`. Use título/descrição/ações acima da tabela e apenas o wrapper `overflow-hidden rounded-lg border` na própria listagem.
+- Mantenha continuidade visual com Maturidade: tabelas principais de módulos, campanhas, leads e empresas ficam livres no fluxo da página, não dentro de `Card`. Use título/descrição/ações acima da tabela e apenas o wrapper `overflow-hidden rounded-lg border` na própria listagem.
 - Use `Card` no admin apenas para KPIs, drawers/modais ou blocos que sejam ferramentas enquadradas, nunca como envelope da tabela operacional principal.
 - Campos base de lead (`nome`, `email`, `empresa`) não devem ser removidos, porque sustentam as listagens de leads e empresas.
 - Leads usam página própria de detalhe em `/admin/leads/[id]`; não abrir detalhes em drawer ou modal lateral.

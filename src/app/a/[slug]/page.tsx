@@ -23,7 +23,7 @@ function getAcquisitionAuthErrorMessage(error?: string | string[]) {
   }
 
   if (errorCode === "conta-google") {
-    return "Esta conta Google já está vinculada a outro usuário no OMDx.";
+    return "Esta conta Google já está vinculada a outro usuário no módulo Maturidade.";
   }
 
   return null;

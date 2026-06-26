@@ -104,7 +104,7 @@ function getCsvLines(csv: string) {
   return csv.replace(/^\uFEFF/, "").trimEnd().split("\r\n");
 }
 
-describe("OMDx report CSV", () => {
+describe("Maturidade report CSV", () => {
   it("builds a stable CSV with summary, dimension and question rows", () => {
     const csv = buildDiagnosticReportCsv(report);
     const lines = getCsvLines(csv);

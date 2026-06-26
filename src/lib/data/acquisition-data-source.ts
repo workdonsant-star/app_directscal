@@ -2,6 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { z } from "zod";
 
 import {
+  adminModuleAccessInputSchema,
   acquisitionCampaignSchema,
   acquisitionSubmissionInputSchema,
   authUserSchema,
@@ -16,6 +17,7 @@ import {
   buildAdminDataSnapshot,
   sortAcquisitionFields,
   type AdminDataSnapshot,
+  type OrganizationModuleAccessRecord,
 } from "@/lib/data/admin-data-source";
 import {
   hashPasswordCredential,
@@ -31,8 +33,17 @@ type CampaignFieldRow =
 type LeadRow = Database["public"]["Tables"]["acquisition_leads"]["Row"];
 type OrganizationRow = Pick<
   Database["public"]["Tables"]["organizations"]["Row"],
-  "id" | "name"
+  | "created_at"
+  | "domain"
+  | "employee_count"
+  | "id"
+  | "name"
+  | "operational_onboarding_completed_at"
+  | "operational_onboarding_required"
+  | "updated_at"
 >;
+type OrganizationModuleAccessRow =
+  Database["public"]["Tables"]["organization_module_access"]["Row"];
 type NextAuthUserRow = Pick<
   Database["next_auth"]["Tables"]["users"]["Row"],
   "email" | "id" | "image" | "name"
@@ -77,6 +88,13 @@ function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
 
+function getEmailDomain(email: string) {
+  const normalizedEmail = normalizeEmail(email);
+  const match = normalizedEmail.match(/^[^\s@]+@([^\s@]+\.[^\s@]+)$/);
+
+  return match?.[1]?.trim().toLowerCase() ?? null;
+}
+
 function getFallbackName(email: string) {
   const [localPart] = email.split("@");
 
@@ -97,6 +115,26 @@ function createIntentToken() {
 
 function assertNoSupabaseError(error: { message: string } | null) {
   if (error) throw new Error(error.message);
+}
+
+function isMissingModuleAccessTableError(error: { message: string } | null) {
+  return (
+    Boolean(error) &&
+    /organization_module_access|schema cache|could not find the table/i.test(
+      error?.message ?? "",
+    )
+  );
+}
+
+function isMissingOperationalOnboardingSchemaError(
+  error: { message: string } | null,
+) {
+  return (
+    Boolean(error) &&
+    /operational_onboarding|schema cache|could not find|column .*operational_/i.test(
+      error?.message ?? "",
+    )
+  );
 }
 
 function jsonToStringArray(value: Json | null): string[] | null {
@@ -211,6 +249,21 @@ export async function getAdminAcquisitionSnapshot(): Promise<AdminDataSnapshot> 
   const campaigns = await listCampaigns(supabase);
   const campaignsById = new Map(campaigns.map((campaign) => [campaign.id, campaign]));
 
+  const { data: organizationRows, error: organizationsError } = await supabase
+    .from("organizations")
+    .select("id,name,employee_count,created_at,updated_at")
+    .order("name", { ascending: true });
+
+  assertNoSupabaseError(organizationsError);
+
+  const { data: accessRows, error: accessError } = await supabase
+    .from("organization_module_access")
+    .select("organization_id,module_id,enabled,updated_at");
+
+  if (accessError && !isMissingModuleAccessTableError(accessError)) {
+    assertNoSupabaseError(accessError);
+  }
+
   const { data: leadRows, error: leadsError } = await supabase
     .from("acquisition_leads")
     .select("*")
@@ -222,7 +275,76 @@ export async function getAdminAcquisitionSnapshot(): Promise<AdminDataSnapshot> 
     toLead(lead, campaignsById.get(lead.campaign_id)),
   );
 
-  return buildAdminDataSnapshot({ campaigns, leads });
+  const accessRecords: OrganizationModuleAccessRecord[] = (
+    (accessRows ?? []) as OrganizationModuleAccessRow[]
+  ).map((row) => ({
+    organizationId: row.organization_id,
+    moduleId: row.module_id,
+    enabled: row.enabled,
+    updatedAt: row.updated_at,
+  }));
+
+  return buildAdminDataSnapshot({
+    accessRecords,
+    campaigns,
+    leads,
+    organizations: ((organizationRows ?? []) as OrganizationRow[]).map(
+      (organization) => ({
+        id: organization.id,
+        name: organization.name,
+        employeeCount: organization.employee_count,
+        createdAt: organization.created_at,
+        updatedAt: organization.updated_at,
+      }),
+    ),
+  });
+}
+
+export async function saveOrganizationModuleAccess(input: unknown) {
+  const parsed = adminModuleAccessInputSchema.parse(input);
+  const supabase = createSupabaseAdminClient();
+
+  const { data: organization, error: organizationError } = await supabase
+    .from("organizations")
+    .select("id")
+    .eq("id", parsed.organizationId)
+    .maybeSingle();
+
+  assertNoSupabaseError(organizationError);
+
+  if (!organization) {
+    throw new Error("Cliente não encontrado.");
+  }
+
+  const { data, error } = await supabase
+    .from("organization_module_access")
+    .upsert(
+      {
+        enabled: parsed.enabled,
+        module_id: parsed.moduleId,
+        organization_id: parsed.organizationId,
+      },
+      { onConflict: "organization_id,module_id" },
+    )
+    .select("organization_id,module_id,enabled,updated_at")
+    .single<OrganizationModuleAccessRow>();
+
+  if (isMissingModuleAccessTableError(error)) {
+    throw new Error("A migration de acesso a módulos ainda não foi aplicada.");
+  }
+
+  assertNoSupabaseError(error);
+
+  if (!data) {
+    throw new Error("Não foi possível atualizar o acesso.");
+  }
+
+  return {
+    organizationId: data.organization_id,
+    moduleId: data.module_id,
+    enabled: data.enabled,
+    updatedAt: data.updated_at,
+  } satisfies OrganizationModuleAccessRecord;
 }
 
 export async function getAcquisitionCampaignBySlug(slug: string) {
@@ -379,14 +501,34 @@ function employeeCountFromCompanySize(companySize: string | null) {
 }
 
 async function findOrCreateOrganization({
+  adminEmail,
   companyName,
   companySize,
   supabase,
 }: {
+  adminEmail: string;
   companyName: string;
   companySize: string | null;
   supabase: Supabase;
 }) {
+  const authorizedDomain = getEmailDomain(adminEmail);
+
+  if (authorizedDomain) {
+    const { data: existingByDomain, error: domainSelectError } = await supabase
+      .from("organizations")
+      .select("id,name")
+      .eq("domain", authorizedDomain)
+      .limit(1);
+
+    assertNoSupabaseError(domainSelectError);
+
+    const existingOrganization = existingByDomain?.[0] as
+      | OrganizationRow
+      | undefined;
+
+    if (existingOrganization) return existingOrganization.id;
+  }
+
   const { data: existingOrganizations, error: organizationSelectError } =
     await supabase
       .from("organizations")
@@ -405,11 +547,33 @@ async function findOrCreateOrganization({
   const { data: organization, error: organizationError } = await supabase
     .from("organizations")
     .insert({
+      domain: authorizedDomain,
       employee_count: employeeCountFromCompanySize(companySize),
       name: companyName,
+      operational_onboarding_required: true,
     })
     .select("id")
     .single();
+
+  if (isMissingOperationalOnboardingSchemaError(organizationError)) {
+    const { data: fallbackOrganization, error: fallbackError } = await supabase
+      .from("organizations")
+      .insert({
+        domain: authorizedDomain,
+        employee_count: employeeCountFromCompanySize(companySize),
+        name: companyName,
+      })
+      .select("id")
+      .single();
+
+    assertNoSupabaseError(fallbackError);
+
+    if (!fallbackOrganization) {
+      throw new Error("Não foi possível criar a empresa.");
+    }
+
+    return fallbackOrganization.id;
+  }
 
   assertNoSupabaseError(organizationError);
 
@@ -717,6 +881,7 @@ export async function registerAcquisitionPasswordUser(
     supabase,
   });
   const organizationId = await findOrCreateOrganization({
+    adminEmail: leadData.email,
     companyName: leadData.companyName,
     companySize: leadData.companySize,
     supabase,
@@ -968,6 +1133,7 @@ export async function completeAcquisitionGoogleLead({
   };
   const leadData = validateCampaignValues(campaign, completeValues);
   const organizationId = await findOrCreateOrganization({
+    adminEmail: normalizedEmail,
     companyName: leadData.companyName,
     companySize: leadData.companySize,
     supabase,

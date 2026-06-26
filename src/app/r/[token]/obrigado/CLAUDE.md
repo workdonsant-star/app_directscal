@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Página pública exibida depois que uma resposta anônima do OMDx é registrada ou quando o navegador já possui a trava de resposta para o link.
+Página pública exibida depois que uma resposta anônima de Maturidade é registrada ou quando o navegador já possui a trava de resposta para o link.
 
 ## Convenções locais
 
