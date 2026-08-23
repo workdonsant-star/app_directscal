@@ -34,8 +34,14 @@ Maturidade avalia maturidade operacional em **6 dimensões** (Cultura, Visão, C
 | `LayerInsightComparison` | `layer-insight-comparison.tsx` | Disponível para telas futuras | Comparação entre fundador, liderança e operação. Não é exibido no dashboard atual de Insights. |
 | `DimensionQuestionResultsTable` | `dimension-question-results-table.tsx` | Insights | Tabela por pergunta da dimensão, respeitando o filtro de diagnóstico e exibindo pergunta, pontuação, status, gap e respostas. |
 | `OverviewExecutiveCards` | `overview-executive-cards.tsx` | `/omdx` e `/insights/[dimensao]` | Indicadores executivos em gauges dentro de `Card`, com número e detalhes técnicos no tooltip do ícone de informação. A classificação orienta a cor do gauge, mas não aparece como chip. No Overview recebe maturidade, criticidade, desalinhamento e consenso; em Insights recebe métricas compactas da dimensão. |
-| `OverviewDiagnosticFilter` | `overview-diagnostic-filter.tsx` | `/omdx` | Wrapper client do filtro de diagnósticos na topbar do Overview, reutilizando `DimensionDiagnosticFilter`. |
+| `OverviewDiagnosticFilter` | `overview-diagnostic-filter.tsx` | `/omdx` e `/omdx/camadas` | Wrapper client do filtro de diagnósticos na topbar, reutilizando `DimensionDiagnosticFilter`. |
 | `OverviewDimensionResultsTable` | `overview-dimension-results-table.tsx` | `/omdx` | Tabela compacta de leitura executiva por dimensão, exibindo dimensão, pontuação consolidada, status e gap entre camadas. |
+| `LayerScoreDashboard` | `layer-score-dashboard.tsx` | `/omdx/camadas` | Grade Figma com três charts no topo e duas matrizes abaixo; carrega os gráficos ECharts apenas no cliente. |
+| `LayerScoreBarChart` | `layer-score-bar-chart.tsx` | `/omdx/camadas` | Barras verticais ECharts para comparar Fundador, Liderança e Time em escala fixa de 0 a 5. |
+| `DimensionScoreBarChart` | `dimension-score-bar-chart.tsx` | `/omdx/camadas` | Barras verticais ECharts com a pontuação consolidada das seis dimensões em escala fixa de 0 a 5. |
+| `LayerDimensionStackedChart` | `layer-dimension-stacked-chart.tsx` | `/omdx/camadas` | Barras empilhadas por dimensão usando as três cores e a geometria do terceiro chart do Figma. |
+| `VulnerabilityQuestionMatrix` | `vulnerability-question-matrix.tsx` | `/omdx/camadas` | Matriz dimensão × pergunta com classificação e detalhe acessível do score. |
+| `LeverageMatrix` | `leverage-matrix.tsx` | `/omdx/camadas` | Matriz das quatro dimensões mais críticas por maturidade, alinhamento, consenso e prioridade. |
 | `LayerStackedScoreChart` | `layer-stacked-score-chart.tsx` | `/omdx` | Barras verticais empilhadas por dimensão, com Fundador, Liderança e Operação, labels internos e total acumulado no topo. |
 | `OverviewCharts` | `overview-charts.tsx` | `/omdx` | Wrapper client mínimo que carrega os charts ECharts do Overview por dynamic import, preservando o shell inicial leve. |
 | `OrganizationalAlignmentChart` | `organizational-alignment-chart.tsx` | Disponível para telas futuras | Scatter ECharts de maturidade e criticidade por dimensão. Não é exibido no overview atual. |

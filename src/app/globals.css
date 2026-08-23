@@ -30,6 +30,18 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
+  /* Gray primitive scale — the app's surface and depth system */
+  --color-gray-10: var(--gray-10);
+  --color-gray-20: var(--gray-20);
+  --color-gray-30: var(--gray-30);
+  --color-gray-40: var(--gray-40);
+  --color-gray-50: var(--gray-50);
+  --color-gray-60: var(--gray-60);
+  --color-gray-70: var(--gray-70);
+  --color-gray-80: var(--gray-80);
+  --color-gray-90: var(--gray-90);
+  --color-gray-100: var(--gray-100);
+
   /* Chart palette */
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -108,8 +120,10 @@
   --color-brand-500: #185EFF;
   --color-brand-600: #1450DB;
   --color-brand-700: #0F3FAE;
-  --color-auth-gradient-purple: var(--auth-gradient-purple);
-  --color-auth-gradient-lime: var(--auth-gradient-lime);
+  --color-auth-gradient-white: var(--auth-gradient-white);
+  --color-auth-gradient-matcha: var(--auth-gradient-matcha);
+  --color-auth-gradient-violet: var(--auth-gradient-violet);
+  --color-auth-gradient-lapis: var(--auth-gradient-lapis);
 
   /* Type */
   --font-sans: var(--font-inter);
@@ -132,39 +146,53 @@
 :root {
   --radius: 0.625rem; /* 10px — matches Directscal --radius-lg (cards) */
 
+  /* Gray scale — shared primitives used by light and dark surfaces */
+  --gray-10: #F4F4F4;
+  --gray-20: #E0E0E0;
+  --gray-30: #C6C6C6;
+  --gray-40: #A8A8A8;
+  --gray-50: #8D8D8D;
+  --gray-60: #6F6F6F;
+  --gray-70: #525252;
+  --gray-80: #393939;
+  --gray-90: #262626;
+  --gray-100: #161616;
+
   /* Surfaces */
   --background: #FFFFFF;
-  --foreground: #111114;       /* neutral-900 */
+  --foreground: var(--gray-100);
   --card: #FFFFFF;
-  --card-foreground: #111114;
+  --card-foreground: var(--gray-100);
   --popover: #FFFFFF;
-  --popover-foreground: #111114;
+  --popover-foreground: var(--gray-100);
 
   /* Primary = brand blue */
   --primary: #185EFF;          /* brand-500 */
   --primary-foreground: #FFFFFF;
 
   /* Secondary = subtle neutral surface */
-  --secondary: #F5F5F6;        /* neutral-050 */
-  --secondary-foreground: #111114;
+  --secondary: var(--gray-10);
+  --secondary-foreground: var(--gray-100);
 
   /* Muted = even more subtle */
-  --muted: #FAFAFA;            /* neutral-025 */
-  --muted-foreground: #4A4A52; /* neutral-600 */
+  --muted: var(--gray-10);
+  --muted-foreground: var(--gray-60);
 
   /* Accent surface (hover, focus rest) */
-  --accent: #F5F5F6;           /* neutral-050 */
-  --accent-foreground: #111114;
+  --accent: var(--gray-10);
+  --accent-foreground: var(--gray-100);
 
   /* Destructive */
   --destructive: #B42318;      /* danger-500 */
 
   /* Borders */
-  --border: #E2E2E5;           /* neutral-200 */
-  --input: #E2E2E5;
+  --border: var(--gray-20);
+  --input: var(--gray-20);
   --ring: #185EFF;             /* focus ring = brand */
-  --auth-gradient-purple: #7E1AFF;
-  --auth-gradient-lime: #ADE517;
+  --auth-gradient-white: #FFFFFF;
+  --auth-gradient-matcha: #ADE316;
+  --auth-gradient-violet: #7D1AFF;
+  --auth-gradient-lapis: #1A48EF;
   --auth-quote-card: #050505;
   --auth-quote-foreground: #F7F7F8;
   --auth-quote-muted: #D5D5DB;
@@ -177,6 +205,11 @@
   --chart-5: #726E6E;
   --chart-positive: #117A4D;
   --chart-negative: #B42318;
+  --omdx-chart-lime: #A8E017;
+  --omdx-chart-lime-deep: #6E9C11;
+  --omdx-chart-lime-soft: #D0F768;
+  --omdx-chart-purple: #7E21FF;
+  --omdx-chart-purple-soft: #C6A1F4;
   --omdx-layer-diretoria-30: #A6C8FF;
   --omdx-layer-diretoria-40: #78A9FF;
   --omdx-layer-diretoria-50: #4589FF;
@@ -235,51 +268,65 @@
   --omdx-score-text-on-dark: #FFFFFF;
 
   /* Sidebar — light gray to separate from main canvas */
-  --sidebar: #f7f7f7;
-  --sidebar-foreground: #111114;
+  --sidebar: var(--gray-10);
+  --sidebar-foreground: var(--gray-100);
   --sidebar-primary: #185EFF;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #EEEEF0;   /* neutral-100 */
-  --sidebar-accent-foreground: #111114;
-  --sidebar-border: #E2E2E5;
+  --sidebar-accent: var(--gray-20);
+  --sidebar-accent-foreground: var(--gray-100);
+  --sidebar-border: var(--gray-20);
   --sidebar-ring: #185EFF;
 }
 
 /* ===== DARK THEME ===== */
 .dark {
-  /* Surfaces */
-  --background: #0b0b0b;       /* neutral-950 */
-  --foreground: #FAFAFA;       /* neutral-025 */
-  --card: #181818;             /* neutral-900 */
-  --card-foreground: #FAFAFA;
-  --popover: #111114;
-  --popover-foreground: #FAFAFA;
+  /* Keep the primitive scale explicit in both themes for predictable token use */
+  --gray-10: #F4F4F4;
+  --gray-20: #E0E0E0;
+  --gray-30: #C6C6C6;
+  --gray-40: #A8A8A8;
+  --gray-50: #8D8D8D;
+  --gray-60: #6F6F6F;
+  --gray-70: #525252;
+  --gray-80: #393939;
+  --gray-90: #262626;
+  --gray-100: #161616;
+
+  /* Surfaces follow the reference depth sequence: 100 → 90 → 80 → 70 */
+  --background: var(--gray-100);
+  --foreground: var(--gray-10);
+  --card: var(--gray-90);
+  --card-foreground: var(--gray-10);
+  --popover: var(--gray-80);
+  --popover-foreground: var(--gray-10);
 
   /* Primary stays brand */
   --primary: #185EFF;
   --primary-foreground: #FFFFFF;
 
   /* Secondary surface */
-  --secondary: #1C1C20;        /* neutral-800 */
-  --secondary-foreground: #FAFAFA;
+  --secondary: var(--gray-90);
+  --secondary-foreground: var(--gray-10);
 
   /* Muted surface */
-  --muted: #1C1C20;
-  --muted-foreground: #9C9CA3; /* neutral-400 */
+  --muted: var(--gray-90);
+  --muted-foreground: var(--gray-40);
 
   /* Accent */
-  --accent: #1C1C20;
-  --accent-foreground: #FAFAFA;
+  --accent: var(--gray-80);
+  --accent-foreground: var(--gray-10);
 
   /* Destructive (slightly desaturated for dark) */
   --destructive: #E5564C;
 
-  /* Borders */
-  --border: #2a2a2a;           /* neutral-800 */
-  --input: #1C1C20;
+  /* Borders and controls use the next visible layer, not pure black */
+  --border: var(--gray-80);
+  --input: var(--gray-80);
   --ring: #185EFF;
-  --auth-gradient-purple: #7E1AFF;
-  --auth-gradient-lime: #ADE517;
+  --auth-gradient-white: #FFFFFF;
+  --auth-gradient-matcha: #ADE316;
+  --auth-gradient-violet: #7D1AFF;
+  --auth-gradient-lapis: #1A48EF;
   --auth-quote-card: #050505;
   --auth-quote-foreground: #F7F7F8;
   --auth-quote-muted: #D5D5DB;
@@ -350,14 +397,13 @@
   --omdx-score-text-on-dark: #FFFFFF;
 
   /* Sidebar follows the main app canvas in dark mode */
-  --sidebar: #0b0b0b;
-;
-  --sidebar-foreground: #FAFAFA;
+  --sidebar: var(--gray-100);
+  --sidebar-foreground: var(--gray-10);
   --sidebar-primary: #185EFF;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #1C1C20;
-  --sidebar-accent-foreground: #FAFAFA;
-  --sidebar-border: #1C1C20;
+  --sidebar-accent: var(--gray-80);
+  --sidebar-accent-foreground: var(--gray-10);
+  --sidebar-border: var(--gray-90);
   --sidebar-ring: #185EFF;
 }
 
@@ -432,18 +478,10 @@
 
 @layer components {
   .auth-gradient-stage {
-    --feature-progress: 0;
-    --feature-width: 1300;
-    --feature-height: 586;
-    --feature-radius: 7;
-    --feature-pad-x: 100;
-    --feature-cta-opacity: 1;
-    --feature-cta-y: 0px;
-    --feature-shadow-alpha: 0;
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    background: var(--foreground);
+    background: var(--auth-gradient-white);
   }
 
   .auth-gradient-card {
@@ -453,51 +491,33 @@
     height: 100%;
     min-height: 0;
     overflow: hidden;
-    background:
-      radial-gradient(ellipse at 9% 39%, color-mix(in srgb, var(--auth-gradient-lime) 78%, transparent) 0, color-mix(in srgb, var(--auth-gradient-lime) 48%, transparent) 13%, transparent 36%),
-      radial-gradient(ellipse at 91% 55%, color-mix(in srgb, var(--auth-gradient-lime) 92%, transparent) 0, color-mix(in srgb, var(--auth-gradient-lime) 68%, transparent) 12%, transparent 32%),
-      linear-gradient(160deg, var(--auth-gradient-purple) 0%, color-mix(in srgb, var(--auth-gradient-purple) 88%, var(--auth-gradient-lime) 12%) 52%, var(--auth-gradient-purple) 100%);
+    background: var(--auth-gradient-white);
   }
 
-  .auth-gradient-card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    background:
-      radial-gradient(ellipse at 24% 78%, color-mix(in srgb, var(--auth-gradient-lime) 40%, transparent), transparent 42%),
-      linear-gradient(118deg, rgba(5, 7, 18, 0.08) 0%, rgba(5, 7, 18, 0.02) 52%, rgba(5, 7, 18, 0.12) 100%);
-    pointer-events: none;
-  }
-
-  .auth-gradient-canvas {
-    --gradient-color-1: var(--auth-gradient-purple);
-    --gradient-color-2: var(--auth-gradient-lime);
-    --gradient-color-3: var(--auth-gradient-purple);
-    --gradient-color-4: var(--auth-gradient-lime);
+  .auth-gradient-mesh {
     position: absolute;
     inset: 0;
     z-index: 0;
     display: block;
     width: 100%;
     height: 100%;
+    background-color: var(--auth-gradient-white);
+    background-image:
+      radial-gradient(circle at 67.04% 45.93%, rgb(from var(--auth-gradient-white) r g b / 1) 0%, rgb(from var(--auth-gradient-white) r g b / 0.844) 19.02%, rgb(from var(--auth-gradient-white) r g b / 0.5) 38.05%, rgb(from var(--auth-gradient-white) r g b / 0.156) 57.07%, rgb(from var(--auth-gradient-white) r g b / 0) 76.1%),
+      radial-gradient(circle at 35.47% 65.92%, rgb(from var(--auth-gradient-matcha) r g b / 1) 0%, rgb(from var(--auth-gradient-matcha) r g b / 0.844) 16.75%, rgb(from var(--auth-gradient-matcha) r g b / 0.5) 33.5%, rgb(from var(--auth-gradient-matcha) r g b / 0.156) 50.25%, rgb(from var(--auth-gradient-matcha) r g b / 0) 67%),
+      radial-gradient(circle at 48.33% 20.11%, rgb(from var(--auth-gradient-violet) r g b / 1) 0%, rgb(from var(--auth-gradient-violet) r g b / 0.844) 10.28%, rgb(from var(--auth-gradient-violet) r g b / 0.5) 20.55%, rgb(from var(--auth-gradient-violet) r g b / 0.156) 30.83%, rgb(from var(--auth-gradient-violet) r g b / 0) 41.1%),
+      radial-gradient(circle at 80.81% 88.03%, rgb(from var(--auth-gradient-lapis) r g b / 1) 0%, rgb(from var(--auth-gradient-lapis) r g b / 0.844) 13.51%, rgb(from var(--auth-gradient-lapis) r g b / 0.5) 27.03%, rgb(from var(--auth-gradient-lapis) r g b / 0.156) 40.54%, rgb(from var(--auth-gradient-lapis) r g b / 0) 54.05%);
     pointer-events: none;
   }
 
-  .auth-gradient-vignette {
+  .auth-gradient-mesh::after {
+    content: "";
     position: absolute;
     inset: 0;
-    z-index: 3;
-    background:
-      linear-gradient(90deg, rgba(5, 7, 18, 0.02), transparent 34%),
-      linear-gradient(180deg, transparent, rgba(5, 7, 18, 0.1));
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.500'/></svg>");
+    background-size: 120px 120px;
+    mix-blend-mode: overlay;
     pointer-events: none;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .auth-gradient-canvas {
-      display: none;
-    }
   }
 
   .sop-editor h2 {

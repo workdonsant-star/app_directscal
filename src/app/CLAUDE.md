@@ -20,6 +20,7 @@ src/app/
 │   ├── admin/                ← visão de superadmin
 │   └── omdx/
 │       ├── page.tsx          ← Overview executivo do módulo Maturidade
+│       ├── camadas/          ← dashboard de pontuação por camada
 │       ├── diagnosticos/     ← área operacional (lista + drawer)
 │       └── [id]/
 │           ├── compartilhar/page.tsx ← central de coleta com links Supabase
@@ -39,12 +40,6 @@ src/app/
 │       └── page.tsx          ← Cronograma operacional em formato Gantt
 │   └── perfil/
 │       └── page.tsx          ← perfil iniciado pela sessão, com edição local
-│   └── pessoas/
-│       ├── page.tsx          ← Overview executivo de Pessoas
-│       ├── diretorio/page.tsx ← diretório operacional e financeiro
-│       ├── [id]/page.tsx     ← perfil individual da pessoa
-│       ├── fechamento/page.tsx ← fechamento mensal simples
-│       └── configuracoes/page.tsx ← parâmetros mínimos do MVP
 │   └── ativos-de-gestao/
 │       ├── page.tsx          ← rota legada inativa; redirect para /omdx
 │       └── sops/page.tsx     ← rota legada inativa; redirect para /omdx
@@ -104,6 +99,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/criar-conta` | `(auth)/criar-conta/` | Cadastro mockado que cria uma sessão local apenas no fallback de desenvolvimento. |
 | `/recuperar-senha` | `(auth)/recuperar-senha/` | Recuperação mockada de senha. |
 | `/omdx` | `(app)/omdx/` | Overview executivo do módulo; não deve conter a lista operacional completa. |
+| `/omdx/camadas` | `(app)/omdx/camadas/` | Dashboard autenticado que compara Fundador, Liderança e Time em escala de 1 a 5. |
 | `/omdx/diagnosticos` | `(app)/omdx/diagnosticos/` | Área operacional acessada pela sidebar, com lista, filtros, criação e configuração em drawer lateral. |
 | `/gantt` | `(app)/gantt/` | Cronograma operacional em formato Gantt, exposto dentro do módulo Maturidade na sidebar. |
 | `/omdx/[id]/compartilhar` | `(app)/omdx/[id]/compartilhar/` | Central de coleta persistida com links por grupo, copy sugerida e resumo compacto. |
@@ -121,13 +117,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/insights/[dimensao]` | `(app)/insights/[dimensao]/` | Dashboard agregado por dimensão, com filtro por diagnóstico. |
 | `/docs` | `(app)/docs/` | Documentação prática em página única para uso do módulo pelo cliente administrador. |
 | `/perfil` | `(app)/perfil/` | Perfil iniciado pela sessão autenticada: e-mail e empresa bloqueados, edição local de nome, senha simulada e dados básicos da empresa. |
-| `/pessoas` | `(app)/pessoas/` | Overview executivo do módulo Pessoas, com custo, pendências e alertas. |
-| `/pessoas/diretorio` | `(app)/pessoas/diretorio/` | Diretório operacional e financeiro de pessoas, com ação para copiar o link público de cadastro. |
-| `/pessoas/[id]` | `(app)/pessoas/[id]/` | Perfil individual como fonte primária de vínculo, remuneração, documentos e pagamentos. |
-| `/pessoas/fechamento` | `(app)/pessoas/fechamento/` | Fechamento mensal simples com linhas de pagamento, pendências e valores aprováveis. |
-| `/pessoas/pagamentos` | `(app)/pessoas/pagamentos/` | Redirect para `/pessoas/fechamento` no MVP. |
-| `/pessoas/configuracoes` | `(app)/pessoas/configuracoes/` | Parâmetros mínimos de vínculos, centros de custo, documentos e status de pagamento. |
-| `/omdx/membros-da-operacao` | `(app)/omdx/membros-da-operacao/` | Redirect legado para `/pessoas/diretorio`. |
+| `/omdx/membros-da-operacao` | `(app)/omdx/membros-da-operacao/` | Redirect legado para `/omdx/diagnosticos`. |
 | `/ativos-de-gestao` | `(app)/ativos-de-gestao/` | Rota legada inativa; redireciona para `/omdx`. |
 | `/ativos-de-gestao/sops` | `(app)/ativos-de-gestao/sops/` | Rota legada inativa; redireciona para `/omdx`. |
 | `/sops` | `(app)/sops/` | Redirect legado para `/omdx`. |
@@ -147,7 +137,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - O shell autenticado usa o bloco shadcn `sidebar-07` como base visual, adaptado para Directscal.
 - O route group `(app)` valida o cookie de sessão no layout antes de renderizar sidebar/topbar.
 - As rotas de autenticação em `(auth)` ficam fora do shell e redirecionam usuários autenticados conforme role.
-- A sidebar colapsa para ícones e agrupa funcionalidades por módulo. `Maturidade` contém Overview, Diagnósticos, Cronograma e Insights; `Pessoas` contém Overview, Diretório, Fechamento e Configurações. O link público de cadastro de pessoas é uma ação dentro do Diretório. `Ativos de gestão` foi removido da navegação e do catálogo de módulos.
+- A sidebar colapsa para ícones e mantém a navegação principal do cliente plana. `Maturidade`, `Camadas`, `Diagnósticos`, `Cronograma` e Insights aparecem no mesmo nível. `Pessoas` e `Ativos de gestão` foram removidos da navegação e do catálogo de módulos.
 - `Cronograma` aparece dentro de `Maturidade` e aponta para `/gantt`; a rota usa o plano de ação mais recente quando houver diagnóstico consolidável.
 - A sidebar tem uma seção `Insights` com as seis dimensões de Maturidade.
 - Quando o pathname começa com `/admin`, a sidebar muda para `Administração`, com `Módulos`, `Campanhas`, `Leads` e `Empresas`.
@@ -155,6 +145,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - A topbar é limpa: trigger da sidebar, separador e breadcrumb quando houver camada.
 - `/omdx` é a raiz do módulo e não usa breadcrumb na topbar.
 - Páginas abaixo de `/omdx` usam breadcrumb para mostrar a camada atual.
+- `/omdx/camadas` usa `Maturidade / Camadas`.
 - `/omdx/diagnosticos` usa `Overview / Diagnósticos`.
 - `/omdx/[id]/compartilhar` usa `Overview / Diagnósticos / Compartilhar`.
 - `/omdx/[id]/action-points` não renderiza página nem breadcrumb; retorna PDF como attachment.
@@ -169,7 +160,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - `/gantt` usa `Cronograma`.
 - `/perfil` usa `Perfil`.
 - `/ativos-de-gestao`, `/ativos-de-gestao/sops` e `/sops` redirecionam para `/omdx` e não renderizam breadcrumb.
-- `/omdx/membros-da-operacao` redireciona para `/pessoas/diretorio` e não renderiza breadcrumb.
+- `/omdx/membros-da-operacao` redireciona para `/omdx/diagnosticos` e não renderiza breadcrumb.
 - `/admin/modulos` usa `Admin / Módulos`.
 - `/admin/campanhas` usa `Admin / Campanhas`.
 - `/admin/leads` usa `Admin / Leads`.

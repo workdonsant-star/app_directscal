@@ -7,7 +7,7 @@ import {
   type RespondentGroup,
   type RespondentGroupMeta,
 } from "@/lib/contracts";
-import { hasFounderAnalysisBase } from "@/lib/data/omdx-production-rules";
+import { hasAnalysisBase } from "@/lib/data/omdx-production-rules";
 
 export const omdxTemplateSlug = "omdx-v1";
 
@@ -56,7 +56,7 @@ export function isDimensionId(value: string): value is DimensionId {
 export function canGenerateDiagnosticReport(diagnostic: Diagnostic): boolean {
   return (
     diagnostic.generalScore !== null &&
-    hasFounderAnalysisBase(diagnostic.responses)
+    hasAnalysisBase(diagnostic.responses)
   );
 }
 

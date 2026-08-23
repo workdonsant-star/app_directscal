@@ -55,7 +55,7 @@ describe("Maturidade domain helpers", () => {
     expect(isDimensionId("financeiro")).toBe(false);
   });
 
-  it("requires score and founder base before reports", () => {
+  it("requires score and at least one completed response before reports", () => {
     expect(canGenerateDiagnosticReport(buildDiagnostic())).toBe(true);
     expect(
       canGenerateDiagnosticReport(
@@ -75,6 +75,6 @@ describe("Maturidade domain helpers", () => {
           },
         }),
       ),
-    ).toBe(false);
+    ).toBe(true);
   });
 });

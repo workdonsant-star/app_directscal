@@ -1,19 +1,14 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useMemo, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 
+import { AuthPageShell } from "@/components/auth/auth-page-shell";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -37,50 +32,6 @@ type AcquisitionPublicFlowProps = {
 };
 
 type AcquisitionStep = "choice" | "email";
-
-function AcquisitionBackgroundVideo({ className }: { className: string }) {
-  return (
-    <video
-      aria-hidden="true"
-      autoPlay
-      loop
-      muted
-      playsInline
-      preload="auto"
-      className={className}
-    >
-      <source src="/liquid_background.mp4" type="video/mp4" />
-    </video>
-  );
-}
-
-function GoogleIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="size-4"
-      viewBox="0 0 24 24"
-      fill="none"
-    >
-      <path
-        d="M21.6 12.23c0-.78-.07-1.53-.2-2.23H12v4.26h5.38a4.6 4.6 0 0 1-2 3.02v2.5h3.24c1.9-1.75 2.98-4.33 2.98-7.55Z"
-        fill="#4285F4"
-      />
-      <path
-        d="M12 22c2.7 0 4.97-.9 6.62-2.42l-3.24-2.5c-.9.6-2.04.96-3.38.96-2.6 0-4.8-1.76-5.6-4.12H3.05v2.58A9.99 9.99 0 0 0 12 22Z"
-        fill="#34A853"
-      />
-      <path
-        d="M6.4 13.92a6 6 0 0 1 0-3.84V7.5H3.05a10 10 0 0 0 0 9l3.35-2.58Z"
-        fill="#FBBC05"
-      />
-      <path
-        d="M12 5.96c1.47 0 2.8.51 3.84 1.5l2.86-2.87A9.61 9.61 0 0 0 12 2a9.99 9.99 0 0 0-8.95 5.5l3.35 2.58C7.2 7.72 9.4 5.96 12 5.96Z"
-        fill="#EA4335"
-      />
-    </svg>
-  );
-}
 
 async function getResponseMessage(response: Response, fallback: string) {
   const data: unknown = await response.json().catch(() => null);
@@ -177,42 +128,29 @@ export function AcquisitionPublicFlow({
 
   if (!campaign || !selectedModule) {
     return (
-      <main className="flex min-h-dvh items-center justify-center px-4 py-10">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Link inválido</CardTitle>
-            <CardDescription>
-              Este link de aquisição não foi encontrado ou não está disponível
-              nesta prévia.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              Solicite um novo link para a equipe Directscal.
-            </p>
-          </CardContent>
-        </Card>
-      </main>
+      <AuthPageShell
+        title="Link inválido"
+        description="Este link de aquisição não foi encontrado ou não está disponível."
+        visualVariant="app"
+      >
+        <p className="text-xs leading-[18px] text-muted-foreground">
+          Solicite um novo link para a equipe Directscal.
+        </p>
+      </AuthPageShell>
     );
   }
 
   if (campaign.status === "pausado") {
     return (
-      <main className="flex min-h-dvh items-center justify-center px-4 py-10">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Campanha pausada</CardTitle>
-            <CardDescription>
-              Este link existe, mas a campanha não está ativa neste momento.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              A equipe Directscal pode reativar o acesso ou enviar um novo link.
-            </p>
-          </CardContent>
-        </Card>
-      </main>
+      <AuthPageShell
+        title="Campanha pausada"
+        description="Este link existe, mas a campanha não está ativa neste momento."
+        visualVariant="app"
+      >
+        <p className="text-xs leading-[18px] text-muted-foreground">
+          A equipe Directscal pode reativar o acesso ou enviar um novo link.
+        </p>
+      </AuthPageShell>
     );
   }
 
@@ -346,117 +284,94 @@ export function AcquisitionPublicFlow({
   }
 
   return (
-    <main className="min-h-dvh bg-background text-foreground lg:grid lg:grid-cols-[minmax(380px,0.92fr)_minmax(0,1.08fr)]">
-      <section className="flex min-h-dvh items-center justify-center px-4 py-10 sm:px-6 lg:px-12">
-        <div className="w-full max-w-[420px]">
-          <Link
-            href="/"
-            aria-label="Directscal"
-            className="mb-10 inline-flex rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            <picture>
-              <source
-                srcSet="/directscal-logo-dark.svg"
-                media="(prefers-color-scheme: dark)"
-              />
-              <img
-                src="/directscal-logo.svg"
-                alt="Directscal"
-                className="h-5 w-auto"
-              />
-            </picture>
-          </Link>
-
-          <div className="mb-8 overflow-hidden rounded-lg border bg-muted/20 lg:hidden">
-            <AcquisitionBackgroundVideo className="aspect-[16/10] w-full object-cover" />
-          </div>
-
-          {step === "choice" ? (
-            <div className="grid gap-5 text-center">
-              <div>
-                <p className="text-muted-foreground text-xs font-medium uppercase tracking-[0.08em]">
-                  {selectedModule.shortName}
-                </p>
-                <h1 className="mt-3 text-2xl font-semibold tracking-[-0.01em] text-foreground">
-                  Acesse a prévia
-                </h1>
-                <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
-                  Escolha como continuar para acessar o{" "}
-                  {selectedModule.shortName} como cliente a partir desta
-                  campanha.
-                </p>
-              </div>
-
-              <div className="grid gap-3">
+    <AuthPageShell
+      contentAlignment={step === "email" ? "start" : "center"}
+      title={
+        step === "choice"
+          ? `Crie seu acesso ao ${selectedModule.shortName}`
+          : "Continue com e-mail"
+      }
+      description={
+        step === "choice"
+          ? "Escolha como continuar para liberar seu ambiente de cliente."
+          : "Preencha os dados da campanha e defina uma senha para criar seu acesso."
+      }
+      visualVariant="app"
+    >
+      {step === "choice" ? (
+        <div className="grid gap-5">
+          <div className="grid gap-3">
                 <Button
                   type="button"
-                  className="h-11 w-full gap-2"
+                  variant="outline"
+                  size="lg"
+                  className="h-[45px] w-full gap-2.5 bg-background text-sm font-normal"
                   disabled={isGoogleSubmitting}
                   onClick={handleGoogleSignIn}
                 >
-                  <GoogleIcon />
+                  <Image
+                    src="/auth-figma-google.svg"
+                    alt=""
+                    width={18}
+                    height={18}
+                    className="size-4"
+                    aria-hidden="true"
+                  />
                   {isGoogleSubmitting
                     ? "Abrindo Google"
                     : "Continuar com Google"}
                 </Button>
 
+                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 text-xs font-normal text-foreground/80 dark:text-muted-foreground">
+                  <div className="h-px bg-border" />
+                  <span>ou</span>
+                  <div className="h-px bg-border" />
+                </div>
+
                 <Button
                   type="button"
-                  variant="outline"
-                  className="h-11 w-full bg-background"
+                  size="lg"
+                  className="h-[45px] w-full text-sm font-medium"
                   disabled={isGoogleSubmitting}
                   onClick={handleEmailStep}
                 >
                   Continuar com e-mail
                 </Button>
-              </div>
+          </div>
 
-              {authError ? (
-                <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-left text-sm text-destructive">
-                  {authError}
-                </p>
-              ) : null}
+          {authError ? (
+            <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {authError}
+            </p>
+          ) : null}
 
-              <p className="mx-auto max-w-xs text-sm leading-relaxed text-muted-foreground">
-                Ao continuar, seus dados serão usados para liberar o acesso
-                inicial e registrar o lead desta campanha.
-              </p>
+          <p className="text-xs leading-[18px] text-muted-foreground">
+            Ao continuar, seus dados serão usados para liberar o acesso e
+            registrar seu cadastro nesta campanha.
+          </p>
 
-              <p className="text-sm text-muted-foreground">
-                Já tem uma conta{" "}
-                <Link
-                  href="/entrar"
-                  className="rounded-sm font-medium text-primary outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-                >
-                  Entrar
-                </Link>
-              </p>
-            </div>
-          ) : (
-            <>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="mb-5 -ml-2"
-                onClick={handleChoiceStep}
-              >
-                <ArrowLeft className="size-4" />
-                Voltar
-              </Button>
-
-              <div className="mb-7">
-                <p className="text-muted-foreground text-xs font-medium uppercase tracking-[0.08em]">
-                  {selectedModule.shortName}
-                </p>
-                <h1 className="mt-3 text-2xl font-semibold tracking-[-0.01em] text-foreground">
-                  Continue com e-mail
-                </h1>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Preencha os dados da campanha e defina uma senha para criar o
-                  acesso de cliente.
-                </p>
-              </div>
+          <p className="text-xs leading-[18px] text-muted-foreground">
+            Já tem uma conta?{" "}
+            <Link
+              href="/entrar"
+              className="rounded-sm text-foreground/80 underline underline-offset-2 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 dark:text-muted-foreground"
+            >
+              Entrar
+            </Link>
+          </p>
+        </div>
+      ) : (
+        <>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="mb-5 -ml-2"
+            onClick={handleChoiceStep}
+          >
+            <ArrowLeft className="size-4" />
+            Voltar
+          </Button>
 
               <form
                 className="grid gap-5"
@@ -592,19 +507,15 @@ export function AcquisitionPublicFlow({
 
                 <Button
                   type="submit"
-                  className="h-11 w-full"
+                  size="lg"
+                  className="h-[45px] w-full text-sm font-medium"
                   disabled={isRegisterSubmitting}
                 >
                   {isRegisterSubmitting ? "Criando acesso" : "Criar acesso"}
                 </Button>
               </form>
-            </>
-          )}
-        </div>
-      </section>
-      <aside className="hidden min-h-dvh border-l bg-muted/20 lg:block">
-        <AcquisitionBackgroundVideo className="h-dvh w-full object-cover" />
-      </aside>
-    </main>
+        </>
+      )}
+    </AuthPageShell>
   );
 }

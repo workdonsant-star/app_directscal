@@ -15,7 +15,7 @@ export function NavMain({
   items,
   label = "Módulos",
 }: {
-  label?: string;
+  label?: string | null;
   items: {
     title: string;
     url: string;
@@ -25,8 +25,8 @@ export function NavMain({
 }) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>{label}</SidebarGroupLabel>
-      <SidebarMenu>
+      {label ? <SidebarGroupLabel>{label}</SidebarGroupLabel> : null}
+      <SidebarMenu className="gap-1">
         {items.map((item) => (
           <SidebarMenuItem key={item.title}>
             <SidebarMenuButton

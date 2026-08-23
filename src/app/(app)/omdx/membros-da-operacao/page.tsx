@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 
 export const metadata = {
-  title: "Diretório — Pessoas",
+  title: "Diagnósticos — Directscal",
 };
 
 export default async function OperationalMembersPage() {
-  redirect("/pessoas/diretorio");
+  redirect("/omdx/diagnosticos");
 }

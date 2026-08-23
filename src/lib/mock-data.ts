@@ -90,22 +90,6 @@ export const adminModules: AdminModule[] = [
     leadCount: 0,
     companyCount: 0,
   },
-  {
-    id: "module_people",
-    slug: "pessoas",
-    name: "Pessoas",
-    shortName: "Pessoas",
-    description:
-      "Estrutura de pessoas, vínculos, custos, pendências e fechamento mensal para operações digitais em crescimento.",
-    status: "ativo",
-    productPath: "/pessoas",
-    createdAt: "2026-06-24T00:00:00.000Z",
-    updatedAt: "2026-06-24T00:00:00.000Z",
-    campaignsCount: 0,
-    activeCampaigns: 0,
-    leadCount: 0,
-    companyCount: 0,
-  },
 ];
 
 const defaultAcquisitionFields = [

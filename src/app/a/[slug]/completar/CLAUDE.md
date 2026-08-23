@@ -11,3 +11,4 @@ Etapa pública autenticada por Google para completar o cadastro vindo de uma cam
 - O e-mail exibido e gravado vem do Google OAuth autenticado, não de campo digitado na campanha.
 - A slug da campanha precisa permanecer ativa.
 - A pessoa nunca é enviada para `/admin` por este fluxo, mesmo usando e-mail corporativo da Directscal.
+- A etapa usa o mesmo `AuthPageShell` de `/entrar`, com conteúdo alinhado ao topo para acomodar os campos da campanha sem colidir com o logo.

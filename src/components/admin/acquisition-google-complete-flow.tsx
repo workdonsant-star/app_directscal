@@ -1,11 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useMemo, useState } from "react";
 
+import { AuthPageShell } from "@/components/auth/auth-page-shell";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -28,22 +27,6 @@ type AcquisitionGoogleCompleteFlowProps = {
   slug: string;
   user: AuthUser;
 };
-
-function AcquisitionBackgroundVideo({ className }: { className: string }) {
-  return (
-    <video
-      aria-hidden="true"
-      autoPlay
-      loop
-      muted
-      playsInline
-      preload="auto"
-      className={className}
-    >
-      <source src="/liquid_background.mp4" type="video/mp4" />
-    </video>
-  );
-}
 
 function textareaClasses(className?: string) {
   return cn(
@@ -98,21 +81,15 @@ export function AcquisitionGoogleCompleteFlow({
 
   if (!campaign || !selectedModule) {
     return (
-      <main className="flex min-h-dvh items-center justify-center px-4 py-10">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Link inválido</CardTitle>
-            <CardDescription>
-              Este link de aquisição não foi encontrado ou não está disponível.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              Solicite um novo link para a equipe Directscal.
-            </p>
-          </CardContent>
-        </Card>
-      </main>
+      <AuthPageShell
+        title="Link inválido"
+        description="Este link de aquisição não foi encontrado ou não está disponível."
+        visualVariant="app"
+      >
+        <p className="text-xs leading-[18px] text-muted-foreground">
+          Solicite um novo link para a equipe Directscal.
+        </p>
+      </AuthPageShell>
     );
   }
 
@@ -176,44 +153,12 @@ export function AcquisitionGoogleCompleteFlow({
   }
 
   return (
-    <main className="min-h-dvh bg-background text-foreground lg:grid lg:grid-cols-[minmax(380px,0.92fr)_minmax(0,1.08fr)]">
-      <section className="flex min-h-dvh items-center justify-center px-4 py-10 sm:px-6 lg:px-12">
-        <div className="w-full max-w-[420px]">
-          <Link
-            href="/"
-            aria-label="Directscal"
-            className="mb-10 inline-flex rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            <picture>
-              <source
-                srcSet="/directscal-logo-dark.svg"
-                media="(prefers-color-scheme: dark)"
-              />
-              <img
-                src="/directscal-logo.svg"
-                alt="Directscal"
-                className="h-5 w-auto"
-              />
-            </picture>
-          </Link>
-
-          <div className="mb-8 overflow-hidden rounded-lg border bg-muted/20 lg:hidden">
-            <AcquisitionBackgroundVideo className="aspect-[16/10] w-full object-cover" />
-          </div>
-
-          <div className="mb-7">
-            <p className="text-muted-foreground text-xs font-medium uppercase tracking-[0.08em]">
-              {selectedModule.shortName}
-            </p>
-            <h1 className="mt-3 text-2xl font-semibold tracking-[-0.01em] text-foreground">
-              Complete o acesso
-            </h1>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              Você entrou como {user.email}. Informe os dados da empresa para
-              liberar o ambiente de cliente.
-            </p>
-          </div>
-
+    <AuthPageShell
+      contentAlignment="start"
+      title="Complete seu acesso"
+      description={`Você entrou como ${user.email}. Informe os dados da empresa para liberar seu ambiente de cliente.`}
+      visualVariant="app"
+    >
           <form className="grid gap-5" noValidate onSubmit={handleSubmit}>
             {fields.map((field) => {
               const error = errors[field.id];
@@ -304,15 +249,15 @@ export function AcquisitionGoogleCompleteFlow({
               </p>
             ) : null}
 
-            <Button type="submit" className="h-11 w-full" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              size="lg"
+              className="h-[45px] w-full text-sm font-medium"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? "Liberando acesso" : "Acessar Maturidade"}
             </Button>
           </form>
-        </div>
-      </section>
-      <aside className="hidden min-h-dvh border-l bg-muted/20 lg:block">
-        <AcquisitionBackgroundVideo className="h-dvh w-full object-cover" />
-      </aside>
-    </main>
+    </AuthPageShell>
   );
 }

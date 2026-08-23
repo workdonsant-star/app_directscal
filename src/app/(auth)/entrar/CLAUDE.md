@@ -4,4 +4,4 @@ Tela pública para autenticar usuários no Maturidade. Usa `SignInForm`, mostra 
 
 Erros de acesso do Auth.js chegam por query string e devem ser traduzidos em copy curta em pt-BR.
 
-O painel visual da tela usa a variante `visualVariant="app"` de `AuthPageShell`: formulário em coluna branca à esquerda, logo Directscal no topo e painel lateral à direita com gradiente animado, depoimento e avatar. A composição segue o frame Figma `/entrar — login desktop`: largura do formulário próxima de `396px`, controles de `45px`, divisor com "ou" e paleta de gradiente `#7E1AFF` + `#ADE517` centralizada em tokens globais, sem hex local no componente.
+O painel visual da tela usa a variante `visualVariant="app"` de `AuthPageShell`: formulário em coluna branca à esquerda, logo Directscal no topo e painel lateral à direita com o mesh gradient Bloom Field animado, depoimento e avatar. A composição preserva a largura do formulário próxima de `396px`, controles de `45px` e divisor com "ou"; o visual usa White `#FFFFFF`, Matcha `#ADE316`, Violet `#7D1AFF` e Lapis `#1A48EF`, centralizados em tokens globais e sem hex local no componente.

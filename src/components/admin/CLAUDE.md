@@ -11,7 +11,7 @@ Componentes específicos da visão de superadministrador da Directscal. Eles adm
 - Componentes devem consumir DTOs em camelCase vindos de `src/lib/data/admin-data-source.ts` e dos Route Handlers de admin.
 - Campanhas, leads e empresas são persistidos no Supabase; não reintroduza `localStorage` para este fluxo.
 - O link público de campanha começa por uma tela de escolha de método. Google cria um intent, encerra a sessão Auth.js anterior para forçar nova escolha de conta e completa empresa em `/a/[slug]/completar`; e-mail abre uma segunda etapa com dados da campanha e senha. Ambos criam lead, organização e membership `cliente`.
-- A interface pública de campanha segue o padrão visual das telas de autenticação: logo no topo, formulário em coluna estreita e vídeo `liquid_background.mp4` no painel lateral desktop.
+- A interface pública de campanha reutiliza `AuthPageShell` com `visualVariant="app"`: logo no topo, formulário na mesma coluna estreita do login, mesh gradient Bloom Field no painel lateral, depoimento e versão compacta do gradiente no mobile. Etapas longas usam `contentAlignment="start"`.
 - Campanhas, leads, empresas e aquisição pública ficam disponíveis quando `FEATURE_ACQUISITION=true`; com o flag desligado, as rotas permanecem bloqueadas.
 - Use os mesmos primitives do app autenticado: `Table`, `Card`, `Button`, `Sheet`, `Select`, `Badge` e `KpiCard` compartilhado.
 - Mantenha continuidade visual com Maturidade: tabelas principais de módulos, campanhas, leads e empresas ficam livres no fluxo da página, não dentro de `Card`. Use título/descrição/ações acima da tabela e apenas o wrapper `overflow-hidden rounded-lg border` na própria listagem.

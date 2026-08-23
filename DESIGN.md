@@ -401,7 +401,10 @@ Sidebar:
 
 - Base shadcn `sidebar-07`, adaptada para Directscal.
 - Collapsible para ícones.
-- Seções: Módulos, Insights, Recursos; em admin troca para Administração.
+- Navegação principal do cliente plana, sem o título de seção `Módulos` e sem subitens expansíveis.
+- `Maturidade`, `Camadas`, `Diagnósticos`, `Cronograma` e as seis dimensões ficam no mesmo nível.
+- A sidebar não exibe a seção `Recursos` nem o item `Documentação`; `/docs` permanece como rota acessível diretamente.
+- Em admin, a navegação troca para a seção `Administração`.
 - `SidebarMenuButton` usa `render={<Link />}`, não `asChild`.
 
 Topbar:

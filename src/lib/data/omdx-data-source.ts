@@ -53,7 +53,7 @@ import {
   buildOmdxOverviewAnalyticsFromReports,
   type OverviewAnalytics,
 } from "@/lib/data/omdx-overview-analytics";
-import { hasFounderAnalysisBase } from "@/lib/data/omdx-production-rules";
+import { hasAnalysisBase } from "@/lib/data/omdx-production-rules";
 import { getPublicAppUrl } from "@/lib/env";
 import { mockUserProfile } from "@/lib/mock-data";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
@@ -534,7 +534,7 @@ function buildReportDimensions({
   questions: QuestionRow[];
   responses: ResponsesByGroup;
 }) {
-  if (!hasFounderAnalysisBase(responses)) return null;
+  if (!hasAnalysisBase(responses)) return null;
 
   const reportDimensions = dimensions
     .map((dimension) => {
@@ -1026,7 +1026,7 @@ function buildReportDimensionsFromAggregateRows(
   rows: OmdxQuestionAggregateRow[],
   responses: ResponsesByGroup,
 ) {
-  if (!hasFounderAnalysisBase(responses)) return null;
+  if (!hasAnalysisBase(responses)) return null;
 
   const rowsByDimensionId = new Map<string, OmdxQuestionAggregateRow[]>();
 

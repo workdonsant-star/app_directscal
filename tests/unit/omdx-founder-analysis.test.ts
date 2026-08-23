@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { diagnosticReportSchema } from "@/lib/contracts";
-import { buildOmdxOverviewAnalyticsFromReports } from "@/lib/data/omdx-overview-analytics";
+import {
+  buildDimensionScoreSummary,
+  buildOmdxOverviewAnalyticsFromReports,
+} from "@/lib/data/omdx-overview-analytics";
 import type { DimensionId } from "@/lib/types";
 
 const dimensionIds: DimensionId[] = [
@@ -124,5 +127,63 @@ describe("Maturidade founder analysis base", () => {
         (metric) => metric.title === "Desalinhamento Organizacional",
       )?.classification,
     ).toBe("Sem dados");
+  });
+
+  it("keeps unavailable layers explicit in the layer dashboard data", () => {
+    const analytics = buildOmdxOverviewAnalyticsFromReports([
+      buildFounderOnlyReport(),
+    ]);
+
+    expect(analytics.layerScores).toEqual([
+      { id: "fundador", label: "Fundador", score: 3.4 },
+      { id: "lideranca", label: "Liderança", score: null },
+      { id: "operacao", label: "Time", score: null },
+    ]);
+    expect(analytics.layerSummary).toBe(
+      "A pontuação disponível é de 3,4/5 para Fundador; as demais camadas ainda não têm base.",
+    );
+  });
+
+  it("summarizes the six dimension scores without changing their scale", () => {
+    const analytics = buildOmdxOverviewAnalyticsFromReports([
+      buildFounderOnlyReport(),
+    ]);
+    const scores = [3.2, 3.8, 2.9, 4.1, 3.5, 3.7];
+    const dimensions = analytics.dimensions.map((dimension, index) => ({
+      ...dimension,
+      maturity: scores[index],
+    }));
+
+    expect(analytics.dimensionSummary).toBe(
+      "As dimensões apresentam a mesma pontuação de 3,4/5.",
+    );
+    expect(buildDimensionScoreSummary(dimensions)).toBe(
+      "D4 registra a maior pontuação, 4,1/5, enquanto D3 apresenta 2,9/5. A diferença entre as dimensões é de 1,2 ponto.",
+    );
+  });
+
+  it("prepares the dashboard matrices without inventing missing alignment", () => {
+    const analytics = buildOmdxOverviewAnalyticsFromReports([
+      buildFounderOnlyReport(),
+    ]);
+
+    expect(analytics.vulnerabilityRows).toHaveLength(6);
+    expect(analytics.vulnerabilityRows[0].cells).toEqual([
+      expect.objectContaining({
+        classification: "Atenção",
+        label: "P1",
+        score: 3.4,
+      }),
+    ]);
+    expect(analytics.leverageRows).toHaveLength(4);
+    expect(analytics.leverageRows[0].cells).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Alinhamento",
+          level: "Sem dados",
+          value: null,
+        }),
+      ]),
+    );
   });
 });

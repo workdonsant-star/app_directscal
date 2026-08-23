@@ -1,4 +1,4 @@
-# `src/app/o` — Cadastro público de Pessoas
+# `src/app/o` — Cadastro operacional público
 
 ## Propósito
 

@@ -5,25 +5,33 @@ import {
   getResponseCookieName,
   getResponseStorageKey,
   hasCompleteLikertAnswerSet,
-  hasFounderAnalysisBase,
-  minimumFounderResponsesForAnalysis,
+  hasAnalysisBase,
+  minimumResponsesForAnalysis,
 } from "@/lib/data/omdx-production-rules";
 
 describe("Maturidade production rules", () => {
-  it("requires at least one founder response before analysis", () => {
+  it("accepts a completed response from any respondent group before analysis", () => {
     expect(
-      hasFounderAnalysisBase({
-        fundador: minimumFounderResponsesForAnalysis,
+      hasAnalysisBase({
+        fundador: minimumResponsesForAnalysis,
         lideranca: 0,
         operacao: 0,
       }),
     ).toBe(true);
 
     expect(
-      hasFounderAnalysisBase({
-        fundador: minimumFounderResponsesForAnalysis - 1,
+      hasAnalysisBase({
+        fundador: minimumResponsesForAnalysis - 1,
         lideranca: 3,
         operacao: 3,
+      }),
+    ).toBe(true);
+
+    expect(
+      hasAnalysisBase({
+        fundador: 0,
+        lideranca: 0,
+        operacao: 0,
       }),
     ).toBe(false);
   });

@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-
 import { AppTopbar } from "@/components/app-topbar";
 import { OverviewCharts } from "@/components/omdx/overview-charts";
 import { OverviewDiagnosticFilter } from "@/components/omdx/overview-diagnostic-filter";
@@ -7,7 +5,6 @@ import { OverviewDimensionResultsTable } from "@/components/omdx/overview-dimens
 import { OverviewExecutiveCards } from "@/components/omdx/overview-executive-cards";
 import { ReportDownloadMenu } from "@/components/omdx/report-download-menu";
 import { getOmdxOverviewPageData } from "@/lib/data/omdx-data-source";
-import { getOperationalOnboardingGateForCurrentUser } from "@/lib/data/operational-onboarding-data-source";
 
 type OverviewPageProps = {
   searchParams?: Promise<{ diagnostico?: string | string[] }>;
@@ -21,11 +18,6 @@ export default async function OverviewPage({
     typeof resolvedSearchParams?.diagnostico === "string"
       ? resolvedSearchParams.diagnostico
       : "todos";
-  const onboardingGate = await getOperationalOnboardingGateForCurrentUser();
-
-  if (onboardingGate.required) {
-    redirect("/pessoas/diretorio");
-  }
 
   const {
     analytics,

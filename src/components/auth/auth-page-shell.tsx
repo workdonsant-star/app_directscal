@@ -6,6 +6,7 @@ import { AuthGradientVisual } from "@/components/auth/auth-gradient-visual";
 import { cn } from "@/lib/utils";
 
 type AuthVisualVariant = "liquid" | "app";
+type AuthContentAlignment = "center" | "start";
 
 function AuthBackgroundVideo({ className }: { className: string }) {
   return (
@@ -24,26 +25,26 @@ function AuthBackgroundVideo({ className }: { className: string }) {
 }
 
 function AuthAppVisual({
-  canvasId,
+  visualId,
   className,
 }: {
-  canvasId: string;
+  visualId: string;
   className: string;
 }) {
-  return <AuthGradientVisual canvasId={canvasId} className={className} />;
+  return <AuthGradientVisual visualId={visualId} className={className} />;
 }
 
 function AuthVisual({
-  canvasId,
+  visualId,
   className,
   variant,
 }: {
-  canvasId: string;
+  visualId: string;
   className: string;
   variant: AuthVisualVariant;
 }) {
   if (variant === "app") {
-    return <AuthAppVisual canvasId={canvasId} className={className} />;
+    return <AuthAppVisual visualId={visualId} className={className} />;
   }
 
   return <AuthBackgroundVideo className={className} />;
@@ -88,12 +89,14 @@ function DirectscalLogo({
 
 export function AuthPageShell({
   children,
+  contentAlignment = "center",
   description,
   footer,
   title,
   visualVariant = "liquid",
 }: {
   children: ReactNode;
+  contentAlignment?: AuthContentAlignment;
   description?: string;
   footer?: ReactNode;
   title: ReactNode;
@@ -103,7 +106,14 @@ export function AuthPageShell({
     return (
       <main className="min-h-dvh overflow-x-hidden bg-background text-foreground">
         <section className="grid min-h-dvh lg:grid-cols-[minmax(560px,50.833vw)_minmax(0,1fr)]">
-          <div className="relative flex min-h-dvh items-center px-6 py-10 pt-24 sm:px-10 lg:px-0 lg:pl-[clamp(5rem,10.8vw,9.75rem)] lg:pr-16 lg:pt-10">
+          <div
+            className={cn(
+              "relative flex min-h-dvh px-6 py-10 pt-24 sm:px-10 lg:px-0 lg:pl-[clamp(5rem,10.8vw,9.75rem)] lg:pr-16",
+              contentAlignment === "start"
+                ? "items-start lg:pb-20 lg:pt-40"
+                : "items-center lg:pt-10",
+            )}
+          >
             <DirectscalLogo
               className="absolute left-6 top-8 sm:left-10 lg:left-[clamp(5rem,10.8vw,9.75rem)] lg:top-[88px]"
               imageClassName="h-4"
@@ -111,7 +121,7 @@ export function AuthPageShell({
             <div className="mx-auto flex w-full max-w-[396px] flex-col lg:mx-0">
               <div className="mb-8 h-36 overflow-hidden rounded-[2rem] border bg-muted/20 lg:hidden">
                 <AuthGradientVisual
-                  canvasId="gradient-canvas-mobile"
+                  visualId="gradient-visual-mobile"
                   className="h-full w-full"
                 />
               </div>
@@ -130,10 +140,10 @@ export function AuthPageShell({
               {footer ? <div className="mt-6">{footer}</div> : null}
             </div>
           </div>
-          <aside className="relative hidden min-h-dvh overflow-hidden rounded-l-[104px] bg-auth-gradient-purple lg:block">
+          <aside className="relative hidden min-h-dvh overflow-hidden rounded-l-[104px] bg-auth-gradient-white lg:block">
             <div className="absolute inset-0">
               <AuthGradientVisual
-                canvasId="gradient-canvas"
+                visualId="gradient-visual"
                 className="h-full w-full"
               />
             </div>
@@ -188,7 +198,7 @@ export function AuthPageShell({
           </Link>
           <div className="mb-8 overflow-hidden rounded-lg border bg-muted/20 lg:hidden">
             <AuthVisual
-              canvasId="gradient-canvas-mobile"
+              visualId="gradient-visual-mobile"
               className="aspect-[16/10] w-full object-cover"
               variant={visualVariant}
             />
@@ -207,7 +217,7 @@ export function AuthPageShell({
       </section>
       <aside className="hidden min-h-dvh border-l bg-muted/20 lg:block">
         <AuthVisual
-          canvasId="gradient-canvas"
+          visualId="gradient-visual"
           className="h-dvh w-full object-cover"
           variant={visualVariant}
         />

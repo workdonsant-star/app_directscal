@@ -20,7 +20,6 @@ Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no
 - `admin-data-source.ts` concentra helpers puros, seeds estáticos de módulos e derivação de empresas/módulos.
 - `acquisition-data-source.ts` é server-side e fala com Supabase para campanhas, leads, empresas, intents OAuth e credenciais de senha.
 - `operational-onboarding-data-source.ts` concentra o cadastro operacional: domínio autorizado, link público, lista de pessoas cadastradas, exclusão autenticada, critério mínimo de pessoa aprovada e bloqueio antes da ativação do diagnóstico.
-- `pessoas-data-source.ts` concentra o MVP de Pessoas: Overview, diretório, perfil, fechamento mensal e configurações mínimas. Ele compõe seeds mockados com `operational_members` server-side quando a organização possui cadastros; não cria persistência própria nem faz cálculo legal de CLT.
 - Em aquisição Google, o e-mail OAuth autenticado é a fonte canônica; valide que `userId` e e-mail pertencem à mesma linha em `next_auth.users` e não crie nova conta quando o e-mail já tem acesso ativo.
 
 ## Fluxo público de resposta
@@ -66,6 +65,8 @@ Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no
 ## Cálculos do Overview Maturidade
 
 `omdx-overview-analytics.ts` consolida os cards executivos do Overview e os dados dos gráficos. Os cards usam índices normalizados em escala `0-100`; os valores Likert originais continuam como base de cálculo e entram no `technicalDetail` quando útil.
+
+O mesmo arquivo produz `layerScores`, `layerSummary` e `dimensionSummary` para `/omdx/camadas`. As pontuações por camada são a média das seis dimensões em escala `1-5`, separadas entre Fundador, Liderança e Time; camadas sem respostas permanecem `null` e nunca recebem valor inventado. O resumo das dimensões compara os scores consolidados já presentes em `dimensions`, sem recalcular na UI.
 
 - `normalizeLikertToIndex(score)`: converte score Likert para índice com `round((score / 5) * 100)`, limitado entre `0` e `100`.
 - `normalizeGapToIndex(gap)`: converte gap entre camadas para índice com `round((gap / 5) * 100)`, limitado entre `0` e `100`.

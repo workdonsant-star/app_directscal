@@ -16,15 +16,14 @@ src/components/
 ├── gantt/                 ← componentes do Cronograma
 ├── omdx/                  ← componentes específicos do módulo Maturidade
 ├── profile/               ← componentes da página de perfil
-├── pessoas/               ← componentes do módulo Pessoas
 ├── role-matrix/           ← legado inativo da antiga matriz de papéis
 ├── sops/                  ← legado inativo da antiga experiência de SOPs
 ├── app-sidebar.tsx        ← sidebar global do app autenticado
 ├── app-topbar.tsx         ← topbar limpa com trigger + breadcrumb
 ├── document-table-of-contents.tsx ← sumário documental com âncoras suaves e item ativo
 ├── nav-main.tsx           ← navegação principal da sidebar
-├── nav-modules.tsx        ← navegação expansível por módulo do sistema
-├── nav-projects.tsx       ← navegação secundária/recursos da sidebar
+├── nav-modules.tsx        ← navegação expansível legada, fora da sidebar atual
+├── nav-projects.tsx       ← navegação secundária legada, fora da sidebar atual
 ├── nav-user.tsx           ← selector/menu do usuário na sidebar
 ├── app-switcher.tsx       ← selector de apps legado, fora da sidebar principal
 ├── kpi-card.tsx           ← card compartilhado de KPI
@@ -45,14 +44,16 @@ Cada subpasta de domínio tem seu próprio `CLAUDE.md`. Crie um quando adicionar
 
 - **Server Components por padrão.** `"use client"` somente quando o componente precisar (`useState`, `usePathname`, eventos, etc.).
 - O shell autenticado usa o bloco **shadcn `sidebar-07`** como base visual, adaptado para Directscal.
-- A sidebar do app cliente lista módulos do sistema em `Módulos`; cada módulo abre um dropdown com suas funcionalidades. `Maturidade` agrupa `Overview`, `Diagnósticos`, `Cronograma` e as seis dimensões de insights. `Pessoas` agrupa Overview, Diretório, Fechamento e Configurações. O link público de cadastro de pessoas é copiado a partir do Diretório.
+- A sidebar do app cliente não usa o título de seção `Módulos` nem navegação expansível. `Maturidade` aponta diretamente para o overview em `/omdx`; `Camadas`, `Diagnósticos`, `Cronograma` e as seis dimensões de insights aparecem como itens independentes no mesmo nível.
+- A seção `Recursos` e o item `Documentação` não aparecem na sidebar. A rota `/docs` continua disponível por acesso direto.
 - `Ativos de gestão` foi removido da navegação e do catálogo de módulos. Não reintroduza SOPs, matriz de papéis ou `module_management_assets` sem nova decisão explícita.
-- `Cronograma` fica visível dentro de `Maturidade` e aponta para `/gantt`; não promova a funcionalidade para um módulo próprio sem nova decisão explícita.
-- `Pessoas` é módulo próprio na sidebar, com Overview, Diretório, Fechamento e Configurações. Não use linguagem genérica de RH; preserve o foco em vínculo, custo, pendência e fechamento mensal.
+- `Cronograma` aparece como item independente no mesmo nível de `Maturidade` e aponta para `/gantt`; não transforme a funcionalidade em módulo próprio sem nova decisão explícita.
+- `Pessoas` foi removido da navegação, do catálogo de módulos e dos componentes autenticados. Não reintroduza `module_people` sem nova decisão explícita.
 - Não reintroduza `Empresas` ou `Relatórios` na navegação principal do cliente sem nova decisão.
 - Em `/admin`, a sidebar troca para `Administração` (`Módulos`, `Campanhas`, `Leads`, `Empresas`).
 - Componentes em `auth/` conversam com `/api/auth/*`; não leem nem escrevem cookies diretamente.
 - O header da sidebar mostra o selector de usuário (`NavUser`) com perfil, tema e saída. O switcher de módulos (`AppSwitcher`) não fica visível na sidebar principal.
+- O menu principal mantém `gap-1` (4 px) entre itens e começa com 24 px de separação visual abaixo do seletor de usuário, combinando o padding inferior do header com o padding superior do grupo.
 - O controle manual de claro/escuro fica no dropdown do usuário em `NavUser`; o padrão global continua `system`.
 - A topbar do app autenticado deve ser limpa e branca no tema claro (`bg-background`): `SidebarTrigger`, separador, breadcrumb e ações contextuais de página. Filtros globais de página devem ficar na topbar via `actions`, não dentro do conteúdo principal. Não adicionar busca/notificações sem decisão explícita.
 - **Exports nomeados.** Default exports apenas onde o framework exige (página, layout).

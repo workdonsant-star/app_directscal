@@ -116,7 +116,6 @@ src/
 │   ├── (app)/                ← route group autenticado (sidebar + topbar)
 │   │   ├── layout.tsx        ← valida sessão + SidebarProvider + AppSidebar + SidebarInset
 │   │   ├── admin/            ← visão de superadmin
-│   │   ├── pessoas/          ← módulo Pessoas
 │   │   └── omdx/
 │   │       ├── page.tsx      ← dashboard executivo de Maturidade
 │   │       ├── diagnosticos/ ← área operacional de diagnósticos

@@ -1,15 +1,18 @@
 import type { ResponsesByGroup } from "@/lib/contracts";
 
-export const minimumFounderResponsesForAnalysis = 1;
+export const minimumResponsesForAnalysis = 1;
 
 type LikertAnswerCandidate = {
   questionId: string;
 };
 
-export function hasFounderAnalysisBase(
+export function hasAnalysisBase(
   responses: Pick<ResponsesByGroup, "fundador" | "lideranca" | "operacao">,
 ) {
-  return responses.fundador >= minimumFounderResponsesForAnalysis;
+  return (
+    responses.fundador + responses.lideranca + responses.operacao >=
+    minimumResponsesForAnalysis
+  );
 }
 
 export function getResponseCookieName(token: string) {

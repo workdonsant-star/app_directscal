@@ -76,12 +76,12 @@ export function ResponseCounters({
               <p className="text-sm font-medium text-foreground">
                 {isReadyForAnalysis
                   ? "Base suficiente para consolidação"
-                  : "Base de Fundador ainda pendente"}
+                  : "Base de respostas ainda pendente"}
               </p>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                 {isReadyForAnalysis
-                  ? "Os dados já podem ser analisados. Liderança e operação aparecem como sem base até receberem respostas."
-                  : "A análise é liberada quando houver ao menos uma resposta de Fundador."}
+                  ? "Os dados já podem ser analisados. Grupos sem resposta aparecem como sem base nos gráficos."
+                  : "A análise é liberada quando houver ao menos uma resposta completa."}
               </p>
             </div>
           </div>

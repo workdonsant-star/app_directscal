@@ -60,7 +60,7 @@ Contratos principais:
 - Cálculos agregados e helpers de domínio devem ficar em `data/` ou em funções puras de contrato, não em componentes.
 - Planos de ação PDF devem consumir DTOs consolidados daqui, como `getDiagnosticActionPlan()`, sem gerar regra dentro do documento PDF.
 - `profile-storage.ts` é exceção client-only para a fase mockada: persiste overrides de perfil no `localStorage` com chave escopada por `user.id` e emite evento para atualizar o shell. Deve ser substituído por backend/autenticação real no futuro.
-- Pessoas usa `pessoas-data-source.ts` com seed server-side, contratos em `contracts/pessoas.ts` e composição server-side dos cadastros em `operational_members`. O corte atual não cria tabelas próprias de Pessoas, Server Actions ou motor legal de folha.
+- O módulo Pessoas foi removido das rotas autenticadas, componentes, contratos e catálogo de módulos. O cadastro operacional público permanece em `operational-onboarding-data-source.ts`.
 - `supabase/` concentra clients server-side; `SUPABASE_SERVICE_ROLE_KEY` nunca deve chegar ao client.
 - `auth/` concentra Auth.js/NextAuth, regra de domínio/e-mail corporativo, validação de membership pré-existente no Supabase, JWT para RLS e fallback mockado. O cookie `directscal_session` sustenta o login demo por e-mail/senha apenas em desenvolvimento.
 - `admin-data-source.ts` concentra helpers puros do superadmin; `acquisition-data-source.ts` fala com Supabase no servidor para campanhas, leads, empresas, intents OAuth e credenciais.

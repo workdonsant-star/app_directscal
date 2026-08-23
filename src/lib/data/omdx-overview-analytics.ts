@@ -1,4 +1,5 @@
-import type { DiagnosticReport } from "@/lib/types";
+import { classifyScore } from "@/lib/data/omdx-domain";
+import type { Classification, DiagnosticReport } from "@/lib/types";
 
 export type LikertDistribution = {
   stronglyDisagree: number;
@@ -10,6 +11,7 @@ export type LikertDistribution = {
 
 export type DimensionResult = {
   dimension: string;
+  shortDimension: string;
   maturity: number;
   diretoria: number | null;
   lideranca: number | null;
@@ -29,6 +31,38 @@ export type QuestionResult = {
   criticalPercentage: number;
   positivePercentage: number;
   neutralPercentage: number;
+};
+
+export type LayerScoreResult = {
+  id: "fundador" | "lideranca" | "operacao";
+  label: "Fundador" | "Liderança" | "Time";
+  score: number | null;
+};
+
+export type VulnerabilityMatrixCell = {
+  classification: Classification;
+  label: string;
+  question: string;
+  score: number;
+};
+
+export type VulnerabilityMatrixRow = {
+  cells: VulnerabilityMatrixCell[];
+  dimension: string;
+  shortDimension: string;
+};
+
+export type LeverageLevel = "Baixa" | "Média" | "Alta" | "Crítica";
+
+export type LeverageMatrixCell = {
+  label: "Maturidade" | "Alinhamento" | "Consenso" | "Prioridade";
+  level: LeverageLevel | "Sem dados";
+  value: number | null;
+};
+
+export type LeverageMatrixRow = {
+  cells: LeverageMatrixCell[];
+  dimension: string;
 };
 
 export type ExecutiveMetricStatus =
@@ -53,8 +87,13 @@ export type MaturityQuadrant = {
 
 export type OverviewAnalytics = {
   dimensions: DimensionResult[];
+  dimensionSummary: string;
+  leverageRows: LeverageMatrixRow[];
+  layerScores: LayerScoreResult[];
+  layerSummary: string;
   questions: QuestionResult[];
   metrics: ExecutiveMetric[];
+  vulnerabilityRows: VulnerabilityMatrixRow[];
 };
 
 type Report = DiagnosticReport;
@@ -406,6 +445,7 @@ function buildDimensionResult(
 
   return {
     dimension: dimension.name,
+    shortDimension: dimension.shortName,
     maturity: dimension.score,
     diretoria: dimension.layerScores.fundador,
     lideranca: dimension.layerScores.lideranca,
@@ -489,6 +529,7 @@ function aggregateDimensions(dimensions: DimensionResult[]) {
 
     return {
       dimension,
+      shortDimension: values[0]?.shortDimension ?? dimension,
       maturity: round(average(values.map((value) => value.maturity)), 1),
       diretoria: roundOrNull(
         averageOrNull(values.map((value) => value.diretoria)),
@@ -511,14 +552,200 @@ function aggregateDimensions(dimensions: DimensionResult[]) {
   });
 }
 
+function buildLayerScores(dimensions: DimensionResult[]): LayerScoreResult[] {
+  return [
+    {
+      id: "fundador",
+      label: "Fundador",
+      score: roundOrNull(
+        averageOrNull(dimensions.map((dimension) => dimension.diretoria)),
+        1,
+      ),
+    },
+    {
+      id: "lideranca",
+      label: "Liderança",
+      score: roundOrNull(
+        averageOrNull(dimensions.map((dimension) => dimension.lideranca)),
+        1,
+      ),
+    },
+    {
+      id: "operacao",
+      label: "Time",
+      score: roundOrNull(
+        averageOrNull(dimensions.map((dimension) => dimension.time)),
+        1,
+      ),
+    },
+  ];
+}
+
+function buildVulnerabilityRows(
+  dimensions: DimensionResult[],
+  questions: QuestionResult[],
+): VulnerabilityMatrixRow[] {
+  const questionsByDimension = new Map<string, Map<string, QuestionResult[]>>();
+
+  questions.forEach((question) => {
+    const groupedQuestions =
+      questionsByDimension.get(question.dimension) ??
+      new Map<string, QuestionResult[]>();
+    groupedQuestions.set(question.questionTitle, [
+      ...(groupedQuestions.get(question.questionTitle) ?? []),
+      question,
+    ]);
+    questionsByDimension.set(question.dimension, groupedQuestions);
+  });
+
+  return [...dimensions]
+    .sort(
+      (first, second) =>
+        calculateDimensionCriticality(second) -
+        calculateDimensionCriticality(first),
+    )
+    .map((dimension) => {
+      const groupedQuestions = questionsByDimension.get(dimension.dimension);
+      const cells = Array.from(groupedQuestions?.entries() ?? [])
+        .slice(0, 5)
+        .map(([question, values], index) => {
+          const score = round(
+            average(values.map((value) => value.score)),
+            1,
+          );
+
+          return {
+            classification: classifyScore(score),
+            label: `P${index + 1}`,
+            question,
+            score,
+          };
+        });
+
+      return {
+        cells,
+        dimension: dimension.dimension,
+        shortDimension: dimension.shortDimension,
+      };
+    });
+}
+
+function classifyLeverageLevel(value: number): LeverageLevel {
+  if (value < 20) return "Baixa";
+  if (value < 45) return "Média";
+  if (value < 70) return "Alta";
+  return "Crítica";
+}
+
+function buildLeverageRows(
+  dimensions: DimensionResult[],
+): LeverageMatrixRow[] {
+  return [...dimensions]
+    .sort(
+      (first, second) =>
+        calculateDimensionCriticality(second) -
+        calculateDimensionCriticality(first),
+    )
+    .slice(0, 4)
+    .map((dimension) => {
+      const gap = calculateDimensionGap(dimension);
+      const values: Array<{
+        label: LeverageMatrixCell["label"];
+        value: number | null;
+      }> = [
+        {
+          label: "Maturidade",
+          value: 100 - normalizeLikertToIndex(dimension.maturity),
+        },
+        {
+          label: "Alinhamento",
+          value: gap === null ? null : normalizeGapToIndex(gap),
+        },
+        {
+          label: "Consenso",
+          value: clamp(Math.round((dimension.dispersion / 5) * 100), 0, 100),
+        },
+        {
+          label: "Prioridade",
+          value: calculateDimensionCriticality(dimension),
+        },
+      ];
+
+      return {
+        cells: values.map(({ label, value }) => ({
+          label,
+          level: value === null ? "Sem dados" : classifyLeverageLevel(value),
+          value,
+        })),
+        dimension: dimension.shortDimension,
+      };
+    });
+}
+
+export function buildDimensionScoreSummary(dimensions: DimensionResult[]) {
+  if (dimensions.length === 0) {
+    return "Ainda não há respostas suficientes para comparar as dimensões.";
+  }
+
+  const sortedDimensions = [...dimensions].sort(
+    (first, second) => second.maturity - first.maturity,
+  );
+  const highest = sortedDimensions[0];
+  const lowest = sortedDimensions.at(-1) ?? highest;
+  const gap = round(highest.maturity - lowest.maturity, 1);
+
+  if (gap === 0) {
+    return `As dimensões apresentam a mesma pontuação de ${numberFormatter.format(highest.maturity)}/5.`;
+  }
+
+  return `${highest.shortDimension} registra a maior pontuação, ${numberFormatter.format(highest.maturity)}/5, enquanto ${lowest.shortDimension} apresenta ${numberFormatter.format(lowest.maturity)}/5. A diferença entre as dimensões é de ${numberFormatter.format(gap)} ponto.`;
+}
+
+export function buildLayerScoreSummary(layerScores: LayerScoreResult[]) {
+  const availableScores = layerScores.filter(
+    (layer): layer is LayerScoreResult & { score: number } =>
+      layer.score !== null,
+  );
+
+  if (availableScores.length === 0) {
+    return "Ainda não há respostas suficientes para comparar as camadas.";
+  }
+
+  if (availableScores.length === 1) {
+    const [layer] = availableScores;
+
+    return `A pontuação disponível é de ${numberFormatter.format(layer.score)}/5 para ${layer.label}; as demais camadas ainda não têm base.`;
+  }
+
+  const sortedScores = [...availableScores].sort(
+    (first, second) => second.score - first.score,
+  );
+  const highest = sortedScores[0];
+  const lowest = sortedScores.at(-1) ?? highest;
+  const gap = round(highest.score - lowest.score, 1);
+
+  if (gap === 0) {
+    return `As camadas apresentam a mesma pontuação de ${numberFormatter.format(highest.score)}/5.`;
+  }
+
+  return `${highest.label} registra a maior pontuação, ${numberFormatter.format(highest.score)}/5, enquanto ${lowest.label} apresenta ${numberFormatter.format(lowest.score)}/5. A diferença entre as camadas é de ${numberFormatter.format(gap)} ponto.`;
+}
+
 export function buildOmdxOverviewAnalyticsFromReports(
   reports: Report[],
 ): OverviewAnalytics {
   if (reports.length === 0) {
+    const layerScores = buildLayerScores([]);
+
     return {
       dimensions: [],
+      dimensionSummary: buildDimensionScoreSummary([]),
+      leverageRows: [],
+      layerScores,
+      layerSummary: buildLayerScoreSummary(layerScores),
       questions: [],
       metrics: [],
+      vulnerabilityRows: [],
     };
   }
 
@@ -532,10 +759,16 @@ export function buildOmdxOverviewAnalyticsFromReports(
       ),
     ),
   );
+  const layerScores = buildLayerScores(dimensions);
 
   return {
     dimensions,
+    dimensionSummary: buildDimensionScoreSummary(dimensions),
+    leverageRows: buildLeverageRows(dimensions),
+    layerScores,
+    layerSummary: buildLayerScoreSummary(layerScores),
     questions,
     metrics: buildMetrics(dimensions),
+    vulnerabilityRows: buildVulnerabilityRows(dimensions, questions),
   };
 }

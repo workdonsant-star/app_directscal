@@ -15,5 +15,6 @@ Raiz executiva do módulo Maturidade. A página aparece na UI como `Overview` e 
 - A ação `Baixar relatório` aponta para o diagnóstico mais recente com relatório consolidável e abre opções de PDF e CSV.
 >>>>>>> Stashed changes
 - O filtro de diagnóstico usa o query param `diagnostico`, com `todos` como consolidação dos diagnósticos reportáveis.
+- `/omdx/camadas` é o dashboard complementar para comparar Fundador, Liderança e Time. A rota reutiliza o mesmo filtro e a mesma camada de analytics do Overview, com breadcrumb `Maturidade / Camadas`.
 - CTAs contextuais, como `Baixar relatório`, ficam na `AppTopbar` via `actions`, não no header do conteúdo.
-- O bloqueio de onboarding operacional V2 agora envia o usuário para `/pessoas/diretorio`, onde o link público de cadastro pode ser copiado. Novos clientes V2 com `operational_onboarding_required = true` devem ter pelo menos 1 pessoa aprovada antes de ativar o diagnóstico Likert; a estrutura permanece aberta para novos cadastros depois disso.
+- O módulo Pessoas foi removido da navegação e das rotas autenticadas. O Overview não deve redirecionar para `/pessoas`.

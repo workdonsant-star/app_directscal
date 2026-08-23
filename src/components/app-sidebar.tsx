@@ -2,17 +2,23 @@
 
 import {
   Building2,
-  FileText,
+  CalendarDays,
+  ChartColumn,
+  ChartNoAxesCombined,
+  ClipboardList,
   LayoutGrid,
   Megaphone,
+  MessageSquareText,
   ScanEye,
+  Sprout,
+  Telescope,
   Users,
+  UsersRound,
+  Workflow,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import { NavMain } from "@/components/nav-main";
-import { NavModules } from "@/components/nav-modules";
-import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
@@ -37,24 +43,11 @@ const data = {
       url: "/omdx",
       icon: ScanEye,
     },
-    {
-      id: "module_people",
-      title: "Pessoas",
-      subtitle: "Vínculos, custos e fechamento",
-      url: "/pessoas",
-      icon: Users,
-    },
   ],
   omdxItems: [
-    { title: "Overview", url: "/omdx", exact: true },
-    { title: "Diagnósticos", url: "/omdx/diagnosticos" },
-    { title: "Cronograma", url: "/gantt" },
-  ],
-  peopleItems: [
-    { title: "Overview", url: "/pessoas", exact: true },
-    { title: "Diretório", url: "/pessoas/diretorio" },
-    { title: "Fechamento", url: "/pessoas/fechamento" },
-    { title: "Configurações", url: "/pessoas/configuracoes" },
+    { title: "Camadas", url: "/omdx/camadas", icon: ChartColumn },
+    { title: "Diagnósticos", url: "/omdx/diagnosticos", icon: ClipboardList },
+    { title: "Cronograma", url: "/gantt", icon: CalendarDays },
   ],
   admin: [
     { title: "Módulos", url: "/admin/modulos", icon: LayoutGrid },
@@ -63,15 +56,12 @@ const data = {
     { title: "Empresas", url: "/admin/empresas", icon: Building2 },
   ],
   insights: [
-    { name: "Cultura", url: "/insights/cultura" },
-    { name: "Visão", url: "/insights/visao" },
-    { name: "Comunicação", url: "/insights/comunicacao" },
-    { name: "Processos", url: "/insights/processos" },
-    { name: "Liderança", url: "/insights/lideranca" },
-    { name: "Performance", url: "/insights/performance" },
-  ],
-  resources: [
-    { name: "Documentação", url: "/docs", icon: FileText },
+    { name: "Cultura", url: "/insights/cultura", icon: Sprout },
+    { name: "Visão", url: "/insights/visao", icon: Telescope },
+    { name: "Comunicação", url: "/insights/comunicacao", icon: MessageSquareText },
+    { name: "Processos", url: "/insights/processos", icon: Workflow },
+    { name: "Liderança", url: "/insights/lideranca", icon: UsersRound },
+    { name: "Performance", url: "/insights/performance", icon: ChartNoAxesCombined },
   ],
 };
 
@@ -116,14 +106,12 @@ export function AppSidebar({
     .map((module) => ({
       ...module,
       isActive:
-        module.id === "module_people"
-          ? pathname === "/pessoas" || pathname.startsWith("/pessoas/")
-          : pathname === "/omdx" ||
-            pathname.startsWith("/omdx/") ||
-            pathname === "/gantt" ||
-            pathname.startsWith("/gantt/") ||
-            pathname === "/insights" ||
-            pathname.startsWith("/insights/"),
+        pathname === "/omdx" ||
+        pathname.startsWith("/omdx/") ||
+        pathname === "/gantt" ||
+        pathname.startsWith("/gantt/") ||
+        pathname === "/insights" ||
+        pathname.startsWith("/insights/"),
     }));
   const appModules =
     enabledAppModules.length > 0
@@ -132,32 +120,22 @@ export function AppSidebar({
           ...module,
           isActive: true,
         }));
-  const appNavigationModules = appModules.map((module) => {
-    const items =
-      module.id === "module_people"
-        ? data.peopleItems
-        : [
-            ...data.omdxItems,
-            ...data.insights.map((item) => ({
-              title: item.name,
-              url: item.url,
-            })),
-          ];
-
-    return {
+  const appNavigation = [
+    ...appModules.map((module) => ({
       ...module,
-      items: items.map((item) => ({
-        ...item,
-        isActive: "exact" in item && item.exact
-          ? pathname === item.url
-          : pathname === item.url || pathname.startsWith(`${item.url}/`),
-      })),
-    };
-  });
-  const resources = data.resources.map((item) => ({
-    ...item,
-    isActive: pathname === item.url || pathname.startsWith(`${item.url}/`),
-  }));
+      isActive: pathname === module.url,
+    })),
+    ...data.omdxItems.map((item) => ({
+      ...item,
+      isActive: pathname === item.url || pathname.startsWith(`${item.url}/`),
+    })),
+    ...data.insights.map((item) => ({
+      title: item.name,
+      url: item.url,
+      icon: item.icon,
+      isActive: pathname === item.url || pathname.startsWith(`${item.url}/`),
+    })),
+  ];
   const adminItems = acquisitionEnabled ? data.admin : data.admin.slice(0, 1);
   const admin = adminItems.map((item) => ({
     ...item,
@@ -169,17 +147,14 @@ export function AppSidebar({
       collapsible="icon"
       className="[&_[data-slot=sidebar-inner]]:bg-sidebar"
     >
-      <SidebarHeader>
+      <SidebarHeader className="pb-4">
         <NavUser user={sidebarUser} />
       </SidebarHeader>
       <SidebarContent>
         {isAdmin ? (
           <NavMain label="Administração" items={admin} />
         ) : (
-          <>
-            <NavModules modules={appNavigationModules} />
-            <NavProjects hideWhenCollapsed projects={resources} />
-          </>
+          <NavMain label={null} items={appNavigation} />
         )}
       </SidebarContent>
       <SidebarRail />

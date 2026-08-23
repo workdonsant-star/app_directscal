@@ -13,7 +13,6 @@ Esta pasta define os contratos de dados preparados para a futura integração co
 - Componentes não devem importar schemas diretamente salvo necessidade de validação local. Prefira tipos e funções de `src/lib/data/`.
 - Contratos do cronograma ficam em `gantt.ts`: status, tarefas recursivas, metadados opcionais de action point para detalhe de execução e payload de workspace usado para transformar action points em frentes no Gantt.
 - Contratos do superadmin ficam em `admin.ts`: módulos, campanhas, campos configuráveis, leads, empresas e input de submissão pública.
-- Contratos de Pessoas ficam em `pessoas.ts`: pessoa, vínculo, remuneração, documentos, benefícios, pagamentos, Overview, diretório, perfil, fechamento mensal e configurações mínimas.
 
 ## Mappers
 
