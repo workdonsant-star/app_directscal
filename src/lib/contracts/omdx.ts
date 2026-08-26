@@ -229,6 +229,8 @@ export const dimensionInsightTrendPointSchema = z.object({
   diagnosticId: idSchema,
   diagnosticName: z.string().min(1),
   company: z.string().min(1),
+  createdAt: isoDateTimeSchema,
+  gap: z.number().nonnegative().nullable(),
   responses: z.number().int().nonnegative(),
   score: z.number().min(1).max(5),
 });
@@ -249,6 +251,7 @@ export const dimensionQuestionResultSchema = z.object({
   dimensionId: dimensionIdSchema,
   text: z.string().min(1),
   score: z.number().min(1).max(5),
+  layerScores: nullableScoresByGroupSchema,
   gap: z.number().nonnegative().nullable(),
   responses: z.number().int().nonnegative(),
   classification: classificationSchema,

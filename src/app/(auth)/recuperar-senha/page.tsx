@@ -28,6 +28,7 @@ export default async function PasswordResetPage() {
     <AuthPageShell
       title="Recupere o acesso"
       description="Informe o e-mail da conta para iniciar a recuperação de senha."
+      visualVariant="app"
     >
       <PasswordResetForm />
     </AuthPageShell>

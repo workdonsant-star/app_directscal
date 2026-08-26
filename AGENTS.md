@@ -161,6 +161,7 @@ Rotas atuais:
 - `/admin/campanhas` → campanhas, links e campos de aquisição.
 - `/admin/leads` → leads capturados por links de aquisição.
 - `/admin/empresas` → empresas derivadas dos leads.
+- Contas `superadmin` ficam restritas a `/admin/*` e `/api/admin/*`; não acessam páginas, downloads, APIs ou dados RLS da aplicação do cliente.
 - `/a/[slug]` → início público de aquisição por campanha.
 - `/a/[slug]/completar` → conclusão do cadastro Google da campanha.
 
@@ -198,6 +199,7 @@ Convenções:
 - **Brand blue (`#185EFF`) é signal-grade.** Um CTA primário por tela. Nunca tile background.
 - **Cards têm 1px border, sem shadow** por padrão. Sombras só em popovers e elementos elevados.
 - **Tabelas operacionais ficam livres, não dentro de cards/boxes.** Siga o padrão de `src/components/omdx/diagnostics-workspace.tsx`: título, descrição e ações no fluxo da página; a tabela usa apenas o seu próprio wrapper `overflow-hidden rounded-lg border`.
+- **Margem das páginas autenticadas:** use `AppPage`, com `px-6 py-8 lg:px-10` e conteúdo em largura total, seguindo as páginas de Dimensões. Limite de largura é exceção para leitura documental ou fluxos deliberadamente estreitos.
 - **Tabular numerals** (`.tabular-nums` ou `font-variant-numeric: tabular-nums`) em KPIs, tabelas e qualquer número alinhável.
 - **Use `cn()` de `@/lib/utils`** para compor classes condicionalmente.
 - **Preserve contraste WCAG AA**, foco visível (ring brand de 2px), semântica HTML e navegação por teclado.

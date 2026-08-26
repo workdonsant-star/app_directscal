@@ -1,6 +1,8 @@
 import type { DimensionQuestionResult } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
+import { DimensionQuestionLayerChart } from "@/components/omdx/dimension-question-layer-chart";
+
 type DimensionQuestionResultsTableProps = {
   questions: DimensionQuestionResult[];
 };
@@ -59,75 +61,68 @@ function formatGap(gap: DimensionQuestionResult["gap"]) {
   return gap === null ? "Sem base" : scoreFormatter.format(gap);
 }
 
+function QuestionLayerStackedBar({
+  scores,
+}: {
+  scores: DimensionQuestionResult["layerScores"];
+}) {
+  return (
+    <div className="w-full max-w-[360px]">
+      <DimensionQuestionLayerChart scores={scores} />
+    </div>
+  );
+}
+
 export function DimensionQuestionResultsTable({
   questions,
 }: DimensionQuestionResultsTableProps) {
   return (
-    <section className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1">
-        <h2 className="text-foreground text-xl font-semibold tracking-tight">
-          Resultado das perguntas
-        </h2>
-        <p className="text-muted-foreground max-w-2xl text-sm">
-          Perguntas da dimensão com pontuação, status, gap e base de respostas.
-        </p>
-      </div>
-
+    <section>
       {questions.length === 0 ? (
         <div className="border bg-muted/40 p-4 text-sm text-muted-foreground">
           Nenhuma pergunta consolidada para esta dimensão no filtro atual.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border bg-card">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[800px] caption-bottom text-sm">
-              <thead className="border-b bg-muted/30">
-                <tr>
-                  <th className="h-11 px-4 text-left font-medium text-foreground">
-                    Pergunta
-                  </th>
-                  <th className="h-11 w-28 px-4 text-right font-medium text-foreground">
-                    Pontuação
-                  </th>
-                  <th className="h-11 w-36 px-4 text-left font-medium text-foreground">
-                    Status
-                  </th>
-                  <th className="h-11 w-24 px-4 text-right font-medium text-foreground">
-                    Gap
-                  </th>
-                  <th className="h-11 w-28 px-4 text-right font-medium text-foreground">
-                    Respostas
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {questions.map((question) => (
-                  <tr key={question.id} className="hover:bg-muted/30">
-                    <td className="min-w-[360px] px-4 py-4 align-middle">
-                      <p className="text-foreground text-sm font-medium leading-snug">
-                        {question.text}
-                      </p>
-                    </td>
-                    <td className="px-4 py-4 text-right align-middle">
-                      <span className="text-foreground text-base font-semibold tabular-nums">
-                        {scoreFormatter.format(question.score)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4 align-middle">
-                      <QuestionStatus classification={question.classification} />
-                    </td>
-                    <td className="px-4 py-4 text-right align-middle text-sm tabular-nums text-foreground">
-                      {formatGap(question.gap)}
-                    </td>
-                    <td className="px-4 py-4 text-right align-middle text-sm tabular-nums text-foreground">
-                      {question.responses.toLocaleString("pt-BR")}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <table className="w-full table-fixed caption-bottom overflow-hidden rounded-[5px] text-sm ring-1 ring-foreground/10">
+          <thead className="border-b bg-muted/30">
+            <tr>
+              <th className="h-11 px-4 text-left font-medium text-foreground">
+                Pergunta
+              </th>
+              <th className="h-11 w-[440px] px-4 text-left font-medium text-foreground">
+                Pontuação empilhada
+              </th>
+              <th className="h-11 w-28 px-4 text-left font-medium text-foreground">
+                Gap médio
+              </th>
+              <th className="h-11 w-36 px-4 text-left font-medium text-foreground">
+                Status
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {questions.map((question) => (
+              <tr key={question.id} className="hover:bg-muted/30">
+                <td className="px-4 py-4 align-middle">
+                  <p className="text-foreground text-sm font-medium leading-snug">
+                    {question.text}
+                  </p>
+                </td>
+                <td className="px-4 py-4 text-left align-middle">
+                  <QuestionLayerStackedBar scores={question.layerScores} />
+                </td>
+                <td className="px-4 py-4 align-middle text-sm text-foreground">
+                  <span className="block w-full text-left tabular-nums">
+                    {formatGap(question.gap)}
+                  </span>
+                </td>
+                <td className="px-4 py-4 text-left align-middle">
+                  <QuestionStatus classification={question.classification} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
     </section>
   );

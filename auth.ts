@@ -7,6 +7,7 @@ import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 
 import {
+  canAccessCustomerApp,
   isCorporateEmailAllowed,
   resolveAuthUserFromGoogleProfile,
 } from "@/lib/auth/access-control";
@@ -131,12 +132,16 @@ function writeSessionUser({
   session.user.role = user.role;
   session.user.image = image;
 
-  attachSupabaseAccessTokenToSession({
-    email: user.email,
-    expires: session.expires,
-    session,
-    userId: user.id,
-  });
+  if (canAccessCustomerApp(user)) {
+    attachSupabaseAccessTokenToSession({
+      email: user.email,
+      expires: session.expires,
+      session,
+      userId: user.id,
+    });
+  } else {
+    session.supabaseAccessToken = undefined;
+  }
 
   return session;
 }

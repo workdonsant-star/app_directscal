@@ -207,8 +207,8 @@ Base: grade mental de 4px.
 
 Padrões atuais:
 
-- App shell autenticado: sidebar + topbar sticky de `h-16`, reduzindo para `h-12` com sidebar colapsada.
-- Conteúdo autenticado: `px-6 py-8 lg:px-10`.
+- App shell autenticado: sidebar + topbar sticky de `h-14`, alinhada à base do seletor de usuário e reduzindo para `h-12` com sidebar colapsada.
+- Conteúdo autenticado: `AppPage` com `px-6 py-8 lg:px-10`, largura total e sem centralização ou `max-width` adicional.
 - Container documental: `mx-auto w-full max-w-6xl`.
 - Conteúdo longo documental: coluna de leitura em torno de `760px`.
 - Cards: `gap-4`, `py-4`, `px-4`; variante pequena com `gap-3`, `py-3`, `px-3`.
@@ -216,6 +216,7 @@ Padrões atuais:
 
 Regra:
 
+- Limite de largura é uma exceção para documentação, leitura longa ou fluxos deliberadamente estreitos; dashboards, tabelas, perfil e admin seguem o recuo de Dimensões em largura total.
 - Não colocar card dentro de card.
 - Não usar cards para enquadrar a página inteira.
 - Tabela operacional deve ficar no fluxo da página, com header e ações livres, seguida por wrapper `overflow-hidden rounded-lg border`.
@@ -409,7 +410,7 @@ Sidebar:
 
 Topbar:
 
-- Sticky, altura 64px.
+- Sticky, altura 56px, alinhada à base do seletor de usuário na sidebar expandida.
 - Fundo `bg-sidebar/95` com blur quando suportado.
 - Conteúdo: trigger da sidebar, separador, breadcrumb e ações contextuais.
 - Não adicionar busca/notificações/filtros globais sem decisão explícita.

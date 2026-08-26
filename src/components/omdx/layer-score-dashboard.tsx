@@ -10,11 +10,13 @@ import type {
   DimensionResult,
   LeverageMatrixRow,
   LayerScoreResult,
+  OverviewHistoricalComparison,
   VulnerabilityMatrixRow,
 } from "@/lib/data/omdx-overview-analytics";
 import { cn } from "@/lib/utils";
 
 type LayerScoreDashboardProps = {
+  comparison: OverviewHistoricalComparison | null;
   dimensionScores: DimensionResult[];
   dimensionSummary: string;
   leverageRows: LeverageMatrixRow[];
@@ -102,6 +104,7 @@ function DashboardCard({
 }
 
 export function LayerScoreDashboard({
+  comparison,
   dimensionScores,
   dimensionSummary,
   leverageRows,
@@ -109,8 +112,41 @@ export function LayerScoreDashboard({
   summary,
   vulnerabilityRows,
 }: LayerScoreDashboardProps) {
+  const currentDiagnosticDate = comparison
+    ? new Intl.DateTimeFormat("pt-BR", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        timeZone: "UTC",
+      }).format(new Date(comparison.currentDiagnosticDate))
+    : null;
+
   return (
     <div className="flex flex-col gap-6">
+      {comparison && (
+        <div
+          aria-label={`Comparando ${comparison.currentDiagnosticName} com ${comparison.referenceLabel.toLocaleLowerCase("pt-BR")}.`}
+          className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted-foreground"
+        >
+          <span className="inline-flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="h-3 w-2 bg-foreground"
+            />
+            <span>
+              Atual · {comparison.currentDiagnosticName} · {currentDiagnosticDate}
+            </span>
+          </span>
+          <span className="inline-flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="w-5 border-t-2 border-dashed border-foreground/55"
+            />
+            <span>{comparison.referenceLabel}</span>
+          </span>
+        </div>
+      )}
+
       <section
         aria-label="Comparativos de maturidade"
         className="grid gap-6 xl:grid-cols-3"
@@ -120,7 +156,11 @@ export function LayerScoreDashboard({
           description={summary}
           testId="layer-score-card"
         >
-          <LayerScoreBarChart data={scores} />
+          <LayerScoreBarChart
+            data={scores}
+            historicalData={comparison?.historicalAnalytics.layerScores}
+            referenceLabel={comparison?.referenceLabel}
+          />
         </DashboardCard>
 
         <DashboardCard
@@ -128,7 +168,11 @@ export function LayerScoreDashboard({
           description={dimensionSummary}
           testId="dimension-score-card"
         >
-          <DimensionScoreBarChart data={dimensionScores} />
+          <DimensionScoreBarChart
+            data={dimensionScores}
+            historicalData={comparison?.historicalAnalytics.dimensions}
+            referenceLabel={comparison?.referenceLabel}
+          />
         </DashboardCard>
 
         <DashboardCard
@@ -136,7 +180,11 @@ export function LayerScoreDashboard({
           description="Compare como Fundador, Liderança e Operação compõem a pontuação de cada dimensão."
           testId="layer-dimension-score-card"
         >
-          <LayerDimensionStackedChart data={dimensionScores} />
+          <LayerDimensionStackedChart
+            data={dimensionScores}
+            historicalData={comparison?.historicalAnalytics.dimensions}
+            referenceLabel={comparison?.referenceLabel}
+          />
         </DashboardCard>
       </section>
 

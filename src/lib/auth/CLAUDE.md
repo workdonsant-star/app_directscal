@@ -21,4 +21,5 @@ Esta pasta concentra o fluxo de autenticação do app. Google OAuth via Auth.js/
 - `directscal_session` só pode ser aceito quando `AUTH_ENABLE_DEV_PASSWORD_LOGIN=true`; não use esse cookie como fallback silencioso para sessão real.
 - Senhas mockadas existem apenas para o acesso de demonstração e não representam segurança real.
 - Usuários com role `superadmin` devem ir para `/admin/modulos` após autenticação.
+- `superadmin` é uma identidade exclusivamente administrativa: não recebe `supabaseAccessToken` de cliente, não acessa organizações/diagnósticos pela camada Maturidade e deve permanecer em `/admin/*` + `/api/admin/*`.
 - `supabase-auth.ts` é a ponte entre Auth.js e membership real no Supabase; preserve essa fronteira ao ajustar roles.

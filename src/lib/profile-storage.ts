@@ -93,7 +93,7 @@ export function saveProfileOverrides(
   userId: string,
   overrides: StoredProfileOverrides,
 ) {
-  if (!isBrowser()) return;
+  if (!isBrowser()) return false;
 
   const storageKey = getProfileOverridesStorageKey(userId);
   const nextOverrides: StoredProfileOverrides = {
@@ -102,13 +102,19 @@ export function saveProfileOverrides(
     name: overrides.name?.trim(),
   };
 
-  const raw = JSON.stringify(nextOverrides);
-  window.localStorage.setItem(storageKey, raw);
-  window.localStorage.removeItem(profileOverridesStorageKey);
-  cachedStorageKey = storageKey;
-  cachedRaw = raw;
-  cachedOverrides = nextOverrides;
-  window.dispatchEvent(new Event(profileUpdatedEventName));
+  try {
+    const raw = JSON.stringify(nextOverrides);
+    window.localStorage.setItem(storageKey, raw);
+    window.localStorage.removeItem(profileOverridesStorageKey);
+    cachedStorageKey = storageKey;
+    cachedRaw = raw;
+    cachedOverrides = nextOverrides;
+    window.dispatchEvent(new Event(profileUpdatedEventName));
+
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function clearProfileOverrides(userId: string) {

@@ -24,7 +24,31 @@ export const userProfileSchema = z.object({
   updatedAt: isoDateTimeSchema,
 });
 
-export const profileSettingsDataSchema = userProfileSchema;
+export const companyProfileDetailsSchema = z.object({
+  socialName: z.string().nullable(),
+  officialName: z.string().min(1),
+  cnpj: z.string().nullable(),
+  registrationStatus: z.string().nullable(),
+  activityStartedAt: z.string().nullable(),
+  cnaeCode: z.string().nullable(),
+  cnaeDescription: z.string().nullable(),
+  legalNature: z.string().nullable(),
+  registrySize: z.string().nullable(),
+  registeredAddress: z.string().nullable(),
+  city: z.string().nullable(),
+  state: z.string().nullable(),
+  position: z.string().nullable(),
+  industry: z.string().nullable(),
+  instagram: z.string().nullable(),
+  website: z.string().nullable(),
+  companySize: z.string().nullable(),
+  lastQuarterRevenue: z.string().nullable(),
+  challenges: z.string().nullable(),
+});
+
+export const profileSettingsDataSchema = userProfileSchema.extend({
+  companyDetails: companyProfileDetailsSchema,
+});
 
 export const updateProfileInputSchema = z.object({
   userId: idSchema,
@@ -45,6 +69,7 @@ export const updateOrganizationInputSchema = z.object({
 
 export type DbUserProfile = z.infer<typeof dbUserProfileSchema>;
 export type UserProfile = z.infer<typeof userProfileSchema>;
+export type CompanyProfileDetails = z.infer<typeof companyProfileDetailsSchema>;
 export type ProfileSettingsData = z.infer<typeof profileSettingsDataSchema>;
 export type UpdateProfileInput = z.infer<typeof updateProfileInputSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordInputSchema>;

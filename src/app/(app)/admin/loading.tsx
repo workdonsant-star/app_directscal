@@ -1,3 +1,5 @@
+import { AppPage } from "@/components/app-page";
+
 export default function AdminLoading() {
   return (
     <>
@@ -5,8 +7,8 @@ export default function AdminLoading() {
         <div className="h-8 w-8 rounded-md bg-muted" />
         <div className="h-4 w-44 rounded bg-muted" />
       </div>
-      <main className="flex flex-1 flex-col px-6 py-8 lg:px-10">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+      <AppPage>
+        <div className="flex w-full flex-col gap-8">
           <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: 4 }).map((_, index) => (
               <div key={index} className="rounded-lg border bg-card p-5">
@@ -29,7 +31,7 @@ export default function AdminLoading() {
             ))}
           </div>
         </div>
-      </main>
+      </AppPage>
     </>
   );
 }

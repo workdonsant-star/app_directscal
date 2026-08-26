@@ -52,15 +52,17 @@ export function PasswordResetForm() {
   }
 
   return (
-    <form className="grid gap-4" onSubmit={handleSubmit}>
-      <div className="grid gap-2">
-        <label htmlFor="email" className="text-sm font-medium">
+    <form className="grid gap-5" onSubmit={handleSubmit}>
+      <div>
+        <label htmlFor="email" className="sr-only">
           E-mail
         </label>
         <Input
           id="email"
           type="email"
           autoComplete="email"
+          className="h-[45px] px-2.5 text-sm md:text-sm"
+          placeholder="Digite seu e-mail"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           required
@@ -76,14 +78,19 @@ export function PasswordResetForm() {
           {successMessage}
         </p>
       ) : null}
-      <Button type="submit" className="mt-2 w-full" disabled={isSubmitting}>
+      <Button
+        type="submit"
+        size="lg"
+        className="h-[45px] w-full text-sm font-medium"
+        disabled={isSubmitting}
+      >
         {isSubmitting ? "Enviando" : "Enviar instruções"}
       </Button>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-xs leading-[18px] text-muted-foreground">
         Lembrou a senha{" "}
         <Link
           href="/entrar"
-          className="rounded-sm text-primary outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+          className="rounded-sm text-foreground/80 underline underline-offset-2 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 dark:text-muted-foreground"
         >
           Voltar para entrada
         </Link>

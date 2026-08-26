@@ -10,13 +10,12 @@ import type { DimensionResult } from "@/lib/data/omdx-overview-analytics";
 
 type DimensionScoreBarChartProps = {
   data: DimensionResult[];
+  historicalData?: DimensionResult[];
+  referenceLabel?: string;
 };
 
 type TooltipParam = {
-  data?: {
-    dimension: string;
-    value: number;
-  };
+  dataIndex?: number;
 };
 
 const fallbackColors: Record<string, string> = {
@@ -55,26 +54,65 @@ function escapeHtml(value: string) {
     .replaceAll("'", "&#039;");
 }
 
-function makeTooltipFormatter() {
+function formatDelta(value: number) {
+  const sign = value > 0 ? "+" : value < 0 ? "−" : "";
+
+  return `${sign}${scoreFormatter.format(Math.abs(value))} ${Math.abs(value) === 1 ? "ponto" : "pontos"}`;
+}
+
+function makeTooltipFormatter(
+  data: DimensionResult[],
+  historicalData: DimensionResult[],
+  referenceLabel: string,
+) {
   return (params: unknown) => {
-    const item =
-      params && typeof params === "object" && "data" in params
-        ? (params as TooltipParam).data
+    const dataIndex =
+      params && typeof params === "object" && "dataIndex" in params
+        ? (params as TooltipParam).dataIndex
         : undefined;
-    const score = getNumericValue(item?.value);
+    const item = typeof dataIndex === "number" ? data[dataIndex] : undefined;
+    const score = getNumericValue(item?.maturity);
 
     if (!item || score === null) return "";
 
+    const historicalScore =
+      historicalData.find(
+        (historical) => historical.dimension === item.dimension,
+      )?.maturity ?? null;
+    const historicalRows =
+      historicalScore === null
+        ? ""
+        : `
+          <div style="display:flex;justify-content:space-between;gap:24px;">
+            <span style="color:var(--muted-foreground);">${escapeHtml(referenceLabel)}</span>
+            <span style="font-variant-numeric:tabular-nums;color:var(--foreground);">${scoreFormatter.format(historicalScore)}/5</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:24px;">
+            <span style="color:var(--muted-foreground);">Variação</span>
+            <span style="font-variant-numeric:tabular-nums;font-weight:600;color:var(--foreground);">${formatDelta(score - historicalScore)}</span>
+          </div>
+        `;
+
     return `
-      <div style="display:flex;min-width:200px;justify-content:space-between;gap:24px;">
-        <span style="color:var(--muted-foreground);">${escapeHtml(item.dimension)}</span>
-        <span style="font-variant-numeric:tabular-nums;font-weight:600;color:var(--foreground);">${scoreFormatter.format(score)}/5</span>
+      <div style="min-width:240px;">
+        <div style="margin-bottom:10px;font-weight:600;color:var(--foreground);">${escapeHtml(item.dimension)}</div>
+        <div style="display:grid;gap:6px;">
+          <div style="display:flex;justify-content:space-between;gap:24px;">
+            <span style="color:var(--muted-foreground);">Atual</span>
+            <span style="font-variant-numeric:tabular-nums;font-weight:600;color:var(--foreground);">${scoreFormatter.format(score)}/5</span>
+          </div>
+          ${historicalRows}
+        </div>
       </div>
     `;
   };
 }
 
-export function DimensionScoreBarChart({ data }: DimensionScoreBarChartProps) {
+export function DimensionScoreBarChart({
+  data,
+  historicalData = [],
+  referenceLabel = "Média histórica",
+}: DimensionScoreBarChartProps) {
   const colors = useChartThemeColors(fallbackColors);
   const chartData = useMemo(
     () =>
@@ -90,6 +128,16 @@ export function DimensionScoreBarChart({ data }: DimensionScoreBarChartProps) {
       }),
     [data],
   );
+  const historicalScoresByDimension = useMemo(
+    () =>
+      new Map(
+        historicalData.map((dimension) => [
+          dimension.dimension,
+          dimension.maturity,
+        ]),
+      ),
+    [historicalData],
+  );
   const option = useMemo<EChartsOption>(
     () => ({
       animationDuration: 180,
@@ -97,7 +145,7 @@ export function DimensionScoreBarChart({ data }: DimensionScoreBarChartProps) {
         enabled: true,
         label: {
           description:
-            "Gráfico de barras com as pontuações consolidadas de Cultura, Visão, Comunicação, Processos, Liderança e Performance em escala de 0 a 5.",
+            "Gráfico de barras com as pontuações atuais das seis dimensões e marcadores da média dos diagnósticos anteriores, em escala de 0 a 5.",
         },
       },
       grid: {
@@ -115,7 +163,11 @@ export function DimensionScoreBarChart({ data }: DimensionScoreBarChartProps) {
         className: "omdx-echarts-tooltip",
         confine: true,
         extraCssText: "box-shadow:0 14px 40px rgba(0,0,0,.12);padding:12px;",
-        formatter: makeTooltipFormatter(),
+        formatter: makeTooltipFormatter(
+          chartData,
+          historicalData,
+          referenceLabel,
+        ),
         renderMode: "html",
         textStyle: {
           color: colors["--popover-foreground"],
@@ -185,9 +237,30 @@ export function DimensionScoreBarChart({ data }: DimensionScoreBarChartProps) {
             },
           },
         },
+        {
+          name: referenceLabel,
+          type: "scatter",
+          symbol: "rect",
+          symbolSize: [28, 3],
+          data: chartData.map((dimension) => [
+            dimension.shortDimension,
+            historicalScoresByDimension.get(dimension.dimension) ?? null,
+          ]),
+          itemStyle: {
+            color: colors["--foreground"],
+            opacity: 0.58,
+          },
+          z: 5,
+        },
       ],
     }),
-    [chartData, colors],
+    [
+      chartData,
+      colors,
+      historicalData,
+      historicalScoresByDimension,
+      referenceLabel,
+    ],
   );
 
   if (data.length === 0) {

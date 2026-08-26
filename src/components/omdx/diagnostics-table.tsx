@@ -8,6 +8,8 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { DeleteDiagnosticDialog } from "@/components/omdx/delete-diagnostic-dialog";
@@ -19,7 +21,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -40,14 +41,7 @@ import type {
   RespondentGroup,
 } from "@/lib/types";
 
-type Filter = "todos" | DiagnosticStatus;
-
-const filters: { value: Filter; label: string }[] = [
-  { value: "todos", label: "Todos" },
-  { value: "ativo", label: "Ativos" },
-  { value: "rascunho", label: "Rascunhos" },
-  { value: "encerrado", label: "Encerrados" },
-];
+export type DiagnosticsFilter = "todos" | DiagnosticStatus;
 
 const respondentGroups = getRespondentGroups();
 
@@ -61,6 +55,7 @@ function formatDate(iso: string) {
 
 type DiagnosticsTableProps = {
   diagnostics: Diagnostic[];
+  filter: DiagnosticsFilter;
   shareLinksByDiagnosticId: Record<string, DiagnosticShareLink[]>;
   onConfigure?: (diagnostic: Diagnostic) => void;
   onDelete?: (diagnostic: Diagnostic) => void;
@@ -117,24 +112,15 @@ function ResponseLinkCell({
 
 export function DiagnosticsTable({
   diagnostics,
+  filter,
   shareLinksByDiagnosticId,
   onConfigure,
   onDelete,
 }: DiagnosticsTableProps) {
-  const [filter, setFilter] = useState<Filter>("todos");
+  const router = useRouter();
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [diagnosticToDelete, setDiagnosticToDelete] =
     useState<Diagnostic | null>(null);
-
-  const counts = useMemo(
-    () => ({
-      todos: diagnostics.length,
-      ativo: diagnostics.filter((d) => d.status === "ativo").length,
-      rascunho: diagnostics.filter((d) => d.status === "rascunho").length,
-      encerrado: diagnostics.filter((d) => d.status === "encerrado").length,
-    }),
-    [diagnostics],
-  );
 
   const visible = useMemo(
     () =>
@@ -170,61 +156,69 @@ export function DiagnosticsTable({
     window.location.assign(`/omdx/${diagnostic.id}/action-points`);
   }
 
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-4">
-        <Tabs
-          value={filter}
-          onValueChange={(value) => setFilter(value as Filter)}
-        >
-          <TabsList>
-            {filters.map((f) => (
-              <TabsTrigger key={f.value} value={f.value} className="gap-2">
-                {f.label}
-                <span className="text-muted-foreground bg-background rounded-full border px-1.5 text-xs font-medium tabular-nums">
-                  {counts[f.value]}
-                </span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-      </div>
+  function handleRowClick(
+    event: React.MouseEvent<HTMLTableRowElement>,
+    diagnostic: Diagnostic,
+  ) {
+    if ((event.target as HTMLElement).closest("a, button, [role='menuitem']")) {
+      return;
+    }
 
-      <div className="overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm">
-        <Table>
-          <TableHeader className="bg-muted/40">
+    router.push(`/omdx/${diagnostic.id}/compartilhar`);
+  }
+
+  return (
+    <div>
+      <div className="overflow-hidden rounded-[5px] ring-1 ring-foreground/10">
+        <Table className="min-w-[1100px] table-fixed">
+          <TableHeader className="bg-muted/30">
             <TableRow>
-              <TableHead className="w-[24%]">Diagnóstico</TableHead>
-              <TableHead>Empresa</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead className="h-11 w-[260px] px-4">Diagnóstico</TableHead>
+              <TableHead className="h-11 w-[125px] px-4">Empresa</TableHead>
+              <TableHead className="h-11 w-[85px] px-4">Status</TableHead>
               {respondentGroups.map((group) => (
-                <TableHead key={group.id}>{group.label}</TableHead>
+                <TableHead key={group.id} className="h-11 w-[100px] px-4">
+                  {group.label}
+                </TableHead>
               ))}
-              <TableHead className="text-right">Respostas</TableHead>
-              <TableHead className="text-right">Score</TableHead>
-              <TableHead>Prazo</TableHead>
-              <TableHead className="w-[40px]"></TableHead>
+              <TableHead className="h-11 w-[85px] px-4 text-right">
+                Respostas
+              </TableHead>
+              <TableHead className="h-11 w-[60px] px-4 text-right">
+                Score
+              </TableHead>
+              <TableHead className="h-11 w-[155px] px-4">Prazo</TableHead>
+              <TableHead className="h-11 w-[60px] px-4"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {visible.map((d) => (
-              <TableRow key={d.id} className="cursor-pointer">
-                <TableCell className="font-medium">
+              <TableRow
+                key={d.id}
+                className="cursor-pointer hover:bg-muted/30"
+                onClick={(event) => handleRowClick(event, d)}
+              >
+                <TableCell className="px-4 py-4 font-medium whitespace-normal">
                   <div className="flex flex-col">
-                    <span className="text-foreground">{d.name}</span>
+                    <Link
+                      href={`/omdx/${d.id}/compartilhar`}
+                      className="text-foreground rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      {d.name}
+                    </Link>
                     <span className="text-muted-foreground text-xs">
                       Criado em {formatDate(d.createdAt)}
                     </span>
                   </div>
                 </TableCell>
-                <TableCell className="text-muted-foreground">
+                <TableCell className="px-4 py-4 text-muted-foreground">
                   {d.company}
                 </TableCell>
-                <TableCell>
+                <TableCell className="px-4 py-4">
                   <StatusBadge status={d.status} />
                 </TableCell>
                 {respondentGroups.map((group) => (
-                  <TableCell key={group.id}>
+                  <TableCell key={group.id} className="px-4 py-4">
                     <ResponseLinkCell
                       copiedKey={copiedKey}
                       diagnostic={d}
@@ -236,14 +230,14 @@ export function DiagnosticsTable({
                     />
                   </TableCell>
                 ))}
-                <TableCell className="text-right tabular-nums">
+                <TableCell className="px-4 py-4 text-right tabular-nums">
                   {d.responses.total > 0 ? (
                     <span className="text-foreground">{d.responses.total}</span>
                   ) : (
                     <span className="text-muted-foreground">—</span>
                   )}
                 </TableCell>
-                <TableCell className="text-right tabular-nums">
+                <TableCell className="px-4 py-4 text-right tabular-nums">
                   {d.generalScore !== null ? (
                     <span className="text-foreground font-medium">
                       {d.generalScore.toFixed(1)}
@@ -252,10 +246,10 @@ export function DiagnosticsTable({
                     <span className="text-muted-foreground">—</span>
                   )}
                 </TableCell>
-                <TableCell className="text-muted-foreground text-sm">
+                <TableCell className="px-4 py-4 text-sm text-muted-foreground">
                   {deadlineLabel(d)}
                 </TableCell>
-                <TableCell>
+                <TableCell className="px-4 py-4">
                   <DropdownMenu>
                     <DropdownMenuTrigger
                       render={
@@ -318,7 +312,7 @@ export function DiagnosticsTable({
               <TableRow>
                 <TableCell
                   colSpan={10}
-                  className="text-muted-foreground py-12 text-center text-sm"
+                  className="px-4 py-12 text-center text-sm text-muted-foreground"
                 >
                   Nenhum diagnóstico nesta categoria.
                 </TableCell>

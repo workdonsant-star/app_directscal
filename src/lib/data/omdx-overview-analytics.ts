@@ -80,6 +80,12 @@ export type ExecutiveMetric = {
   technicalDetail: string;
 };
 
+export type LatestVsPreviousComparison = {
+  latest: number;
+  percentage: number;
+  previousAverage: number;
+};
+
 export type MaturityQuadrant = {
   name: string;
   reading: string;
@@ -94,6 +100,21 @@ export type OverviewAnalytics = {
   questions: QuestionResult[];
   metrics: ExecutiveMetric[];
   vulnerabilityRows: VulnerabilityMatrixRow[];
+};
+
+export type OverviewHistoricalComparison = {
+  currentDiagnosticId: string;
+  currentDiagnosticName: string;
+  currentDiagnosticDate: string;
+  historicalAnalytics: OverviewAnalytics;
+  historicalDiagnosticCount: number;
+  referenceLabel: string;
+};
+
+export type OverviewComparisonResult = {
+  analytics: OverviewAnalytics;
+  comparison: OverviewHistoricalComparison | null;
+  reportDiagnostic: DiagnosticReport["diagnostic"] | undefined;
 };
 
 type Report = DiagnosticReport;
@@ -213,6 +234,27 @@ export function normalizeLikertToIndex(value: number): number {
 
 export function normalizeGapToIndex(gap: number): number {
   return clamp(Math.round((gap / 5) * 100), 0, 100);
+}
+
+export function calculateLatestVsPreviousComparison(
+  points: Array<{ createdAt: string; value: number }>,
+): LatestVsPreviousComparison | null {
+  if (points.length < 2) return null;
+
+  const orderedPoints = [...points].sort((left, right) =>
+    left.createdAt.localeCompare(right.createdAt),
+  );
+  const latest = orderedPoints.at(-1)?.value;
+  const previousValues = orderedPoints.slice(0, -1).map((point) => point.value);
+  const previousAverage = average(previousValues);
+
+  if (latest === undefined || previousAverage === 0) return null;
+
+  return {
+    latest,
+    previousAverage,
+    percentage: round(((latest - previousAverage) / previousAverage) * 100, 1),
+  };
 }
 
 export function formatIndex(value: number): string {
@@ -770,5 +812,65 @@ export function buildOmdxOverviewAnalyticsFromReports(
     questions,
     metrics: buildMetrics(dimensions),
     vulnerabilityRows: buildVulnerabilityRows(dimensions, questions),
+  };
+}
+
+function getDiagnosticComparisonDate(report: Report) {
+  return report.diagnostic.closedAt ?? report.diagnostic.createdAt;
+}
+
+function sortReportsByComparisonDate(reports: Report[]) {
+  return [...reports].sort((left, right) => {
+    const dateComparison = getDiagnosticComparisonDate(left).localeCompare(
+      getDiagnosticComparisonDate(right),
+    );
+
+    if (dateComparison !== 0) return dateComparison;
+
+    return left.diagnostic.id.localeCompare(right.diagnostic.id);
+  });
+}
+
+export function buildOmdxOverviewComparisonFromReports(
+  reports: Report[],
+  selectedDiagnostic: "todos" | string = "todos",
+): OverviewComparisonResult {
+  const orderedReports = sortReportsByComparisonDate(reports);
+  const selectedIndex =
+    selectedDiagnostic === "todos"
+      ? orderedReports.length - 1
+      : orderedReports.findIndex(
+          (report) => report.diagnostic.id === selectedDiagnostic,
+        );
+  const currentIndex =
+    selectedIndex >= 0 ? selectedIndex : orderedReports.length - 1;
+  const currentReport = orderedReports[currentIndex];
+
+  if (!currentReport) {
+    return {
+      analytics: buildOmdxOverviewAnalyticsFromReports([]),
+      comparison: null,
+      reportDiagnostic: undefined,
+    };
+  }
+
+  const historicalReports = orderedReports.slice(0, currentIndex);
+  const historicalDiagnosticCount = historicalReports.length;
+
+  return {
+    analytics: buildOmdxOverviewAnalyticsFromReports([currentReport]),
+    comparison:
+      historicalDiagnosticCount > 0
+        ? {
+            currentDiagnosticId: currentReport.diagnostic.id,
+            currentDiagnosticName: currentReport.diagnostic.name,
+            currentDiagnosticDate: getDiagnosticComparisonDate(currentReport),
+            historicalAnalytics:
+              buildOmdxOverviewAnalyticsFromReports(historicalReports),
+            historicalDiagnosticCount,
+            referenceLabel: `Média de ${historicalDiagnosticCount} ${historicalDiagnosticCount === 1 ? "diagnóstico anterior" : "diagnósticos anteriores"}`,
+          }
+        : null,
+    reportDiagnostic: currentReport.diagnostic,
   };
 }

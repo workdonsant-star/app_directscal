@@ -1,6 +1,7 @@
 import { renderToBuffer } from "@react-pdf/renderer";
 import { createElement } from "react";
 
+import { canAccessCustomerApp } from "@/lib/auth/access-control";
 import { getCurrentAuthSession } from "@/lib/auth/session";
 import {
   getDiagnosticActionPlan,
@@ -34,6 +35,10 @@ export async function GET(
     return new Response("Sessão necessária para baixar os action points.", {
       status: 401,
     });
+  }
+
+  if (!canAccessCustomerApp(session.user)) {
+    return new Response("Acesso restrito à área do cliente.", { status: 403 });
   }
 
   const { id } = await params;

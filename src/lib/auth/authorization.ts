@@ -63,18 +63,10 @@ export const getAccessibleOrganizationIdsForUser = cache(
     const isSuperadmin = memberships.some((item) => item.role === "superadmin");
 
     if (isSuperadmin) {
-      const { data: organizations, error: organizationsError } = await supabase
-        .from("organizations")
-        .select("id")
-        .order("created_at", { ascending: true })
-        .returns<{ id: string }[]>();
-
-      if (organizationsError) throw organizationsError;
-
       return {
         isSuperadmin,
-        organizationIds: organizations.map((organization) => organization.id),
-        primaryOrganizationId: organizations[0]?.id ?? null,
+        organizationIds: [],
+        primaryOrganizationId: null,
       };
     }
 
@@ -92,18 +84,11 @@ export async function userCanAccessOrganization(
 ) {
   if (!isUuid(userId) || !isUuid(organizationId)) return false;
 
+  const access = await getAccessibleOrganizationIdsForUser(userId);
+
+  if (access.isSuperadmin) return false;
+
   const supabase = createSupabaseAdminClient();
-
-  const { data: superadminMembership, error: superadminError } = await supabase
-    .from("organization_members")
-    .select("role")
-    .eq("user_id", userId)
-    .eq("role", "superadmin")
-    .limit(1)
-    .maybeSingle<MemberRoleRow>();
-
-  if (superadminError) throw superadminError;
-  if (superadminMembership?.role === "superadmin") return true;
 
   const { data: membership, error } = await supabase
     .from("organization_members")
@@ -154,7 +139,7 @@ export async function userCanAccessModule(userId: string, moduleId: string) {
 
   const access = await getAccessibleOrganizationIdsForUser(userId);
 
-  if (access.isSuperadmin) return true;
+  if (access.isSuperadmin) return false;
   if (access.organizationIds.length === 0) return false;
 
   const supabase = createSupabaseAdminClient();
@@ -184,9 +169,7 @@ async function getEnabledModuleIdsForAccess(
   },
 ) {
 
-  if (access.isSuperadmin) {
-    return adminModules.map((module) => module.id);
-  }
+  if (access.isSuperadmin) return [];
 
   if (access.organizationIds.length === 0) return [];
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { canAccessCustomerApp } from "@/lib/auth/access-control";
 import {
   getDiagnosticOrganizationId,
   userCanAccessDiagnostic,
@@ -18,6 +19,13 @@ export async function POST(_request: Request, { params }: RouteContext) {
 
   if (!session) {
     return NextResponse.json({ message: "Sessão necessária." }, { status: 401 });
+  }
+
+  if (!canAccessCustomerApp(session.user)) {
+    return NextResponse.json(
+      { message: "Acesso restrito à área do cliente." },
+      { status: 403 },
+    );
   }
 
   if (!(await userCanAccessDiagnostic(session.user.id, id))) {

@@ -1,6 +1,7 @@
 import { renderToBuffer } from "@react-pdf/renderer";
 import { createElement } from "react";
 
+import { canAccessCustomerApp } from "@/lib/auth/access-control";
 import { getCurrentAuthSession } from "@/lib/auth/session";
 import {
   getDiagnosticById,
@@ -32,6 +33,10 @@ export async function GET(request: Request, { params }: ReportRouteContext) {
     return new Response("Sessão necessária para baixar o relatório.", {
       status: 401,
     });
+  }
+
+  if (!canAccessCustomerApp(session.user)) {
+    return new Response("Acesso restrito à área do cliente.", { status: 403 });
   }
 
   const { id } = await params;

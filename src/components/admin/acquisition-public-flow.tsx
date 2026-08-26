@@ -4,25 +4,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { type FormEvent, useMemo, useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { useMemo, useState } from "react";
 
+import {
+  AcquisitionProgressiveForm,
+  type AcquisitionProgressiveFormValues,
+} from "@/components/admin/acquisition-progressive-form";
+import { AuthLegalNotice } from "@/components/auth/auth-legal-notice";
 import { AuthPageShell } from "@/components/auth/auth-page-shell";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import type {
   AcquisitionCampaign,
   AcquisitionFormField,
   AdminModule,
 } from "@/lib/types";
-import { cn } from "@/lib/utils";
 
 type AcquisitionPublicFlowProps = {
   campaign: AcquisitionCampaign | null;
@@ -84,24 +79,6 @@ export async function startCampaignGoogleSignIn({
   return { ok: true } as const;
 }
 
-function textareaClasses(className?: string) {
-  return cn(
-    "border-input bg-transparent text-foreground min-h-24 w-full rounded-lg border px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30",
-    className,
-  );
-}
-
-function inputType(field: AcquisitionFormField) {
-  if (field.type === "email") return "email";
-  if (field.type === "phone") return "tel";
-  if (field.type === "number") return "number";
-  return "text";
-}
-
-function validateEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
-
 function sortedFields(fields: AcquisitionFormField[]) {
   return [...fields].sort((a, b) => a.order - b.order);
 }
@@ -114,17 +91,18 @@ export function AcquisitionPublicFlow({
 }: AcquisitionPublicFlowProps) {
   const router = useRouter();
   const fields = useMemo(
-    () => (campaign ? sortedFields(campaign.fields) : []),
+    () =>
+      campaign
+        ? sortedFields(campaign.fields).filter(
+            (field) => field.id !== "empresa",
+          )
+        : [],
     [campaign],
   );
-  const [values, setValues] = useState<Record<string, string>>({});
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [authError, setAuthError] = useState<string | null>(initialAuthError);
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [step, setStep] = useState<AcquisitionStep>("choice");
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [isRegisterSubmitting, setIsRegisterSubmitting] = useState(false);
-  const [password, setPassword] = useState("");
 
   if (!campaign || !selectedModule) {
     return (
@@ -152,33 +130,6 @@ export function AcquisitionPublicFlow({
         </p>
       </AuthPageShell>
     );
-  }
-
-  function updateValue(fieldId: string, value: string) {
-    setValues((current) => ({ ...current, [fieldId]: value }));
-    setErrors((current) => {
-      const next = { ...current };
-      delete next[fieldId];
-      return next;
-    });
-  }
-
-  function validateForm() {
-    const nextErrors: Record<string, string> = {};
-
-    fields.forEach((field) => {
-      const value = values[field.id]?.trim() ?? "";
-
-      if (field.required && !value) {
-        nextErrors[field.id] = "Campo obrigatório";
-      } else if (field.type === "email" && value && !validateEmail(value)) {
-        nextErrors[field.id] = "Informe um e-mail válido";
-      }
-    });
-
-    setErrors(nextErrors);
-
-    return Object.keys(nextErrors).length === 0;
   }
 
   async function handleGoogleSignIn() {
@@ -220,21 +171,11 @@ export function AcquisitionPublicFlow({
     setStep("choice");
   }
 
-  async function handleRegisterSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function handleRegisterSubmit({
+    password,
+    values,
+  }: AcquisitionProgressiveFormValues) {
     setAuthError(null);
-
-    if (!validateForm()) return;
-
-    if (password.length < 8) {
-      setAuthError("A senha precisa ter pelo menos 8 caracteres.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setAuthError("As senhas informadas não conferem.");
-      return;
-    }
 
     setIsRegisterSubmitting(true);
 
@@ -243,7 +184,7 @@ export function AcquisitionPublicFlow({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          password,
+          password: password ?? "",
           slug,
           values,
         }),
@@ -265,7 +206,7 @@ export function AcquisitionPublicFlow({
         callbackUrl: "/omdx",
         email: data.email ?? values.email,
         flow: "acquisition",
-        password,
+        password: password ?? "",
         redirect: false,
       });
 
@@ -285,7 +226,7 @@ export function AcquisitionPublicFlow({
 
   return (
     <AuthPageShell
-      contentAlignment={step === "email" ? "start" : "center"}
+      contentAlignment="center"
       title={
         step === "choice"
           ? `Crie seu acesso ao ${selectedModule.shortName}`
@@ -345,10 +286,7 @@ export function AcquisitionPublicFlow({
             </p>
           ) : null}
 
-          <p className="text-xs leading-[18px] text-muted-foreground">
-            Ao continuar, seus dados serão usados para liberar o acesso e
-            registrar seu cadastro nesta campanha.
-          </p>
+          <AuthLegalNotice />
 
           <p className="text-xs leading-[18px] text-muted-foreground">
             Já tem uma conta?{" "}
@@ -361,160 +299,18 @@ export function AcquisitionPublicFlow({
           </p>
         </div>
       ) : (
-        <>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="mb-5 -ml-2"
-            onClick={handleChoiceStep}
-          >
-            <ArrowLeft className="size-4" />
-            Voltar
-          </Button>
-
-              <form
-                className="grid gap-5"
-                noValidate
-                onSubmit={handleRegisterSubmit}
-              >
-                {fields.map((field) => {
-                  const error = errors[field.id];
-
-                  return (
-                    <div key={field.id} className="grid gap-2">
-                      <label
-                        htmlFor={field.id}
-                        className="text-sm font-medium text-foreground"
-                      >
-                        {field.label}
-                        {field.required && (
-                          <span className="text-muted-foreground"> *</span>
-                        )}
-                      </label>
-
-                      {field.type === "textarea" ? (
-                        <textarea
-                          id={field.id}
-                          value={values[field.id] ?? ""}
-                          placeholder={field.placeholder ?? undefined}
-                          className={textareaClasses(
-                            error
-                              ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
-                              : undefined,
-                          )}
-                          onChange={(event) =>
-                            updateValue(field.id, event.target.value)
-                          }
-                        />
-                      ) : field.type === "select" && field.options ? (
-                        <Select
-                          value={values[field.id] ?? ""}
-                          items={field.options.map((option) => ({
-                            value: option,
-                            label: option,
-                          }))}
-                          onValueChange={(value) => {
-                            if (typeof value === "string") {
-                              updateValue(field.id, value);
-                            }
-                          }}
-                        >
-                          <SelectTrigger
-                            id={field.id}
-                            className={cn(
-                              "h-11 rounded-md px-3",
-                              error &&
-                                "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
-                            )}
-                          >
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {field.options.map((option) => (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Input
-                          id={field.id}
-                          type={inputType(field)}
-                          value={values[field.id] ?? ""}
-                          placeholder={field.placeholder ?? undefined}
-                          aria-invalid={Boolean(error)}
-                          className="h-11 rounded-md px-3"
-                          onChange={(event) =>
-                            updateValue(field.id, event.target.value)
-                          }
-                        />
-                      )}
-
-                      {error && (
-                        <p className="text-xs font-medium text-destructive">
-                          {error}
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
-
-                <div className="grid gap-2">
-                  <label
-                    htmlFor="campaign-auth-password"
-                    className="text-sm font-medium text-foreground"
-                  >
-                    Senha
-                  </label>
-                  <Input
-                    id="campaign-auth-password"
-                    type="password"
-                    autoComplete="new-password"
-                    className="h-11 rounded-md px-3"
-                    minLength={8}
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <label
-                    htmlFor="campaign-auth-confirm-password"
-                    className="text-sm font-medium text-foreground"
-                  >
-                    Confirmar senha
-                  </label>
-                  <Input
-                    id="campaign-auth-confirm-password"
-                    type="password"
-                    autoComplete="new-password"
-                    className="h-11 rounded-md px-3"
-                    minLength={8}
-                    value={confirmPassword}
-                    onChange={(event) => setConfirmPassword(event.target.value)}
-                    required
-                  />
-                </div>
-
-                {authError ? (
-                  <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                    {authError}
-                  </p>
-                ) : null}
-
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="h-[45px] w-full text-sm font-medium"
-                  disabled={isRegisterSubmitting}
-                >
-                  {isRegisterSubmitting ? "Criando acesso" : "Criar acesso"}
-                </Button>
-              </form>
-        </>
+        <div className="grid gap-4">
+          <AcquisitionProgressiveForm
+            fields={fields}
+            includePassword
+            isSubmitting={isRegisterSubmitting}
+            onFirstBack={handleChoiceStep}
+            onSubmit={handleRegisterSubmit}
+            submitError={authError}
+            submittingLabel="Criando acesso"
+          />
+          <AuthLegalNotice />
+        </div>
       )}
     </AuthPageShell>
   );

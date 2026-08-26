@@ -1,20 +1,19 @@
 "use client";
 
 import {
+  Blocks,
   Building2,
   CalendarDays,
-  ChartColumn,
-  ChartNoAxesCombined,
-  ClipboardList,
+  Eye,
+  Flag,
   LayoutGrid,
   Megaphone,
   MessageSquareText,
-  ScanEye,
+  SquarePlus,
   Sprout,
-  Telescope,
   Users,
-  UsersRound,
   Workflow,
+  Zap,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 
@@ -31,7 +30,7 @@ const data = {
   user: {
     id: "user_daniel",
     name: "Daniel Santos",
-    email: "work.donsant@gmail.com",
+    company: "Directscal",
     initials: "DS",
     role: "admin" as const,
   },
@@ -41,12 +40,11 @@ const data = {
       title: "Maturidade",
       subtitle: "Diagnóstico operacional",
       url: "/omdx",
-      icon: ScanEye,
+      icon: Blocks,
     },
   ],
   omdxItems: [
-    { title: "Camadas", url: "/omdx/camadas", icon: ChartColumn },
-    { title: "Diagnósticos", url: "/omdx/diagnosticos", icon: ClipboardList },
+    { title: "Diagnósticos", url: "/omdx/diagnosticos", icon: SquarePlus },
     { title: "Cronograma", url: "/gantt", icon: CalendarDays },
   ],
   admin: [
@@ -57,11 +55,11 @@ const data = {
   ],
   insights: [
     { name: "Cultura", url: "/insights/cultura", icon: Sprout },
-    { name: "Visão", url: "/insights/visao", icon: Telescope },
+    { name: "Visão", url: "/insights/visao", icon: Eye },
     { name: "Comunicação", url: "/insights/comunicacao", icon: MessageSquareText },
     { name: "Processos", url: "/insights/processos", icon: Workflow },
-    { name: "Liderança", url: "/insights/lideranca", icon: UsersRound },
-    { name: "Performance", url: "/insights/performance", icon: ChartNoAxesCombined },
+    { name: "Liderança", url: "/insights/lideranca", icon: Flag },
+    { name: "Performance", url: "/insights/performance", icon: Zap },
   ],
 };
 
@@ -83,7 +81,7 @@ export function AppSidebar({
   enabledModuleIds?: string[];
   user?: {
     avatar?: string;
-    email: string;
+    company: string;
     id: string;
     initials?: string;
     name: string;
@@ -120,7 +118,7 @@ export function AppSidebar({
           ...module,
           isActive: true,
         }));
-  const appNavigation = [
+  const primaryNavigation = [
     ...appModules.map((module) => ({
       ...module,
       isActive: pathname === module.url,
@@ -129,13 +127,13 @@ export function AppSidebar({
       ...item,
       isActive: pathname === item.url || pathname.startsWith(`${item.url}/`),
     })),
-    ...data.insights.map((item) => ({
-      title: item.name,
-      url: item.url,
-      icon: item.icon,
-      isActive: pathname === item.url || pathname.startsWith(`${item.url}/`),
-    })),
   ];
+  const dimensionNavigation = data.insights.map((item) => ({
+    title: item.name,
+    url: item.url,
+    icon: item.icon,
+    isActive: pathname === item.url || pathname.startsWith(`${item.url}/`),
+  }));
   const adminItems = acquisitionEnabled ? data.admin : data.admin.slice(0, 1);
   const admin = adminItems.map((item) => ({
     ...item,
@@ -154,7 +152,10 @@ export function AppSidebar({
         {isAdmin ? (
           <NavMain label="Administração" items={admin} />
         ) : (
-          <NavMain label={null} items={appNavigation} />
+          <>
+            <NavMain label={null} items={primaryNavigation} />
+            <NavMain label="Dimensões" items={dimensionNavigation} />
+          </>
         )}
       </SidebarContent>
       <SidebarRail />

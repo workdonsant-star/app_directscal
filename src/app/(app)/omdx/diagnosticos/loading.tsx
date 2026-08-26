@@ -1,3 +1,5 @@
+import { AppPage } from "@/components/app-page";
+
 export default function DiagnosticsLoading() {
   return (
     <>
@@ -5,8 +7,8 @@ export default function DiagnosticsLoading() {
         <div className="h-8 w-8 rounded-md bg-muted" />
         <div className="h-4 w-56 rounded bg-muted" />
       </div>
-      <main className="flex flex-1 flex-col px-6 py-8 lg:px-10">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+      <AppPage>
+        <div className="flex w-full flex-col gap-6">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="h-6 w-52 rounded bg-muted" />
@@ -27,7 +29,7 @@ export default function DiagnosticsLoading() {
             ))}
           </div>
         </div>
-      </main>
+      </AppPage>
     </>
   );
 }

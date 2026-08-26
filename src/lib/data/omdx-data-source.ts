@@ -14,7 +14,6 @@ import {
   diagnosticTemplateSchema,
   dimensionInsightSummarySchema,
   dimensionSchema,
-  profileSettingsDataSchema,
   type DashboardSummary,
   type Diagnostic,
   type DiagnosticActionPlan,
@@ -35,7 +34,6 @@ import {
   type DimensionQuestionResult,
   type GanttWorkspaceData,
   type AuthUser,
-  type ProfileSettingsData,
   type RespondentGroup,
   type ResponsesByGroup,
 } from "@/lib/contracts";
@@ -50,12 +48,12 @@ import {
   suggestedMessages,
 } from "@/lib/data/omdx-domain";
 import {
+  buildOmdxOverviewComparisonFromReports,
   buildOmdxOverviewAnalyticsFromReports,
   type OverviewAnalytics,
 } from "@/lib/data/omdx-overview-analytics";
 import { hasAnalysisBase } from "@/lib/data/omdx-production-rules";
 import { getPublicAppUrl } from "@/lib/env";
-import { mockUserProfile } from "@/lib/mock-data";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -69,9 +67,6 @@ export {
 
 type OrganizationRow = Database["public"]["Tables"]["organizations"]["Row"];
 type DiagnosticRow = Database["public"]["Tables"]["diagnostics"]["Row"];
-type DiagnosticWithOrganizationRow = DiagnosticRow & {
-  organizations: OrganizationRow | null;
-};
 type DiagnosticTemplateRow =
   Database["public"]["Tables"]["diagnostic_templates"]["Row"];
 type DimensionRow = Database["public"]["Tables"]["dimensions"]["Row"];
@@ -367,48 +362,6 @@ const loadAuthorizedDiagnosticRows = cache(
   },
 );
 
-const loadAllDiagnosticRows = cache(
-  async function loadAllDiagnosticRows(id = "") {
-    const supabase = getSupabase();
-    let query = supabase
-      .from("diagnostics")
-      .select(
-        `${diagnosticSelectColumns},organizations(id,name,employee_count,domain,created_at,updated_at)`,
-      )
-      .order("updated_at", { ascending: false });
-
-    if (id) query = query.eq("id", id);
-
-    const { data, error } = await query.returns<DiagnosticWithOrganizationRow[]>();
-
-    if (error) throw error;
-
-    const organizationRows = Array.from(
-      new Map(
-        data
-          .map((diagnostic) => diagnostic.organizations)
-          .filter(
-            (organization): organization is OrganizationRow =>
-              organization !== null,
-          )
-          .map((organization) => [organization.id, organization]),
-      ).values(),
-    ).sort((a, b) => a.name.localeCompare(b.name));
-    const diagnosticRows: DiagnosticRow[] = data.map((diagnostic) => {
-      const { organizations, ...row } = diagnostic;
-
-      void organizations;
-
-      return row;
-    });
-
-    return {
-      diagnosticRows,
-      organizationRows,
-    };
-  },
-);
-
 async function loadAuthorizedDiagnostics(id?: string) {
   const session = await getCurrentAuthSession();
 
@@ -417,10 +370,6 @@ async function loadAuthorizedDiagnostics(id?: string) {
       diagnosticRows: [] as DiagnosticRow[],
       organizationRows: [] as OrganizationRow[],
     };
-  }
-
-  if (session.user.role === "superadmin") {
-    return loadAllDiagnosticRows(id ?? "");
   }
 
   return loadAuthorizedDiagnosticRows(session.user.id, id ?? "");
@@ -1269,16 +1218,6 @@ async function loadShareLinks(diagnosticIds: string[]) {
   );
 }
 
-export function getProfileSettingsData(user: AuthUser): ProfileSettingsData {
-  return profileSettingsDataSchema.parse({
-    ...mockUserProfile,
-    company: user.company,
-    email: user.email,
-    id: user.id,
-    name: user.name,
-  });
-}
-
 export const getDimensions = cache(async function getDimensions(): Promise<Dimension[]> {
   const dimensionRows = await loadDimensionRows();
 
@@ -1617,6 +1556,8 @@ function buildDimensionInsightSummaryFromReports({
         diagnosticId: report.diagnostic.id,
         diagnosticName: report.diagnostic.name,
         company: report.diagnostic.company,
+        createdAt: report.diagnostic.createdAt,
+        gap: dimension.misalignment?.value ?? null,
         responses: report.responses.total,
         score: dimension.score,
       };
@@ -1723,6 +1664,7 @@ function buildDimensionQuestionResultsFromReports({
         dimensionId,
         text: firstQuestion.text,
         score,
+        layerScores,
         gap,
         responses: group.reduce(
           (total, question) => total + question.responses,
@@ -1808,23 +1750,12 @@ export const getOmdxOverviewPageData = cache(
     )
       ? requestedDiagnostic
       : "todos";
-    const reports =
-      selectedDiagnostic === "todos"
-        ? allReports
-        : allReports.filter((report) => report.diagnostic.id === selectedDiagnostic);
-    const analytics = buildOmdxOverviewAnalyticsFromReports(reports);
-    const reportDiagnostic =
-      selectedDiagnostic === "todos"
-        ? [...diagnosticOptions].sort(
-            (a, b) =>
-              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-          )[0]
-        : diagnosticOptions.find(
-            (diagnostic) => diagnostic.id === selectedDiagnostic,
-          );
+    const { analytics, comparison, reportDiagnostic } =
+      buildOmdxOverviewComparisonFromReports(allReports, selectedDiagnostic);
 
     return {
       analytics,
+      comparison,
       diagnosticOptions,
       reportDiagnostic,
       selectedDiagnostic,

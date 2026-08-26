@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { AppPage } from "@/components/app-page";
 import { AppTopbar } from "@/components/app-topbar";
 import { ShareWorkspace } from "@/components/omdx/share-workspace";
 import { Button } from "@/components/ui/button";
@@ -71,14 +72,14 @@ export default async function ShareDiagnosticPage({
         ]}
       />
 
-      <main className="flex flex-1 flex-col px-6 py-8 lg:px-10">
-        <div className="mx-auto w-full max-w-6xl">
+      <AppPage>
+        <div className="w-full">
           <ShareWorkspace
             diagnostic={workspace.diagnostic}
             links={workspace.links}
           />
         </div>
-      </main>
+      </AppPage>
     </>
   );
 }

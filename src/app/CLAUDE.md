@@ -19,8 +19,8 @@ src/app/
 │   ├── layout.tsx            ← gate de sessão + shell autenticado com sidebar
 │   ├── admin/                ← visão de superadmin
 │   └── omdx/
-│       ├── page.tsx          ← Overview executivo do módulo Maturidade
-│       ├── camadas/          ← dashboard de pontuação por camada
+│       ├── page.tsx          ← dashboard principal de pontuação por camada
+│       ├── camadas/          ← redirect legado para /omdx
 │       ├── diagnosticos/     ← área operacional (lista + drawer)
 │       └── [id]/
 │           ├── compartilhar/page.tsx ← central de coleta com links Supabase
@@ -37,7 +37,7 @@ src/app/
 │   └── docs/
 │       └── page.tsx          ← manual prático de uso do módulo Maturidade
 │   └── gantt/
-│       └── page.tsx          ← Cronograma operacional em formato Gantt
+│       └── page.tsx          ← Cronograma operacional em calendário semanal
 │   └── perfil/
 │       └── page.tsx          ← perfil iniciado pela sessão, com edição local
 │   └── ativos-de-gestao/
@@ -73,7 +73,7 @@ src/app/
 - **Route groups com parênteses** (`(auth)`, `(app)`) **não criam segmento de URL** — servem para agrupar rotas que compartilham layout ou responsabilidade.
 - **Redirects no servidor** com `redirect()` de `next/navigation` (vide `src/app/page.tsx`).
 - **Metadata** vem de `export const metadata` em `layout.tsx` e `page.tsx`.
-- O favicon atual é `public/favicon.svg.svg`, registrado no metadata global.
+- O favicon atual é `public/favicon.png`, registrado no metadata global.
 - **Fontes** declaradas no root `layout.tsx` via `next/font/google` e expostas como variáveis CSS (`--font-inter`, `--font-instrument-serif`, `--font-jetbrains-mono`).
 - **Dark mode** controlado por `next-themes` (atributo `class` em `<html>`). Default: `system`, com `enableSystem`; o usuário pode alternar manualmente claro/escuro pelo dropdown do usuário.
 
@@ -98,10 +98,10 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/entrar` | `(auth)/entrar/` | Tela pública de entrada com Google OAuth, redireciona conforme role quando já existe sessão. |
 | `/criar-conta` | `(auth)/criar-conta/` | Cadastro mockado que cria uma sessão local apenas no fallback de desenvolvimento. |
 | `/recuperar-senha` | `(auth)/recuperar-senha/` | Recuperação mockada de senha. |
-| `/omdx` | `(app)/omdx/` | Overview executivo do módulo; não deve conter a lista operacional completa. |
-| `/omdx/camadas` | `(app)/omdx/camadas/` | Dashboard autenticado que compara Fundador, Liderança e Time em escala de 1 a 5. |
+| `/omdx` | `(app)/omdx/` | Dashboard autenticado que compara Fundador, Liderança e Time em escala de 1 a 5. |
+| `/omdx/camadas` | `(app)/omdx/camadas/` | Redirect legado para `/omdx`, preservando o filtro de diagnóstico. |
 | `/omdx/diagnosticos` | `(app)/omdx/diagnosticos/` | Área operacional acessada pela sidebar, com lista, filtros, criação e configuração em drawer lateral. |
-| `/gantt` | `(app)/gantt/` | Cronograma operacional em formato Gantt, exposto dentro do módulo Maturidade na sidebar. |
+| `/gantt` | `(app)/gantt/` | Cronograma operacional em calendário semanal de action points, exposto dentro do módulo Maturidade na sidebar. |
 | `/omdx/[id]/compartilhar` | `(app)/omdx/[id]/compartilhar/` | Central de coleta persistida com links por grupo, copy sugerida e resumo compacto. |
 | `/omdx/[id]/action-points` | `(app)/omdx/[id]/action-points/` | Route Handler Node autenticado para download direto do plano de ação RACI. |
 <<<<<<< Updated upstream
@@ -137,15 +137,16 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - O shell autenticado usa o bloco shadcn `sidebar-07` como base visual, adaptado para Directscal.
 - O route group `(app)` valida o cookie de sessão no layout antes de renderizar sidebar/topbar.
 - As rotas de autenticação em `(auth)` ficam fora do shell e redirecionam usuários autenticados conforme role.
-- A sidebar colapsa para ícones e mantém a navegação principal do cliente plana. `Maturidade`, `Camadas`, `Diagnósticos`, `Cronograma` e Insights aparecem no mesmo nível. `Pessoas` e `Ativos de gestão` foram removidos da navegação e do catálogo de módulos.
+- A sidebar colapsa para ícones e mantém a navegação principal do cliente plana. `Maturidade`, `Diagnósticos`, `Cronograma` e Insights aparecem no mesmo nível. `Pessoas` e `Ativos de gestão` foram removidos da navegação e do catálogo de módulos.
 - `Cronograma` aparece dentro de `Maturidade` e aponta para `/gantt`; a rota usa o plano de ação mais recente quando houver diagnóstico consolidável.
 - A sidebar tem uma seção `Insights` com as seis dimensões de Maturidade.
 - Quando o pathname começa com `/admin`, a sidebar muda para `Administração`, com `Módulos`, `Campanhas`, `Leads` e `Empresas`.
+- Usuários `superadmin` ficam restritos à superfície `/admin/*`. Tentativas de abrir `/omdx`, `/insights`, `/gantt`, `/docs` ou `/perfil` redirecionam para `/admin/modulos`; APIs internas de cliente respondem `403`.
 - `Empresas` e `Relatórios` não fazem parte da navegação principal nesta fase.
 - A topbar é limpa: trigger da sidebar, separador e breadcrumb quando houver camada.
 - `/omdx` é a raiz do módulo e não usa breadcrumb na topbar.
 - Páginas abaixo de `/omdx` usam breadcrumb para mostrar a camada atual.
-- `/omdx/camadas` usa `Maturidade / Camadas`.
+- `/omdx/camadas` redireciona para `/omdx` e não renderiza breadcrumb próprio.
 - `/omdx/diagnosticos` usa `Overview / Diagnósticos`.
 - `/omdx/[id]/compartilhar` usa `Overview / Diagnósticos / Compartilhar`.
 - `/omdx/[id]/action-points` não renderiza página nem breadcrumb; retorna PDF como attachment.
@@ -173,8 +174,8 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 
 ## Largura de página
 
-- Páginas autenticadas com conteúdo principal, formulários, tabelas ou dashboards devem usar um container consistente com a densidade do app; a base documental usa `mx-auto w-full max-w-6xl`.
-- O padding externo recomendado é `px-6 py-8 lg:px-10`.
+- Páginas autenticadas com conteúdo principal, formulários, tabelas ou dashboards usam `AppPage`, com o mesmo recuo horizontal de Dimensões: `px-6 py-8 lg:px-10`, conteúdo em largura total e sem centralização ou `max-width` adicional.
+- A base documental é uma exceção e usa `mx-auto w-full max-w-6xl` dentro de `AppPage`.
 - Páginas documentais com sumário lateral mantêm o grid `max-w-6xl` com coluna de conteúdo em torno de `760px`.
 - Estados centralizados, páginas públicas e drawers podem ter larguras próprias quando a experiência exigir.
 

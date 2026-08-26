@@ -1,6 +1,11 @@
 "use client";
 
-import { useState, useSyncExternalStore, type ChangeEvent } from "react";
+import {
+  useCallback,
+  useState,
+  useSyncExternalStore,
+  type ChangeEvent,
+} from "react";
 
 import {
   Avatar,
@@ -16,20 +21,23 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { AvatarCropDialog } from "@/components/profile/avatar-crop-dialog";
 import {
   getProfileOverridesServerSnapshot,
   getProfileOverridesSnapshot,
   saveProfileOverrides,
   subscribeProfileOverrides,
 } from "@/lib/profile-storage";
-import type { UserProfile } from "@/lib/types";
+import type { ProfileSettingsData } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 type ProfileSettingsProps = {
-  profile: UserProfile;
+  profile: ProfileSettingsData;
 };
 
 type Notice = {
   message: string;
+  tone: "error" | "success";
 };
 
 type PasswordErrors = Partial<
@@ -42,6 +50,24 @@ type ProfileDraft = {
   name?: string;
 };
 
+const acceptedAvatarTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+const maxAvatarFileSize = 15 * 1024 * 1024;
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.addEventListener("load", () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+      } else {
+        reject(new Error("invalid-file-result"));
+      }
+    });
+    reader.addEventListener("error", () => reject(reader.error));
+    reader.readAsDataURL(file);
+  });
+}
+
 function getInitials(name: string) {
   return name
     .trim()
@@ -49,6 +75,65 @@ function getInitials(name: string) {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join("") || "DS";
+}
+
+function formatCnpj(value: string | null) {
+  if (!value) return null;
+  const digits = value.replace(/\D/g, "");
+  if (digits.length !== 14) return value;
+
+  return digits.replace(
+    /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
+    "$1.$2.$3/$4-$5",
+  );
+}
+
+function formatRegistryDate(value: string | null) {
+  if (!value) return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  return match ? `${match[3]}/${match[2]}/${match[1]}` : value;
+}
+
+function ReadOnlyProfileField({
+  className,
+  id,
+  label,
+  multiline = false,
+  value,
+}: {
+  className?: string;
+  id: string;
+  label: string;
+  multiline?: boolean;
+  value: string | null;
+}) {
+  const displayValue = value ?? "Não informado";
+
+  return (
+    <div className={cn("flex min-w-0 flex-col gap-2", className)}>
+      <label htmlFor={id} className="text-sm font-medium">
+        {label}
+      </label>
+      {multiline ? (
+        <textarea
+          id={id}
+          value={displayValue}
+          readOnly
+          aria-readonly="true"
+          rows={3}
+          className="border-input bg-muted/30 text-foreground min-h-20 w-full resize-none rounded-lg border px-3 py-2 text-sm outline-none"
+        />
+      ) : (
+        <Input
+          id={id}
+          value={displayValue}
+          readOnly
+          aria-readonly="true"
+          className="bg-muted/30 text-foreground"
+        />
+      )}
+    </div>
+  );
 }
 
 export function ProfileSettings({ profile }: ProfileSettingsProps) {
@@ -67,6 +152,9 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
   );
   const [passwordErrors, setPasswordErrors] = useState<PasswordErrors>({});
   const [notice, setNotice] = useState<Notice | null>(null);
+  const [avatarEditorSource, setAvatarEditorSource] = useState<string | null>(
+    null,
+  );
 
   const name = draft.name ?? storedOverrides?.name ?? profile.name;
   const employeeCount =
@@ -135,43 +223,96 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
       return;
     }
 
+    const didSave = saveProfileOverrides(profile.id, {
+      avatarUrl: avatarPreviewUrl ?? null,
+      employeeCount: employeeCountValue,
+      name: trimmedName,
+    });
+
+    if (!didSave) {
+      setNotice({
+        message:
+          "Não foi possível salvar as alterações neste navegador. Libere espaço e tente novamente.",
+        tone: "error",
+      });
+      return;
+    }
+
     if (currentPassword || newPassword || confirmPassword) {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     }
 
-    saveProfileOverrides(profile.id, {
-      avatarUrl: avatarPreviewUrl ?? null,
-      employeeCount: employeeCountValue,
-      name: trimmedName,
-    });
     setDraft({});
-    setNotice({ message: "Alterações salvas nesta sessão." });
+    setNotice({ message: "Alterações salvas.", tone: "success" });
   }
 
-  function handleAvatarChange(event: ChangeEvent<HTMLInputElement>) {
+  async function handleAvatarChange(event: ChangeEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
     const file = event.target.files?.[0];
 
     if (!file) return;
 
-    const reader = new FileReader();
+    if (!acceptedAvatarTypes.has(file.type)) {
+      setNotice({
+        message: "Selecione uma imagem em JPG, PNG ou WebP.",
+        tone: "error",
+      });
+      input.value = "";
+      return;
+    }
 
-    reader.addEventListener("load", () => {
-      if (typeof reader.result !== "string") return;
+    if (file.size > maxAvatarFileSize) {
+      setNotice({
+        message: "A imagem deve ter no máximo 15 MB.",
+        tone: "error",
+      });
+      input.value = "";
+      return;
+    }
 
-      setDraft((current) => ({
-        ...current,
-        avatarUrl: reader.result as string,
-      }));
+    try {
+      const source = await readFileAsDataUrl(file);
+      setAvatarEditorSource(source);
       setNotice(null);
-    });
-
-    reader.readAsDataURL(file);
+    } catch {
+      setNotice({
+        message: "Não foi possível processar esta imagem. Tente outro arquivo.",
+        tone: "error",
+      });
+    } finally {
+      input.value = "";
+    }
   }
 
+  const handleAvatarEditorError = useCallback(() => {
+    setAvatarEditorSource(null);
+    setNotice({
+      message: "Não foi possível processar esta imagem. Tente outro arquivo.",
+      tone: "error",
+    });
+  }, []);
+
   return (
-    <Card className="min-w-0">
+    <>
+      {avatarEditorSource && (
+        <AvatarCropDialog
+          source={avatarEditorSource}
+          onApply={(avatarUrl) => {
+            setDraft((current) => ({
+              ...current,
+              avatarUrl,
+            }));
+            setAvatarEditorSource(null);
+            setNotice(null);
+          }}
+          onCancel={() => setAvatarEditorSource(null)}
+          onError={handleAvatarEditorError}
+        />
+      )}
+
+      <Card className="min-w-0">
       <CardHeader>
         <CardTitle>Informações de perfil</CardTitle>
         <CardDescription>
@@ -189,19 +330,19 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
 
           <div className="flex min-w-0 flex-col gap-4 border-b pb-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 items-center gap-4">
-              <Avatar className="size-20 rounded-lg">
+              <Avatar className="size-20">
                 {avatarPreviewUrl && (
                   <AvatarImage src={avatarPreviewUrl} alt={name} />
                 )}
-                <AvatarFallback className="rounded-lg text-lg">
+                <AvatarFallback className="text-lg">
                   {getInitials(name || profile.name)}
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0">
                 <p className="text-sm font-medium">Foto de perfil</p>
                 <p className="mt-1 max-w-md text-xs leading-relaxed text-muted-foreground">
-                  Envie uma imagem em JPG, PNG ou WebP. Nesta fase, a foto fica
-                  salva apenas nesta sessão mockada.
+                  Envie uma imagem em JPG, PNG ou WebP de até 15 MB. A foto será
+                  recortada, otimizada e salva neste navegador.
                 </p>
               </div>
             </div>
@@ -351,17 +492,116 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
           <div className="min-w-0">
             <h2 className="text-base font-semibold">Empresa</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Ajuste informações básicas usadas no contexto dos diagnósticos.
+              Dados oficiais do CNPJ e informações fornecidas no onboarding.
             </p>
           </div>
 
           <div className="grid min-w-0 gap-4 md:grid-cols-2">
-            <div className="flex min-w-0 flex-col gap-2">
-              <label htmlFor="profile-company" className="text-sm font-medium">
-                Empresa
-              </label>
-              <Input id="profile-company" value={profile.company} disabled />
-            </div>
+            <ReadOnlyProfileField
+              id="profile-company-social-name"
+              label="Nome social (nome fantasia)"
+              value={profile.companyDetails.socialName}
+            />
+            <ReadOnlyProfileField
+              id="profile-company-official-name"
+              label="Nome oficial (razão social)"
+              value={profile.companyDetails.officialName}
+            />
+            <ReadOnlyProfileField
+              id="profile-company-cnpj"
+              label="CNPJ"
+              value={formatCnpj(profile.companyDetails.cnpj)}
+            />
+            <ReadOnlyProfileField
+              id="profile-company-registration-status"
+              label="Situação cadastral"
+              value={profile.companyDetails.registrationStatus}
+            />
+            <ReadOnlyProfileField
+              id="profile-company-activity-started-at"
+              label="Início da atividade"
+              value={formatRegistryDate(
+                profile.companyDetails.activityStartedAt,
+              )}
+            />
+            <ReadOnlyProfileField
+              id="profile-company-registry-size"
+              label="Porte cadastral"
+              value={profile.companyDetails.registrySize}
+            />
+            <ReadOnlyProfileField
+              id="profile-company-cnae"
+              label="CNAE principal"
+              value={
+                [
+                  profile.companyDetails.cnaeCode,
+                  profile.companyDetails.cnaeDescription,
+                ]
+                  .filter(Boolean)
+                  .join(" · ") || null
+              }
+            />
+            <ReadOnlyProfileField
+              id="profile-company-legal-nature"
+              label="Natureza jurídica"
+              value={profile.companyDetails.legalNature}
+            />
+            <ReadOnlyProfileField
+              id="profile-company-address"
+              label="Endereço cadastrado"
+              value={profile.companyDetails.registeredAddress}
+              className="md:col-span-2"
+            />
+            <ReadOnlyProfileField
+              id="profile-company-city"
+              label="Município"
+              value={profile.companyDetails.city}
+            />
+            <ReadOnlyProfileField
+              id="profile-company-state"
+              label="UF"
+              value={profile.companyDetails.state}
+            />
+          </div>
+
+          <div className="min-w-0 border-t pt-5">
+            <h3 className="text-sm font-semibold">Informações comerciais</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Dados informados durante o cadastro da empresa.
+            </p>
+          </div>
+
+          <div className="grid min-w-0 gap-4 md:grid-cols-2">
+            <ReadOnlyProfileField
+              id="profile-company-industry"
+              label="Nicho de atuação"
+              value={profile.companyDetails.industry}
+            />
+            <ReadOnlyProfileField
+              id="profile-company-position"
+              label="Posição na empresa"
+              value={profile.companyDetails.position}
+            />
+            <ReadOnlyProfileField
+              id="profile-company-instagram"
+              label="Instagram da empresa"
+              value={profile.companyDetails.instagram}
+            />
+            <ReadOnlyProfileField
+              id="profile-company-website"
+              label="Website"
+              value={profile.companyDetails.website}
+            />
+            <ReadOnlyProfileField
+              id="profile-company-size"
+              label="Tamanho da empresa"
+              value={profile.companyDetails.companySize}
+            />
+            <ReadOnlyProfileField
+              id="profile-company-revenue"
+              label="Faturamento do último trimestre"
+              value={profile.companyDetails.lastQuarterRevenue}
+            />
 
             <div className="flex min-w-0 flex-col gap-2">
               <label
@@ -391,18 +631,36 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
                 </p>
               )}
             </div>
+
+            <ReadOnlyProfileField
+              id="profile-company-challenges"
+              label="Desafios informados"
+              value={profile.companyDetails.challenges}
+              multiline
+              className="md:col-span-2"
+            />
           </div>
         </section>
 
         <div className="flex flex-col gap-3 border-t pt-6 sm:flex-row sm:items-center sm:justify-between">
           {notice ? (
-            <p className="text-sm text-foreground">{notice.message}</p>
+            <p
+              aria-live="polite"
+              className={
+                notice.tone === "error"
+                  ? "text-sm text-destructive"
+                  : "text-sm text-foreground"
+              }
+            >
+              {notice.message}
+            </p>
           ) : (
             <span />
           )}
           <Button onClick={handleSaveAll}>Salvar alterações</Button>
         </div>
       </CardContent>
-    </Card>
+      </Card>
+    </>
   );
 }

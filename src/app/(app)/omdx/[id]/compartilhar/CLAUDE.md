@@ -18,3 +18,4 @@ Camada abaixo da área de diagnósticos para compartilhar os links públicos de 
 >>>>>>> Stashed changes
 - Clipboard continua client-side; encerramento de coleta é persistido pela API Maturidade.
 - A rota parte do contexto de `/omdx/diagnosticos`, não do dashboard raiz.
+- Usar `AppPage` com o mesmo recuo horizontal de Dimensões e conteúdo em largura total.

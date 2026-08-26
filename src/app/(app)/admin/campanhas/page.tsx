@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { AdminCampaignsWorkspace } from "@/components/admin/admin-campaigns-workspace";
+import { AppPage } from "@/components/app-page";
 import { AppTopbar } from "@/components/app-topbar";
 import { isFeatureAcquisitionEnabled } from "@/lib/env";
 
@@ -23,11 +24,11 @@ export default function AdminCampaignsPage() {
         ]}
       />
 
-      <main className="flex flex-1 flex-col px-6 py-8 lg:px-10">
-        <div className="mx-auto w-full max-w-6xl">
+      <AppPage>
+        <div className="w-full">
           <AdminCampaignsWorkspace />
         </div>
-      </main>
+      </AppPage>
     </>
   );
 }

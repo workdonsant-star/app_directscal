@@ -115,6 +115,10 @@ class QueryBuilder {
     return { data: (this.commit()[0] ?? null) as T | null, error: null };
   }
 
+  async returns<T = Row[]>() {
+    return { data: this.commit() as T, error: null };
+  }
+
   private commit() {
     if (this.committedRows) return this.committedRows;
     if (this.operation === "insert") return this.insertRow();
@@ -195,6 +199,7 @@ vi.mock("@/lib/supabase/server", () => ({
 import {
   authenticateSuperadminPasswordUser,
   checkUserHasActiveAccess,
+  resolveSupabaseAuthUser,
 } from "@/lib/auth/supabase-auth";
 
 const originalEnv = { ...process.env };
@@ -223,6 +228,48 @@ beforeEach(() => {
 afterEach(() => {
   process.env = { ...originalEnv };
   vi.clearAllMocks();
+});
+
+describe("resolveSupabaseAuthUser", () => {
+  it("prioritizes a superadmin membership when the user has multiple roles", async () => {
+    supabaseMock.state.users.push({
+      email: "admin@directscal.com",
+      id: "user_admin",
+      image: null,
+      name: "Admin",
+    });
+    supabaseMock.state.organizations.push(
+      {
+        employee_count: 10,
+        id: "organization_client",
+        name: "Cliente",
+      },
+      {
+        employee_count: 1,
+        id: "organization_admin",
+        name: "Directscal",
+      },
+    );
+    supabaseMock.state.members.push(
+      {
+        organization_id: "organization_client",
+        role: "cliente",
+        user_id: "user_admin",
+      },
+      {
+        organization_id: "organization_admin",
+        role: "superadmin",
+        user_id: "user_admin",
+      },
+    );
+
+    await expect(
+      resolveSupabaseAuthUser("user_admin", "admin@directscal.com"),
+    ).resolves.toMatchObject({
+      company: "Directscal",
+      role: "superadmin",
+    });
+  });
 });
 
 describe("authenticateSuperadminPasswordUser", () => {

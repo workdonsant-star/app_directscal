@@ -10,13 +10,12 @@ import type { LayerScoreResult } from "@/lib/data/omdx-overview-analytics";
 
 type LayerScoreBarChartProps = {
   data: LayerScoreResult[];
+  historicalData?: LayerScoreResult[];
+  referenceLabel?: string;
 };
 
 type TooltipParam = {
-  data?: {
-    layer: string;
-    value: number | null;
-  };
+  dataIndex?: number;
 };
 
 const fallbackColors: Record<string, string> = {
@@ -46,28 +45,70 @@ function getNumericValue(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
-function makeTooltipFormatter() {
+function formatDelta(value: number) {
+  const sign = value > 0 ? "+" : value < 0 ? "−" : "";
+
+  return `${sign}${scoreFormatter.format(Math.abs(value))} ${Math.abs(value) === 1 ? "ponto" : "pontos"}`;
+}
+
+function makeTooltipFormatter(
+  data: LayerScoreResult[],
+  historicalData: LayerScoreResult[],
+  referenceLabel: string,
+) {
   return (params: unknown) => {
-    const item =
-      params && typeof params === "object" && "data" in params
-        ? (params as TooltipParam).data
+    const dataIndex =
+      params && typeof params === "object" && "dataIndex" in params
+        ? (params as TooltipParam).dataIndex
         : undefined;
-    const score = getNumericValue(item?.value);
+    const item = typeof dataIndex === "number" ? data[dataIndex] : undefined;
+    const score = getNumericValue(item?.score);
 
     if (!item || score === null) return "";
 
+    const historicalScore =
+      historicalData.find((historical) => historical.id === item.id)?.score ??
+      null;
+    const historicalRows =
+      historicalScore === null
+        ? ""
+        : `
+          <div style="display:flex;justify-content:space-between;gap:24px;">
+            <span style="color:var(--muted-foreground);">${referenceLabel}</span>
+            <span style="font-variant-numeric:tabular-nums;color:var(--foreground);">${scoreFormatter.format(historicalScore)}/5</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:24px;">
+            <span style="color:var(--muted-foreground);">Variação</span>
+            <span style="font-variant-numeric:tabular-nums;font-weight:600;color:var(--foreground);">${formatDelta(score - historicalScore)}</span>
+          </div>
+        `;
+
     return `
-      <div style="display:flex;min-width:180px;justify-content:space-between;gap:24px;">
-        <span style="color:var(--muted-foreground);">${item.layer}</span>
-        <span style="font-variant-numeric:tabular-nums;font-weight:600;color:var(--foreground);">${scoreFormatter.format(score)}/5</span>
+      <div style="min-width:240px;">
+        <div style="margin-bottom:10px;font-weight:600;color:var(--foreground);">${item.label === "Time" ? "Operação" : item.label}</div>
+        <div style="display:grid;gap:6px;">
+          <div style="display:flex;justify-content:space-between;gap:24px;">
+            <span style="color:var(--muted-foreground);">Atual</span>
+            <span style="font-variant-numeric:tabular-nums;font-weight:600;color:var(--foreground);">${scoreFormatter.format(score)}/5</span>
+          </div>
+          ${historicalRows}
+        </div>
       </div>
     `;
   };
 }
 
-export function LayerScoreBarChart({ data }: LayerScoreBarChartProps) {
+export function LayerScoreBarChart({
+  data,
+  historicalData = [],
+  referenceLabel = "Média histórica",
+}: LayerScoreBarChartProps) {
   const colors = useChartThemeColors(fallbackColors);
   const availableScores = data.filter((layer) => layer.score !== null);
+  const historicalScoresByLayer = useMemo(
+    () => new Map(historicalData.map((layer) => [layer.id, layer.score])),
+    [historicalData],
+  );
   const option = useMemo<EChartsOption>(
     () => ({
       animationDuration: 180,
@@ -75,7 +116,7 @@ export function LayerScoreBarChart({ data }: LayerScoreBarChartProps) {
         enabled: true,
         label: {
           description:
-            "Gráfico de barras com as pontuações consolidadas de Fundador, Liderança e Time em escala de 0 a 5.",
+            "Gráfico de barras com as pontuações atuais de Fundador, Liderança e Time e marcadores da média dos diagnósticos anteriores, em escala de 0 a 5.",
         },
       },
       grid: {
@@ -93,7 +134,7 @@ export function LayerScoreBarChart({ data }: LayerScoreBarChartProps) {
         className: "omdx-echarts-tooltip",
         confine: true,
         extraCssText: "box-shadow:0 14px 40px rgba(0,0,0,.12);padding:12px;",
-        formatter: makeTooltipFormatter(),
+        formatter: makeTooltipFormatter(data, historicalData, referenceLabel),
         renderMode: "html",
         textStyle: {
           color: colors["--popover-foreground"],
@@ -164,9 +205,30 @@ export function LayerScoreBarChart({ data }: LayerScoreBarChartProps) {
             },
           },
         },
+        {
+          name: referenceLabel,
+          type: "scatter",
+          symbol: "rect",
+          symbolSize: [28, 3],
+          data: data.map((layer) => [
+            layer.label,
+            historicalScoresByLayer.get(layer.id) ?? null,
+          ]),
+          itemStyle: {
+            color: colors["--foreground"],
+            opacity: 0.58,
+          },
+          z: 5,
+        },
       ],
     }),
-    [colors, data],
+    [
+      colors,
+      data,
+      historicalData,
+      historicalScoresByLayer,
+      referenceLabel,
+    ],
   );
 
   if (availableScores.length === 0) {

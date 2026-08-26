@@ -55,11 +55,13 @@ Contratos principais:
 - Não importe arrays de `mock-data.ts` em componentes ou páginas.
 - `mock-data.ts` permanece apenas para superfícies ainda não migradas, como perfil e superadmin. Não use em Maturidade core.
 - `omdx-overview-analytics.ts` deriva DTOs executivos de relatórios Maturidade montados a partir de respostas reais. Percentuais de distribuição Likert ainda são inferidos para visualização executiva a partir de score, gap e dispersão.
+- `calculateLatestVsPreviousComparison()` ordena séries por `createdAt` e compara o valor mais recente à média dos anteriores; com menos de dois pontos ou média anterior zero, retorna `null`.
+- `DimensionInsightTrendPoint` inclui `gap`, calculado por diagnóstico a partir da diferença entre a maior e a menor média de camada da dimensão; o campo fica `null` quando não há camadas suficientes para comparação.
 - `sops-data-source.ts` permanece apenas como legado inativo da antiga experiência de Ativos de gestão. A funcionalidade não aparece no catálogo de módulos nem na sidebar; não conectar persistência real ou reativar rotas sem nova decisão explícita.
 - Leituras Maturidade Supabase ficam em `omdx-data-source.ts`; helpers puros compartilhados com Client Components ficam em `omdx-domain.ts`.
 - Cálculos agregados e helpers de domínio devem ficar em `data/` ou em funções puras de contrato, não em componentes.
 - Planos de ação PDF devem consumir DTOs consolidados daqui, como `getDiagnosticActionPlan()`, sem gerar regra dentro do documento PDF.
-- `profile-storage.ts` é exceção client-only para a fase mockada: persiste overrides de perfil no `localStorage` com chave escopada por `user.id` e emite evento para atualizar o shell. Deve ser substituído por backend/autenticação real no futuro.
+- `profile-storage.ts` é exceção client-only para a fase mockada: persiste overrides de perfil no `localStorage` com chave escopada por `user.id`, emite evento para atualizar o shell e retorna falha quando o navegador rejeita a gravação. Deve ser substituído por backend/autenticação real no futuro.
 - O módulo Pessoas foi removido das rotas autenticadas, componentes, contratos e catálogo de módulos. O cadastro operacional público permanece em `operational-onboarding-data-source.ts`.
 - `supabase/` concentra clients server-side; `SUPABASE_SERVICE_ROLE_KEY` nunca deve chegar ao client.
 - `auth/` concentra Auth.js/NextAuth, regra de domínio/e-mail corporativo, validação de membership pré-existente no Supabase, JWT para RLS e fallback mockado. O cookie `directscal_session` sustenta o login demo por e-mail/senha apenas em desenvolvimento.

@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation";
 
+import { AppPage } from "@/components/app-page";
 import { AppTopbar } from "@/components/app-topbar";
 import { ProfileSettings } from "@/components/profile/profile-settings";
+import { canAccessCustomerApp } from "@/lib/auth/access-control";
 import { getCurrentAuthSession } from "@/lib/auth/session";
-import { getProfileSettingsData } from "@/lib/data/omdx-data-source";
+import { getProfileSettingsData } from "@/lib/data/profile-data-source";
 
 export const metadata = {
   title: "Perfil — Directscal",
@@ -16,17 +18,21 @@ export default async function ProfilePage() {
     redirect("/entrar");
   }
 
-  const profile = getProfileSettingsData(session.user);
+  if (!canAccessCustomerApp(session.user)) {
+    redirect("/admin/modulos");
+  }
+
+  const profile = await getProfileSettingsData(session.user);
 
   return (
     <>
       <AppTopbar breadcrumb={[{ label: "Perfil" }]} />
 
-      <main className="flex min-w-0 flex-1 flex-col overflow-x-clip px-6 py-8 lg:px-10">
-        <div className="mx-auto flex min-w-0 w-full max-w-6xl flex-col gap-6">
+      <AppPage className="min-w-0 overflow-x-clip">
+        <div className="flex min-w-0 w-full flex-col gap-6">
           <ProfileSettings profile={profile} />
         </div>
-      </main>
+      </AppPage>
     </>
   );
 }

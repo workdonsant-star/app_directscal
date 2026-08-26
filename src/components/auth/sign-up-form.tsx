@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 
+import { AuthLegalNotice } from "@/components/auth/auth-legal-notice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -135,6 +136,7 @@ export function SignUpForm() {
       <Button type="submit" className="mt-2 w-full" disabled={isSubmitting}>
         {isSubmitting ? "Criando acesso" : "Criar acesso"}
       </Button>
+      <AuthLegalNotice />
       <p className="text-sm text-muted-foreground">
         Já tem acesso{" "}
         <Link

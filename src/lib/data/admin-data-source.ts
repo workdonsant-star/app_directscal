@@ -40,7 +40,19 @@ export type AdminDataSnapshot = {
 };
 
 export const adminUpdatedEventName = "directscal:admin-data-updated";
-export const acquisitionCoreFieldIds = ["nome", "email", "empresa"] as const;
+export const acquisitionCoreFieldIds = [
+  "nome",
+  "email",
+  "whatsapp",
+  "cargo",
+  "nicho_atuacao",
+  "instagram_empresa",
+  "website",
+  "cnpj",
+  "tamanho_empresa",
+  "faturamento_ultimo_trimestre",
+  "objetivo",
+] as const;
 
 const fieldTypeLabels: Record<AcquisitionFormFieldType, string> = {
   text: "Texto",

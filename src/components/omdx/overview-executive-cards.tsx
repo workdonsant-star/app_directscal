@@ -1,6 +1,6 @@
 "use client";
 
-import { Info } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Info, Minus } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,11 +18,17 @@ export type ExecutiveCardMetric = Omit<
   "classification" | "technicalDetail"
 > & {
   classification: ExecutiveMetric["classification"] | "Sem dados";
+  comparison?: {
+    label: string;
+    lowerIsBetter?: boolean;
+    percentage: number;
+  };
   technicalDetail?: string;
 };
 
 type OverviewExecutiveCardsProps = {
   metrics: ExecutiveCardMetric[];
+  presentation?: "gauge" | "number";
 };
 
 function getStatusColor(status: ExecutiveCardMetric["classification"]) {
@@ -155,47 +161,128 @@ function getMetricDetail(metric: ExecutiveCardMetric) {
   return metric.technicalDetail ?? metric.description;
 }
 
+function MetricComparison({
+  comparison,
+}: {
+  comparison: NonNullable<ExecutiveCardMetric["comparison"]>;
+}) {
+  const direction =
+    comparison.percentage > 0
+      ? "positive"
+      : comparison.percentage < 0
+        ? "negative"
+        : "neutral";
+  const DirectionIcon =
+    direction === "positive"
+      ? ArrowUpRight
+      : direction === "negative"
+        ? ArrowDownRight
+        : Minus;
+  const improved = comparison.lowerIsBetter
+    ? comparison.percentage < 0
+    : comparison.percentage > 0;
+  const color =
+    direction === "neutral"
+      ? "var(--muted-foreground)"
+      : improved
+        ? "var(--omdx-status-consistente)"
+        : "var(--omdx-status-atencao)";
+  const formattedPercentage = Math.abs(comparison.percentage).toLocaleString(
+    "pt-BR",
+    {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    },
+  );
+
+  return (
+    <p className="mt-1 flex items-center gap-1.5 text-xs">
+      <span
+        className="flex items-center gap-0.5 font-medium tabular-nums"
+        style={{ color }}
+      >
+        <DirectionIcon aria-hidden="true" className="size-3.5" />
+        {formattedPercentage}%
+      </span>
+      <span className="text-muted-foreground">{comparison.label}</span>
+    </p>
+  );
+}
+
 export function OverviewExecutiveCards({
   metrics,
+  presentation = "gauge",
 }: OverviewExecutiveCardsProps) {
   if (metrics.length === 0) return null;
 
   return (
     <TooltipProvider delay={120}>
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section
+        className={cn(
+          "grid gap-4 sm:grid-cols-2",
+          metrics.length === 3 ? "xl:grid-cols-3" : "xl:grid-cols-4",
+        )}
+      >
         {metrics.map((metric) => (
-          <Card key={metric.title} size="sm" className="gap-2">
+          <Card
+            key={metric.title}
+            size="sm"
+            className={cn(
+              presentation === "number" ? "gap-1 py-2" : "gap-2",
+              presentation === "number" && "rounded-[5px]",
+            )}
+          >
             <CardHeader className="flex flex-row items-start justify-between gap-3 pb-0">
               <CardTitle className="text-muted-foreground text-sm font-normal">
                 {metric.title}
               </CardTitle>
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <button
-                      type="button"
-                      aria-label={`Detalhes de ${metric.title}`}
-                      title={getMetricDetail(metric)}
-                      className={cn(
-                        buttonVariants({ variant: "ghost", size: "icon-xs" }),
-                        "text-muted-foreground hover:text-foreground -mt-1"
-                      )}
-                    />
-                  }
-                >
-                  <Info className="size-3.5" />
-                </TooltipTrigger>
-                <TooltipContent
-                  side="top"
-                  align="end"
-                  className="max-w-72 text-left leading-relaxed"
-                >
-                  {getMetricDetail(metric)}
-                </TooltipContent>
-              </Tooltip>
+              {presentation === "gauge" ? (
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <button
+                        type="button"
+                        aria-label={`Detalhes de ${metric.title}`}
+                        title={getMetricDetail(metric)}
+                        className={cn(
+                          buttonVariants({ variant: "ghost", size: "icon-xs" }),
+                          "text-muted-foreground hover:text-foreground -mt-1"
+                        )}
+                      />
+                    }
+                  >
+                    <Info className="size-3.5" />
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="top"
+                    align="end"
+                    className="max-w-72 text-left leading-relaxed"
+                  >
+                    {getMetricDetail(metric)}
+                  </TooltipContent>
+                </Tooltip>
+              ) : null}
             </CardHeader>
             <CardContent>
-              <GaugeChart metric={metric} />
+              {presentation === "gauge" ? (
+                <GaugeChart metric={metric} />
+              ) : (
+                <div className="py-2">
+                  <p className="flex items-baseline justify-start gap-1 tabular-nums">
+                    <span className="text-foreground text-3xl font-semibold tracking-tight">
+                      {metric.value}
+                    </span>
+                    {metric.suffix && (
+                      <span className="text-muted-foreground text-sm font-medium">
+                        {metric.suffix}
+                      </span>
+                    )}
+                  </p>
+                  {metric.comparison ? (
+                    <MetricComparison comparison={metric.comparison} />
+                  ) : null}
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}

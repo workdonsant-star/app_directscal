@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
+import { AuthLegalNotice } from "@/components/auth/auth-legal-notice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getSignedInRedirectPath } from "@/lib/auth/navigation";
@@ -220,6 +221,7 @@ export function SignInForm({
           {displayedError}
         </p>
       ) : null}
+      <AuthLegalNotice />
       {passwordLoginEnabled ? (
         <p className="text-xs leading-[18px] text-muted-foreground">
           Esqueceu sua senha?{" "}

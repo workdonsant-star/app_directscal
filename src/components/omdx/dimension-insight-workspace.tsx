@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { AppTopbar } from "@/components/app-topbar";
+import { AppPage } from "@/components/app-page";
 import { DimensionDiagnosticFilter } from "@/components/omdx/dimension-diagnostic-filter";
 import { DimensionInsightDashboard } from "@/components/omdx/dimension-insight-dashboard";
 import type {
@@ -60,15 +61,15 @@ export function DimensionInsightWorkspace({
           />
         }
       />
-      <main className="flex flex-1 flex-col px-6 py-8 lg:px-10">
-        <div className="mx-auto w-full max-w-6xl">
+      <AppPage>
+        <div className="w-full">
           <DimensionInsightDashboard
             questionResults={questionResults}
             selectedDiagnostic={selectedDiagnostic}
             summary={summary}
           />
         </div>
-      </main>
+      </AppPage>
     </>
   );
 }

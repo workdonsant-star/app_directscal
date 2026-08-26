@@ -3,13 +3,18 @@
 import { Check, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
+import { AppTopbar } from "@/components/app-topbar";
+import { AppPage } from "@/components/app-page";
 import {
   DiagnosticForm,
   type DiagnosticFormState,
 } from "@/components/omdx/diagnostic-form";
-import { DiagnosticsTable } from "@/components/omdx/diagnostics-table";
+import {
+  DiagnosticsTable,
+  type DiagnosticsFilter,
+} from "@/components/omdx/diagnostics-table";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -18,6 +23,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type {
   Diagnostic,
   DiagnosticShareLink,
@@ -45,6 +51,13 @@ type DiagnosticMutationResponse = {
   message?: string;
   redirectTo?: string;
 };
+
+const filters: { value: DiagnosticsFilter; label: string }[] = [
+  { value: "todos", label: "Todos" },
+  { value: "ativo", label: "Ativos" },
+  { value: "rascunho", label: "Rascunhos" },
+  { value: "encerrado", label: "Encerrados" },
+];
 
 async function readMutationResponse(response: Response) {
   const data: unknown = await response.json().catch(() => null);
@@ -82,6 +95,22 @@ export function DiagnosticsWorkspace({
   const [generatedLinks, setGeneratedLinks] = useState<DiagnosticShareLink[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [filter, setFilter] = useState<DiagnosticsFilter>("todos");
+
+  const counts = useMemo(
+    () => ({
+      todos: diagnostics.length,
+      ativo: diagnostics.filter((diagnostic) => diagnostic.status === "ativo")
+        .length,
+      rascunho: diagnostics.filter(
+        (diagnostic) => diagnostic.status === "rascunho",
+      ).length,
+      encerrado: diagnostics.filter(
+        (diagnostic) => diagnostic.status === "encerrado",
+      ).length,
+    }),
+    [diagnostics],
+  );
 
   function openCreate() {
     setMode("create");
@@ -232,27 +261,62 @@ export function DiagnosticsWorkspace({
   }
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex justify-end">
-        <Button onClick={openCreate} disabled={pending}>
-          <Plus className="size-4" />
-          Criar diagnóstico
-        </Button>
-      </div>
+    <>
+      <AppTopbar
+        breadcrumb={[
+          { label: "Overview", href: "/omdx" },
+          { label: "Diagnósticos" },
+        ]}
+        actions={
+          <div className="flex min-w-0 items-center gap-2">
+            <Tabs
+              value={filter}
+              onValueChange={(value) =>
+                setFilter(value as DiagnosticsFilter)
+              }
+            >
+              <TabsList>
+                {filters.map((item) => (
+                  <TabsTrigger
+                    key={item.value}
+                    value={item.value}
+                    className="gap-2"
+                  >
+                    {item.label}
+                    <span className="rounded-full border bg-background px-1.5 text-xs font-medium tabular-nums text-muted-foreground">
+                      {counts[item.value]}
+                    </span>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
 
-      {notice && (
-        <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm text-foreground">
-          <Check className="text-primary size-4" />
-          {notice}
-        </div>
-      )}
-
-      <DiagnosticsTable
-        diagnostics={diagnostics}
-        shareLinksByDiagnosticId={shareLinksByDiagnosticId}
-        onConfigure={openEdit}
-        onDelete={handleDelete}
+            <Button onClick={openCreate} disabled={pending}>
+              <Plus className="size-4" />
+              Criar diagnóstico
+            </Button>
+          </div>
+        }
       />
+
+      <AppPage>
+        <div className="flex w-full flex-col gap-5">
+          {notice && (
+            <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm text-foreground">
+              <Check className="size-4 text-primary" />
+              {notice}
+            </div>
+          )}
+
+          <DiagnosticsTable
+            diagnostics={diagnostics}
+            filter={filter}
+            shareLinksByDiagnosticId={shareLinksByDiagnosticId}
+            onConfigure={openEdit}
+            onDelete={handleDelete}
+          />
+        </div>
+      </AppPage>
 
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent className="overflow-y-auto data-[side=right]:!w-[min(100vw,56rem)] data-[side=right]:!max-w-none">
@@ -290,7 +354,7 @@ export function DiagnosticsWorkspace({
           )}
         </SheetContent>
       </Sheet>
-    </div>
+    </>
   );
 }
 

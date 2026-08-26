@@ -4,7 +4,7 @@ Página dedicada para leitura completa de um lead capturado por link de aquisiç
 
 ## Convenções locais
 
-- Renderizar dentro da shell autenticada e do container `mx-auto w-full max-w-6xl`.
+- Renderizar dentro da shell autenticada e de `AppPage`, em largura total como as demais páginas do admin.
 - O detalhe consome `useAdminData`, que busca leads persistidos no Supabase por `/api/admin/acquisition`.
 - Mostrar dados em modo leitura: contato, empresa, origem de aquisição e todos os campos preenchidos no formulário.
 - Leads não abrem modal ou drawer; a navegação parte da tabela em `/admin/leads` para esta página.

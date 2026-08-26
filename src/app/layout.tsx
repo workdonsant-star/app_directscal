@@ -54,8 +54,8 @@ export const metadata: Metadata = {
   description:
     "Diagnóstico de Maturidade Operacional. Estruturação de negócios digitais que precisam crescer.",
   icons: {
-    icon: [{ url: "/favicon.svg.svg", type: "image/svg+xml" }],
-    shortcut: "/favicon.svg.svg",
+    icon: [{ url: "/favicon.png", type: "image/png" }],
+    shortcut: "/favicon.png",
   },
 };
 

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { canAccessCustomerApp } from "@/lib/auth/access-control";
 import { getCurrentAppAccessContext } from "@/lib/auth/authorization";
 
 export default async function OmdxLayout({
@@ -13,8 +14,11 @@ export default async function OmdxLayout({
     redirect("/entrar");
   }
 
+  if (!canAccessCustomerApp(accessContext.session.user)) {
+    redirect("/admin/modulos");
+  }
+
   const canAccessOmdx =
-    accessContext.session.user.role === "superadmin" ||
     accessContext.enabledModuleIds?.includes("module_omdx") === true;
 
   if (!canAccessOmdx) {

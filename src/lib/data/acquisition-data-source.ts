@@ -19,6 +19,7 @@ import {
   type AdminDataSnapshot,
   type OrganizationModuleAccessRecord,
 } from "@/lib/data/admin-data-source";
+import { lookupCompanyByCnpj } from "@/lib/data/company-registry-data-source";
 import {
   hashPasswordCredential,
   verifyPasswordCredential,
@@ -469,7 +470,11 @@ function validateCampaignValues(
     throw new Error("Informe um e-mail profissional válido.");
   }
 
-  const companyName = valueByField(campaign, values, ["empresa", "company"]);
+  const companyName = valueByField(campaign, values, [
+    "razao_social",
+    "empresa",
+    "company",
+  ]);
   if (!companyName) {
     throw new Error("Informe o nome da empresa.");
   }
@@ -860,7 +865,13 @@ export async function registerAcquisitionPasswordUser(
     throw new Error("Campanha indisponível.");
   }
 
-  const leadData = validateCampaignValues(campaign, parsedInput.values);
+  const companyRegistry = await lookupCompanyByCnpj(
+    parsedInput.values.cnpj ?? "",
+  );
+  const leadData = validateCampaignValues(campaign, {
+    ...parsedInput.values,
+    ...companyRegistry.values,
+  });
   const supabase = createSupabaseAdminClient();
   const existingUser = await findNextAuthUserByEmail({
     email: leadData.email,
@@ -1126,8 +1137,10 @@ export async function completeAcquisitionGoogleLead({
     userId,
   });
 
+  const companyRegistry = await lookupCompanyByCnpj(values.cnpj ?? "");
   const completeValues = {
     ...values,
+    ...companyRegistry.values,
     email: normalizedEmail,
     nome: normalizedName,
   };

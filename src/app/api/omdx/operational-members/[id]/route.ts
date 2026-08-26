@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { canAccessCustomerApp } from "@/lib/auth/access-control";
+import { getCurrentAuthSession } from "@/lib/auth/session";
 import { idSchema } from "@/lib/contracts/omdx";
 import { deleteCurrentOperationalMember } from "@/lib/data/operational-onboarding-data-source";
 
@@ -8,6 +10,19 @@ type RouteContext = {
 };
 
 export async function DELETE(_request: Request, { params }: RouteContext) {
+  const session = await getCurrentAuthSession();
+
+  if (!session) {
+    return NextResponse.json({ message: "Sessão necessária." }, { status: 401 });
+  }
+
+  if (!canAccessCustomerApp(session.user)) {
+    return NextResponse.json(
+      { message: "Acesso restrito à área do cliente." },
+      { status: 403 },
+    );
+  }
+
   const { id } = await params;
   const parsed = idSchema.safeParse(id);
 

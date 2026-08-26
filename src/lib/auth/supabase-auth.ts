@@ -454,15 +454,18 @@ export async function resolveSupabaseAuthUser(
 
   if (!resolvedUserId || !resolvedEmail) return null;
 
-  const { data: member, error: memberError } = await supabase
+  const { data: memberships, error: memberError } = await supabase
     .from("organization_members")
     .select("organization_id,role")
     .eq("user_id", resolvedUserId)
     .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle<OrganizationMemberRow>();
+    .returns<OrganizationMemberRow[]>();
 
   if (memberError) throw memberError;
+
+  const member =
+    memberships.find((membership) => membership.role === "superadmin") ??
+    memberships[0];
 
   if (!member) return null;
 

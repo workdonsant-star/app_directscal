@@ -331,8 +331,9 @@ export function CampaignEditorDrawer({
                     Campos do formulário
                   </h3>
                   <p className="max-w-2xl text-sm text-muted-foreground">
-                    Nome, e-mail e empresa permanecem como campos base para
-                    manter as listagens de leads e empresas consistentes.
+                    Os campos do onboarding permanecem como base em todas as
+                    campanhas. Rótulos, obrigatoriedade e opções podem ser
+                    ajustados para cada origem.
                   </p>
                 </div>
                 <Button variant="outline" size="sm" onClick={addField}>

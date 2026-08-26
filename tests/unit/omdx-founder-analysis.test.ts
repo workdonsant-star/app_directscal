@@ -4,6 +4,7 @@ import { diagnosticReportSchema } from "@/lib/contracts";
 import {
   buildDimensionScoreSummary,
   buildOmdxOverviewAnalyticsFromReports,
+  buildOmdxOverviewComparisonFromReports,
 } from "@/lib/data/omdx-overview-analytics";
 import type { DimensionId } from "@/lib/types";
 
@@ -102,6 +103,55 @@ function buildFounderOnlyReport() {
   });
 }
 
+function buildComparisonReport({
+  closedAt,
+  id,
+  score,
+}: {
+  closedAt: string;
+  id: string;
+  score: number;
+}) {
+  const report = buildFounderOnlyReport();
+
+  return diagnosticReportSchema.parse({
+    ...report,
+    diagnostic: {
+      ...report.diagnostic,
+      id,
+      name: `Diagnóstico ${closedAt.slice(0, 10)}`,
+      closedAt,
+      status: "encerrado",
+    },
+    generalScore: score,
+    layerAverages: {
+      ...report.layerAverages,
+      fundador: score,
+    },
+    weakestDimension: {
+      ...report.weakestDimension,
+      score,
+    },
+    dimensions: report.dimensions.map((dimension) => ({
+      ...dimension,
+      score,
+      layerScores: {
+        ...dimension.layerScores,
+        fundador: score,
+      },
+      questions: dimension.questions.map((question) => ({
+        ...question,
+        diagnosticId: id,
+        score,
+        layerScores: {
+          ...question.layerScores,
+          fundador: score,
+        },
+      })),
+    })),
+  });
+}
+
 describe("Maturidade founder analysis base", () => {
   it("accepts founder-only reports without inventing layer scores", () => {
     const report = buildFounderOnlyReport();
@@ -185,5 +235,67 @@ describe("Maturidade founder analysis base", () => {
         }),
       ]),
     );
+  });
+
+  it("compares the latest closed diagnostic with the average of all previous diagnostics", () => {
+    const oldest = buildComparisonReport({
+      closedAt: "2026-01-10T00:00:00.000Z",
+      id: "00000000-0000-4000-8000-000000000211",
+      score: 2,
+    });
+    const middle = buildComparisonReport({
+      closedAt: "2026-03-10T00:00:00.000Z",
+      id: "00000000-0000-4000-8000-000000000212",
+      score: 4,
+    });
+    const latest = buildComparisonReport({
+      closedAt: "2026-05-10T00:00:00.000Z",
+      id: "00000000-0000-4000-8000-000000000213",
+      score: 4.5,
+    });
+    const result = buildOmdxOverviewComparisonFromReports([
+      latest,
+      oldest,
+      middle,
+    ]);
+
+    expect(result.analytics.dimensions[0].maturity).toBe(4.5);
+    expect(result.comparison).toMatchObject({
+      currentDiagnosticId: latest.diagnostic.id,
+      currentDiagnosticDate: latest.diagnostic.closedAt,
+      historicalDiagnosticCount: 2,
+      referenceLabel: "Média de 2 diagnósticos anteriores",
+    });
+    expect(
+      result.comparison?.historicalAnalytics.dimensions[0].maturity,
+    ).toBe(3);
+  });
+
+  it("uses only diagnostics older than the selected diagnostic as its reference", () => {
+    const oldest = buildComparisonReport({
+      closedAt: "2026-01-10T00:00:00.000Z",
+      id: "00000000-0000-4000-8000-000000000221",
+      score: 2.5,
+    });
+    const selected = buildComparisonReport({
+      closedAt: "2026-03-10T00:00:00.000Z",
+      id: "00000000-0000-4000-8000-000000000222",
+      score: 3.5,
+    });
+    const newer = buildComparisonReport({
+      closedAt: "2026-05-10T00:00:00.000Z",
+      id: "00000000-0000-4000-8000-000000000223",
+      score: 4.5,
+    });
+    const result = buildOmdxOverviewComparisonFromReports(
+      [newer, selected, oldest],
+      selected.diagnostic.id,
+    );
+
+    expect(result.analytics.dimensions[0].maturity).toBe(3.5);
+    expect(result.comparison?.historicalDiagnosticCount).toBe(1);
+    expect(
+      result.comparison?.historicalAnalytics.dimensions[0].maturity,
+    ).toBe(2.5);
   });
 });

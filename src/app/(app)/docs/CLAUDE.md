@@ -12,6 +12,7 @@ Página autenticada de recurso para orientar o cliente administrador no uso do s
 
 - Usar breadcrumb `Documentação`.
 - Manter a página como Server Component; não usar `"use client"` sem interação real.
+- A página pertence à aplicação do cliente e redireciona `superadmin` para `/admin/modulos`.
 - Manter formato de página única com sumário lateral e âncoras internas.
 - O sumário lateral pode usar `DocumentTableOfContents` como client component para rolagem suave e item ativo.
 - Não criar rotas filhas nesta fase.

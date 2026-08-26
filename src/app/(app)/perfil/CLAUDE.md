@@ -14,5 +14,7 @@ Página autenticada para editar dados básicos do usuário e da empresa.
 
 - Usar breadcrumb `Perfil`.
 - A página é Server Component, lê `getCurrentAuthSession()` e delega interatividade para `ProfileSettings`.
+- A página pertence à aplicação do cliente; `superadmin` não recebe o atalho no menu e é redirecionado para `/admin/modulos` em acesso direto.
+- Usar `AppPage` com o mesmo recuo horizontal de Dimensões e conteúdo em largura total.
 - Persistência de edição continua mockada/local por usuário; não adicionar API ou escrita em backend nesta fase.
 - O acesso principal fica no menu do usuário na sidebar, não como item de navegação principal.

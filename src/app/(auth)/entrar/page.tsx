@@ -13,7 +13,7 @@ import { getCurrentAuthSession } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/env";
 
 export const metadata: Metadata = {
-  title: "Entrar — Directscal Maturidade",
+  title: "Login - DirectScal",
 };
 
 function getAuthErrorMessage(error?: string | string[]) {
@@ -57,11 +57,9 @@ export default async function SignInPage({
     <AuthPageShell
       title={
         <>
-          Analise seus dados{" "}
-          <br />e controle sua operação
+          Entenda os pontos vulneráveis da sua gestão e saiba como resolvê-los
         </>
       }
-      description="Acesse o que construímos para sua operação crescer com solidez."
       visualVariant="app"
     >
       <SignInForm

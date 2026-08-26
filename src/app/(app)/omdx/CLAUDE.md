@@ -1,8 +1,8 @@
-# `/omdx` — Overview
+# `/omdx` — Maturidade por camadas
 
 ## Propósito
 
-Raiz executiva do módulo Maturidade. A página aparece na UI como `Overview` e mostra leitura consolidada, KPIs, gráficos e uma tabela compacta de resultado por dimensão sem virar área operacional.
+Raiz executiva do módulo Maturidade. A página mostra a comparação consolidada entre Fundador, Liderança e Operação, com três gráficos e duas matrizes analíticas, sem virar área operacional.
 
 ## Convenções locais
 
@@ -14,7 +14,8 @@ Raiz executiva do módulo Maturidade. A página aparece na UI como `Overview` e 
 - Não adicionar tabela completa, criação ou configuração de diagnóstico aqui; isso fica em `/omdx/diagnosticos`.
 - A ação `Baixar relatório` aponta para o diagnóstico mais recente com relatório consolidável e abre opções de PDF e CSV.
 >>>>>>> Stashed changes
-- O filtro de diagnóstico usa o query param `diagnostico`, com `todos` como consolidação dos diagnósticos reportáveis.
-- `/omdx/camadas` é o dashboard complementar para comparar Fundador, Liderança e Time. A rota reutiliza o mesmo filtro e a mesma camada de analytics do Overview, com breadcrumb `Maturidade / Camadas`.
+- O filtro de diagnóstico usa o query param `diagnostico`. Em `todos`, o dashboard mostra o diagnóstico reportável mais recente e compara os três charts superiores com a média de todos os anteriores. Ao selecionar um diagnóstico específico, a referência considera apenas os diagnósticos anteriores a ele.
+- A ordem temporal usa `closedAt` quando disponível e `createdAt` como fallback. Mudanças posteriores em `updatedAt` não devem reordenar a série histórica.
+- A composição visual antes servida em `/omdx/camadas` passa a ser a página principal em `/omdx`, sem breadcrumb. A URL antiga preserva o filtro e redireciona para a raiz.
 - CTAs contextuais, como `Baixar relatório`, ficam na `AppTopbar` via `actions`, não no header do conteúdo.
 - O módulo Pessoas foi removido da navegação e das rotas autenticadas. O Overview não deve redirecionar para `/pessoas`.

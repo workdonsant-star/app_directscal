@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { AdminLeadDetail } from "@/components/admin/admin-lead-detail";
+import { AppPage } from "@/components/app-page";
 import { AppTopbar } from "@/components/app-topbar";
 import { isFeatureAcquisitionEnabled } from "@/lib/env";
 
@@ -34,11 +35,11 @@ export default async function AdminLeadDetailPage({
         ]}
       />
 
-      <main className="flex flex-1 flex-col px-6 py-8 lg:px-10">
-        <div className="mx-auto w-full max-w-6xl">
+      <AppPage>
+        <div className="w-full">
           <AdminLeadDetail leadId={id} />
         </div>
-      </main>
+      </AppPage>
     </>
   );
 }

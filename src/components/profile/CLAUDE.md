@@ -19,6 +19,8 @@ Componentes da página `/perfil`, usados para configurar dados básicos da conta
 - A autenticação mockada vive em `src/lib/auth` e `/api/auth/*`.
 - Usar primitives de `src/components/ui/`.
 - Validações devem ser simples e visíveis no próprio formulário.
-- Upload de foto usa `FileReader.readAsDataURL` e persiste em `localStorage` após `Salvar alterações`; não enviar arquivo para backend nesta fase.
+- Upload de foto aceita JPG, PNG ou WebP de até 15 MB. Após a seleção, `AvatarCropDialog` abre uma modal circular para reposicionar a imagem por arraste e ajustar o zoom; a confirmação gera um avatar circular WebP de 512 × 512 px antes de persistir em `localStorage` após `Salvar alterações`. Não enviar arquivo para backend nesta fase.
+- Falhas de leitura, formato, tamanho e cota do navegador devem permanecer visíveis no formulário; não limpe o draft quando a persistência falhar.
 - Overrides mockados de perfil ficam em `src/lib/profile-storage.ts`, são escopados por `user.id` e atualizam o `NavUser` por evento client.
+- O logout não remove os overrides escopados por usuário; nome e avatar permanecem disponíveis para o mesmo `user.id` neste navegador.
 - Campos de senha são opcionais. Só valide senha quando algum campo de senha estiver preenchido.

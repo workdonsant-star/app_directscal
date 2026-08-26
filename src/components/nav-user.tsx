@@ -28,7 +28,6 @@ import {
 import {
   getProfileOverridesServerSnapshot,
   getProfileOverridesSnapshot,
-  clearProfileOverrides,
   subscribeProfileOverrides,
 } from "@/lib/profile-storage";
 import { ChevronsUpDownIcon, LogOutIcon, Moon, Sun } from "lucide-react";
@@ -47,10 +46,11 @@ export function NavUser({
 }: {
   user: {
     avatar?: string;
-    email: string;
+    company: string;
     id: string;
     initials: string;
     name: string;
+    role?: "superadmin" | "admin" | "cliente";
   };
 }) {
   const router = useRouter();
@@ -83,7 +83,6 @@ export function NavUser({
     await signOut({ callbackUrl: "/entrar", redirect: false }).catch(
       () => null,
     );
-    clearProfileOverrides(user.id);
     router.push("/entrar");
     router.refresh();
   }
@@ -106,7 +105,7 @@ export function NavUser({
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-medium">{displayName}</span>
               <span className="truncate text-xs text-muted-foreground">
-                {user.email}
+                {user.company}
               </span>
             </div>
             <ChevronsUpDownIcon className="ml-auto size-4" />
@@ -117,26 +116,30 @@ export function NavUser({
             align="end"
             sideOffset={4}
           >
-            <DropdownMenuItem
-              render={<Link href="/perfil" />}
-              className="cursor-pointer p-0 focus:bg-accent focus:text-accent-foreground"
-            >
-              <div className="flex w-full items-center gap-2 rounded-md px-1 py-1.5 text-left text-sm">
-                <Avatar className="size-8 rounded-lg">
-                  <AvatarImage src={displayAvatar} alt={displayName} />
-                  <AvatarFallback className="rounded-lg">
-                    {displayInitials}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{displayName}</span>
-                  <span className="truncate text-xs text-muted-foreground">
-                    {user.email}
-                  </span>
-                </div>
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
+            {user.role !== "superadmin" ? (
+              <>
+                <DropdownMenuItem
+                  render={<Link href="/perfil" />}
+                  className="cursor-pointer p-0 focus:bg-accent focus:text-accent-foreground"
+                >
+                  <div className="flex w-full items-center gap-2 rounded-md px-1 py-1.5 text-left text-sm">
+                    <Avatar className="size-8 rounded-lg">
+                      <AvatarImage src={displayAvatar} alt={displayName} />
+                      <AvatarFallback className="rounded-lg">
+                        {displayInitials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="grid flex-1 text-left text-sm leading-tight">
+                      <span className="truncate font-medium">{displayName}</span>
+                      <span className="truncate text-xs text-muted-foreground">
+                        {user.company}
+                      </span>
+                    </div>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            ) : null}
             <div className="flex justify-start px-1 py-1">
               <Button
                 type="button"

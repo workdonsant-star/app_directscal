@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import { isCorporateEmailAllowed } from "@/lib/auth/access-control";
+import {
+  canAccessCustomerApp,
+  isCorporateEmailAllowed,
+} from "@/lib/auth/access-control";
 
 const originalEnv = { ...process.env };
 
@@ -9,6 +12,12 @@ afterEach(() => {
 });
 
 describe("auth access control", () => {
+  it("keeps superadmin out of the customer application", () => {
+    expect(canAccessCustomerApp({ role: "superadmin" })).toBe(false);
+    expect(canAccessCustomerApp({ role: "admin" })).toBe(true);
+    expect(canAccessCustomerApp({ role: "cliente" })).toBe(true);
+  });
+
   it("allows an explicitly listed Directscal .com email when its domain is listed", () => {
     process.env.AUTH_ALLOWED_DOMAINS = "directscal.com,directscal.com.br";
     process.env.AUTH_ALLOWED_EMAILS = "don.santos@directscal.com";

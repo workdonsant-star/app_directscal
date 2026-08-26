@@ -7,6 +7,7 @@ Endpoints server-side para mutações reais de Maturidade em produção.
 ## Convenções
 
 - Validar sessão com `getCurrentAuthSession()` nas mutações internas.
+- Negar `superadmin` com `403` em toda leitura, mutação ou download interno de cliente. Endpoints públicos por token permanecem públicos e validam o token em vez da role.
 - Usar Zod dos contratos antes de escrever no banco.
 - Usar Supabase service role apenas no servidor.
 - O fluxo público de resposta não exige autenticação, não coleta identificação pessoal e valida token, status do diagnóstico, trava por navegador e conjunto completo de perguntas do template antes de gravar.

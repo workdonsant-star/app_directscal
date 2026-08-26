@@ -1,8 +1,12 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
+import { AppPage } from "@/components/app-page";
 import { AppTopbar } from "@/components/app-topbar";
 import { DocumentTableOfContents } from "@/components/document-table-of-contents";
 import { Button } from "@/components/ui/button";
+import { canAccessCustomerApp } from "@/lib/auth/access-control";
+import { getCurrentAuthSession } from "@/lib/auth/session";
 
 export const metadata = {
   title: "Documentação — Maturidade",
@@ -39,12 +43,22 @@ const areas = [
   },
 ];
 
-export default function DocumentationPage() {
+export default async function DocumentationPage() {
+  const session = await getCurrentAuthSession();
+
+  if (!session) {
+    redirect("/entrar");
+  }
+
+  if (!canAccessCustomerApp(session.user)) {
+    redirect("/admin/modulos");
+  }
+
   return (
     <>
       <AppTopbar breadcrumb={[{ label: "Documentação" }]} />
 
-      <main className="flex flex-1 flex-col px-6 py-8 lg:px-10">
+      <AppPage>
         <div className="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-[220px_minmax(0,760px)]">
           <aside className="hidden lg:block">
             <div className="sticky top-20 border-l pl-4">
@@ -309,7 +323,7 @@ export default function DocumentationPage() {
             </section>
           </article>
         </div>
-      </main>
+      </AppPage>
     </>
   );
 }

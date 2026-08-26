@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 
-import { AppTopbar } from "@/components/app-topbar";
 import { AdminModulesWorkspace } from "@/components/admin/admin-modules-workspace";
+import { AppPage } from "@/components/app-page";
+import { AppTopbar } from "@/components/app-topbar";
 
 export const metadata: Metadata = {
   title: "Módulos — Admin Directscal",
@@ -14,11 +15,11 @@ export default function AdminModulesPage() {
         breadcrumb={[{ label: "Admin", href: "/admin/modulos" }, { label: "Módulos" }]}
       />
 
-      <main className="flex flex-1 flex-col px-6 py-8 lg:px-10">
-        <div className="mx-auto w-full max-w-6xl">
+      <AppPage>
+        <div className="w-full">
           <AdminModulesWorkspace />
         </div>
-      </main>
+      </AppPage>
     </>
   );
 }

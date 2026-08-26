@@ -19,6 +19,7 @@ src/components/
 ├── role-matrix/           ← legado inativo da antiga matriz de papéis
 ├── sops/                  ← legado inativo da antiga experiência de SOPs
 ├── app-sidebar.tsx        ← sidebar global do app autenticado
+├── app-page.tsx           ← recuo e estrutura padrão do conteúdo autenticado
 ├── app-topbar.tsx         ← topbar limpa com trigger + breadcrumb
 ├── document-table-of-contents.tsx ← sumário documental com âncoras suaves e item ativo
 ├── nav-main.tsx           ← navegação principal da sidebar
@@ -44,7 +45,7 @@ Cada subpasta de domínio tem seu próprio `CLAUDE.md`. Crie um quando adicionar
 
 - **Server Components por padrão.** `"use client"` somente quando o componente precisar (`useState`, `usePathname`, eventos, etc.).
 - O shell autenticado usa o bloco **shadcn `sidebar-07`** como base visual, adaptado para Directscal.
-- A sidebar do app cliente não usa o título de seção `Módulos` nem navegação expansível. `Maturidade` aponta diretamente para o overview em `/omdx`; `Camadas`, `Diagnósticos`, `Cronograma` e as seis dimensões de insights aparecem como itens independentes no mesmo nível.
+- A sidebar do app cliente não usa o título de seção `Módulos` nem navegação expansível. `Maturidade` aponta diretamente para o dashboard de Camadas em `/omdx`; `Diagnósticos` e `Cronograma` permanecem no grupo principal, e os seis insights aparecem como itens independentes sob o rótulo `Dimensões`.
 - A seção `Recursos` e o item `Documentação` não aparecem na sidebar. A rota `/docs` continua disponível por acesso direto.
 - `Ativos de gestão` foi removido da navegação e do catálogo de módulos. Não reintroduza SOPs, matriz de papéis ou `module_management_assets` sem nova decisão explícita.
 - `Cronograma` aparece como item independente no mesmo nível de `Maturidade` e aponta para `/gantt`; não transforme a funcionalidade em módulo próprio sem nova decisão explícita.
@@ -52,10 +53,13 @@ Cada subpasta de domínio tem seu próprio `CLAUDE.md`. Crie um quando adicionar
 - Não reintroduza `Empresas` ou `Relatórios` na navegação principal do cliente sem nova decisão.
 - Em `/admin`, a sidebar troca para `Administração` (`Módulos`, `Campanhas`, `Leads`, `Empresas`).
 - Componentes em `auth/` conversam com `/api/auth/*`; não leem nem escrevem cookies diretamente.
-- O header da sidebar mostra o selector de usuário (`NavUser`) com perfil, tema e saída. O switcher de módulos (`AppSwitcher`) não fica visível na sidebar principal.
+- O header da sidebar mostra o selector de usuário (`NavUser`) com nome e empresa, além de perfil, tema e saída. O e-mail não ocupa o resumo visível do cliente. O switcher de módulos (`AppSwitcher`) não fica visível na sidebar principal.
+- O logout encerra as sessões, mas preserva os overrides locais de perfil escopados por `user.id`; não limpe foto e nome persistidos no navegador ao sair.
+- Para `superadmin`, `NavUser` não exibe o atalho de Perfil, porque a conta administrativa fica restrita à superfície `/admin`.
 - O menu principal mantém `gap-1` (4 px) entre itens e começa com 24 px de separação visual abaixo do seletor de usuário, combinando o padding inferior do header com o padding superior do grupo.
 - O controle manual de claro/escuro fica no dropdown do usuário em `NavUser`; o padrão global continua `system`.
-- A topbar do app autenticado deve ser limpa e branca no tema claro (`bg-background`): `SidebarTrigger`, separador, breadcrumb e ações contextuais de página. Filtros globais de página devem ficar na topbar via `actions`, não dentro do conteúdo principal. Não adicionar busca/notificações sem decisão explícita.
+- A topbar do app autenticado deve ser limpa e branca no tema claro (`bg-background`), com `h-14` para alinhar a borda inferior à base do seletor de usuário: `SidebarTrigger`, separador, breadcrumb e ações contextuais de página. Filtros globais de página devem ficar na topbar via `actions`, não dentro do conteúdo principal. Não adicionar busca/notificações sem decisão explícita.
+- `AppPage` é o wrapper semântico padrão do conteúdo autenticado. Ele aplica `px-6 py-8 lg:px-10`; dashboards, tabelas, perfil e admin mantêm o filho em largura total, como as páginas de Dimensões.
 - **Exports nomeados.** Default exports apenas onde o framework exige (página, layout).
 - **Composição com `render` prop**, não `asChild`. A versão atual do shadcn usa base-ui — vide `src/components/ui/CLAUDE.md`.
 - **Seletores usam o primitive `Select` do sistema**, não `<select>` nativo. Isso evita a interface do navegador e mantém popup, foco e estados consistentes.

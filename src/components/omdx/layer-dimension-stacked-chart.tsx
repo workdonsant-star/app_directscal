@@ -21,9 +21,6 @@ type ChartDimension = {
 
 type TooltipParam = {
   dataIndex?: number;
-  marker?: string;
-  seriesName?: string;
-  value?: unknown;
 };
 
 const fallbackColors: Record<string, string> = {
@@ -86,6 +83,12 @@ function escapeHtml(value: string) {
     .replaceAll("'", "&#039;");
 }
 
+function formatDelta(value: number) {
+  const sign = value > 0 ? "+" : value < 0 ? "−" : "";
+
+  return `${sign}${scoreFormatter.format(Math.abs(value))}`;
+}
+
 function buildChartData(data: DimensionResult[]): ChartDimension[] {
   return data
     .map((dimension) => {
@@ -120,36 +123,66 @@ function buildChartData(data: DimensionResult[]): ChartDimension[] {
     });
 }
 
-function makeTooltipFormatter(data: ChartDimension[]) {
+function makeTooltipFormatter(
+  data: ChartDimension[],
+  historicalData: ChartDimension[],
+  referenceLabel: string,
+) {
+  const hasHistoricalData = historicalData.some((dimension) =>
+    layers.some((layer) => dimension[layer.key] !== null),
+  );
+
   return (params: unknown) => {
     const items = Array.isArray(params) ? (params as TooltipParam[]) : [];
-    const firstItem = items.find((item) => item.seriesName !== "Total");
+    const firstItem = items[0];
 
     if (typeof firstItem?.dataIndex !== "number") return "";
 
     const dimension = data[firstItem.dataIndex];
+    const historicalDimension = historicalData[firstItem.dataIndex];
 
     if (!dimension) return "";
 
     const rows = layers
       .map((layer) => {
         const value = dimension[layer.key];
-        const marker =
-          items.find((item) => item.seriesName === layer.name)?.marker ?? "";
+
+        if (!hasHistoricalData) {
+          return `
+            <div style="display:flex;justify-content:space-between;gap:24px;">
+              <span style="color:var(--muted-foreground);">${layer.name}</span>
+              <span style="font-variant-numeric:tabular-nums;color:var(--foreground);">${value === null ? "Sem base" : scoreFormatter.format(value)}</span>
+            </div>
+          `;
+        }
+
+        const historicalValue = historicalDimension?.[layer.key] ?? null;
+        const delta =
+          value === null || historicalValue === null
+            ? null
+            : value - historicalValue;
 
         return `
-          <div style="display:flex;justify-content:space-between;gap:24px;">
-            <span style="color:var(--muted-foreground);">${marker}${layer.name}</span>
-            <span style="font-variant-numeric:tabular-nums;color:var(--foreground);">${value === null ? "Sem base" : scoreFormatter.format(value)}</span>
+          <div style="display:grid;grid-template-columns:minmax(72px,1fr) 54px 64px 48px;gap:12px;align-items:center;">
+            <span style="color:var(--muted-foreground);">${layer.name}</span>
+            <span style="font-variant-numeric:tabular-nums;text-align:right;color:var(--foreground);">${value === null ? "—" : scoreFormatter.format(value)}</span>
+            <span style="font-variant-numeric:tabular-nums;text-align:right;color:var(--foreground);">${historicalValue === null ? "—" : scoreFormatter.format(historicalValue)}</span>
+            <span style="font-variant-numeric:tabular-nums;text-align:right;font-weight:600;color:var(--foreground);">${delta === null ? "—" : formatDelta(delta)}</span>
           </div>
         `;
       })
       .join("");
 
     return `
-      <div style="min-width:240px;">
-        <div style="margin-bottom:10px;font-weight:600;color:var(--foreground);">${escapeHtml(dimension.dimension)}</div>
-        <div style="display:grid;gap:6px;">${rows}</div>
+      <div style="min-width:${hasHistoricalData ? "340px" : "240px"};">
+        <div style="margin-bottom:4px;font-weight:600;color:var(--foreground);">${escapeHtml(dimension.dimension)}</div>
+        ${hasHistoricalData ? `<div style="margin-bottom:10px;font-size:11px;color:var(--muted-foreground);">Referência: ${escapeHtml(referenceLabel)}</div>` : ""}
+        <div style="display:grid;gap:6px;">
+          ${hasHistoricalData ? `<div style="display:grid;grid-template-columns:minmax(72px,1fr) 54px 64px 48px;gap:12px;color:var(--muted-foreground);font-size:11px;">
+            <span>Camada</span><span style="text-align:right;">Atual</span><span style="text-align:right;">Histórico</span><span style="text-align:right;">Δ</span>
+          </div>` : ""}
+          ${rows}
+        </div>
       </div>
     `;
   };
@@ -157,16 +190,44 @@ function makeTooltipFormatter(data: ChartDimension[]) {
 
 export function LayerDimensionStackedChart({
   data,
+  historicalData = [],
+  referenceLabel = "Média histórica",
 }: {
   data: DimensionResult[];
+  historicalData?: DimensionResult[];
+  referenceLabel?: string;
 }) {
   const colors = useChartThemeColors(fallbackColors);
   const chartData = useMemo(() => buildChartData(data), [data]);
+  const historicalChartData = useMemo(() => {
+    const historicalByDimension = new Map(
+      buildChartData(historicalData).map((dimension) => [
+        dimension.dimension,
+        dimension,
+      ]),
+    );
+
+    return chartData.map(
+      (dimension) =>
+        historicalByDimension.get(dimension.dimension) ?? {
+          dimension: dimension.dimension,
+          diretoria: null,
+          lideranca: null,
+          shortDimension: dimension.shortDimension,
+          time: null,
+          total: 0,
+        },
+    );
+  }, [chartData, historicalData]);
   const yAxisMax = useMemo(() => {
-    const maxValue = Math.max(...chartData.map((item) => item.total), 5);
+    const maxValue = Math.max(
+      ...chartData.map((item) => item.total),
+      ...historicalChartData.map((item) => item.total),
+      5,
+    );
 
     return Math.ceil(maxValue / 2) * 2;
-  }, [chartData]);
+  }, [chartData, historicalChartData]);
   const option = useMemo<EChartsOption>(
     () => ({
       animationDuration: 180,
@@ -174,7 +235,7 @@ export function LayerDimensionStackedChart({
         enabled: true,
         label: {
           description:
-            "Barras empilhadas com as pontuações de Fundador, Liderança e Operação por dimensão.",
+            "Barras empilhadas lado a lado com as pontuações atuais e a média dos diagnósticos anteriores para Fundador, Liderança e Operação por dimensão.",
         },
       },
       grid: {
@@ -193,7 +254,11 @@ export function LayerDimensionStackedChart({
         className: "omdx-echarts-tooltip",
         confine: true,
         extraCssText: "box-shadow:0 14px 40px rgba(0,0,0,.12);padding:12px;",
-        formatter: makeTooltipFormatter(chartData),
+        formatter: makeTooltipFormatter(
+          chartData,
+          historicalChartData,
+          referenceLabel,
+        ),
         renderMode: "html",
         textStyle: {
           color: colors["--popover-foreground"],
@@ -232,10 +297,10 @@ export function LayerDimensionStackedChart({
       },
       series: [
         ...layers.map((layer) => ({
-          name: layer.name,
+          name: `${layer.name} · Atual`,
           type: "bar" as const,
-          stack: "camadas",
-          barWidth: 34,
+          stack: "atual",
+          barWidth: historicalData.length > 0 ? 15 : 34,
           data: chartData.map((dimension) => dimension[layer.key]),
           itemStyle: {
             color: colors[layer.colorToken],
@@ -243,14 +308,33 @@ export function LayerDimensionStackedChart({
             borderWidth: 1,
           },
         })),
+        ...(historicalData.length > 0
+          ? layers.map((layer) => ({
+              name: `${layer.name} · Histórico`,
+              type: "bar" as const,
+              stack: "historico",
+              barWidth: 15,
+              barGap: "45%",
+              data: historicalChartData.map(
+                (dimension) => dimension[layer.key],
+              ),
+              itemStyle: {
+                color: colors[layer.colorToken],
+                opacity: 0.28,
+                borderColor: colors[layer.colorToken],
+                borderWidth: 1,
+              },
+            }))
+          : []),
         {
           name: "Total",
-          type: "bar" as const,
-          barGap: "-100%",
-          barWidth: 34,
-          data: chartData.map((dimension) => dimension.total),
+          type: "scatter" as const,
+          symbolSize: 0,
+          data: chartData.map((dimension) => [
+            dimension.shortDimension,
+            dimension.total,
+          ]),
           silent: true,
-          itemStyle: { color: "transparent" },
           label: {
             show: true,
             position: "top" as const,
@@ -258,7 +342,9 @@ export function LayerDimensionStackedChart({
             fontFamily: chartFontFamily,
             fontSize: 10,
             formatter: (params: { value?: unknown }) => {
-              const value = getNumericValue(params.value);
+              const value = Array.isArray(params.value)
+                ? getNumericValue(params.value[1])
+                : getNumericValue(params.value);
 
               return value === null ? "" : scoreFormatter.format(value);
             },
@@ -267,7 +353,14 @@ export function LayerDimensionStackedChart({
         },
       ],
     }),
-    [chartData, colors, yAxisMax],
+    [
+      chartData,
+      colors,
+      historicalChartData,
+      historicalData.length,
+      referenceLabel,
+      yAxisMax,
+    ],
   );
 
   if (chartData.length === 0) {

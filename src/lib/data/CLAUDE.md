@@ -6,11 +6,12 @@ Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no
 
 - Páginas e componentes devem importar dados daqui, não de `mock-data.ts`.
 - Leituras Maturidade que falam com Supabase são assíncronas e server-side.
+- Leituras Maturidade nunca expandem `superadmin` para todas as organizações. Esse papel não possui escopo de cliente; dados administrativos são resolvidos pelas fontes e APIs de `admin`.
 - Client Components devem importar apenas helpers puros de `omdx-domain.ts`, nunca a data-source Supabase.
 - Regras como base mínima de Fundador para análise, trava local de resposta e validação de conjunto completo de respostas devem ficar em funções puras testáveis.
 - Cálculos agregados e helpers de domínio ficam aqui ou em contratos/mappers, não nos componentes.
 - Relatórios PDF devem consumir DTOs consolidados daqui, como `getDiagnosticReport()` e `getDiagnosticActionPlan()`, sem acessar mocks ou recalcular dados dentro do documento.
-- `action-plan-gantt.ts` converte `DiagnosticActionPlan` em tarefas de cronograma (`GanttTask`) para a rota `/gantt`, preservando os metadados do action point usados no modal de detalhes. É um motor determinístico baseado apenas nos dados quantitativos consolidados, sem API de IA e sem persistência de tarefas. A rota aparece na sidebar dentro de `Maturidade`.
+- `action-plan-gantt.ts` converte `DiagnosticActionPlan` em tarefas de cronograma (`GanttTask`) para a rota histórica `/gantt`, preservando os metadados do action point usados no calendário e no modal de detalhes. O calendário achata os subitens da frente raiz e usa a data de início como dia do evento. É um motor determinístico baseado apenas nos dados quantitativos consolidados, sem API de IA e sem persistência de tarefas.
 <<<<<<< Updated upstream
 =======
 - Exportações CSV devem consumir dados preparados daqui: respostas brutas anônimas via `getDiagnosticResponseExport()` e relatório consolidado via `buildDiagnosticReportCsv()`.
@@ -19,6 +20,7 @@ Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no
 >>>>>>> Stashed changes
 - `admin-data-source.ts` concentra helpers puros, seeds estáticos de módulos e derivação de empresas/módulos.
 - `acquisition-data-source.ts` é server-side e fala com Supabase para campanhas, leads, empresas, intents OAuth e credenciais de senha.
+- `company-registry-data-source.ts` valida o CNPJ, consulta a API Minha Receita somente no servidor e normaliza razão social e dados cadastrais. A interface antecipa a consulta, mas a criação da conta repete a validação antes de persistir organização e lead.
 - `operational-onboarding-data-source.ts` concentra o cadastro operacional: domínio autorizado, link público, lista de pessoas cadastradas, exclusão autenticada, critério mínimo de pessoa aprovada e bloqueio antes da ativação do diagnóstico.
 - Em aquisição Google, o e-mail OAuth autenticado é a fonte canônica; valide que `userId` e e-mail pertencem à mesma linha em `next_auth.users` e não crie nova conta quando o e-mail já tem acesso ativo.
 
@@ -37,7 +39,8 @@ Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no
 - O filtro `todos` agrega ocorrências por `dimensionId + text`, porque os ids das perguntas incluem o diagnóstico.
 - O filtro por diagnóstico retorna apenas as perguntas daquele diagnóstico.
 - `score` é a média dos scores das ocorrências consideradas.
-- `gap` é a diferença entre a maior e a menor média de camada com base disponível; quando só Fundador respondeu, o gap fica `null`.
+- `layerScores` preserva, por pergunta, as médias de Fundador/Diretoria, Liderança e Operação/Time; camadas sem respostas permanecem `null`.
+- `gap` é a diferença entre a maior e a menor dessas médias de camada com base disponível; quando apenas uma camada respondeu, o gap fica `null`.
 - `responses` é a soma das respostas das ocorrências consideradas.
 - `priorityIndex` é `round((((5 - score) + (gap ?? 0)) / 5) * 100)`, limitado entre `0` e `100`.
 - A classificação textual de score vem de `classifyScore()`: `<= 2.0` Crítico, `<= 3.0` Inconsistente, `<= 4.0` Atenção, acima de `4.0` Consistente.
@@ -66,7 +69,9 @@ Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no
 
 `omdx-overview-analytics.ts` consolida os cards executivos do Overview e os dados dos gráficos. Os cards usam índices normalizados em escala `0-100`; os valores Likert originais continuam como base de cálculo e entram no `technicalDetail` quando útil.
 
-O mesmo arquivo produz `layerScores`, `layerSummary` e `dimensionSummary` para `/omdx/camadas`. As pontuações por camada são a média das seis dimensões em escala `1-5`, separadas entre Fundador, Liderança e Time; camadas sem respostas permanecem `null` e nunca recebem valor inventado. O resumo das dimensões compara os scores consolidados já presentes em `dimensions`, sem recalcular na UI.
+O mesmo arquivo produz `layerScores`, `layerSummary` e `dimensionSummary` para o dashboard principal em `/omdx`. As pontuações por camada são a média das seis dimensões em escala `1-5`, separadas entre Fundador, Liderança e Time; camadas sem respostas permanecem `null` e nunca recebem valor inventado. O resumo das dimensões compara os scores consolidados já presentes em `dimensions`, sem recalcular na UI.
+
+`buildOmdxOverviewComparisonFromReports()` separa a leitura atual da referência histórica. Ordena por `closedAt` com fallback para `createdAt`; em `todos`, usa o mais recente como atual e a média dos anteriores como referência. Em um diagnóstico selecionado, considera apenas relatórios anteriores a ele. As duas leituras reutilizam `buildOmdxOverviewAnalyticsFromReports()` e preservam `null` para camadas sem base.
 
 - `normalizeLikertToIndex(score)`: converte score Likert para índice com `round((score / 5) * 100)`, limitado entre `0` e `100`.
 - `normalizeGapToIndex(gap)`: converte gap entre camadas para índice com `round((gap / 5) * 100)`, limitado entre `0` e `100`.

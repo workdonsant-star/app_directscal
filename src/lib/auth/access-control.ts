@@ -82,6 +82,10 @@ export function isDevPasswordLoginEnabled() {
   );
 }
 
+export function canAccessCustomerApp(user: Pick<AuthUser, "role">) {
+  return user.role !== "superadmin";
+}
+
 export function isSuperadminEmail(email: string) {
   return normalizeList(process.env.AUTH_SUPERADMIN_EMAILS).includes(
     normalizeEmail(email),
