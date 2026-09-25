@@ -7,6 +7,8 @@ import {
   getDiagnosticShareLinksByDiagnosticIds,
   getDiagnostics,
 } from "@/lib/data/omdx-data-source";
+import { getOrganizationStructure } from "@/lib/data/organization-structure-data-source";
+import { getProfileSettingsData } from "@/lib/data/profile-data-source";
 
 export const metadata: Metadata = {
   title: "Diagnósticos — Maturidade",
@@ -18,15 +20,31 @@ export default async function DiagnosticsPage() {
     getDefaultDiagnosticTemplate(),
     getDiagnostics(),
   ]);
-  const shareLinksByDiagnosticId = await getDiagnosticShareLinksByDiagnosticIds(
-    diagnostics.map((diagnostic) => diagnostic.id),
-  );
+  const [shareLinksByDiagnosticId, companyProfile] = await Promise.all([
+    getDiagnosticShareLinksByDiagnosticIds(
+      diagnostics.map((diagnostic) => diagnostic.id),
+    ),
+    session
+      ? getProfileSettingsData(session.user).catch(() => null)
+      : Promise.resolve(null),
+  ]);
+  const sectors = companyProfile?.organizationId
+    ? await getOrganizationStructure(companyProfile.organizationId)
+    : [];
 
   return (
     <DiagnosticsWorkspace
+      currentUserEmail={session?.user.email ?? ""}
+      currentUserId={session?.user.id ?? ""}
+      currentUserRole={session?.user.role ?? "admin"}
       diagnostics={diagnostics}
-      organizationName={session?.user.company ?? "Empresa não identificada"}
+      organizationName={
+        companyProfile?.company ??
+        session?.user.company ??
+        "Empresa não identificada"
+      }
       shareLinksByDiagnosticId={shareLinksByDiagnosticId}
+      sectors={sectors}
       template={template}
     />
   );

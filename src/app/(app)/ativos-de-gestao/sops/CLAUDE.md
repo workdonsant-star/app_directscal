@@ -1,13 +1,15 @@
-# `src/app/(app)/ativos-de-gestao/sops` — Rota legada inativa
+# `/ativos-de-gestao/sops` — Biblioteca de SOPs
 
 Antes de editar, releia o **AGENTS.md**, `src/app/CLAUDE.md` e `src/app/(app)/ativos-de-gestao/CLAUDE.md`.
 
 ## Propósito
 
-Rota legada da antiga experiência de SOPs. A funcionalidade Ativos de gestão foi removida; esta URL deve redirecionar para `/omdx`.
+Rota autenticada que lista os SOPs publicados para a empresa.
 
 ## Convenções locais
 
-- Não renderizar `SopsWorkspace`, `AppTopbar` ou breadcrumb.
-- Não consultar `sops-data-source.ts` nesta rota.
-- Manter redirect server-side para `/omdx`.
+- Usa `ManagementAssetsPage` com o tipo `sop`.
+- Exibe busca e filtro por categoria.
+- Não reutiliza `SopsWorkspace` nem `sops-data-source.ts`; ambos pertencem ao protótipo legado.
+- Cada card abre `/ativos-de-gestao/sops/[id]` para leitura do documento publicado.
+- A rota `[id]` resolve o SOP na fonte de dados da organização e usa `notFound()` para identificadores indisponíveis.

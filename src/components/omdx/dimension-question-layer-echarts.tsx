@@ -5,6 +5,11 @@ import ReactEChartsCore from "echarts-for-react/lib/core";
 import { useMemo } from "react";
 
 import { echarts } from "@/components/omdx/echarts-core";
+import {
+  chartBarBorderRadius,
+  layerColorFallbacks,
+  layerColorTokenByGroup,
+} from "@/components/omdx/chart-colors";
 import { useChartThemeColors } from "@/components/omdx/use-chart-theme-colors";
 import type { DimensionQuestionResult, RespondentGroup } from "@/lib/types";
 
@@ -24,11 +29,9 @@ const fallbackColors: Record<string, string> = {
   "--muted-foreground": "#4A4A52",
   "--popover": "#FFFFFF",
   "--popover-foreground": "#111114",
-  "--omdx-chart-lime": "#A8E017",
-  "--omdx-chart-lime-deep": "#6E9C11",
-  "--omdx-chart-purple": "#7E21FF",
+  ...layerColorFallbacks,
 };
-const chartFontFamily = "var(--font-inter)";
+const chartFontFamily = "var(--font-funnel-sans)";
 const maxStackedScore = 15;
 const scoreFormatter = new Intl.NumberFormat("pt-BR", {
   minimumFractionDigits: 1,
@@ -42,17 +45,17 @@ const layers: Array<{
   {
     id: "fundador",
     label: "Diretoria",
-    colorToken: "--omdx-chart-lime",
+    colorToken: layerColorTokenByGroup.fundador,
   },
   {
     id: "lideranca",
     label: "Liderança",
-    colorToken: "--omdx-chart-lime-deep",
+    colorToken: layerColorTokenByGroup.lideranca,
   },
   {
     id: "operacao",
     label: "Time",
-    colorToken: "--omdx-chart-purple",
+    colorToken: layerColorTokenByGroup.operacao,
   },
 ];
 
@@ -155,9 +158,11 @@ export function DimensionQuestionLayerECharts({
         data: [scores[layer.id]],
         showBackground: index === 0,
         backgroundStyle: {
+          borderRadius: chartBarBorderRadius,
           color: colors["--muted"],
         },
         itemStyle: {
+          borderRadius: chartBarBorderRadius,
           color: colors[layer.colorToken],
         },
       })),

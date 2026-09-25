@@ -1,15 +1,9 @@
-import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 
 import { canAccessCustomerApp } from "@/lib/auth/access-control";
 import { getAccessibleOrganizationIdsForUser } from "@/lib/auth/authorization";
 import { getCurrentAuthSession } from "@/lib/auth/session";
-import {
-  createDiagnosticInputSchema,
-  diagnosticShareLinkSchema,
-} from "@/lib/contracts";
-import { suggestedMessages } from "@/lib/data/omdx-domain";
-import { getPublicAppUrl } from "@/lib/env";
+import { createDiagnosticInputSchema } from "@/lib/contracts";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 type TemplateRow = {
@@ -81,6 +75,7 @@ export async function POST(request: Request) {
       description: parsed.data.description ?? null,
       name: parsed.data.name,
       organization_id: organizationId,
+      created_by_user_id: session.user.id,
       status: "rascunho",
       template_id: templateId,
     })
@@ -94,43 +89,32 @@ export async function POST(request: Request) {
     );
   }
 
-  const groups = ["fundador", "lideranca", "operacao"] as const;
-  const publicBaseUrl = `${getPublicAppUrl()}/r`;
-  const linkRows = groups.map((group) => {
-    const token = `${diagnostic.id}-${group}-${randomUUID()}`;
+  const { error: leadersError } = await supabase
+    .schema("app_private")
+    .rpc("sync_diagnostic_leaders", {
+      p_actor_user_id: session.user.id,
+      p_diagnostic_id: diagnostic.id,
+      p_person_ids: parsed.data.leaderIds,
+    });
 
-    return {
-      diagnostic_id: diagnostic.id,
-      group_id: group,
-      token,
-    };
-  });
-  const { data: links, error: linksError } = await supabase
-    .from("diagnostic_share_links")
-    .insert(linkRows)
-    .select("diagnostic_id,group_id,token");
+  if (leadersError) {
+    await supabase.from("diagnostics").delete().eq("id", diagnostic.id);
 
-  if (linksError) {
     return NextResponse.json(
-      { message: "Diagnóstico criado, mas os links não foram gerados." },
-      { status: 500 },
+      {
+        message:
+          leadersError.code === "22023"
+            ? leadersError.message
+            : "Não foi possível vincular as lideranças ao diagnóstico.",
+      },
+      { status: leadersError.code === "22023" ? 400 : 500 },
     );
   }
 
   return NextResponse.json(
     {
       diagnosticId: diagnostic.id,
-      links:
-        links?.map((link) =>
-          diagnosticShareLinkSchema.parse({
-            diagnosticId: link.diagnostic_id,
-            group: link.group_id,
-            token: link.token,
-            publicUrl: `${publicBaseUrl}/${link.token}`,
-            previewPath: `/r/${link.token}`,
-            suggestedMessage: suggestedMessages[link.group_id],
-          }),
-        ) ?? [],
+      links: [],
     },
     { status: 201 },
   );

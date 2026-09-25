@@ -14,7 +14,7 @@ export const metadata = {
 
 const tableOfContents = [
   { href: "#visao-geral", label: "Visão geral" },
-  { href: "#dashboard", label: "Dashboard Maturidade" },
+  { href: "#dashboard", label: "Overview" },
   { href: "#diagnosticos", label: "Diagnósticos" },
   { href: "#criacao", label: "Criação e configuração" },
   { href: "#compartilhamento", label: "Compartilhamento" },
@@ -24,7 +24,7 @@ const tableOfContents = [
 
 const areas = [
   {
-    name: "Maturidade",
+    name: "Overview",
     path: "/omdx",
     description:
       "Visão executiva do módulo, com KPIs, maturidade por dimensão e leitura geral.",
@@ -51,7 +51,7 @@ export default async function DocumentationPage() {
   }
 
   if (!canAccessCustomerApp(session.user)) {
-    redirect("/admin/modulos");
+    redirect("/admin/operacao");
   }
 
   return (
@@ -86,7 +86,7 @@ export default async function DocumentationPage() {
                   links de resposta.
                 </p>
                 <p>
-                  A sidebar é a entrada principal. Use `Maturidade` para leitura
+                  A sidebar é a entrada principal. Use `Overview` para leitura
                   geral, `Diagnósticos` para operar coletas e `Insights` para
                   aprofundar cada dimensão do modelo.
                 </p>
@@ -118,7 +118,7 @@ export default async function DocumentationPage() {
 
             <section id="dashboard" className="scroll-mt-24 border-b py-10">
               <h2 className="text-foreground text-2xl font-semibold tracking-tight">
-                Dashboard Maturidade
+                Overview
               </h2>
               <div className="mt-5 space-y-4 text-sm leading-7 text-muted-foreground">
                 <p>

@@ -3,6 +3,7 @@ import { createElement } from "react";
 
 import { canAccessCustomerApp } from "@/lib/auth/access-control";
 import { getCurrentAuthSession } from "@/lib/auth/session";
+import { getAdminDeliveryPublication } from "@/lib/data/admin-delivery-data-source";
 import {
   getDiagnosticById,
   getDiagnosticReport,
@@ -40,10 +41,17 @@ export async function GET(request: Request, { params }: ReportRouteContext) {
   }
 
   const { id } = await params;
-  const diagnostic = await getDiagnosticById(id);
+  const [diagnostic, publication] = await Promise.all([
+    getDiagnosticById(id),
+    getAdminDeliveryPublication(id),
+  ]);
 
   if (!diagnostic) {
     return new Response("Diagnóstico não encontrado.", { status: 404 });
+  }
+
+  if (publication?.status !== "publicada") {
+    return new Response("Relatório ainda não publicado.", { status: 404 });
   }
 
   const report = await getDiagnosticReport(id);

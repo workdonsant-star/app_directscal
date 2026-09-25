@@ -5,6 +5,11 @@ import ReactEChartsCore from "echarts-for-react/lib/core";
 import { useMemo } from "react";
 
 import { echarts } from "@/components/omdx/echarts-core";
+import {
+  chartBarBorderRadius,
+  layerColorFallbacks,
+  layerColorTokenByGroup,
+} from "@/components/omdx/chart-colors";
 import { useChartThemeColors } from "@/components/omdx/use-chart-theme-colors";
 import type { DimensionResult } from "@/lib/data/omdx-overview-analytics";
 
@@ -48,12 +53,10 @@ const fallbackColors: Record<string, string> = {
   "--popover": "#FFFFFF",
   "--popover-foreground": "#111114",
   "--primary-foreground": "#FFFFFF",
-  "--omdx-layer-diretoria-70": "#0043CE",
-  "--omdx-layer-lideranca-60": "#0072C3",
-  "--omdx-layer-time-50": "#009D9A",
+  ...layerColorFallbacks,
 };
 
-const chartFontFamily = "var(--font-inter)";
+const chartFontFamily = "var(--font-funnel-sans)";
 const chartAxisFontSize = 12;
 const chartUiFontSize = 13;
 const chartHeight = 460;
@@ -61,19 +64,19 @@ const layerDefinitions: LayerDefinition[] = [
   {
     key: "diretoria",
     name: "Fundador",
-    colorToken: "--omdx-layer-diretoria-70",
+    colorToken: layerColorTokenByGroup.fundador,
     labelColorToken: "--primary-foreground",
   },
   {
     key: "lideranca",
     name: "Liderança",
-    colorToken: "--omdx-layer-lideranca-60",
+    colorToken: layerColorTokenByGroup.lideranca,
     labelColorToken: "--primary-foreground",
   },
   {
     key: "time",
     name: "Operação",
-    colorToken: "--omdx-layer-time-50",
+    colorToken: layerColorTokenByGroup.operacao,
     labelColorToken: "--foreground",
   },
 ];
@@ -312,6 +315,7 @@ export function LayerStackedScoreChart({ data }: LayerStackedScoreChartProps) {
           barWidth: 34,
           data: chartData.map((dimension) => dimension[layer.key]),
           itemStyle: {
+            borderRadius: chartBarBorderRadius,
             color: colors[layer.colorToken],
             borderColor: colors["--background"],
             borderWidth: 1,
@@ -337,6 +341,7 @@ export function LayerStackedScoreChart({ data }: LayerStackedScoreChartProps) {
           data: chartData.map((dimension) => dimension.total),
           silent: true,
           itemStyle: {
+            borderRadius: chartBarBorderRadius,
             color: "transparent",
             borderColor: "transparent",
           },

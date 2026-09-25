@@ -1,8 +1,8 @@
-# `src/components/gantt` — Componentes do cronograma
+# `src/components/gantt` — Componentes de Action Points
 
 ## Propósito
 
-Componentes específicos da funcionalidade Cronograma. A rota histórica continua em `/gantt`, mas a superfície principal é um calendário semanal de action points, não uma visualização Gantt.
+Componentes específicos da página Action Points. A rota histórica continua em `/gantt`, mas a superfície principal é um calendário semanal de action points, não uma visualização Gantt.
 
 ## `CalendarWorkspace`
 

@@ -19,7 +19,7 @@ export default function AdminCampaignsPage() {
     <>
       <AppTopbar
         breadcrumb={[
-          { label: "Admin", href: "/admin/modulos" },
+          { label: "Admin", href: "/admin/operacao" },
           { label: "Campanhas" },
         ]}
       />

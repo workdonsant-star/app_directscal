@@ -5,6 +5,12 @@ import ReactEChartsCore from "echarts-for-react/lib/core";
 import { useMemo } from "react";
 
 import { echarts } from "@/components/omdx/echarts-core";
+import {
+  chartBarBorderRadius,
+  chartHistoricalMarkerSymbol,
+  layerColorFallbacks,
+  layerColorTokenByGroup,
+} from "@/components/omdx/chart-colors";
 import { useChartThemeColors } from "@/components/omdx/use-chart-theme-colors";
 import type { DimensionResult } from "@/lib/data/omdx-overview-analytics";
 
@@ -30,12 +36,10 @@ const fallbackColors: Record<string, string> = {
   "--muted-foreground": "#4A4A52",
   "--popover": "#FFFFFF",
   "--popover-foreground": "#111114",
-  "--omdx-chart-lime": "#A8E017",
-  "--omdx-chart-lime-deep": "#6E9C11",
-  "--omdx-chart-purple": "#7E21FF",
+  ...layerColorFallbacks,
 };
 
-const chartFontFamily = "var(--font-inter)";
+const chartFontFamily = "var(--font-funnel-sans)";
 const dimensionOrder = [
   "Comunicação",
   "Processos",
@@ -50,17 +54,17 @@ const layers: Array<{
   name: string;
 }> = [
   {
-    colorToken: "--omdx-chart-lime",
+    colorToken: layerColorTokenByGroup.fundador,
     key: "diretoria",
     name: "Fundador",
   },
   {
-    colorToken: "--omdx-chart-lime-deep",
+    colorToken: layerColorTokenByGroup.lideranca,
     key: "lideranca",
     name: "Liderança",
   },
   {
-    colorToken: "--omdx-chart-purple",
+    colorToken: layerColorTokenByGroup.operacao,
     key: "time",
     name: "Operação",
   },
@@ -121,6 +125,19 @@ function buildChartData(data: DimensionResult[]): ChartDimension[] {
 
       return firstIndex - secondIndex;
     });
+}
+
+function getCumulativeLayerScore(
+  dimension: ChartDimension,
+  layerIndex: number,
+) {
+  const targetLayer = layers[layerIndex];
+
+  if (!targetLayer || dimension[targetLayer.key] === null) return null;
+
+  return layers
+    .slice(0, layerIndex + 1)
+    .reduce((total, layer) => total + (dimension[layer.key] ?? 0), 0);
 }
 
 function makeTooltipFormatter(
@@ -235,7 +252,9 @@ export function LayerDimensionStackedChart({
         enabled: true,
         label: {
           description:
-            "Barras empilhadas lado a lado com as pontuações atuais e a média dos diagnósticos anteriores para Fundador, Liderança e Operação por dimensão.",
+            historicalData.length > 0
+              ? "Barras empilhadas com as pontuações do diagnóstico selecionado para Fundador, Liderança e Operação por dimensão e traços neutros indicando a média dos diagnósticos anteriores."
+              : "Barras empilhadas com as pontuações consolidadas de Fundador, Liderança e Operação por dimensão em todos os diagnósticos.",
         },
       },
       grid: {
@@ -300,30 +319,32 @@ export function LayerDimensionStackedChart({
           name: `${layer.name} · Atual`,
           type: "bar" as const,
           stack: "atual",
-          barWidth: historicalData.length > 0 ? 15 : 34,
+          barWidth: 34,
           data: chartData.map((dimension) => dimension[layer.key]),
           itemStyle: {
+            borderRadius: chartBarBorderRadius,
             color: colors[layer.colorToken],
             borderColor: colors["--background"],
             borderWidth: 1,
           },
         })),
         ...(historicalData.length > 0
-          ? layers.map((layer) => ({
+          ? layers.map((layer, layerIndex) => ({
               name: `${layer.name} · Histórico`,
-              type: "bar" as const,
-              stack: "historico",
-              barWidth: 15,
-              barGap: "45%",
-              data: historicalChartData.map(
-                (dimension) => dimension[layer.key],
-              ),
+              type: "scatter" as const,
+              symbol: chartHistoricalMarkerSymbol,
+              symbolSize: [28, 3],
+              data: historicalChartData.map((dimension) => [
+                dimension.shortDimension,
+                getCumulativeLayerScore(dimension, layerIndex),
+              ]),
               itemStyle: {
-                color: colors[layer.colorToken],
-                opacity: 0.28,
-                borderColor: colors[layer.colorToken],
-                borderWidth: 1,
+                color: colors["--foreground"],
+                opacity: 0.58,
               },
+              silent: true,
+              tooltip: { show: false },
+              z: 5,
             }))
           : []),
         {

@@ -4,6 +4,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { getCurrentAppAccessContext } from "@/lib/auth/authorization";
+import { getProfileSettingsData } from "@/lib/data/profile-data-source";
 import { isFeatureAcquisitionEnabled } from "@/lib/env";
 
 export default async function AppLayout({
@@ -17,13 +18,24 @@ export default async function AppLayout({
     redirect("/entrar");
   }
 
+  const companyProfile =
+    accessContext.session.user.role === "superadmin"
+      ? null
+      : await getProfileSettingsData(accessContext.session.user).catch(
+          () => null,
+        );
+  const sidebarUser = {
+    ...accessContext.session.user,
+    company: companyProfile?.company ?? accessContext.session.user.company,
+  };
+
   return (
     <TooltipProvider delay={200}>
       <SidebarProvider>
         <AppSidebar
           acquisitionEnabled={isFeatureAcquisitionEnabled()}
           enabledModuleIds={accessContext.enabledModuleIds}
-          user={accessContext.session.user}
+          user={sidebarUser}
         />
         <SidebarInset className="bg-background">{children}</SidebarInset>
       </SidebarProvider>

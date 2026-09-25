@@ -5,6 +5,10 @@ import ReactEChartsCore from "echarts-for-react/lib/core";
 import { useMemo } from "react";
 
 import { echarts } from "@/components/omdx/echarts-core";
+import {
+  chartBarBorderRadius,
+  chartHistoricalMarkerSymbol,
+} from "@/components/omdx/chart-colors";
 import { useChartThemeColors } from "@/components/omdx/use-chart-theme-colors";
 import type { DimensionResult } from "@/lib/data/omdx-overview-analytics";
 
@@ -24,10 +28,10 @@ const fallbackColors: Record<string, string> = {
   "--muted-foreground": "#4A4A52",
   "--popover": "#FFFFFF",
   "--popover-foreground": "#111114",
-  "--omdx-chart-lime-deep": "#6E9C11",
+  "--chart-1": "#0F62FE",
 };
 
-const chartFontFamily = "var(--font-inter)";
+const chartFontFamily = "var(--font-funnel-sans)";
 const dimensionOrder = [
   "Comunicação",
   "Processos",
@@ -145,7 +149,9 @@ export function DimensionScoreBarChart({
         enabled: true,
         label: {
           description:
-            "Gráfico de barras com as pontuações atuais das seis dimensões e marcadores da média dos diagnósticos anteriores, em escala de 0 a 5.",
+            historicalData.length > 0
+              ? "Gráfico de barras com as pontuações do diagnóstico selecionado nas seis dimensões e marcadores da média dos diagnósticos anteriores, em escala de 0 a 5."
+              : "Gráfico de barras com as pontuações consolidadas das seis dimensões em todos os diagnósticos, em escala de 0 a 5.",
         },
       },
       grid: {
@@ -220,7 +226,8 @@ export function DimensionScoreBarChart({
             dimension: dimension.shortDimension,
             value: dimension.maturity,
             itemStyle: {
-              color: colors["--omdx-chart-lime-deep"],
+              borderRadius: chartBarBorderRadius,
+              color: colors["--chart-1"],
             },
           })),
           label: {
@@ -240,7 +247,7 @@ export function DimensionScoreBarChart({
         {
           name: referenceLabel,
           type: "scatter",
-          symbol: "rect",
+          symbol: chartHistoricalMarkerSymbol,
           symbolSize: [28, 3],
           data: chartData.map((dimension) => [
             dimension.shortDimension,

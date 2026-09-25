@@ -23,7 +23,7 @@ type AppTopbarProps = {
 
 export function AppTopbar({ breadcrumb = [], actions }: AppTopbarProps) {
   return (
-    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b bg-background transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 bg-background transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
       <div className="flex h-full min-w-0 flex-1 items-center gap-4 px-4">
         <div className="flex min-w-0 items-center gap-2">
           <SidebarTrigger className="-ml-1 self-center" />
@@ -68,11 +68,12 @@ export function AppTopbar({ breadcrumb = [], actions }: AppTopbarProps) {
         </div>
 
         <div className="ml-auto flex min-w-0 items-center justify-end gap-2">
-          {actions && (
-            <div className="flex min-w-0 items-center justify-end">
-              {actions}
-            </div>
-          )}
+          <div
+            data-slot="app-topbar-actions"
+            className="flex min-w-0 items-center justify-end"
+          >
+            {actions}
+          </div>
 
           <Button variant="ghost" size="icon" aria-label="Alertas">
             <Bell className="size-4" />

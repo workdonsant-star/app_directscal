@@ -21,6 +21,25 @@ export const respondentGroupSchema = z.enum(respondentGroupValues);
 export const dimensionIdSchema = z.enum(dimensionIdValues);
 export const diagnosticTemplateIdSchema = z.enum(diagnosticTemplateIdValues);
 
+export const diagnosticCreatorSchema = z.object({
+  userId: idSchema,
+  name: z.string().min(1),
+  avatarUrl: z.string().url().nullable(),
+  role: z.enum(["cliente", "admin"]),
+});
+
+export const diagnosticSectorSchema = z.object({
+  id: idSchema,
+  name: z.string().min(1),
+  leaderIds: z.array(idSchema),
+});
+
+export const diagnosticPermissionsSchema = z.object({
+  canManage: z.boolean(),
+  canViewFounderLink: z.boolean(),
+  canViewAllTeamLinks: z.boolean(),
+});
+
 export const classificationSchema = z.enum([
   "Crítico",
   "Inconsistente",
@@ -144,14 +163,20 @@ export const diagnosticSchema = z.object({
   deadline: isoDateSchema.nullable(),
   responses: responsesByGroupSchema,
   generalScore: z.number().min(1).max(5).nullable(),
+  creator: diagnosticCreatorSchema.nullable().optional(),
+  sectors: z.array(diagnosticSectorSchema).optional(),
+  permissions: diagnosticPermissionsSchema.optional(),
 });
 
 export const diagnosticListItemSchema = diagnosticSchema;
 export const diagnosticDetailSchema = diagnosticSchema;
 
 export const diagnosticShareLinkSchema = z.object({
+  id: idSchema,
   diagnosticId: idSchema,
   group: respondentGroupSchema,
+  sectorId: idSchema.nullable(),
+  sectorName: z.string().min(1).nullable(),
   token: z.string().min(1),
   publicUrl: z.string().url(),
   previewPath: z.string().min(1),
@@ -160,7 +185,7 @@ export const diagnosticShareLinkSchema = z.object({
 
 export const diagnosticShareWorkspaceSchema = z.object({
   diagnostic: diagnosticDetailSchema,
-  links: z.array(diagnosticShareLinkSchema).length(3),
+  links: z.array(diagnosticShareLinkSchema).min(1),
   responses: responsesByGroupSchema,
 });
 
@@ -384,6 +409,7 @@ export const createDiagnosticInputSchema = z.object({
   name: z.string().min(1),
   description: z.string().trim().optional().nullable(),
   deadline: isoDateSchema.optional().nullable(),
+  leaderIds: z.array(idSchema),
 });
 
 export const updateDiagnosticDraftInputSchema = createDiagnosticInputSchema.extend({
@@ -414,6 +440,9 @@ export type DiagnosticStatus = z.infer<typeof diagnosticStatusSchema>;
 export type RespondentGroup = z.infer<typeof respondentGroupSchema>;
 export type DimensionId = z.infer<typeof dimensionIdSchema>;
 export type DiagnosticTemplateId = z.infer<typeof diagnosticTemplateIdSchema>;
+export type DiagnosticCreator = z.infer<typeof diagnosticCreatorSchema>;
+export type DiagnosticSector = z.infer<typeof diagnosticSectorSchema>;
+export type DiagnosticPermissions = z.infer<typeof diagnosticPermissionsSchema>;
 export type Classification = z.infer<typeof classificationSchema>;
 export type ResponsesByGroup = z.infer<typeof responsesByGroupSchema>;
 export type DbOrganization = z.infer<typeof dbOrganizationSchema>;

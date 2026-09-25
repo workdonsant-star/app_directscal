@@ -253,11 +253,10 @@ describe("Maturidade founder analysis base", () => {
       id: "00000000-0000-4000-8000-000000000213",
       score: 4.5,
     });
-    const result = buildOmdxOverviewComparisonFromReports([
-      latest,
-      oldest,
-      middle,
-    ]);
+    const result = buildOmdxOverviewComparisonFromReports(
+      [latest, oldest, middle],
+      latest.diagnostic.id,
+    );
 
     expect(result.analytics.dimensions[0].maturity).toBe(4.5);
     expect(result.comparison).toMatchObject({
@@ -269,6 +268,92 @@ describe("Maturidade founder analysis base", () => {
     expect(
       result.comparison?.historicalAnalytics.dimensions[0].maturity,
     ).toBe(3);
+    expect(
+      result.analytics.summaryMetrics.find(
+        (metric) => metric.title === "Base de respostas",
+      )?.comparison,
+    ).toEqual({
+      label: "vs. média dos anteriores",
+      lowerIsBetter: false,
+      percentage: 0,
+    });
+    expect(
+      result.analytics.summaryMetrics.find(
+        (metric) => metric.title === "Maturidade geral",
+      )?.comparison,
+    ).toEqual({
+      label: "vs. média dos anteriores",
+      lowerIsBetter: false,
+      percentage: 50,
+    });
+  });
+
+  it("aggregates every diagnostic and compares the latest report with the previous one", () => {
+    const oldest = buildComparisonReport({
+      closedAt: "2026-01-10T00:00:00.000Z",
+      id: "00000000-0000-4000-8000-000000000214",
+      score: 2,
+    });
+    const middle = buildComparisonReport({
+      closedAt: "2026-03-10T00:00:00.000Z",
+      id: "00000000-0000-4000-8000-000000000215",
+      score: 4,
+    });
+    const latest = buildComparisonReport({
+      closedAt: "2026-05-10T00:00:00.000Z",
+      id: "00000000-0000-4000-8000-000000000216",
+      score: 4.5,
+    });
+    const result = buildOmdxOverviewComparisonFromReports([
+      latest,
+      oldest,
+      middle,
+    ]);
+
+    expect(result.comparison).toBeNull();
+    expect(result.analytics.dimensions[0].maturity).toBe(3.5);
+    expect(result.analytics.layerScores[0].score).toBe(3.5);
+    expect(result.analytics.vulnerabilityRows[0].cells[0].score).toBe(3.5);
+    expect(
+      result.analytics.summaryMetrics.find(
+        (metric) => metric.title === "Base de respostas",
+      ),
+    ).toMatchObject({
+      value: "3",
+      comparison: {
+        label: "último vs. anterior",
+        lowerIsBetter: false,
+        percentage: 0,
+      },
+    });
+    expect(
+      result.analytics.summaryMetrics.find(
+        (metric) => metric.title === "Maturidade geral",
+      ),
+    ).toMatchObject({
+      value: "3,5",
+      suffix: "/5",
+      comparison: {
+        label: "último vs. anterior",
+        lowerIsBetter: false,
+        percentage: 12.5,
+      },
+    });
+  });
+
+  it("does not show a recent trend when there is no previous report", () => {
+    const report = buildComparisonReport({
+      closedAt: "2026-05-10T00:00:00.000Z",
+      id: "00000000-0000-4000-8000-000000000217",
+      score: 4.5,
+    });
+    const result = buildOmdxOverviewComparisonFromReports([report]);
+
+    expect(
+      result.analytics.summaryMetrics.find(
+        (metric) => metric.title === "Maturidade geral",
+      )?.comparison,
+    ).toBeUndefined();
   });
 
   it("uses only diagnostics older than the selected diagnostic as its reference", () => {

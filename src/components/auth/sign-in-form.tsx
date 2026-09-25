@@ -69,7 +69,7 @@ export function SignInForm({
 
     if (passwordLoginMode === "superadmin") {
       const result = await signIn("credentials", {
-        callbackUrl: "/admin/modulos",
+        callbackUrl: "/admin/operacao",
         email,
         flow: "app",
         password,

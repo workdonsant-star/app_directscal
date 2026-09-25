@@ -3,11 +3,11 @@
 import dynamic from "next/dynamic";
 import type { ReactNode } from "react";
 
-import { LeverageMatrix } from "@/components/omdx/leverage-matrix";
-import { VulnerabilityQuestionMatrix } from "@/components/omdx/vulnerability-question-matrix";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { OverviewExecutiveCards } from "@/components/omdx/overview-executive-cards";
 import type {
   DimensionResult,
+  ExecutiveMetric,
   LeverageMatrixRow,
   LayerScoreResult,
   OverviewHistoricalComparison,
@@ -20,16 +20,20 @@ type LayerScoreDashboardProps = {
   dimensionScores: DimensionResult[];
   dimensionSummary: string;
   leverageRows: LeverageMatrixRow[];
+  metrics: ExecutiveMetric[];
   scores: LayerScoreResult[];
   summary: string;
   vulnerabilityRows: VulnerabilityMatrixRow[];
+  presentation?: "default" | "distilled";
 };
 
 type DashboardCardProps = {
   children: ReactNode;
   className?: string;
   description: string;
+  presentation?: "default" | "distilled";
   testId: string;
+  title?: string;
 };
 
 const LayerScoreBarChart = dynamic(
@@ -65,6 +69,28 @@ const LayerDimensionStackedChart = dynamic(
   },
 );
 
+const VulnerabilityQuestionMatrix = dynamic(
+  () =>
+    import("@/components/omdx/vulnerability-question-matrix").then(
+      (module) => module.VulnerabilityQuestionMatrix,
+    ),
+  {
+    loading: () => <MatrixSkeleton label="Carregando vulnerabilidades" />,
+    ssr: false,
+  },
+);
+
+const LeverageMatrix = dynamic(
+  () =>
+    import("@/components/omdx/leverage-matrix").then(
+      (module) => module.LeverageMatrix,
+    ),
+  {
+    loading: () => <MatrixSkeleton label="Carregando alavancas" />,
+    ssr: false,
+  },
+);
+
 function ChartSkeleton({ label }: { label: string }) {
   return (
     <div
@@ -76,27 +102,49 @@ function ChartSkeleton({ label }: { label: string }) {
   );
 }
 
+function MatrixSkeleton({ label }: { label: string }) {
+  return (
+    <div
+      aria-label={label}
+      className="flex h-[316px] items-center justify-center text-sm text-muted-foreground"
+    >
+      {label}
+    </div>
+  );
+}
+
 function DashboardCard({
   children,
   className,
   description,
+  presentation = "default",
   testId,
+  title,
 }: DashboardCardProps) {
+  const distilled = presentation === "distilled";
+
   return (
     <Card
       className={cn(
-        "gap-1.5 p-5 ring-1 ring-foreground/10 dark:ring-0",
+        distilled
+          ? "gap-0 rounded-[5px] border-0 bg-sidebar p-4 shadow-none ring-0"
+          : "gap-1.5 rounded-[5px] border-0 bg-sidebar p-5 shadow-none ring-0",
         className,
       )}
       data-testid={testId}
     >
-      <CardHeader className="h-10 px-0">
+      <CardHeader className={cn("px-0", distilled ? "gap-1 pb-1" : "h-10")}>
         <CardTitle
           className="overflow-hidden text-sm leading-5 font-medium text-card-foreground"
           title={description}
         >
-          {description}
+          {title ?? description}
         </CardTitle>
+        {distilled ? (
+          <p className="line-clamp-2 text-xs leading-5 text-muted-foreground">
+            {description}
+          </p>
+        ) : null}
       </CardHeader>
       <CardContent className="px-0">{children}</CardContent>
     </Card>
@@ -108,53 +156,30 @@ export function LayerScoreDashboard({
   dimensionScores,
   dimensionSummary,
   leverageRows,
+  metrics,
   scores,
   summary,
   vulnerabilityRows,
+  presentation = "default",
 }: LayerScoreDashboardProps) {
-  const currentDiagnosticDate = comparison
-    ? new Intl.DateTimeFormat("pt-BR", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        timeZone: "UTC",
-      }).format(new Date(comparison.currentDiagnosticDate))
-    : null;
+  const distilled = presentation === "distilled";
 
   return (
-    <div className="flex flex-col gap-6">
-      {comparison && (
-        <div
-          aria-label={`Comparando ${comparison.currentDiagnosticName} com ${comparison.referenceLabel.toLocaleLowerCase("pt-BR")}.`}
-          className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted-foreground"
-        >
-          <span className="inline-flex items-center gap-2">
-            <span
-              aria-hidden="true"
-              className="h-3 w-2 bg-foreground"
-            />
-            <span>
-              Atual · {comparison.currentDiagnosticName} · {currentDiagnosticDate}
-            </span>
-          </span>
-          <span className="inline-flex items-center gap-2">
-            <span
-              aria-hidden="true"
-              className="w-5 border-t-2 border-dashed border-foreground/55"
-            />
-            <span>{comparison.referenceLabel}</span>
-          </span>
-        </div>
+    <div className={cn("flex flex-col", distilled ? "gap-4" : "gap-6")}>
+      {distilled ? null : (
+        <OverviewExecutiveCards metrics={metrics} presentation="number" />
       )}
 
       <section
         aria-label="Comparativos de maturidade"
-        className="grid gap-6 xl:grid-cols-3"
+        className={cn("grid xl:grid-cols-3", distilled ? "gap-4" : "gap-6")}
       >
         <DashboardCard
           className="h-[462px]"
           description={summary}
+          presentation={presentation}
           testId="layer-score-card"
+          title="Maturidade por camada"
         >
           <LayerScoreBarChart
             data={scores}
@@ -166,7 +191,9 @@ export function LayerScoreDashboard({
         <DashboardCard
           className="h-[462px]"
           description={dimensionSummary}
+          presentation={presentation}
           testId="dimension-score-card"
+          title="Maturidade por dimensão"
         >
           <DimensionScoreBarChart
             data={dimensionScores}
@@ -177,8 +204,14 @@ export function LayerScoreDashboard({
 
         <DashboardCard
           className="h-[462px]"
-          description="Compare como Fundador, Liderança e Operação compõem a pontuação de cada dimensão."
+          description={
+            comparison
+              ? "Compare como Fundador, Liderança e Operação compõem a pontuação atual; os traços indicam a média anterior."
+              : "Compare como Fundador, Liderança e Operação compõem a pontuação consolidada de cada dimensão."
+          }
+          presentation={presentation}
           testId="layer-dimension-score-card"
+          title="Composição por dimensão"
         >
           <LayerDimensionStackedChart
             data={dimensionScores}
@@ -190,20 +223,24 @@ export function LayerScoreDashboard({
 
       <section
         aria-label="Matrizes de vulnerabilidades e alavancas"
-        className="grid gap-6 xl:grid-cols-2"
+        className={cn("grid xl:grid-cols-2", distilled ? "gap-4" : "gap-6")}
       >
         <DashboardCard
           className="min-h-[414px]"
           description="Principais vulnerabilidades operacionais encontradas nas perguntas de cada dimensão."
+          presentation={presentation}
           testId="vulnerability-matrix-card"
+          title="Vulnerabilidades por pergunta"
         >
           <VulnerabilityQuestionMatrix rows={vulnerabilityRows} />
         </DashboardCard>
 
         <DashboardCard
           className="min-h-[414px]"
-          description="Matriz de alavancas"
+          description="Cruza maturidade, alinhamento, consenso e prioridade."
+          presentation={presentation}
           testId="leverage-matrix-card"
+          title="Alavancas prioritárias"
         >
           <LeverageMatrix rows={leverageRows} />
         </DashboardCard>

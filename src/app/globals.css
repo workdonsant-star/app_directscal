@@ -29,6 +29,22 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-action-primary: var(--action-primary);
+  --color-action-primary-foreground: var(--action-primary-foreground);
+  --color-action-primary-hover: var(--action-primary-hover);
+  --color-action-primary-active: var(--action-primary-active);
+  --color-action-primary-border: var(--action-primary-border);
+  --color-action-primary-highlight: var(--action-primary-highlight);
+  --color-action-primary-shadow: var(--action-primary-shadow);
+  --color-action-neutral: var(--action-neutral);
+  --color-action-neutral-foreground: var(--action-neutral-foreground);
+  --color-action-neutral-hover: var(--action-neutral-hover);
+  --color-action-neutral-active: var(--action-neutral-active);
+  --color-control-foreground: var(--control-foreground);
+  --color-control-icon: var(--control-icon);
+  --color-control-dark-border: var(--control-dark-border);
+  --color-control-dark-highlight: var(--control-dark-highlight);
+  --color-control-focus: var(--control-focus);
 
   /* Gray primitive scale — the app's surface and depth system */
   --color-gray-10: var(--gray-10);
@@ -126,10 +142,10 @@
   --color-auth-gradient-lapis: var(--auth-gradient-lapis);
 
   /* Type */
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-funnel-sans);
   --font-serif: var(--font-instrument-serif);
   --font-mono: var(--font-jetbrains-mono);
-  --font-heading: var(--font-inter);
+  --font-heading: var(--font-plus-jakarta-sans);
   --font-figma-heading: var(--font-plus-jakarta-sans);
   --font-figma-copy: var(--font-instrument-sans);
   --font-figma-flex: var(--font-roboto-flex);
@@ -189,6 +205,28 @@
   --border: var(--gray-20);
   --input: var(--gray-20);
   --ring: #185EFF;             /* focus ring = brand */
+  --action-primary: #124BD1;
+  --action-primary-foreground: #EFEFEE;
+  --action-primary-hover: #2C80FD;
+  --action-primary-active: #0F5FD8;
+  --action-primary-border: #146EF5;
+  --action-primary-highlight: #146EF5;
+  --action-primary-shadow: #146EF5;
+  --action-neutral: var(--gray-10);
+  --action-neutral-foreground: var(--foreground);
+  --action-neutral-hover: var(--gray-20);
+  --action-neutral-active: var(--gray-20);
+  --action-button-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 -0.5px 1px rgba(0, 0, 0, 0.1), 0 1.5px 1px rgba(255, 255, 255, 0.35), 0 1px 1px rgba(0, 0, 0, 0.04), 0 0.5px 1px rgba(0, 0, 0, 0.05);
+  --action-button-active-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.16);
+  --control-foreground: #FFFFFF;
+  --control-icon: #BDBDBD;
+  --control-dark-top: #393939;
+  --control-dark-bottom: #353535;
+  --control-dark-hover-top: #414141;
+  --control-dark-hover-bottom: #3A3A3A;
+  --control-dark-border: #3C3C3C;
+  --control-dark-highlight: #4F4F4F;
+  --control-focus: #69AEF5;
   --auth-gradient-white: #FFFFFF;
   --auth-gradient-matcha: #ADE316;
   --auth-gradient-violet: #7D1AFF;
@@ -267,12 +305,12 @@
   --omdx-score-text-on-light: #161616;
   --omdx-score-text-on-dark: #FFFFFF;
 
-  /* Sidebar — light gray to separate from main canvas */
-  --sidebar: var(--gray-10);
+  /* Sidebar surfaces from the current app shell frame */
+  --sidebar: #FAFAFA;
   --sidebar-foreground: var(--gray-100);
   --sidebar-primary: #185EFF;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: var(--gray-20);
+  --sidebar-accent: #EEEFF0;
   --sidebar-accent-foreground: var(--gray-100);
   --sidebar-border: var(--gray-20);
   --sidebar-ring: #185EFF;
@@ -323,6 +361,28 @@
   --border: var(--gray-80);
   --input: var(--gray-80);
   --ring: #185EFF;
+  --action-primary: #124BD1;
+  --action-primary-foreground: #EFEFEE;
+  --action-primary-hover: #1450DB;
+  --action-primary-active: #0F3FAE;
+  --action-primary-border: #1450DB;
+  --action-primary-highlight: #4A82FF;
+  --action-primary-shadow: #0F3FAE;
+  --action-neutral: var(--secondary);
+  --action-neutral-foreground: var(--foreground);
+  --action-neutral-hover: var(--gray-80);
+  --action-neutral-active: var(--gray-80);
+  --action-button-shadow: 0 1px 1px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --action-button-active-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.22);
+  --control-foreground: #F7F7F7;
+  --control-icon: #BDBDBD;
+  --control-dark-top: #393939;
+  --control-dark-bottom: #353535;
+  --control-dark-hover-top: #414141;
+  --control-dark-hover-bottom: #3A3A3A;
+  --control-dark-border: #3C3C3C;
+  --control-dark-highlight: #4F4F4F;
+  --control-focus: #69AEF5;
   --auth-gradient-white: #FFFFFF;
   --auth-gradient-matcha: #ADE316;
   --auth-gradient-violet: #7D1AFF;
@@ -427,6 +487,15 @@
     max-width: 100%;
     overscroll-behavior: none;
     overflow-x: clip;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading;
   }
 
   :where(

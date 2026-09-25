@@ -510,7 +510,6 @@ export function AcquisitionProgressiveForm({
             aria-invalid={Boolean(error)}
             disabled={isResolvingCnpj}
             className={cn(
-              "h-10 rounded-md px-3",
               error &&
                 "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
             )}

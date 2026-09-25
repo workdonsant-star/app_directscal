@@ -15,7 +15,7 @@ export default async function OmdxLayout({
   }
 
   if (!canAccessCustomerApp(accessContext.session.user)) {
-    redirect("/admin/modulos");
+    redirect("/admin/operacao");
   }
 
   const canAccessOmdx =

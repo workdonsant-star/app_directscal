@@ -14,20 +14,11 @@ type DocumentTableOfContentsProps = {
   items: TableOfContentsItem[];
 };
 
-function getInitialActiveHref(items: TableOfContentsItem[]) {
-  if (typeof window === "undefined") {
-    return items[0]?.href ?? "";
-  }
-
-  const hash = window.location.hash;
-  return items.some((item) => item.href === hash) ? hash : (items[0]?.href ?? "");
-}
-
 export function DocumentTableOfContents({
   ariaLabel,
   items,
 }: DocumentTableOfContentsProps) {
-  const [activeHref, setActiveHref] = useState(() => getInitialActiveHref(items));
+  const [activeHref, setActiveHref] = useState(items[0]?.href ?? "");
 
   useEffect(() => {
     const sections = items
@@ -63,6 +54,7 @@ export function DocumentTableOfContents({
     }
 
     window.addEventListener("hashchange", handleHashChange);
+    handleHashChange();
 
     return () => {
       observer.disconnect();

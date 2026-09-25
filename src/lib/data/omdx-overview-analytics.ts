@@ -76,6 +76,11 @@ export type ExecutiveMetric = {
   value: string;
   suffix?: string;
   classification: ExecutiveMetricStatus | "Sem dados";
+  comparison?: {
+    label: string;
+    lowerIsBetter?: boolean;
+    percentage: number;
+  };
   description: string;
   technicalDetail: string;
 };
@@ -99,6 +104,7 @@ export type OverviewAnalytics = {
   layerSummary: string;
   questions: QuestionResult[];
   metrics: ExecutiveMetric[];
+  summaryMetrics: ExecutiveMetric[];
   vulnerabilityRows: VulnerabilityMatrixRow[];
 };
 
@@ -466,6 +472,100 @@ function buildMetrics(dimensions: DimensionResult[]): ExecutiveMetric[] {
   ];
 }
 
+function buildSummaryMetrics(
+  dimensions: DimensionResult[],
+  reports: Report[],
+  historicalReports: Report[] = [],
+): ExecutiveMetric[] {
+  const responses = reports.reduce(
+    (total, report) => total + report.responses.total,
+    0,
+  );
+  const maturity =
+    dimensions.length > 0
+      ? round(average(dimensions.map((dimension) => dimension.maturity)), 1)
+      : null;
+  const averageGap = calculateAverageGap(dimensions);
+  const maturityIndex =
+    maturity === null ? null : normalizeLikertToIndex(maturity);
+  const gapIndex =
+    averageGap === null ? null : normalizeGapToIndex(averageGap);
+  const comparisonLabel = "vs. média dos anteriores";
+  const buildComparison = (
+    currentValue: number | null,
+    previousValues: number[],
+    lowerIsBetter = false,
+  ) => {
+    if (currentValue === null || previousValues.length === 0) return undefined;
+
+    const previousAverage = average(previousValues);
+
+    if (previousAverage === 0) return undefined;
+
+    return {
+      label: comparisonLabel,
+      lowerIsBetter,
+      percentage: round(
+        ((currentValue - previousAverage) / previousAverage) * 100,
+        1,
+      ),
+    };
+  };
+  const historicalGaps = historicalReports.flatMap((report) => {
+    const gap = calculateAverageGap(
+      report.dimensions.map(buildDimensionResult),
+    );
+
+    return gap === null ? [] : [gap];
+  });
+
+  return [
+    {
+      title: "Base de respostas",
+      value: responses.toLocaleString("pt-BR"),
+      classification: responses === 0 ? "Sem dados" : "Consistente",
+      comparison: buildComparison(
+        responses,
+        historicalReports.map((report) => report.responses.total),
+      ),
+      description: "Total de pessoas que responderam ao diagnóstico exibido.",
+      technicalDetail:
+        "Soma das respostas concluídas de Fundador, Liderança e Time.",
+    },
+    {
+      title: "Maturidade geral",
+      value:
+        maturity === null ? "—" : numberFormatter.format(maturity),
+      suffix: maturity === null ? undefined : "/5",
+      classification:
+        maturityIndex === null
+          ? "Sem dados"
+          : classifyMaturityIndex(maturityIndex),
+      comparison: buildComparison(
+        maturity,
+        historicalReports.map((report) => report.generalScore),
+      ),
+      description:
+        "Pontuação média de maturidade da empresa na escala de 1 a 5.",
+      technicalDetail:
+        "Média simples das pontuações consolidadas das seis dimensões.",
+    },
+    {
+      title: "Gap médio",
+      value:
+        averageGap === null ? "—" : numberFormatter.format(averageGap),
+      suffix: averageGap === null ? undefined : "/5",
+      classification:
+        gapIndex === null ? "Sem dados" : classifyMisalignmentIndex(gapIndex),
+      comparison: buildComparison(averageGap, historicalGaps, true),
+      description:
+        "Diferença média de percepção entre Fundador, Liderança e Time. Quanto menor, melhor.",
+      technicalDetail:
+        "Média dos gaps entre a maior e a menor pontuação de camada em cada dimensão.",
+    },
+  ];
+}
+
 function buildDimensionResult(
   dimension: Report["dimensions"][number],
 ): DimensionResult {
@@ -787,6 +887,7 @@ export function buildOmdxOverviewAnalyticsFromReports(
       layerSummary: buildLayerScoreSummary(layerScores),
       questions: [],
       metrics: [],
+      summaryMetrics: buildSummaryMetrics([], []),
       vulnerabilityRows: [],
     };
   }
@@ -811,6 +912,7 @@ export function buildOmdxOverviewAnalyticsFromReports(
     layerSummary: buildLayerScoreSummary(layerScores),
     questions,
     metrics: buildMetrics(dimensions),
+    summaryMetrics: buildSummaryMetrics(dimensions, reports),
     vulnerabilityRows: buildVulnerabilityRows(dimensions, questions),
   };
 }
@@ -836,12 +938,57 @@ export function buildOmdxOverviewComparisonFromReports(
   selectedDiagnostic: "todos" | string = "todos",
 ): OverviewComparisonResult {
   const orderedReports = sortReportsByComparisonDate(reports);
-  const selectedIndex =
-    selectedDiagnostic === "todos"
-      ? orderedReports.length - 1
-      : orderedReports.findIndex(
-          (report) => report.diagnostic.id === selectedDiagnostic,
-        );
+
+  if (selectedDiagnostic === "todos") {
+    const analytics = buildOmdxOverviewAnalyticsFromReports(orderedReports);
+    const latestReport = orderedReports.at(-1);
+    const previousReport = orderedReports.at(-2);
+
+    if (!latestReport || !previousReport) {
+      return {
+        analytics,
+        comparison: null,
+        reportDiagnostic: latestReport?.diagnostic,
+      };
+    }
+
+    const latestAnalytics = buildOmdxOverviewAnalyticsFromReports([
+      latestReport,
+    ]);
+    const latestMetrics = buildSummaryMetrics(
+      latestAnalytics.dimensions,
+      [latestReport],
+      [previousReport],
+    );
+    const latestComparisonByTitle = new Map(
+      latestMetrics.map((metric) => [metric.title, metric.comparison]),
+    );
+
+    return {
+      analytics: {
+        ...analytics,
+        summaryMetrics: analytics.summaryMetrics.map((metric) => {
+          const recentComparison = latestComparisonByTitle.get(metric.title);
+
+          return {
+            ...metric,
+            comparison: recentComparison
+              ? {
+                  ...recentComparison,
+                  label: "último vs. anterior",
+                }
+              : undefined,
+          };
+        }),
+      },
+      comparison: null,
+      reportDiagnostic: latestReport.diagnostic,
+    };
+  }
+
+  const selectedIndex = orderedReports.findIndex(
+    (report) => report.diagnostic.id === selectedDiagnostic,
+  );
   const currentIndex =
     selectedIndex >= 0 ? selectedIndex : orderedReports.length - 1;
   const currentReport = orderedReports[currentIndex];
@@ -856,9 +1003,19 @@ export function buildOmdxOverviewComparisonFromReports(
 
   const historicalReports = orderedReports.slice(0, currentIndex);
   const historicalDiagnosticCount = historicalReports.length;
+  const currentAnalytics = buildOmdxOverviewAnalyticsFromReports([
+    currentReport,
+  ]);
 
   return {
-    analytics: buildOmdxOverviewAnalyticsFromReports([currentReport]),
+    analytics: {
+      ...currentAnalytics,
+      summaryMetrics: buildSummaryMetrics(
+        currentAnalytics.dimensions,
+        [currentReport],
+        historicalReports,
+      ),
+    },
     comparison:
       historicalDiagnosticCount > 0
         ? {

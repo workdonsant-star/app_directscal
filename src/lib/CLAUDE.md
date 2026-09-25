@@ -4,7 +4,7 @@ Antes de editar, releia o **AGENTS.md** da raiz e este documento.
 
 ## Propósito
 
-`src/lib` concentra a fronteira de dados do app. O core de Maturidade usa Supabase para leituras, mutações, compartilhamento e relatórios; superadmin e aquisição também usam Supabase via Route Handlers server-side. Perfil ainda tem partes mockadas/local-only. Autenticação principal usa Auth.js/NextAuth com Google OAuth, Credentials de campanha e regra corporativa em `auth/`.
+`src/lib` concentra a fronteira de dados do app. O core de Maturidade usa Supabase para leituras, mutações, compartilhamento e relatórios; superadmin, aquisição e estrutura organizacional também usam Supabase via Route Handlers server-side. Configurações lê dados empresariais, setores e lideranças no servidor, enquanto o perfil mantém edição pessoal mockada/local. Autenticação principal usa Auth.js/NextAuth com Google OAuth, Credentials de campanha e regra corporativa em `auth/`.
 
 ## Estrutura
 
@@ -13,6 +13,7 @@ src/lib/
 ├── auth/                   ← Google OAuth, sessão e fallback mockado
 ├── contracts/              ← schemas Zod, tipos e mappers de dados
 ├── data/                   ← data-sources, regras de domínio e agregações Maturidade
+├── email/                  ← templates e envio transacional server-side
 ├── supabase/               ← clients server-side Supabase
 ├── pdf/                    ← documentos PDF renderizados a partir da camada data
 ├── mock-data.ts            ← seed temporário e bruto dos dados mockados
@@ -45,7 +46,8 @@ Contratos principais:
 - `DiagnosticReport`, `DiagnosticReportDimension`, `DiagnosticReportQuestion`.
 - `DiagnosticActionPlan`, `DiagnosticActionPlanDimension`, `DiagnosticActionPoint`.
 - `UserProfile`, `ProfileSettingsData`.
-- Inputs de escrita: `CreateDiagnosticInput`, `UpdateDiagnosticDraftInput`, `ActivateDiagnosticInput`, `CloseDiagnosticInput`, `DeleteDiagnosticInput`, `UpdateProfileInput`, `ChangePasswordInput`, `UpdateOrganizationInput`.
+- `OrganizationSector`, `OrganizationLeader`, `CreateOrganizationSectorInput`.
+- Inputs de escrita: `CreateDiagnosticInput`, `UpdateDiagnosticDraftInput`, `ActivateDiagnosticInput`, `CloseDiagnosticInput`, `DeleteDiagnosticInput`, `UpdateProfileInput`, `UpdateProfileCommercialInput`, `ChangePasswordInput`, `UpdateOrganizationInput`.
 - Inputs de aquisição: `AcquisitionSubmissionInput`.
 - Inputs de autenticação: `SignInInput`, `SignUpInput`, `ResetPasswordInput`.
 
@@ -53,11 +55,13 @@ Contratos principais:
 
 - Páginas e componentes devem importar dados de `src/lib/data/omdx-data-source.ts`.
 - Não importe arrays de `mock-data.ts` em componentes ou páginas.
-- `mock-data.ts` permanece apenas para superfícies ainda não migradas, como perfil e superadmin. Não use em Maturidade core.
+- `mock-data.ts` permanece apenas como fallback de desenvolvimento para superfícies ainda parcialmente migradas, como perfil e superadmin. Não use em Maturidade core.
 - `omdx-overview-analytics.ts` deriva DTOs executivos de relatórios Maturidade montados a partir de respostas reais. Percentuais de distribuição Likert ainda são inferidos para visualização executiva a partir de score, gap e dispersão.
 - `calculateLatestVsPreviousComparison()` ordena séries por `createdAt` e compara o valor mais recente à média dos anteriores; com menos de dois pontos ou média anterior zero, retorna `null`.
 - `DimensionInsightTrendPoint` inclui `gap`, calculado por diagnóstico a partir da diferença entre a maior e a menor média de camada da dimensão; o campo fica `null` quando não há camadas suficientes para comparação.
 - `sops-data-source.ts` permanece apenas como legado inativo da antiga experiência de Ativos de gestão. A funcionalidade não aparece no catálogo de módulos nem na sidebar; não conectar persistência real ou reativar rotas sem nova decisão explícita.
+- `management-assets-data-source.ts` sustenta a nova indexação frontend-only dos ativos publicados. Não reutilize `sops-data-source.ts`, que continua reservado ao protótipo legado do editor.
+- O conteúdo estruturado de SOP aceita blocos de parágrafo, lista e tabela; tabelas vindas de documentos Markdown devem permanecer em dados tipados e ser renderizadas semanticamente.
 - Leituras Maturidade Supabase ficam em `omdx-data-source.ts`; helpers puros compartilhados com Client Components ficam em `omdx-domain.ts`.
 - Cálculos agregados e helpers de domínio devem ficar em `data/` ou em funções puras de contrato, não em componentes.
 - Planos de ação PDF devem consumir DTOs consolidados daqui, como `getDiagnosticActionPlan()`, sem gerar regra dentro do documento PDF.
@@ -66,6 +70,9 @@ Contratos principais:
 - `supabase/` concentra clients server-side; `SUPABASE_SERVICE_ROLE_KEY` nunca deve chegar ao client.
 - `auth/` concentra Auth.js/NextAuth, regra de domínio/e-mail corporativo, validação de membership pré-existente no Supabase, JWT para RLS e fallback mockado. O cookie `directscal_session` sustenta o login demo por e-mail/senha apenas em desenvolvimento.
 - `admin-data-source.ts` concentra helpers puros do superadmin; `acquisition-data-source.ts` fala com Supabase no servidor para campanhas, leads, empresas, intents OAuth e credenciais.
+- `profile-data-source.ts` resolve organização e lead do usuário autenticado no servidor, fornece identidade pessoal para `/perfil`, transforma `field_values` em dados cadastrais e comerciais para `/configuracoes` e atualiza somente os campos comerciais autorizados, sempre filtrando pelo usuário da sessão.
+- `organization-structure-data-source.ts` lê setores/lideranças, cria o vínculo e o convite em transação e controla entrega/reenvio. O token bruto não é persistido.
+- `email/leadership-invitation-email.ts` envia o convite via Resend com HTML, texto puro e idempotência por convite; exige `RESEND_API_KEY` e `RESEND_FROM_EMAIL` no servidor.
 
 ## `mock-data.ts`
 

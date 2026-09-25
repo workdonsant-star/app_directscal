@@ -5,6 +5,7 @@ import ReactEChartsCore from "echarts-for-react/lib/core";
 import { useMemo } from "react";
 
 import { echarts } from "@/components/omdx/echarts-core";
+import { chartBarBorderRadius } from "@/components/omdx/chart-colors";
 import { useChartThemeColors } from "@/components/omdx/use-chart-theme-colors";
 import {
   calculateDimensionCriticality,
@@ -43,7 +44,7 @@ const fallbackColors: Record<string, string> = {
   "--omdx-dimension-cool-gray-90": "#21272A",
 };
 
-const chartFontFamily = "var(--font-inter)";
+const chartFontFamily = "var(--font-funnel-sans)";
 const chartAxisFontSize = 16;
 const chartUiFontSize = 14;
 const chartYAxisLabelWidth = 232;
@@ -155,7 +156,7 @@ function makeTooltipFormatter(data: InterventionPriorityRow[]) {
         <div style="display:grid;gap:6px;">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;">
             <span style="display:flex;align-items:center;gap:8px;color:var(--muted-foreground);">${tooltipParams[0]?.marker ?? ""}Criticidade</span>
-            <span style="font-family:var(--font-inter);font-variant-numeric:tabular-nums;color:var(--foreground);">${criticality}</span>
+            <span style="font-family:var(--font-funnel-sans);font-variant-numeric:tabular-nums;color:var(--foreground);">${criticality}</span>
           </div>
           <div style="display:flex;justify-content:space-between;gap:24px;">
             <span style="color:var(--muted-foreground);">Maturidade média</span>
@@ -275,6 +276,7 @@ export function InterventionPriorityChart({
           data: chartData.map((item) => ({
             value: item.criticality,
             itemStyle: {
+              borderRadius: chartBarBorderRadius,
               color: getCriticalityColor(item.criticality, colors),
             },
             label: {

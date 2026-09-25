@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function ManagementAssetsPage() {
-  redirect("/omdx");
+  redirect("/ativos-de-gestao/sops");
 }

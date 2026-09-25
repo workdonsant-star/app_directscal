@@ -21,7 +21,7 @@ function SelectTrigger({
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
       className={cn(
-        "border-input bg-background text-foreground inline-flex h-9 min-w-0 cursor-pointer items-center justify-between gap-2 rounded-lg border px-2.5 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-70 data-popup-open:bg-muted dark:bg-input/30 dark:disabled:bg-input/80",
+        "inline-flex h-8 min-w-0 cursor-pointer items-center justify-between gap-4 rounded-[5px] border-0 bg-action-neutral px-3 text-sm font-medium text-action-neutral-foreground outline-none transition-colors hover:bg-action-neutral-hover focus-visible:ring-2 focus-visible:ring-control-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 data-popup-open:bg-action-neutral-hover aria-invalid:border aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/30 dark:aria-invalid:border-destructive/70",
         className,
       )}
       {...props}
@@ -29,7 +29,7 @@ function SelectTrigger({
       {children}
       <SelectPrimitive.Icon
         data-slot="select-icon"
-        className="text-muted-foreground flex shrink-0 items-center transition-transform data-popup-open:rotate-180"
+        className="flex shrink-0 items-center transition-transform data-popup-open:rotate-180"
       >
         <ChevronDownIcon className="size-4" />
       </SelectPrimitive.Icon>

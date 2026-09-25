@@ -6,7 +6,7 @@ Route group sem segmento de URL para telas públicas de autenticação. As pági
 
 ## Convenções
 
-- URLs públicas: `/entrar`, `/criar-conta`, `/recuperar-senha`.
+- URLs públicas: `/entrar`, `/criar-conta`, `/recuperar-senha`, `/convites/lideranca/[token]` e `/convites/lideranca/confirmado`.
 - Renderizar componentes de `src/components/auth`.
 - Validar sessão no servidor com o cookie de `src/lib/auth`.
 - Não misturar estas páginas com o shell autenticado de `src/app/(app)`.

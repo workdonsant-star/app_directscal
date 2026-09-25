@@ -14,6 +14,8 @@ import { useMemo, useState } from "react";
 
 import { DeleteDiagnosticDialog } from "@/components/omdx/delete-diagnostic-dialog";
 import { StatusBadge } from "@/components/omdx/status-badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -32,18 +34,14 @@ import {
 import {
   canGenerateDiagnosticActionPlan,
   canGenerateDiagnosticReport,
-  getRespondentGroups,
 } from "@/lib/data/omdx-domain";
 import type {
   Diagnostic,
   DiagnosticShareLink,
   DiagnosticStatus,
-  RespondentGroup,
 } from "@/lib/types";
 
 export type DiagnosticsFilter = "todos" | DiagnosticStatus;
-
-const respondentGroups = getRespondentGroups();
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("pt-BR", {
@@ -54,6 +52,7 @@ function formatDate(iso: string) {
 }
 
 type DiagnosticsTableProps = {
+  currentUserId: string;
   diagnostics: Diagnostic[];
   filter: DiagnosticsFilter;
   shareLinksByDiagnosticId: Record<string, DiagnosticShareLink[]>;
@@ -80,13 +79,11 @@ function deadlineLabel(diagnostic: Diagnostic) {
 function ResponseLinkCell({
   copiedKey,
   diagnostic,
-  groupId,
   link,
   onCopy,
 }: {
   copiedKey: string | null;
   diagnostic: Diagnostic;
-  groupId: RespondentGroup;
   link?: DiagnosticShareLink;
   onCopy: (diagnostic: Diagnostic, link: DiagnosticShareLink) => void;
 }) {
@@ -94,7 +91,7 @@ function ResponseLinkCell({
     return <span className="text-muted-foreground">—</span>;
   }
 
-  const key = `${diagnostic.id}-${groupId}`;
+  const key = link.id;
   const copied = copiedKey === key;
 
   return (
@@ -102,7 +99,7 @@ function ResponseLinkCell({
       variant="outline"
       size="xs"
       onClick={() => onCopy(diagnostic, link)}
-      aria-label={`Copiar link de ${groupId}`}
+      aria-label={`Copiar link de ${link.sectorName ?? link.group}`}
     >
       {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
       {copied ? "Copiado" : "Copiar"}
@@ -110,7 +107,67 @@ function ResponseLinkCell({
   );
 }
 
+function creatorInitials(name: string) {
+  return name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
+
+function TeamLinksCell({
+  copiedKey,
+  diagnostic,
+  links,
+  onCopy,
+}: {
+  copiedKey: string | null;
+  diagnostic: Diagnostic;
+  links: DiagnosticShareLink[];
+  onCopy: (diagnostic: Diagnostic, link: DiagnosticShareLink) => void;
+}) {
+  if (diagnostic.status === "rascunho" || links.length === 0) {
+    return <span className="text-muted-foreground">—</span>;
+  }
+
+  if (links.length === 1) {
+    return (
+      <ResponseLinkCell
+        copiedKey={copiedKey}
+        diagnostic={diagnostic}
+        link={links[0]}
+        onCopy={onCopy}
+      />
+    );
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button variant="outline" size="xs" aria-label="Abrir links dos times" />
+        }
+      >
+        {links.length} links
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {links.map((link) => (
+          <DropdownMenuItem key={link.id} onClick={() => onCopy(diagnostic, link)}>
+            {copiedKey === link.id ? (
+              <Check className="size-4" />
+            ) : (
+              <Copy className="size-4" />
+            )}
+            {link.sectorName ?? "Time"}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export function DiagnosticsTable({
+  currentUserId,
   diagnostics,
   filter,
   shareLinksByDiagnosticId,
@@ -135,7 +192,7 @@ export function DiagnosticsTable({
     link: DiagnosticShareLink,
   ) {
     await navigator.clipboard.writeText(link.publicUrl);
-    setCopiedKey(`${diagnostic.id}-${link.group}`);
+    setCopiedKey(link.id);
     window.setTimeout(() => setCopiedKey(null), 1800);
   }
 
@@ -170,17 +227,15 @@ export function DiagnosticsTable({
   return (
     <div>
       <div className="overflow-hidden rounded-[5px] ring-1 ring-foreground/10">
-        <Table className="min-w-[1100px] table-fixed">
+        <Table className="min-w-[1180px] table-fixed">
           <TableHeader className="bg-muted/30">
             <TableRow>
               <TableHead className="h-11 w-[260px] px-4">Diagnóstico</TableHead>
-              <TableHead className="h-11 w-[125px] px-4">Empresa</TableHead>
+              <TableHead className="h-11 w-[190px] px-4">Criado por</TableHead>
+              <TableHead className="h-11 w-[130px] px-4">Setores</TableHead>
               <TableHead className="h-11 w-[85px] px-4">Status</TableHead>
-              {respondentGroups.map((group) => (
-                <TableHead key={group.id} className="h-11 w-[100px] px-4">
-                  {group.label}
-                </TableHead>
-              ))}
+              <TableHead className="h-11 w-[105px] px-4">Liderança</TableHead>
+              <TableHead className="h-11 w-[105px] px-4">Times</TableHead>
               <TableHead className="h-11 w-[85px] px-4 text-right">
                 Respostas
               </TableHead>
@@ -211,25 +266,68 @@ export function DiagnosticsTable({
                     </span>
                   </div>
                 </TableCell>
-                <TableCell className="px-4 py-4 text-muted-foreground">
-                  {d.company}
+                <TableCell className="px-4 py-4">
+                  {d.creator ? (
+                    <div className="flex min-w-0 items-center gap-2">
+                      <Avatar size="sm">
+                        {d.creator.avatarUrl && (
+                          <AvatarImage src={d.creator.avatarUrl} alt="" />
+                        )}
+                        <AvatarFallback>
+                          {creatorInitials(d.creator.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm text-foreground">
+                          {d.creator.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {d.creator.userId === currentUserId
+                            ? "Você"
+                            : d.creator.role === "cliente"
+                              ? "Superadmin"
+                              : "Liderança"}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">
+                      Não identificado
+                    </span>
+                  )}
+                </TableCell>
+                <TableCell className="px-4 py-4">
+                  {d.sectors && d.sectors.length > 0 ? (
+                    <Badge variant="outline">
+                      {d.sectors.length} setor{d.sectors.length === 1 ? "" : "es"}
+                    </Badge>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
                 </TableCell>
                 <TableCell className="px-4 py-4">
                   <StatusBadge status={d.status} />
                 </TableCell>
-                {respondentGroups.map((group) => (
-                  <TableCell key={group.id} className="px-4 py-4">
-                    <ResponseLinkCell
-                      copiedKey={copiedKey}
-                      diagnostic={d}
-                      groupId={group.id}
-                      link={shareLinksByDiagnosticId[d.id]?.find(
-                        (link) => link.group === group.id,
-                      )}
-                      onCopy={handleCopyResponseLink}
-                    />
-                  </TableCell>
-                ))}
+                <TableCell className="px-4 py-4">
+                  <ResponseLinkCell
+                    copiedKey={copiedKey}
+                    diagnostic={d}
+                    link={shareLinksByDiagnosticId[d.id]?.find(
+                      (link) => link.group === "lideranca",
+                    )}
+                    onCopy={handleCopyResponseLink}
+                  />
+                </TableCell>
+                <TableCell className="px-4 py-4">
+                  <TeamLinksCell
+                    copiedKey={copiedKey}
+                    diagnostic={d}
+                    links={(shareLinksByDiagnosticId[d.id] ?? []).filter(
+                      (link) => link.group === "operacao",
+                    )}
+                    onCopy={handleCopyResponseLink}
+                  />
+                </TableCell>
                 <TableCell className="px-4 py-4 text-right tabular-nums">
                   {d.responses.total > 0 ? (
                     <span className="text-foreground">{d.responses.total}</span>
@@ -264,7 +362,7 @@ export function DiagnosticsTable({
                       <MoreHorizontal className="size-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      {d.status === "rascunho" && (
+                      {d.status === "rascunho" && d.permissions?.canManage && (
                         <DropdownMenuItem
                           onClick={() => onConfigure?.(d)}
                         >
@@ -296,13 +394,15 @@ export function DiagnosticsTable({
                           Baixar action points
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onClick={() => setDiagnosticToDelete(d)}
-                      >
-                        <Trash2 className="size-4" />
-                        Excluir
-                      </DropdownMenuItem>
+                      {d.permissions?.canManage && (
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => setDiagnosticToDelete(d)}
+                        >
+                          <Trash2 className="size-4" />
+                          Excluir
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

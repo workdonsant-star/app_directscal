@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { canAccessCustomerApp } from "@/lib/auth/access-control";
-import { userCanAccessDiagnostic } from "@/lib/auth/authorization";
+import { userCanManageDiagnostic } from "@/lib/auth/authorization";
 import { getCurrentAuthSession } from "@/lib/auth/session";
 import { closeDiagnosticInputSchema } from "@/lib/contracts";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
@@ -25,7 +25,7 @@ export async function POST(_request: Request, { params }: RouteContext) {
     );
   }
 
-  if (!(await userCanAccessDiagnostic(session.user.id, id))) {
+  if (!(await userCanManageDiagnostic(session.user.id, id))) {
     return NextResponse.json({ message: "Acesso negado." }, { status: 403 });
   }
 

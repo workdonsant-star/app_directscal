@@ -1,5 +1,6 @@
 import { cache } from "react";
 
+import { getDiagnosticAccessDecision } from "@/lib/auth/diagnostic-access";
 import { getCurrentAuthSession } from "@/lib/auth/session";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { adminModules } from "@/lib/mock-data";
@@ -10,6 +11,7 @@ type MemberRoleRow = {
 };
 
 type DiagnosticOrganizationRow = {
+  created_by_user_id: string | null;
   organization_id: string;
 };
 
@@ -109,14 +111,103 @@ export async function userCanAccessDiagnostic(userId: string, diagnosticId: stri
   const supabase = createSupabaseAdminClient();
   const { data: diagnostic, error } = await supabase
     .from("diagnostics")
-    .select("organization_id")
+    .select("organization_id,created_by_user_id")
     .eq("id", diagnosticId)
     .maybeSingle<DiagnosticOrganizationRow>();
 
   if (error) throw error;
   if (!diagnostic) return false;
 
-  return userCanAccessOrganization(userId, diagnostic.organization_id);
+  const { data: membership, error: membershipError } = await supabase
+    .from("organization_members")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("organization_id", diagnostic.organization_id)
+    .maybeSingle<MemberRoleRow>();
+
+  if (membershipError) throw membershipError;
+  if (!membership) return false;
+  const directAccess = getDiagnosticAccessDecision({
+    assignedToViewer: false,
+    creatorUserId: diagnostic.created_by_user_id,
+    viewerRole: membership.role,
+    viewerUserId: userId,
+  });
+
+  if (directAccess.canView) return true;
+
+  const { data: person, error: personError } = await supabase
+    .from("organization_people")
+    .select("id")
+    .eq("organization_id", diagnostic.organization_id)
+    .eq("auth_user_id", userId)
+    .eq("status", "ativo")
+    .limit(1)
+    .maybeSingle<{ id: string }>();
+
+  if (personError) throw personError;
+  if (!person) return false;
+
+  const { data: assignments, error: assignmentsError } = await supabase
+    .from("diagnostic_leader_assignments")
+    .select("diagnostic_sector_scope_id")
+    .eq("organization_id", diagnostic.organization_id)
+    .eq("person_id", person.id)
+    .returns<Array<{ diagnostic_sector_scope_id: string }>>();
+
+  if (assignmentsError) throw assignmentsError;
+  if (assignments.length === 0) return false;
+
+  const { count, error: scopesError } = await supabase
+    .from("diagnostic_sector_scopes")
+    .select("id", { count: "exact", head: true })
+    .eq("diagnostic_id", diagnosticId)
+    .in(
+      "id",
+      assignments.map((assignment) => assignment.diagnostic_sector_scope_id),
+    );
+
+  if (scopesError) throw scopesError;
+
+  return getDiagnosticAccessDecision({
+    assignedToViewer: (count ?? 0) > 0,
+    creatorUserId: diagnostic.created_by_user_id,
+    viewerRole: membership.role,
+    viewerUserId: userId,
+  }).canView;
+}
+
+export async function userCanManageDiagnostic(
+  userId: string,
+  diagnosticId: string,
+) {
+  if (!isUuid(userId) || !isUuid(diagnosticId)) return false;
+
+  const supabase = createSupabaseAdminClient();
+  const { data: diagnostic, error } = await supabase
+    .from("diagnostics")
+    .select("organization_id,created_by_user_id")
+    .eq("id", diagnosticId)
+    .maybeSingle<DiagnosticOrganizationRow>();
+
+  if (error) throw error;
+  if (!diagnostic) return false;
+
+  const { data: membership, error: membershipError } = await supabase
+    .from("organization_members")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("organization_id", diagnostic.organization_id)
+    .maybeSingle<MemberRoleRow>();
+
+  if (membershipError) throw membershipError;
+
+  return getDiagnosticAccessDecision({
+    assignedToViewer: false,
+    creatorUserId: diagnostic.created_by_user_id,
+    viewerRole: membership?.role ?? null,
+    viewerUserId: userId,
+  }).canManage;
 }
 
 export async function getDiagnosticOrganizationId(diagnosticId: string) {
@@ -125,7 +216,7 @@ export async function getDiagnosticOrganizationId(diagnosticId: string) {
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("diagnostics")
-    .select("organization_id")
+    .select("organization_id,created_by_user_id")
     .eq("id", diagnosticId)
     .maybeSingle<DiagnosticOrganizationRow>();
 
@@ -221,6 +312,7 @@ export const getCurrentAppAccessContext = cache(
     const session = await getCurrentAuthSession();
 
     if (!session) return null;
+    if (session.leadershipInvitation === true) return null;
 
     if (session.user.role === "superadmin") {
       return {

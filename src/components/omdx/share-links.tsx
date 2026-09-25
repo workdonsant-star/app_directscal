@@ -10,19 +10,19 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getRespondentGroups } from "@/lib/data/omdx-domain";
-import type { DiagnosticShareLink, RespondentGroup } from "@/lib/types";
+import type { DiagnosticShareLink } from "@/lib/types";
 
 type ShareLinksProps = {
   disabled: boolean;
   links: DiagnosticShareLink[];
-  copiedGroup: RespondentGroup | null;
-  onCopy: (group: RespondentGroup, value: string) => void;
+  copiedLinkId: string | null;
+  onCopy: (linkId: string, value: string) => void;
 };
 
 export function ShareLinks({
   disabled,
   links,
-  copiedGroup,
+  copiedLinkId,
   onCopy,
 }: ShareLinksProps) {
   const respondentGroups = getRespondentGroups();
@@ -38,17 +38,19 @@ export function ShareLinks({
       </CardHeader>
       <CardContent className="grid gap-4 xl:grid-cols-3">
         {links.map((link) => {
-          const copied = copiedGroup === link.group;
+          const copied = copiedLinkId === link.id;
           const group = respondentGroups.find((item) => item.id === link.group);
 
           return (
             <article
-              key={link.group}
+              key={link.id}
               className="flex min-w-0 flex-col gap-4 rounded-lg border bg-background p-4"
             >
               <div>
                 <p className="text-base font-semibold text-foreground">
-                  {group?.label ?? link.group}
+                  {link.group === "operacao" && link.sectorName
+                    ? `Time · ${link.sectorName}`
+                    : group?.label ?? link.group}
                 </p>
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                   {group?.description ?? "Link segmentado para preservar a leitura por camada."}
@@ -69,7 +71,7 @@ export function ShareLinks({
                   type="button"
                   variant="outline"
                   disabled={disabled}
-                  onClick={() => onCopy(link.group, link.publicUrl)}
+                  onClick={() => onCopy(link.id, link.publicUrl)}
                 >
                   {copied ? (
                     <Check className="size-4" />

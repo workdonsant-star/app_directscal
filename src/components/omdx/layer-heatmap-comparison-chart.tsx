@@ -31,7 +31,7 @@ const fallbackColors: Record<string, string> = {
   "--omdx-layer-time-70": "#005D5D",
 };
 
-const chartFontFamily = "var(--font-inter)";
+const chartFontFamily = "var(--font-funnel-sans)";
 const chartAxisFontSize = 13;
 const chartUiFontSize = 14;
 const chartHeight = 460;

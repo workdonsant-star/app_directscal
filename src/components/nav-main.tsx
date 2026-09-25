@@ -18,8 +18,9 @@ export function NavMain({
   label?: string | null;
   items: {
     title: string;
-    url: string;
+    url?: string;
     icon: LucideIcon;
+    disabled?: boolean;
     isActive?: boolean;
   }[];
 }) {
@@ -30,9 +31,11 @@ export function NavMain({
         {items.map((item) => (
           <SidebarMenuItem key={item.title}>
             <SidebarMenuButton
-              tooltip={item.title}
+              tooltip={item.disabled ? undefined : item.title}
+              disabled={item.disabled}
               isActive={item.isActive}
-              render={<Link href={item.url} />}
+              render={item.url ? <Link href={item.url} /> : undefined}
+              type={item.url ? undefined : "button"}
             >
               <item.icon className="size-4" />
               <span>{item.title}</span>

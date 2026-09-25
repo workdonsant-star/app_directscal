@@ -25,16 +25,22 @@ import {
 } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type {
+  AuthRole,
   Diagnostic,
   DiagnosticShareLink,
   DiagnosticTemplate,
+  OrganizationSector,
 } from "@/lib/types";
 
 type DrawerMode = "create" | "edit" | "links";
 
 type DiagnosticsWorkspaceProps = {
+  currentUserEmail: string;
+  currentUserId: string;
+  currentUserRole: AuthRole;
   diagnostics: Diagnostic[];
   organizationName: string;
+  sectors: OrganizationSector[];
   shareLinksByDiagnosticId: Record<string, DiagnosticShareLink[]>;
   template: DiagnosticTemplate;
 };
@@ -74,14 +80,19 @@ function buildDiagnosticPayload(
   return {
     deadline: form.deadline || null,
     description: form.description || null,
+    leaderIds: form.leaderIds,
     name: form.name,
     templateId: template.id,
   };
 }
 
 export function DiagnosticsWorkspace({
+  currentUserEmail,
+  currentUserId,
+  currentUserRole,
   diagnostics,
   organizationName,
+  sectors,
   shareLinksByDiagnosticId,
   template,
 }: DiagnosticsWorkspaceProps) {
@@ -212,7 +223,9 @@ export function DiagnosticsWorkspace({
         name: form.name,
       });
       setGeneratedLinks(
-        saved.links.length > 0
+        activateData.links && activateData.links.length > 0
+          ? activateData.links
+          : saved.links.length > 0
           ? saved.links
           : shareLinksByDiagnosticId[saved.diagnosticId] ?? [],
       );
@@ -309,6 +322,7 @@ export function DiagnosticsWorkspace({
           )}
 
           <DiagnosticsTable
+            currentUserId={currentUserId}
             diagnostics={diagnostics}
             filter={filter}
             shareLinksByDiagnosticId={shareLinksByDiagnosticId}
@@ -319,7 +333,7 @@ export function DiagnosticsWorkspace({
       </AppPage>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent className="overflow-y-auto data-[side=right]:!w-[min(100vw,56rem)] data-[side=right]:!max-w-none">
+        <SheetContent className="gap-0 overflow-hidden bg-card text-card-foreground data-[side=right]:!w-[min(100vw,56rem)] data-[side=right]:!max-w-none">
           {mode === "links" && generatedDiagnostic ? (
             <GeneratedLinks
               diagnostic={generatedDiagnostic}
@@ -330,26 +344,27 @@ export function DiagnosticsWorkspace({
             />
           ) : (
             <>
-              <SheetHeader className="border-b">
+              <SheetHeader className="shrink-0 border-b px-4 py-4 sm:px-6">
                 <SheetTitle>
                   {mode === "edit" ? "Configurar rascunho" : "Criar diagnóstico"}
                 </SheetTitle>
                 <SheetDescription>
-                  O formulário fica dentro da área de diagnósticos, sem abrir
-                  uma página dedicada.
+                  Defina o contexto e o prazo da coleta antes de gerar os links
+                  por grupo.
                 </SheetDescription>
               </SheetHeader>
-              <div className="p-4">
-                <DiagnosticForm
-                  mode={mode === "edit" ? "edit" : "create"}
-                  diagnostic={selectedDiagnostic ?? undefined}
-                  organizationName={organizationName}
-                  template={template}
-                  onSaveDraft={handleSaveDraft}
-                  onActivate={handleActivate}
-                  onCancel={closeDrawer}
-                />
-              </div>
+              <DiagnosticForm
+                currentUserEmail={currentUserEmail}
+                currentUserRole={currentUserRole}
+                mode={mode === "edit" ? "edit" : "create"}
+                diagnostic={selectedDiagnostic ?? undefined}
+                organizationName={organizationName}
+                sectors={sectors}
+                template={template}
+                onSaveDraft={handleSaveDraft}
+                onActivate={handleActivate}
+                onCancel={closeDrawer}
+              />
             </>
           )}
         </SheetContent>
@@ -376,7 +391,7 @@ function GeneratedLinks({
           empresa.
         </SheetDescription>
       </SheetHeader>
-      <div className="flex flex-col gap-4 p-4">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
         <div className="rounded-lg border bg-card p-4">
           <p className="text-foreground text-sm font-medium">
             {diagnostic.name}
@@ -388,7 +403,7 @@ function GeneratedLinks({
 
         {links.map((link) => (
           <div
-            key={link.group}
+            key={link.id}
             className="flex flex-col gap-2 rounded-lg border bg-card p-3"
           >
             <span className="text-foreground text-sm font-medium">
@@ -396,7 +411,7 @@ function GeneratedLinks({
                 ? "Fundador"
                 : link.group === "lideranca"
                   ? "Liderança"
-                  : "Operação"}
+                  : link.sectorName ?? "Time"}
             </span>
             <code className="text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap rounded-md bg-muted px-2 py-1 text-xs">
               {link.publicUrl}

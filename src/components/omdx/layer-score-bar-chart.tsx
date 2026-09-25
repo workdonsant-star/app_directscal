@@ -5,6 +5,12 @@ import ReactEChartsCore from "echarts-for-react/lib/core";
 import { useMemo } from "react";
 
 import { echarts } from "@/components/omdx/echarts-core";
+import {
+  chartBarBorderRadius,
+  chartHistoricalMarkerSymbol,
+  layerColorFallbacks,
+  layerColorTokenByGroup,
+} from "@/components/omdx/chart-colors";
 import { useChartThemeColors } from "@/components/omdx/use-chart-theme-colors";
 import type { LayerScoreResult } from "@/lib/data/omdx-overview-analytics";
 
@@ -25,17 +31,15 @@ const fallbackColors: Record<string, string> = {
   "--muted-foreground": "#4A4A52",
   "--popover": "#FFFFFF",
   "--popover-foreground": "#111114",
-  "--omdx-chart-lime": "#A8E017",
-  "--omdx-chart-lime-deep": "#6E9C11",
-  "--omdx-chart-purple": "#7E21FF",
+  ...layerColorFallbacks,
 };
 
 const colorTokenByLayer: Record<LayerScoreResult["id"], string> = {
-  fundador: "--omdx-chart-lime-deep",
-  lideranca: "--omdx-chart-lime",
-  operacao: "--omdx-chart-purple",
+  fundador: layerColorTokenByGroup.fundador,
+  lideranca: layerColorTokenByGroup.lideranca,
+  operacao: layerColorTokenByGroup.operacao,
 };
-const chartFontFamily = "var(--font-inter)";
+const chartFontFamily = "var(--font-funnel-sans)";
 const scoreFormatter = new Intl.NumberFormat("pt-BR", {
   minimumFractionDigits: 1,
   maximumFractionDigits: 1,
@@ -116,7 +120,9 @@ export function LayerScoreBarChart({
         enabled: true,
         label: {
           description:
-            "Gráfico de barras com as pontuações atuais de Fundador, Liderança e Time e marcadores da média dos diagnósticos anteriores, em escala de 0 a 5.",
+            historicalData.length > 0
+              ? "Gráfico de barras com as pontuações do diagnóstico selecionado para Fundador, Liderança e Time e marcadores da média dos diagnósticos anteriores, em escala de 0 a 5."
+              : "Gráfico de barras com as pontuações consolidadas de Fundador, Liderança e Time em todos os diagnósticos, em escala de 0 a 5.",
         },
       },
       grid: {
@@ -188,6 +194,7 @@ export function LayerScoreBarChart({
             layer: layer.label,
             value: layer.score,
             itemStyle: {
+              borderRadius: chartBarBorderRadius,
               color: colors[colorTokenByLayer[layer.id]],
             },
           })),
@@ -208,7 +215,7 @@ export function LayerScoreBarChart({
         {
           name: referenceLabel,
           type: "scatter",
-          symbol: "rect",
+          symbol: chartHistoricalMarkerSymbol,
           symbolSize: [28, 3],
           data: data.map((layer) => [
             layer.label,

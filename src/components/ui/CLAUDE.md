@@ -30,7 +30,7 @@ Esta pasta contém os **primitives do shadcn/ui** — botões, cards, tabelas, s
 
 | Componente | Arquivo | Notas |
 | --- | --- | --- |
-| Button | `button.tsx` | variants: default, secondary, ghost, outline, destructive, link |
+| Button | `button.tsx` | `default` é CTA azul `#124BD1` com texto `#EFEFEE`; `outline` e `secondary` são neutros sem borda. Todos usam raio de 5px e mantêm as dimensões compactas atuais. |
 | Card | `card.tsx` | 1px border, sem shadow por padrão (decisão da marca) |
 | Badge | `badge.tsx` | use para status discretos; status complexos têm wrapper em `omdx/status-badge.tsx` |
 | Breadcrumb | `breadcrumb.tsx` | usado na topbar limpa do shell autenticado |
@@ -44,9 +44,10 @@ Esta pasta contém os **primitives do shadcn/ui** — botões, cards, tabelas, s
 | Avatar | `avatar.tsx` | inicial 2 letras quando sem imagem |
 | Input | `input.tsx` | sem `Label` próprio — use `<label>` HTML |
 | Separator | `separator.tsx` | vertical e horizontal; usar com altura/largura definida |
-| Select | `select.tsx` | seletor visual do sistema baseado em Base UI; usar no lugar de `<select>` nativo |
+| Select | `select.tsx` | trigger Base UI neutro de 32px, sem borda, com raio de 5px e a chevron de abertura; usar no lugar de `<select>` nativo |
 | Sheet | `sheet.tsx` | drawer mobile do sidebar usa internamente |
 | Skeleton | `skeleton.tsx` | use para estados de carregamento |
+| Switch | `switch.tsx` | toggle Base UI para estados binários; sempre acompanhe com label visível ou `aria-label` |
 
 ## Como adicionar um primitive
 

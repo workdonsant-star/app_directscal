@@ -18,11 +18,6 @@ export type ExecutiveCardMetric = Omit<
   "classification" | "technicalDetail"
 > & {
   classification: ExecutiveMetric["classification"] | "Sem dados";
-  comparison?: {
-    label: string;
-    lowerIsBetter?: boolean;
-    percentage: number;
-  };
   technicalDetail?: string;
 };
 
@@ -228,8 +223,9 @@ export function OverviewExecutiveCards({
             key={metric.title}
             size="sm"
             className={cn(
-              presentation === "number" ? "gap-1 py-2" : "gap-2",
-              presentation === "number" && "rounded-[5px]",
+              presentation === "number"
+                ? "h-[128px] gap-1 rounded-[5px] border-0 bg-sidebar py-2 shadow-none ring-0"
+                : "gap-2",
             )}
           >
             <CardHeader className="flex flex-row items-start justify-between gap-3 pb-0">

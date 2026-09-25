@@ -1,0 +1,187 @@
+.report {
+  color: var(--muted-foreground);
+  font-size: 0.9375rem;
+  line-height: 1.75;
+}
+
+.header {
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.header h1 {
+  max-width: 22ch;
+  color: var(--foreground);
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.08;
+}
+
+.figureCaption span,
+.source {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.lead {
+  margin-top: 1.25rem;
+  font-size: 1.0625rem;
+  line-height: 1.7;
+}
+
+.section {
+  padding: 3.5rem 0;
+  border-bottom: 1px solid var(--border);
+  scroll-margin-top: 5rem;
+}
+
+.section > * + * {
+  margin-top: 1.25rem;
+}
+
+.sectionTitle {
+  max-width: 30ch;
+  color: var(--foreground);
+  font-family: var(--font-heading), sans-serif;
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+.subsection {
+  padding-top: 1.25rem;
+}
+
+.subsection h3,
+.textList h3,
+.timeline h3 {
+  color: var(--foreground);
+  font-family: var(--font-heading), sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.subsection p,
+.textList p,
+.timeline p {
+  margin-top: 0.375rem;
+}
+
+.report blockquote {
+  max-width: 34ch;
+  margin-right: 0;
+  margin-left: 0;
+  padding: 1.5rem 0;
+  color: var(--foreground);
+  font-family: var(--font-heading), sans-serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.figure {
+  margin: 2.5rem 0;
+}
+
+.figureCaption {
+  display: grid;
+  gap: 0.25rem;
+  padding-bottom: 1rem;
+}
+
+.figureCaption strong {
+  max-width: 58ch;
+  color: var(--foreground);
+  font-family: var(--font-heading), sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.source {
+  margin-top: 0.75rem;
+}
+
+.chartCanvas {
+  height: 20rem;
+  width: 100%;
+}
+
+.textList {
+  border-top: 1px solid var(--border);
+}
+
+.textList > div {
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.textList > div:last-child {
+  border-bottom: 0;
+}
+
+.heatmapChartWrap {
+  overflow-x: auto;
+}
+
+.heatmapCanvas {
+  height: 20rem;
+  width: 100%;
+  min-width: 38rem;
+}
+
+.timeline {
+  margin: 2rem 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--border);
+}
+
+.timeline li {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: 1rem;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.timeline li > span {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  padding-top: 2rem;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+}
+
+@media (max-width: 40rem) {
+  .header h1 {
+    font-size: 2rem;
+  }
+
+  .section {
+    padding: 2.5rem 0;
+  }
+
+  .sectionTitle {
+    font-size: 1.5rem;
+  }
+
+  .chartCanvas,
+  .heatmapCanvas {
+    height: 16rem;
+  }
+}

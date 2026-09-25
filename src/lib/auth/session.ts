@@ -18,9 +18,11 @@ function toAuthSession(
   expires: string,
   supabaseAccessToken?: string,
   acquisition?: boolean,
+  leadershipInvitation?: boolean,
 ): AuthSession {
   return {
     acquisition: acquisition ? true : undefined,
+    leadershipInvitation: leadershipInvitation ? true : undefined,
     token: `authjs:${user.id}`,
     supabaseAccessToken,
     user,
@@ -42,6 +44,7 @@ export const getCurrentAuthSession = cache(async function getCurrentAuthSession(
           session.expires,
           session.supabaseAccessToken,
           session.acquisition,
+          session.leadershipInvitation,
         );
       }
     }

@@ -1,6 +1,6 @@
 # `src/lib/data` — Fonte de dados e regras
 
-Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no servidor; superadmin e aquisição também usam Supabase via Route Handlers server-side. Perfil deriva identidade da sessão autenticada, mas ainda preserva persistência mockada/local enquanto seu backend não entra no escopo.
+Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no servidor; superadmin e aquisição também usam Supabase via Route Handlers server-side. Perfil e Configurações compartilham a leitura server-side de identidade, organização e aquisição; as edições pessoais do Perfil ainda preservam persistência local.
 
 ## Regras
 
@@ -11,6 +11,7 @@ Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no
 - Regras como base mínima de Fundador para análise, trava local de resposta e validação de conjunto completo de respostas devem ficar em funções puras testáveis.
 - Cálculos agregados e helpers de domínio ficam aqui ou em contratos/mappers, não nos componentes.
 - Relatórios PDF devem consumir DTOs consolidados daqui, como `getDiagnosticReport()` e `getDiagnosticActionPlan()`, sem acessar mocks ou recalcular dados dentro do documento.
+- `omdx-native-report-charts.ts` transforma um `DiagnosticReport` consolidado nos datasets dos seis gráficos da leitura nativa; componentes aplicam somente apresentação e tokens visuais.
 - `action-plan-gantt.ts` converte `DiagnosticActionPlan` em tarefas de cronograma (`GanttTask`) para a rota histórica `/gantt`, preservando os metadados do action point usados no calendário e no modal de detalhes. O calendário achata os subitens da frente raiz e usa a data de início como dia do evento. É um motor determinístico baseado apenas nos dados quantitativos consolidados, sem API de IA e sem persistência de tarefas.
 <<<<<<< Updated upstream
 =======
@@ -19,9 +20,16 @@ Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no
 - Helpers memoizados que dependem de usuário devem receber `userId` explicitamente. Não dependa de variável global mutável para decidir escopo de organização ou acesso.
 >>>>>>> Stashed changes
 - `admin-data-source.ts` concentra helpers puros, seeds estáticos de módulos e derivação de empresas/módulos.
+- `admin-operations-data-source.ts` fornece o mock tipado da primeira versão frontend de especialistas, entregas e catálogo de action points. Ele não grava no Supabase e deve ser substituído por APIs e políticas próprias na etapa funcional.
+- `management-assets-data-source.ts` fornece o mock tipado frontend-only das bibliotecas de SOPs, Playbooks, Governança e Matriz RACI e a leitura individual dos SOPs publicados. Categorias são obrigatórias para os três primeiros tipos e nulas para RACI nesta fase; a futura persistência deve filtrar listas e documentos pela organização da sessão.
+- `management-asset-indexer.ts` é puro e transforma versões publicadas em chunks determinísticos por seção, incluindo listas e tabelas. A persistência e a publicação devem usar a migration de ativos e manter a organização como filtro obrigatório.
 - `acquisition-data-source.ts` é server-side e fala com Supabase para campanhas, leads, empresas, intents OAuth e credenciais de senha.
 - `company-registry-data-source.ts` valida o CNPJ, consulta a API Minha Receita somente no servidor e normaliza razão social e dados cadastrais. A interface antecipa a consulta, mas a criação da conta repete a validação antes de persistir organização e lead.
+- `profile-data-source.ts` resolve a organização vinculada e o lead `account_created` da empresa, mapeia identidade e posição para `/perfil` e os dados oficiais/onboarding para `/configuracoes`. O nome fantasia alimenta a sidebar, com fallback para o nome oficial; caixa alta integral é corrigida apenas na apresentação. Escritas empresariais exigem membership `cliente` e filtram pela organização; o `admin` convidado só atualiza sua própria posição em `organization_people`.
 - `operational-onboarding-data-source.ts` concentra o cadastro operacional: domínio autorizado, link público, lista de pessoas cadastradas, exclusão autenticada, critério mínimo de pessoa aprovada e bloqueio antes da ativação do diagnóstico.
+- `organization-structure-data-source.ts` concentra setores, lideranças e convites. Criação e aceite usam funções transacionais no schema `app_private`; o token bruto existe apenas no link/cookie curto e o banco guarda somente SHA-256. O aceite exige o mesmo e-mail, copia nome/foto de `next_auth.users` e cria membership `cliente` ou `admin`, preservando papéis mais privilegiados já existentes. Falhas do provedor não apagam o cadastro: ficam registradas para reenvio.
+- `omdx-data-source.ts` deriva a visibilidade por criador e atribuição setorial. `cliente` recebe todos os diagnósticos; `admin` recebe os próprios e os atribuídos. Links de Time são filtrados pelos setores atribuídos, enquanto o link de Fundador permanece exclusivo de `cliente`.
+- A ativação de diagnóstico chama `app_private.activate_diagnostic_with_links`, que cria os links e muda o status na mesma transação. A seleção de lideranças de um rascunho usa `app_private.sync_diagnostic_leaders`.
 - Em aquisição Google, o e-mail OAuth autenticado é a fonte canônica; valide que `userId` e e-mail pertencem à mesma linha em `next_auth.users` e não crie nova conta quando o e-mail já tem acesso ativo.
 
 ## Fluxo público de resposta
@@ -71,7 +79,7 @@ Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no
 
 O mesmo arquivo produz `layerScores`, `layerSummary` e `dimensionSummary` para o dashboard principal em `/omdx`. As pontuações por camada são a média das seis dimensões em escala `1-5`, separadas entre Fundador, Liderança e Time; camadas sem respostas permanecem `null` e nunca recebem valor inventado. O resumo das dimensões compara os scores consolidados já presentes em `dimensions`, sem recalcular na UI.
 
-`buildOmdxOverviewComparisonFromReports()` separa a leitura atual da referência histórica. Ordena por `closedAt` com fallback para `createdAt`; em `todos`, usa o mais recente como atual e a média dos anteriores como referência. Em um diagnóstico selecionado, considera apenas relatórios anteriores a ele. As duas leituras reutilizam `buildOmdxOverviewAnalyticsFromReports()` e preservam `null` para camadas sem base.
+`buildOmdxOverviewComparisonFromReports()` separa a leitura atual da referência histórica. Ordena por `closedAt` com fallback para `createdAt`; em `todos`, agrega todos os relatórios nos cards, barras e heatmaps, soma a base de respostas e mantém os charts sem referência histórica separada, mas inclui nos cards a variação do relatório mais recente contra o imediatamente anterior. Em um diagnóstico selecionado, usa apenas esse relatório como leitura principal e considera somente os relatórios anteriores a ele como referência. As duas leituras reutilizam `buildOmdxOverviewAnalyticsFromReports()` e preservam `null` para camadas sem base.
 
 - `normalizeLikertToIndex(score)`: converte score Likert para índice com `round((score / 5) * 100)`, limitado entre `0` e `100`.
 - `normalizeGapToIndex(gap)`: converte gap entre camadas para índice com `round((gap / 5) * 100)`, limitado entre `0` e `100`.

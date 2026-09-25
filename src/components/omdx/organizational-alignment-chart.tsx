@@ -53,7 +53,7 @@ const fallbackColors: Record<string, string> = {
   "--omdx-status-critico": "#FA4D56",
 };
 
-const chartFontFamily = "var(--font-inter)";
+const chartFontFamily = "var(--font-funnel-sans)";
 const chartAxisFontSize = 16;
 const chartUiFontSize = 14;
 const maturityCutoff = 50;

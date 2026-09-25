@@ -18,7 +18,7 @@ export default function AdminLeadsPage() {
   return (
     <>
       <AppTopbar
-        breadcrumb={[{ label: "Admin", href: "/admin/modulos" }, { label: "Leads" }]}
+        breadcrumb={[{ label: "Admin", href: "/admin/operacao" }, { label: "Leads" }]}
       />
 
       <AppPage>

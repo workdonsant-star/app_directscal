@@ -8,12 +8,16 @@ Rotas autenticadas da visão de superadministrador. Usam a mesma shell do app (`
 
 ## Rotas
 
-- `/admin` redireciona para `/admin/modulos`.
-- `/admin/modulos` lista módulos disponíveis.
+- `/admin` redireciona para `/admin/operacao`.
+- `/admin/operacao` concentra indicadores e a fila de entregas.
+- `/admin/especialistas` lista e cadastra especialistas internos em estado local.
 - `/admin/campanhas` lista e configura campanhas de aquisição.
 - `/admin/leads` lista leads capturados.
 - `/admin/leads/[id]` mostra o detalhe completo de um lead capturado.
 - `/admin/empresas` lista empresas agrupadas a partir dos leads.
+- `/admin/empresas/[id]` mostra especialista, entregas e acessos da empresa.
+- `/admin/entregas/[id]` reúne dados, relatório, action points e publicação.
+- `/admin/modulos` permanece como rota legada para o catálogo, fora da navegação principal.
 
 ## Convenções
 
@@ -24,3 +28,4 @@ Rotas autenticadas da visão de superadministrador. Usam a mesma shell do app (`
 - Rotas `/admin/*` exigem role `superadmin`; usuários `cliente` devem ser redirecionados para `/omdx`.
 - A navegação do `superadmin` não oferece links para a aplicação do cliente. O papel administrativo não pode abrir páginas, downloads ou APIs de Maturidade; toda operação privilegiada permanece em `/admin/*` e `/api/admin/*`.
 - Breadcrumbs devem começar por `Admin`.
+- A primeira versão de Operação usa mocks tipados e estado local; não deve simular persistência ou ampliar acesso do `superadmin` ao app do cliente.

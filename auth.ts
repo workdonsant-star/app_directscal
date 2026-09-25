@@ -14,6 +14,11 @@ import {
 import { resolvePendingAcquisitionGoogleUser } from "@/lib/auth/acquisition-session";
 import { isAuthJsSessionCookieName } from "@/lib/auth/authjs-cookies";
 import {
+  getLeadershipInvitationOauthErrorPath,
+  leadershipInvitationOauthCookieName,
+  resolvePendingLeadershipGoogleUser,
+} from "@/lib/auth/leadership-invitation-session";
+import {
   attachSupabaseAccessTokenToSession,
   authenticateSuperadminPasswordUser,
   checkUserHasActiveAccess,
@@ -27,6 +32,7 @@ import {
   getAcquisitionOauthIntent,
   resolveAcquisitionAuthUser,
 } from "@/lib/data/acquisition-data-source";
+import { getLeadershipInvitationPreview } from "@/lib/data/organization-structure-data-source";
 import type { AuthRole, AuthUser } from "@/lib/contracts";
 
 const supabaseAdapterConfig = getSupabaseAdapterConfig();
@@ -45,6 +51,21 @@ async function getActiveAcquisitionOauthIntent() {
     return getAcquisitionOauthIntent(
       cookieStore.get(acquisitionOauthIntentCookieName)?.value,
     );
+  } catch {
+    return null;
+  }
+}
+
+async function getActiveLeadershipInvitationOauthIntent() {
+  try {
+    const cookieStore = await cookies();
+    const rawToken = cookieStore.get(leadershipInvitationOauthCookieName)?.value;
+
+    if (!rawToken) return null;
+
+    const invitation = await getLeadershipInvitationPreview(rawToken);
+
+    return invitation ? { invitation, rawToken } : null;
   } catch {
     return null;
   }
@@ -77,14 +98,17 @@ function getCampaignOauthErrorPath(publicPath: string, error: string) {
 
 function writeTokenUser({
   acquisition,
+  leadershipInvitation,
   token,
   user,
 }: {
   acquisition?: boolean;
+  leadershipInvitation?: boolean;
   token: JWT;
   user: AuthUser;
 }) {
   token.acquisition = acquisition ? true : undefined;
+  token.leadershipInvitation = leadershipInvitation ? true : undefined;
   token.userId = user.id;
   token.name = user.name;
   token.email = user.email;
@@ -132,7 +156,10 @@ function writeSessionUser({
   session.user.role = user.role;
   session.user.image = image;
 
-  if (canAccessCustomerApp(user)) {
+  if (
+    canAccessCustomerApp(user) &&
+    session.leadershipInvitation !== true
+  ) {
     attachSupabaseAccessTokenToSession({
       email: user.email,
       expires: session.expires,
@@ -206,8 +233,10 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     async createUser({ user }) {
       if (!user.id) return;
       const acquisitionIntent = await getActiveAcquisitionOauthIntent();
+      const leadershipInvitationIntent =
+        await getActiveLeadershipInvitationOauthIntent();
 
-      if (acquisitionIntent) return;
+      if (acquisitionIntent || leadershipInvitationIntent) return;
 
       await ensureSupabaseAuthUserProvisioned(user);
     },
@@ -222,6 +251,35 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       if (typeof googleProfile.email !== "string") return false;
 
       const email = normalizeEmail(googleProfile.email);
+
+      const leadershipInvitationIntent =
+        await getActiveLeadershipInvitationOauthIntent();
+      if (leadershipInvitationIntent) {
+        const { invitation, rawToken } = leadershipInvitationIntent;
+
+        if (await hasAuthJsSessionCookie()) {
+          return getLeadershipInvitationOauthErrorPath(
+            rawToken,
+            "sessao-google",
+          );
+        }
+
+        const linkedEmail =
+          typeof user?.email === "string" ? normalizeEmail(user.email) : null;
+        const invitedEmail = normalizeEmail(invitation.leaderEmail);
+
+        if (
+          email !== invitedEmail ||
+          (linkedEmail && linkedEmail !== invitedEmail)
+        ) {
+          return getLeadershipInvitationOauthErrorPath(
+            rawToken,
+            "conta-google",
+          );
+        }
+
+        return true;
+      }
 
       const acquisitionIntent = await getActiveAcquisitionOauthIntent();
       if (acquisitionIntent) {
@@ -286,9 +344,27 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
             ? normalizeEmail(googleProfile.email)
             : null;
         const userId = typeof user?.id === "string" ? user.id : null;
+        const leadershipInvitationIntent =
+          await getActiveLeadershipInvitationOauthIntent();
         const acquisitionIntent = await getActiveAcquisitionOauthIntent();
 
-        if (acquisitionIntent) {
+        if (leadershipInvitationIntent) {
+          const leadershipUser = resolvePendingLeadershipGoogleUser({
+            email,
+            invitation: leadershipInvitationIntent.invitation,
+            name: googleProfile.name,
+            userEmail: user?.email,
+            userId,
+          });
+
+          if (!leadershipUser) return null;
+
+          writeTokenUser({
+            leadershipInvitation: true,
+            token,
+            user: leadershipUser,
+          });
+        } else if (acquisitionIntent) {
           const acquisitionUser = resolvePendingAcquisitionGoogleUser({
             email,
             name: googleProfile.name,
@@ -312,12 +388,22 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
             writeTokenUser({ token, user: googleUser });
           }
         }
+      } else if (token.leadershipInvitation === true) {
+        const databaseUser = await resolveSupabaseAuthUser(
+          typeof token.userId === "string" ? token.userId : null,
+          typeof token.email === "string" ? token.email : null,
+        );
+
+        if (databaseUser) {
+          writeTokenUser({ token, user: databaseUser });
+        }
       }
 
       return token;
     },
     async session({ session, token, user }) {
       session.acquisition = token.acquisition === true;
+      session.leadershipInvitation = token.leadershipInvitation === true;
 
       const tokenUser = getTokenAuthUser(token);
 

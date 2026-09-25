@@ -19,7 +19,7 @@ export default async function ProfilePage() {
   }
 
   if (!canAccessCustomerApp(session.user)) {
-    redirect("/admin/modulos");
+    redirect("/admin/operacao");
   }
 
   const profile = await getProfileSettingsData(session.user);

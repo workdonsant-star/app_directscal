@@ -1,16 +1,19 @@
 # `src/components/profile` — Perfil do usuário
 
-Componentes da página `/perfil`, usados para configurar dados básicos da conta e da empresa no app autenticado.
+Componentes da página `/perfil`, usados para configurar os dados pessoais da conta autenticada.
 
 ## Propósito
 
-- Manter o formulário de perfil como UI local-only enquanto o backend real de perfil não entra no escopo.
-- Exibir nome, e-mail e empresa iniciados a partir da sessão autenticada.
-- Permitir edição local do nome, foto de perfil e quantidade de funcionários.
-- Exibir e-mail e empresa como campos bloqueados nesta fase.
+- Manter a edição de dados pessoais como UI local-only enquanto o backend completo de perfil não entra no escopo.
+- Exibir nome e e-mail iniciados a partir da sessão autenticada.
+- Permitir edição local do nome e da foto de perfil.
+- Exibir o e-mail em estado desabilitado, sem texto auxiliar abaixo do campo.
+- Permitir edição de `Posição na empresa` junto de nome e e-mail, embora sua persistência continue no lead de aquisição.
 - Simular troca de senha sem persistência real.
-- Usar um único botão `Salvar alterações` para persistir todas as mudanças da sessão.
+- Usar um único botão `Salvar alterações` na topbar, antes do sino, via `AppTopbarActionsPortal`: nome e avatar permanecem locais, enquanto a posição alterada é enviada por `PATCH /api/profile`.
 - Manter todas as informações do perfil dentro de um único box; seções internas usam divisórias, não cards separados.
+- Não exibir um cabeçalho interno `Informações de perfil` nem o título `Dados pessoais`; o card começa diretamente pelo bloco da foto.
+- Não renderizar dados cadastrais ou comerciais da empresa; eles pertencem a `src/components/settings/` e `/configuracoes`.
 
 ## Convenções
 
@@ -24,3 +27,4 @@ Componentes da página `/perfil`, usados para configurar dados básicos da conta
 - Overrides mockados de perfil ficam em `src/lib/profile-storage.ts`, são escopados por `user.id` e atualizam o `NavUser` por evento client.
 - O logout não remove os overrides escopados por usuário; nome e avatar permanecem disponíveis para o mesmo `user.id` neste navegador.
 - Campos de senha são opcionais. Só valide senha quando algum campo de senha estiver preenchido.
+- Durante o salvamento, bloquear o CTA da topbar e exibir `Salvando`; erros da API permanecem visíveis no final do formulário.

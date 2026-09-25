@@ -16,9 +16,9 @@ Maturidade avalia maturidade operacional em **6 dimensões** (Cultura, Visão, C
 | --- | --- | --- | --- |
 | `KpiCard` | `../kpi-card.tsx` via reexport local | Dashboard (4 cards de topo) | Compartilhado com o superadmin. Recebe `label`, `value`, `trend`, `trendValue`, `caption`, `hint`. |
 | `StatusBadge` | `status-badge.tsx` | Tabela de diagnósticos | 3 estados: `rascunho`, `ativo`, `encerrado`. |
-| `DiagnosticsTable` | `diagnostics-table.tsx` | Área de diagnósticos | Tabs de filtro, linhas que abrem `/omdx/[id]/compartilhar`, três colunas para copiar links públicos por grupo e menu com configuração de rascunho/exclusão. Rascunhos não exibem links. |
+| `DiagnosticsTable` | `diagnostics-table.tsx` | Área de diagnósticos | Tabs de filtro, criador, setores, links de Liderança e Times e menu condicionado à permissão de gestão. Rascunhos não exibem links. |
 | `DeleteDiagnosticDialog` | `delete-diagnostic-dialog.tsx` | Área de diagnósticos | Confirma exclusão persistida antes de remover diagnóstico e links vinculados. |
-| `DiagnosticForm` | `diagnostic-form.tsx` | Drawer de criação/configuração | Formulário client-side com validação mínima e resumo objetivo. Não exibe lista completa de dimensões nem escala Likert. |
+| `DiagnosticForm` | `diagnostic-form.tsx` | Drawer de criação/configuração | Formulário client-side com edição e revisão lado a lado no desktop, ações fixas no rodapé e empilhamento responsivo. O drawer usa `bg-card` e campos de baixo contraste no dark mode para preservar a hierarquia entre painel, controles e popovers. Não exibe lista completa de dimensões nem escala Likert. |
 | `LikertScalePreview` | `likert-scale-preview.tsx` | Disponível para telas futuras | Visual da escala 1-5 do template selecionado. Não é exibido no drawer atual. |
 | `DimensionsSummary` | `dimensions-summary.tsx` | Disponível para telas futuras | Resumo compacto das 6 dimensões avaliadas. Não é exibido no drawer atual. |
 | `DiagnosticsWorkspace` | `diagnostics-workspace.tsx` | `/omdx/diagnosticos` | Controla lista, ações e drawer de criação/configuração. |
@@ -34,15 +34,15 @@ Maturidade avalia maturidade operacional em **6 dimensões** (Cultura, Visão, C
 | `LayerInsightComparison` | `layer-insight-comparison.tsx` | Disponível para telas futuras | Comparação entre fundador, liderança e operação. Não é exibido no dashboard atual de Insights. |
 | `DimensionQuestionResultsTable` | `dimension-question-results-table.tsx` | Insights | Tabela por pergunta da dimensão, sem título ou descrição introdutória, respeitando o filtro de diagnóstico e acumulando Diretoria, Liderança e Time em uma barra horizontal empilhada, além de gap médio e status. |
 | `DimensionQuestionLayerChart` | `dimension-question-layer-chart.tsx` + `dimension-question-layer-echarts.tsx` | Tabela de Insights | Wrapper client com carregamento dinâmico da barra horizontal ECharts por pergunta, três séries empilhadas com espessura uniforme de 16 px, escala fixa de 0 a 15, tooltip e tema dinâmico. A identificação das camadas, os valores e o total aparecem somente no hover. |
-| `OverviewExecutiveCards` | `overview-executive-cards.tsx` | `/omdx` e `/insights/[dimensao]` | Indicadores executivos dentro de `Card`. No Overview usa gauges e mantém detalhes técnicos no tooltip do ícone de informação; em Insights usa densidade vertical compacta, remove ícone e status e apresenta o número alinhado à esquerda com comparação percentual opcional. Com três métricas, a grade desktop usa três colunas. |
+| `OverviewExecutiveCards` | `overview-executive-cards.tsx` | `/omdx` e `/insights/[dimensao]` | Indicadores executivos em superfície neutra sem borda ou sombra. No Overview e em Insights usa a apresentação numérica compacta, sem gauge, ícone ou status visível. Com três métricas, a grade desktop usa três colunas. |
 | `OverviewDiagnosticFilter` | `overview-diagnostic-filter.tsx` | `/omdx` | Wrapper client do filtro de diagnósticos na topbar, reutilizando `DimensionDiagnosticFilter`. |
 | `OverviewDimensionResultsTable` | `overview-dimension-results-table.tsx` | `/omdx` | Tabela compacta de leitura executiva por dimensão, exibindo dimensão, pontuação consolidada, status e gap entre camadas. |
-| `LayerScoreDashboard` | `layer-score-dashboard.tsx` | `/omdx` | Grade Figma com três charts no topo e duas matrizes abaixo; identifica o diagnóstico atual e a referência histórica antes da grade e carrega os gráficos ECharts apenas no cliente. |
+| `LayerScoreDashboard` | `layer-score-dashboard.tsx` | `/omdx` e workspace admin da entrega | Grade com três charts no topo e duas matrizes abaixo; aceita apresentação `distilled` sem KPIs repetidos e com títulos objetivos para contextos que já exibem o resumo executivo. Mantém a comparação histórica nos gráficos e tooltips e carrega ECharts apenas no cliente. |
 | `LayerScoreBarChart` | `layer-score-bar-chart.tsx` | `/omdx` | Barras verticais ECharts para Fundador, Liderança e Time em escala fixa de 0 a 5. A barra sólida representa o diagnóstico atual e o traço transversal representa a média dos anteriores. |
 | `DimensionScoreBarChart` | `dimension-score-bar-chart.tsx` | `/omdx` | Barras verticais ECharts com a pontuação das seis dimensões em escala fixa de 0 a 5. A barra sólida representa o diagnóstico atual e o traço transversal representa a média dos anteriores. |
-| `LayerDimensionStackedChart` | `layer-dimension-stacked-chart.tsx` | `/omdx` | Duas pilhas por dimensão: atual com as três cores sólidas e histórico com as mesmas cores em baixa opacidade. O tooltip compara atual, histórico e delta por camada. |
-| `VulnerabilityQuestionMatrix` | `vulnerability-question-matrix.tsx` | `/omdx` | Matriz dimensão × pergunta com classificação e detalhe acessível do score. |
-| `LeverageMatrix` | `leverage-matrix.tsx` | `/omdx` | Matriz das quatro dimensões mais críticas por maturidade, alinhamento, consenso e prioridade. |
+| `LayerDimensionStackedChart` | `layer-dimension-stacked-chart.tsx` | `/omdx` | Uma pilha atual por dimensão com as três cores de camada; a média histórica aparece apenas como traços neutros nos limites acumulados. O tooltip compara atual, histórico e delta por camada. |
+| `VulnerabilityQuestionMatrix` | `vulnerability-question-matrix.tsx` | `/omdx` | Heatmap ECharts cartesiano dimensão × pergunta, com escala sequencial azul, classificação nas células e detalhe do score no tooltip. |
+| `LeverageMatrix` | `leverage-matrix.tsx` | `/omdx` | Heatmap ECharts cartesiano das quatro dimensões mais críticas por maturidade, alinhamento, consenso e prioridade, com escala sequencial teal. |
 | `LayerStackedScoreChart` | `layer-stacked-score-chart.tsx` | `/omdx` | Barras verticais empilhadas por dimensão, com Fundador, Liderança e Operação, labels internos e total acumulado no topo. |
 | `OverviewCharts` | `overview-charts.tsx` | `/omdx` | Wrapper client mínimo que carrega os charts ECharts do Overview por dynamic import, preservando o shell inicial leve. |
 | `OrganizationalAlignmentChart` | `organizational-alignment-chart.tsx` | Disponível para telas futuras | Scatter ECharts de maturidade e criticidade por dimensão. Não é exibido no overview atual. |
@@ -61,12 +61,13 @@ Maturidade avalia maturidade operacional em **6 dimensões** (Cultura, Visão, C
 - **Classificação** vem da função `classifyScore()` em `src/lib/data/omdx-domain.ts`. Não inline a regra em componente. A régua textual do score Likert é: `<= 2.0` Crítico, `<= 3.0` Inconsistente, `<= 4.0` Atenção, acima de `4.0` Consistente.
 - **Biblioteca principal de visualização:** usar Apache ECharts via `echarts` e `echarts-for-react` para charts analíticos de Maturidade. Evite shadcn/ui Charts e Recharts como base principal.
 - **Charts reutilizáveis:** componentes de visualização devem ser tipados, receber dados já preparados por props ou pela camada `src/lib/data/`, e manter opções ECharts próximas do componente de domínio que as governa.
+- **Tipografia dos charts:** eixos, legendas, tooltips e demais textos auxiliares usam Funnel Sans, preservando Plus Jakarta Sans para os títulos do app.
 - **Charts e tema:** ECharts não reage sozinho a CSS variables após troca de tema. Use `useChartThemeColors()` para ler tokens e recomputar `option` quando light/dark mudar; não congele cores com `useMemo(..., [])`.
-- **Charts sem border radius:** não use `borderRadius`, `border-radius`, `rounded-*` ou cantos arredondados em barras, áreas, tooltips ou elementos internos de charts. Preserve a geometria padrão/retangular da biblioteca.
+- **Barras com raio consistente:** todas as séries ECharts do tipo `bar`, incluindo barras simples, empilhadas e fundos de referência, usam `borderRadius: 2`, centralizado em `chartBarBorderRadius` de `chart-colors.ts`.
 - **Cores de score em charts:** não use vermelho/verde para maturidade. Use cores fixas por série/camada; a posição e o tamanho da barra comunicam o score.
-- **Cores por camada:** use uma paleta cyan fixa começando no peso 70 e diminuindo: diretoria cyan 70, liderança cyan 60 e time cyan 50, sem variar intensidade conforme a pontuação.
-- **Cores por dimensão:** quando houver score consolidado por dimensão, prefira famílias neutras (`cool gray`, `gray`, `warm gray`) sem semáforo; vermelho e verde ficam restritos a estados semânticos fora dos charts.
-- **Tempo não usa uma quarta cor:** preserve cor para identificar camada. Diferencie o diagnóstico atual do histórico por preenchimento sólido, marcador, contorno ou opacidade, sempre acompanhado de texto e tooltip.
+- **Cores por camada:** preserve o mesmo mapeamento em todos os charts e comparativos: Fundador/Diretoria usa `--omdx-layer-diretoria-70` (azul), Liderança usa `--omdx-layer-lideranca-60` (ciano) e Time/Operação usa `--omdx-layer-time-50` (teal). Não varie a família pela pontuação.
+- **Cores por dimensão:** séries únicas usam `--chart-1`. Os heatmaps cartesianos do Overview usam escalas sequenciais azul e teal, sem semáforo e sem legenda visual abaixo do chart. Vermelho e verde ficam restritos a estados semânticos fora dos charts.
+- **Histórico não usa cor de série:** preserve as cores de camada apenas nas barras do diagnóstico atual. Represente a média histórica exclusivamente com três pequenos traços neutros, centralizados em `chartHistoricalMarkerSymbol`, acompanhados pela legenda global e pelo tooltip.
 - **Comparação histórica:** mostre variação de maturidade em pontos na escala `1-5`; percentual pode existir como informação secundária, mas não substitui o delta em pontos.
 - **Nomes humanos, não técnicos**, em títulos visíveis: "O que mais pesa no resultado", não "GraficoItensDimensao". O nome técnico fica no código.
 - **Rótulos curtos** (`shortName` em `dimensions[]`) para gráficos. A pergunta completa vai em tooltip ou texto secundário.
@@ -107,8 +108,8 @@ Para o respondente, prever:
 - `Continuar configuração` abre o drawer lateral em modo edição preenchido com o rascunho.
 - O drawer deve manter o formulário enxuto: campos, template, resumo da configuração, grupos e ações. Não exibir a lista completa de dimensões nem a escala Likert no fluxo atual.
 - `Salvar como rascunho` valida o mínimo necessário, persiste no Supabase e fecha o drawer.
-- `Ativar diagnóstico` valida e mostra, no próprio drawer, os 3 links por grupo: fundador, liderança e operação.
-- A tabela operacional também deve expor ações de copiar link por grupo em colunas próprias quando o diagnóstico não estiver em rascunho.
+- `Ativar diagnóstico` exige liderança ativa e mostra, no próprio drawer, um link de Fundador, um geral de Liderança e um link de Time por setor selecionado.
+- A tabela operacional expõe o criador, os setores e ações para copiar o link geral de Liderança ou escolher um dos links setoriais de Time.
 - O menu de três pontos da tabela deve ser enxuto: `Continuar configuração` apenas em rascunhos e `Excluir` para todos os diagnósticos, sempre com confirmação.
 - `Baixar relatório PDF`, `Baixar relatório CSV` e `Baixar action points` aparecem na tabela para diagnósticos com resultado consolidável (`generalScore` e ao menos uma resposta de Fundador).
 - O dashboard não deve exibir CTA para `/omdx/diagnosticos`; a navegação principal fica na sidebar.
@@ -117,7 +118,8 @@ Para o respondente, prever:
 ## Fluxo de compartilhamento
 
 - `/omdx/[id]/compartilhar` é uma central compacta de coleta, não uma lista completa de respondentes.
-- Mostrar 3 links por grupo: fundador, liderança e operação.
+- Mostrar um link de Fundador, um link geral de Liderança e um link de Time por setor selecionado.
+- O link de Fundador fica restrito ao Superadmin da empresa. O criador Admin gerencia o diagnóstico, mas não recebe esse link.
 - Cada link deve ter mensagem sugerida própria e ação de prévia pública em `/r/[token]`.
 - `Encerrar coleta` chama a API e persiste `status = encerrado` no Supabase.
 <<<<<<< Updated upstream
@@ -149,12 +151,11 @@ Para o respondente, prever:
 
 ### Cards do Overview
 
-Os cards do Overview usam índices executivos normalizados em escala `0-100`, mesmo quando a base original vem de Likert `1-5`. A normalização permite comparar maturidade, criticidade, desalinhamento e consenso na mesma superfície.
+O Overview exibe três cards acima dos charts, reutilizando exatamente a apresentação numérica das páginas de dimensão: raio de 5 px, título discreto e valor alinhado à esquerda, sem gauge, ícone ou status visível. Em `Todos os diagnósticos`, os valores consolidam todos os relatórios e a linha auxiliar compara o relatório mais recente com o imediatamente anterior. No filtro individual, quando há histórico anterior comparável, cada card mostra a variação percentual contra a média anterior; em `Gap médio`, redução é evolução positiva.
 
-- **Maturidade geral**: média das maturidades das dimensões, arredondada com uma casa, normalizada por `normalizeLikertToIndex(score) = round((score / 5) * 100)`. Quanto maior, melhor. Classificação por `classifyMaturityIndex()`: `<= 40` Crítico, `<= 60` Inconsistente, `<= 80` Atenção, acima de `80` Consistente.
-- **Criticidade operacional**: média do índice de criticidade de cada dimensão. Para cada dimensão, `rawCriticality = 5 - maturity + (gap ?? 0) + dispersion + criticalPercentage / 100`, depois `normalizeCriticality(rawCriticality) = round((rawCriticality / 16) * 100)`, limitado entre `0` e `100`. Quanto maior, pior. Quando não há comparação entre camadas, o card fica `Sem dados`.
-- **Desalinhamento organizacional**: média dos gaps por dimensão, em que `gap = maior score de camada - menor score de camada` entre camadas com base. O gap médio é normalizado por `normalizeGapToIndex(gap) = round((gap / 5) * 100)`. Quanto maior, pior. Com apenas Fundador, o card fica `Sem dados`.
-- **Consenso interno**: parte da dispersão média das dimensões. Fórmula: `consensus = round(100 - (averageDispersion / 5) * 100)`, limitado entre `0` e `100`. Quanto maior, melhor. Classificação por `classifyConsensusIndex()`: `>= 80` Consistente, `>= 60` Atenção, `>= 40` Inconsistente, abaixo de `40` Crítico.
+- **Base de respostas**: soma das respostas concluídas de Fundador, Liderança e Time em todos os diagnósticos incluídos no filtro.
+- **Maturidade geral**: média simples das seis dimensões, exibida na escala original `1-5` com uma casa decimal.
+- **Gap médio**: média da diferença entre a maior e a menor pontuação de camada em cada dimensão, na escala `0-5`. Quanto menor, melhor. Com menos de duas camadas comparáveis, exibe `—`.
 
 ### Cards dos Insights por dimensão
 

@@ -197,7 +197,7 @@ export function SopsWorkspace({
               type="button"
               onClick={() => setSelectedId(sop.id)}
               className={cn(
-                "flex w-full cursor-pointer flex-col gap-2 border-b px-3 py-3 text-left transition-colors last:border-b-0 hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                "flex w-full cursor-pointer flex-col gap-2 rounded-[calc(var(--radius)*.8)] border-b px-3 py-3 text-left transition-colors last:border-b-0 hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 selectedSop.id === sop.id && "bg-muted",
               )}
             >

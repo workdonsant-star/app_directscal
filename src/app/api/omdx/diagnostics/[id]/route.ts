@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { canAccessCustomerApp } from "@/lib/auth/access-control";
-import { userCanAccessDiagnostic } from "@/lib/auth/authorization";
+import { userCanManageDiagnostic } from "@/lib/auth/authorization";
 import { getCurrentAuthSession } from "@/lib/auth/session";
 import {
   deleteDiagnosticInputSchema,
@@ -28,7 +28,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     );
   }
 
-  if (!(await userCanAccessDiagnostic(session.user.id, id))) {
+  if (!(await userCanManageDiagnostic(session.user.id, id))) {
     return NextResponse.json({ message: "Acesso negado." }, { status: 403 });
   }
 
@@ -63,6 +63,26 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     );
   }
 
+  const { error: leadersError } = await supabase
+    .schema("app_private")
+    .rpc("sync_diagnostic_leaders", {
+      p_actor_user_id: session.user.id,
+      p_diagnostic_id: id,
+      p_person_ids: parsed.data.leaderIds,
+    });
+
+  if (leadersError) {
+    return NextResponse.json(
+      {
+        message:
+          leadersError.code === "22023"
+            ? leadersError.message
+            : "Não foi possível atualizar as lideranças responsáveis.",
+      },
+      { status: leadersError.code === "22023" ? 400 : 500 },
+    );
+  }
+
   return NextResponse.json({ ok: true });
 }
 
@@ -87,7 +107,7 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
     return NextResponse.json({ message: "Diagnóstico inválido." }, { status: 400 });
   }
 
-  if (!(await userCanAccessDiagnostic(session.user.id, id))) {
+  if (!(await userCanManageDiagnostic(session.user.id, id))) {
     return NextResponse.json({ message: "Acesso negado." }, { status: 403 });
   }
 

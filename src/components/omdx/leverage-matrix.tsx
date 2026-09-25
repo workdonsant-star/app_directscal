@@ -1,19 +1,249 @@
-import type {
-  LeverageLevel,
-  LeverageMatrixRow,
-} from "@/lib/data/omdx-overview-analytics";
-import { cn } from "@/lib/utils";
+"use client";
 
-const levelStyles: Record<LeverageLevel | "Sem dados", string> = {
-  Baixa: "bg-muted text-foreground",
-  Média: "bg-[var(--omdx-chart-lime-soft)] text-[#07141c]",
-  Alta: "bg-[var(--omdx-chart-lime)] text-[#07141c]",
-  Crítica: "bg-[var(--omdx-chart-purple)] text-white",
-  "Sem dados": "bg-muted text-muted-foreground",
+import type { EChartsOption } from "echarts";
+import ReactEChartsCore from "echarts-for-react/lib/core";
+import { useMemo } from "react";
+
+import { echarts } from "@/components/omdx/echarts-core";
+import { useChartThemeColors } from "@/components/omdx/use-chart-theme-colors";
+import type { LeverageMatrixRow } from "@/lib/data/omdx-overview-analytics";
+
+type HeatmapDatum = [number, number, number];
+
+type TooltipParam = {
+  data?: HeatmapDatum;
 };
 
+const fallbackColors: Record<string, string> = {
+  "--background": "#FFFFFF",
+  "--border": "#E2E2E5",
+  "--foreground": "#111114",
+  "--muted-foreground": "#4A4A52",
+  "--omdx-layer-time-30": "#3DDBD9",
+  "--omdx-layer-time-40": "#08BDBA",
+  "--omdx-layer-time-50": "#009D9A",
+  "--omdx-layer-time-60": "#007D79",
+  "--omdx-layer-time-70": "#005D5D",
+  "--omdx-score-text-on-dark": "#FFFFFF",
+  "--omdx-score-text-on-light": "#161616",
+  "--popover": "#FFFFFF",
+  "--popover-foreground": "#111114",
+};
+
+const chartFontFamily = "var(--font-funnel-sans)";
+const chartHeight = 316;
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function getHeatmapDatum(value: unknown): HeatmapDatum | null {
+  if (
+    !Array.isArray(value) ||
+    value.length < 3 ||
+    typeof value[0] !== "number" ||
+    typeof value[1] !== "number" ||
+    typeof value[2] !== "number"
+  ) {
+    return null;
+  }
+
+  return [value[0], value[1], value[2]];
+}
+
 export function LeverageMatrix({ rows }: { rows: LeverageMatrixRow[] }) {
-  if (rows.length === 0) {
+  const colors = useChartThemeColors(fallbackColors);
+  const labels = useMemo(
+    () => rows[0]?.cells.map((cell) => cell.label) ?? [],
+    [rows],
+  );
+  const heatmapData = useMemo<HeatmapDatum[]>(
+    () =>
+      rows.flatMap((row, rowIndex) =>
+        row.cells.flatMap((cell, columnIndex) =>
+          cell.value === null
+            ? []
+            : ([[columnIndex, rowIndex, cell.value]] as HeatmapDatum[]),
+        ),
+      ),
+    [rows],
+  );
+  const heatmapMax = useMemo(
+    () => Math.max(...heatmapData.map((datum) => datum[2]), 1),
+    [heatmapData],
+  );
+
+  const option = useMemo<EChartsOption>(
+    () => ({
+      animationDuration: 400,
+      aria: {
+        enabled: true,
+        label: {
+          description:
+            "Heatmap cartesiano dos índices de alavancagem por dimensão, em escala de 0 a 100.",
+        },
+      },
+      grid: { top: 34, right: 8, bottom: 8, left: 108 },
+      tooltip: {
+        trigger: "item",
+        backgroundColor: colors["--popover"],
+        borderColor: colors["--border"],
+        borderWidth: 1,
+        className: "omdx-echarts-tooltip",
+        confine: true,
+        extraCssText:
+          "box-shadow:0 14px 40px rgba(0,0,0,.12);padding:12px;",
+        formatter: (params: unknown) => {
+          const datum = getHeatmapDatum(
+            params && typeof params === "object" && "data" in params
+              ? (params as TooltipParam).data
+              : undefined,
+          );
+
+          if (!datum) return "";
+
+          const [columnIndex, rowIndex, value] = datum;
+          const row = rows[rowIndex];
+          const cell = row?.cells[columnIndex];
+
+          if (!row || !cell) return "";
+
+          return `
+            <div style="min-width:220px;">
+              <div style="margin-bottom:10px;font-weight:600;color:var(--foreground);">${escapeHtml(row.dimension)} · ${escapeHtml(cell.label)}</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;">
+                <span style="color:var(--muted-foreground);">${escapeHtml(cell.level)}</span>
+                <span style="font-variant-numeric:tabular-nums;color:var(--foreground);">${value}/100</span>
+              </div>
+            </div>
+          `;
+        },
+        renderMode: "html",
+        textStyle: {
+          color: colors["--popover-foreground"],
+          fontFamily: chartFontFamily,
+          fontSize: 12,
+        },
+      },
+      xAxis: {
+        type: "category",
+        data: labels,
+        position: "top",
+        axisLabel: {
+          color: colors["--muted-foreground"],
+          fontFamily: chartFontFamily,
+          fontSize: 11,
+          fontWeight: 500,
+          interval: 0,
+          margin: 10,
+        },
+        axisLine: { show: false },
+        axisTick: { show: false },
+        splitArea: { show: false },
+        splitLine: { show: false },
+      },
+      yAxis: {
+        type: "category",
+        data: rows.map((row) => row.dimension),
+        inverse: true,
+        axisLabel: {
+          color: colors["--muted-foreground"],
+          fontFamily: chartFontFamily,
+          fontSize: 11,
+          fontWeight: 500,
+          margin: 14,
+          overflow: "truncate",
+          width: 88,
+        },
+        axisLine: { show: false },
+        axisTick: { show: false },
+        splitArea: { show: false },
+        splitLine: { show: false },
+      },
+      visualMap: {
+        show: false,
+        min: 0,
+        max: heatmapMax,
+        calculable: false,
+        inRange: {
+          color: [
+            colors["--omdx-layer-time-30"],
+            colors["--omdx-layer-time-40"],
+            colors["--omdx-layer-time-50"],
+            colors["--omdx-layer-time-60"],
+            colors["--omdx-layer-time-70"],
+          ],
+        },
+      },
+      series: [
+        {
+          type: "heatmap",
+          data: heatmapData,
+          label: {
+            show: true,
+            fontFamily: chartFontFamily,
+            fontSize: 10,
+            fontWeight: 600,
+            formatter: (params: { value?: unknown }) => {
+              const datum = getHeatmapDatum(params.value);
+
+              if (!datum) return "";
+
+              const [columnIndex, rowIndex, value] = datum;
+              const level = rows[rowIndex]?.cells[columnIndex]?.level;
+              const style = value / heatmapMax >= 0.48 ? "light" : "dark";
+
+              return level
+                ? `{${style}|${level}}\n{${style}Value|${value}/100}`
+                : "";
+            },
+            rich: {
+              dark: {
+                color: colors["--omdx-score-text-on-light"],
+                lineHeight: 16,
+              },
+              darkValue: {
+                color: colors["--omdx-score-text-on-light"],
+                fontSize: 9,
+                fontWeight: 400,
+                lineHeight: 14,
+                opacity: 0.72,
+              },
+              light: {
+                color: colors["--omdx-score-text-on-dark"],
+                lineHeight: 16,
+              },
+              lightValue: {
+                color: colors["--omdx-score-text-on-dark"],
+                fontSize: 9,
+                fontWeight: 400,
+                lineHeight: 14,
+                opacity: 0.78,
+              },
+            },
+          },
+          emphasis: {
+            itemStyle: {
+              borderColor: colors["--foreground"],
+              borderWidth: 1,
+            },
+          },
+          itemStyle: {
+            borderColor: colors["--background"],
+            borderWidth: 4,
+          },
+        },
+      ],
+    }),
+    [colors, heatmapData, heatmapMax, labels, rows],
+  );
+
+  if (rows.length === 0 || heatmapData.length === 0) {
     return (
       <div className="flex h-[316px] items-center justify-center text-sm text-muted-foreground">
         Ainda não há dimensões consolidadas para priorizar.
@@ -21,62 +251,15 @@ export function LeverageMatrix({ rows }: { rows: LeverageMatrixRow[] }) {
     );
   }
 
-  const labels = rows[0]?.cells.map((cell) => cell.label) ?? [];
-
   return (
-    <div className="overflow-x-auto pb-1">
-      <div
-        className="grid min-w-[680px] gap-1.5"
-        style={{
-          gridTemplateColumns: `8rem repeat(${labels.length}, minmax(6.25rem, 1fr))`,
-        }}
-        role="table"
-        aria-label="Matriz de alavancas por dimensão"
-      >
-        <div aria-hidden="true" />
-        {labels.map((label) => (
-          <div
-            className="pb-1 text-center text-[10px] text-muted-foreground"
-            key={label}
-            role="columnheader"
-          >
-            {label}
-          </div>
-        ))}
-
-        {rows.flatMap((row) => [
-          <div
-            className="flex min-h-[4.5rem] items-center text-[10px] font-medium text-muted-foreground"
-            key={`${row.dimension}-label`}
-            role="rowheader"
-          >
-            {row.dimension}
-          </div>,
-          ...row.cells.map((cell) => (
-            <div
-              aria-label={`${row.dimension}, ${cell.label}: ${cell.level}${cell.value === null ? "" : `, índice ${cell.value} de 100`}`}
-              className={cn(
-                "flex min-h-[4.5rem] flex-col items-center justify-center gap-1 px-2 text-center",
-                levelStyles[cell.level],
-              )}
-              key={`${row.dimension}-${cell.label}`}
-              role="cell"
-              title={
-                cell.value === null
-                  ? `${cell.label}: sem dados`
-                  : `${cell.label}: ${cell.level} (${cell.value}/100)`
-              }
-            >
-              <span className="text-[10px] font-medium">{cell.level}</span>
-              {cell.value !== null ? (
-                <span className="text-[9px] opacity-70 tabular-nums">
-                  {cell.value}/100
-                </span>
-              ) : null}
-            </div>
-          )),
-        ])}
-      </div>
-    </div>
+    <ReactEChartsCore
+      echarts={echarts}
+      option={option}
+      notMerge
+      lazyUpdate
+      style={{ height: chartHeight, width: "100%" }}
+      opts={{ renderer: "canvas" }}
+      aria-label="Heatmap de alavancas por dimensão"
+    />
   );
 }

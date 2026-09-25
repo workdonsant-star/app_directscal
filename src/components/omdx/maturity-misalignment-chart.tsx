@@ -39,7 +39,7 @@ const fallbackColors: Record<string, string> = {
   "--omdx-dimension-cool-gray-70": "#4D5358",
 };
 
-const chartFontFamily = "var(--font-inter)";
+const chartFontFamily = "var(--font-funnel-sans)";
 const chartAxisFontSize = 16;
 const chartUiFontSize = 14;
 const scoreFormatter = new Intl.NumberFormat("pt-BR", {

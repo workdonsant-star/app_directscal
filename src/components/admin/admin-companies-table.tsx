@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { useAdminData } from "@/components/admin/use-admin-data";
+import { AdminDeliveryStatusBadge } from "@/components/admin/admin-delivery-status-badge";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -12,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { getAdminCompanyOperationsPreview } from "@/lib/data/admin-operations-data-source";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("pt-BR", {
@@ -57,6 +59,8 @@ export function AdminCompaniesTable() {
           <TableHeader className="bg-muted/40">
             <TableRow>
               <TableHead>Empresa</TableHead>
+              <TableHead>Especialista</TableHead>
+              <TableHead>Entrega atual</TableHead>
               <TableHead>Tamanho</TableHead>
               <TableHead>Acessos ativos</TableHead>
               <TableHead>Origens</TableHead>
@@ -65,10 +69,31 @@ export function AdminCompaniesTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {companies.map((company) => (
+            {companies.map((company) => {
+              const preview = getAdminCompanyOperationsPreview(company.name);
+              const currentDelivery = preview.deliveries.find(
+                (delivery) => delivery.status !== "publicada",
+              );
+
+              return (
               <TableRow key={company.id}>
                 <TableCell className="font-medium text-foreground">
-                  {company.name}
+                  <Link
+                    href={`/admin/empresas/${company.id}`}
+                    className="rounded-sm outline-none hover:underline hover:underline-offset-4 focus-visible:ring-3 focus-visible:ring-ring/50"
+                  >
+                    {company.name}
+                  </Link>
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {preview.specialist?.name ?? "Não atribuído"}
+                </TableCell>
+                <TableCell>
+                  {currentDelivery ? (
+                    <AdminDeliveryStatusBadge status={currentDelivery.status} />
+                  ) : (
+                    <span className="text-muted-foreground">Sem entrega</span>
+                  )}
                 </TableCell>
                 <TableCell className="text-muted-foreground">
                   {company.companySize ?? formatEmployeeCount(company.employeeCount)}
@@ -89,12 +114,13 @@ export function AdminCompaniesTable() {
                   {company.lastLeadAt ? formatDate(company.lastLeadAt) : "Sem leads"}
                 </TableCell>
               </TableRow>
-            ))}
+              );
+            })}
 
             {companies.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={8}
                   className="py-12 text-center text-sm text-muted-foreground"
                 >
                   Nenhuma empresa mapeada até agora.

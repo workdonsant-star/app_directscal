@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import {
   canAccessCustomerApp,
+  canManageOrganization,
   isCorporateEmailAllowed,
 } from "@/lib/auth/access-control";
 
@@ -16,6 +17,12 @@ describe("auth access control", () => {
     expect(canAccessCustomerApp({ role: "superadmin" })).toBe(false);
     expect(canAccessCustomerApp({ role: "admin" })).toBe(true);
     expect(canAccessCustomerApp({ role: "cliente" })).toBe(true);
+  });
+
+  it("reserves organization management for the company Superadmin", () => {
+    expect(canManageOrganization({ role: "superadmin" })).toBe(false);
+    expect(canManageOrganization({ role: "admin" })).toBe(false);
+    expect(canManageOrganization({ role: "cliente" })).toBe(true);
   });
 
   it("allows an explicitly listed Directscal .com email when its domain is listed", () => {

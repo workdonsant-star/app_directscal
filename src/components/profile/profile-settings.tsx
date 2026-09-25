@@ -6,7 +6,9 @@ import {
   useSyncExternalStore,
   type ChangeEvent,
 } from "react";
+import { useRouter } from "next/navigation";
 
+import { AppTopbarActionsPortal } from "@/components/app-topbar-actions-portal";
 import {
   Avatar,
   AvatarFallback,
@@ -16,12 +18,19 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { AvatarCropDialog } from "@/components/profile/avatar-crop-dialog";
+import {
+  profilePositionOptions,
+} from "@/lib/contracts";
 import {
   getProfileOverridesServerSnapshot,
   getProfileOverridesSnapshot,
@@ -29,7 +38,6 @@ import {
   subscribeProfileOverrides,
 } from "@/lib/profile-storage";
 import type { ProfileSettingsData } from "@/lib/types";
-import { cn } from "@/lib/utils";
 
 type ProfileSettingsProps = {
   profile: ProfileSettingsData;
@@ -46,12 +54,12 @@ type PasswordErrors = Partial<
 
 type ProfileDraft = {
   avatarUrl?: string | null;
-  employeeCount?: string;
   name?: string;
 };
 
 const acceptedAvatarTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const maxAvatarFileSize = 15 * 1024 * 1024;
+const positionItems = profilePositionOptions.map((value) => ({ value, label: value }));
 function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -77,66 +85,8 @@ function getInitials(name: string) {
     .join("") || "DS";
 }
 
-function formatCnpj(value: string | null) {
-  if (!value) return null;
-  const digits = value.replace(/\D/g, "");
-  if (digits.length !== 14) return value;
-
-  return digits.replace(
-    /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
-    "$1.$2.$3/$4-$5",
-  );
-}
-
-function formatRegistryDate(value: string | null) {
-  if (!value) return null;
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  return match ? `${match[3]}/${match[2]}/${match[1]}` : value;
-}
-
-function ReadOnlyProfileField({
-  className,
-  id,
-  label,
-  multiline = false,
-  value,
-}: {
-  className?: string;
-  id: string;
-  label: string;
-  multiline?: boolean;
-  value: string | null;
-}) {
-  const displayValue = value ?? "Não informado";
-
-  return (
-    <div className={cn("flex min-w-0 flex-col gap-2", className)}>
-      <label htmlFor={id} className="text-sm font-medium">
-        {label}
-      </label>
-      {multiline ? (
-        <textarea
-          id={id}
-          value={displayValue}
-          readOnly
-          aria-readonly="true"
-          rows={3}
-          className="border-input bg-muted/30 text-foreground min-h-20 w-full resize-none rounded-lg border px-3 py-2 text-sm outline-none"
-        />
-      ) : (
-        <Input
-          id={id}
-          value={displayValue}
-          readOnly
-          aria-readonly="true"
-          className="bg-muted/30 text-foreground"
-        />
-      )}
-    </div>
-  );
-}
-
 export function ProfileSettings({ profile }: ProfileSettingsProps) {
+  const router = useRouter();
   const storedOverrides = useSyncExternalStore(
     (callback) => subscribeProfileOverrides(profile.id, callback),
     () => getProfileOverridesSnapshot(profile.id),
@@ -147,19 +97,17 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [nameError, setNameError] = useState<string | null>(null);
-  const [employeeCountError, setEmployeeCountError] = useState<string | null>(
-    null,
-  );
   const [passwordErrors, setPasswordErrors] = useState<PasswordErrors>({});
   const [notice, setNotice] = useState<Notice | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [position, setPosition] = useState(
+    profile.companyDetails.position ?? "",
+  );
   const [avatarEditorSource, setAvatarEditorSource] = useState<string | null>(
     null,
   );
 
   const name = draft.name ?? storedOverrides?.name ?? profile.name;
-  const employeeCount =
-    draft.employeeCount ??
-    String(storedOverrides?.employeeCount ?? profile.employeeCount);
   const avatarPreviewUrl =
     draft.avatarUrl !== undefined
       ? draft.avatarUrl
@@ -192,9 +140,8 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
     return nextErrors;
   }
 
-  function handleSaveAll() {
+  async function handleSaveAll() {
     const trimmedName = name.trim();
-    const employeeCountValue = Number(employeeCount);
     const nextPasswordErrors = validatePassword();
     let hasErrors = false;
 
@@ -203,13 +150,6 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
       hasErrors = true;
     } else {
       setNameError(null);
-    }
-
-    if (!Number.isInteger(employeeCountValue) || employeeCountValue < 1) {
-      setEmployeeCountError("Informe uma quantidade válida.");
-      hasErrors = true;
-    } else {
-      setEmployeeCountError(null);
     }
 
     setPasswordErrors(nextPasswordErrors);
@@ -223,13 +163,51 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
       return;
     }
 
+    const hasPositionChange =
+      (position || null) !== profile.companyDetails.position;
+
+    setIsSaving(true);
+
+    if (hasPositionChange) {
+      const commercialData = {
+        companySize: profile.companyDetails.companySize,
+        industry: profile.companyDetails.industry,
+        instagram: profile.companyDetails.instagram,
+        lastQuarterRevenue: profile.companyDetails.lastQuarterRevenue,
+        position: position || null,
+        socialName: profile.companyDetails.socialName,
+        website: profile.companyDetails.website,
+      };
+      const response = await fetch("/api/profile", {
+        body: JSON.stringify(commercialData),
+        headers: { "Content-Type": "application/json" },
+        method: "PATCH",
+      }).catch(() => null);
+      const responseBody = response
+        ? ((await response.json().catch(() => null)) as {
+            message?: string;
+          } | null)
+        : null;
+
+      if (!response?.ok) {
+        setIsSaving(false);
+        setNotice({
+          message:
+            responseBody?.message ??
+            "Não foi possível salvar as informações comerciais.",
+          tone: "error",
+        });
+        return;
+      }
+    }
+
     const didSave = saveProfileOverrides(profile.id, {
       avatarUrl: avatarPreviewUrl ?? null,
-      employeeCount: employeeCountValue,
       name: trimmedName,
     });
 
     if (!didSave) {
+      setIsSaving(false);
       setNotice({
         message:
           "Não foi possível salvar as alterações neste navegador. Libere espaço e tente novamente.",
@@ -245,7 +223,9 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
     }
 
     setDraft({});
+    setIsSaving(false);
     setNotice({ message: "Alterações salvas.", tone: "success" });
+    router.refresh();
   }
 
   async function handleAvatarChange(event: ChangeEvent<HTMLInputElement>) {
@@ -296,6 +276,12 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
 
   return (
     <>
+      <AppTopbarActionsPortal>
+        <Button type="button" disabled={isSaving} onClick={handleSaveAll}>
+          {isSaving ? "Salvando" : "Salvar alterações"}
+        </Button>
+      </AppTopbarActionsPortal>
+
       {avatarEditorSource && (
         <AvatarCropDialog
           source={avatarEditorSource}
@@ -313,21 +299,8 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
       )}
 
       <Card className="min-w-0">
-      <CardHeader>
-        <CardTitle>Informações de perfil</CardTitle>
-        <CardDescription>
-          Atualize dados pessoais, segurança e informações básicas da empresa.
-        </CardDescription>
-      </CardHeader>
       <CardContent className="grid min-w-0 gap-8">
         <section className="grid min-w-0 gap-5">
-          <div className="min-w-0">
-            <h2 className="text-base font-semibold">Dados pessoais</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Atualize os dados básicos exibidos na sua conta.
-            </p>
-          </div>
-
           <div className="flex min-w-0 flex-col gap-4 border-b pb-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 items-center gap-4">
               <Avatar className="size-20">
@@ -392,9 +365,36 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
                 E-mail
               </label>
               <Input id="profile-email" value={profile.email} disabled />
-              <p className="text-muted-foreground text-xs">
-                O e-mail não pode ser alterado nesta etapa.
-              </p>
+            </div>
+
+            <div className="flex min-w-0 flex-col gap-2">
+              <label
+                htmlFor="profile-company-position"
+                className="text-sm font-medium"
+              >
+                Posição na empresa
+              </label>
+              <Select
+                value={position}
+                items={positionItems}
+                onValueChange={(value) => {
+                  if (typeof value === "string") {
+                    setPosition(value);
+                    setNotice(null);
+                  }
+                }}
+              >
+                <SelectTrigger id="profile-company-position">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {profilePositionOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </section>
@@ -488,162 +488,8 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
           </div>
         </section>
 
-        <section className="grid min-w-0 gap-5 border-t pt-6">
-          <div className="min-w-0">
-            <h2 className="text-base font-semibold">Empresa</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Dados oficiais do CNPJ e informações fornecidas no onboarding.
-            </p>
-          </div>
-
-          <div className="grid min-w-0 gap-4 md:grid-cols-2">
-            <ReadOnlyProfileField
-              id="profile-company-social-name"
-              label="Nome social (nome fantasia)"
-              value={profile.companyDetails.socialName}
-            />
-            <ReadOnlyProfileField
-              id="profile-company-official-name"
-              label="Nome oficial (razão social)"
-              value={profile.companyDetails.officialName}
-            />
-            <ReadOnlyProfileField
-              id="profile-company-cnpj"
-              label="CNPJ"
-              value={formatCnpj(profile.companyDetails.cnpj)}
-            />
-            <ReadOnlyProfileField
-              id="profile-company-registration-status"
-              label="Situação cadastral"
-              value={profile.companyDetails.registrationStatus}
-            />
-            <ReadOnlyProfileField
-              id="profile-company-activity-started-at"
-              label="Início da atividade"
-              value={formatRegistryDate(
-                profile.companyDetails.activityStartedAt,
-              )}
-            />
-            <ReadOnlyProfileField
-              id="profile-company-registry-size"
-              label="Porte cadastral"
-              value={profile.companyDetails.registrySize}
-            />
-            <ReadOnlyProfileField
-              id="profile-company-cnae"
-              label="CNAE principal"
-              value={
-                [
-                  profile.companyDetails.cnaeCode,
-                  profile.companyDetails.cnaeDescription,
-                ]
-                  .filter(Boolean)
-                  .join(" · ") || null
-              }
-            />
-            <ReadOnlyProfileField
-              id="profile-company-legal-nature"
-              label="Natureza jurídica"
-              value={profile.companyDetails.legalNature}
-            />
-            <ReadOnlyProfileField
-              id="profile-company-address"
-              label="Endereço cadastrado"
-              value={profile.companyDetails.registeredAddress}
-              className="md:col-span-2"
-            />
-            <ReadOnlyProfileField
-              id="profile-company-city"
-              label="Município"
-              value={profile.companyDetails.city}
-            />
-            <ReadOnlyProfileField
-              id="profile-company-state"
-              label="UF"
-              value={profile.companyDetails.state}
-            />
-          </div>
-
-          <div className="min-w-0 border-t pt-5">
-            <h3 className="text-sm font-semibold">Informações comerciais</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Dados informados durante o cadastro da empresa.
-            </p>
-          </div>
-
-          <div className="grid min-w-0 gap-4 md:grid-cols-2">
-            <ReadOnlyProfileField
-              id="profile-company-industry"
-              label="Nicho de atuação"
-              value={profile.companyDetails.industry}
-            />
-            <ReadOnlyProfileField
-              id="profile-company-position"
-              label="Posição na empresa"
-              value={profile.companyDetails.position}
-            />
-            <ReadOnlyProfileField
-              id="profile-company-instagram"
-              label="Instagram da empresa"
-              value={profile.companyDetails.instagram}
-            />
-            <ReadOnlyProfileField
-              id="profile-company-website"
-              label="Website"
-              value={profile.companyDetails.website}
-            />
-            <ReadOnlyProfileField
-              id="profile-company-size"
-              label="Tamanho da empresa"
-              value={profile.companyDetails.companySize}
-            />
-            <ReadOnlyProfileField
-              id="profile-company-revenue"
-              label="Faturamento do último trimestre"
-              value={profile.companyDetails.lastQuarterRevenue}
-            />
-
-            <div className="flex min-w-0 flex-col gap-2">
-              <label
-                htmlFor="employee-count"
-                className="text-sm font-medium"
-              >
-                Quantidade de funcionários
-              </label>
-              <Input
-                id="employee-count"
-                type="number"
-                min={1}
-                value={employeeCount}
-                aria-invalid={Boolean(employeeCountError)}
-                onChange={(event) => {
-                  setDraft((current) => ({
-                    ...current,
-                    employeeCount: event.target.value,
-                  }));
-                  setEmployeeCountError(null);
-                  setNotice(null);
-                }}
-              />
-              {employeeCountError && (
-                <p className="text-destructive text-xs">
-                  {employeeCountError}
-                </p>
-              )}
-            </div>
-
-            <ReadOnlyProfileField
-              id="profile-company-challenges"
-              label="Desafios informados"
-              value={profile.companyDetails.challenges}
-              multiline
-              className="md:col-span-2"
-            />
-          </div>
-        </section>
-
-        <div className="flex flex-col gap-3 border-t pt-6 sm:flex-row sm:items-center sm:justify-between">
-          {notice ? (
+        {notice ? (
+          <div className="border-t pt-6">
             <p
               aria-live="polite"
               className={
@@ -654,11 +500,8 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
             >
               {notice.message}
             </p>
-          ) : (
-            <span />
-          )}
-          <Button onClick={handleSaveAll}>Salvar alterações</Button>
-        </div>
+          </div>
+        ) : null}
       </CardContent>
       </Card>
     </>

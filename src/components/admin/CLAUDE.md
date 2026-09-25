@@ -4,7 +4,7 @@ Antes de editar, releia o **AGENTS.md** da raiz e o `CLAUDE.md` de `src/componen
 
 ## Propósito
 
-Componentes específicos da visão de superadministrador da Directscal. Eles administram módulos, campanhas de aquisição, leads e empresas capturadas pelos links públicos.
+Componentes específicos da visão de superadministrador da Directscal. Eles administram aquisição, empresas, especialistas e o ciclo interno de entregas ao cliente.
 
 ## Convenções
 
@@ -20,12 +20,19 @@ Componentes específicos da visão de superadministrador da Directscal. Eles adm
 - Os campos base do onboarding não devem ser removidos. Além de nome, e-mail, WhatsApp, tamanho da empresa e desafios, o conjunto inclui posição, nicho, Instagram, website, CNPJ e faturamento do último trimestre. O nome da empresa não é digitado: a razão social e os demais dados cadastrais vêm da consulta server-side à API Minha Receita.
 - Leads usam página própria de detalhe em `/admin/leads/[id]`; não abrir detalhes em drawer ou modal lateral.
 - Texto visível em pt-BR, tom consultivo e direto, sem emoji e sem ponto de exclamação.
+- A fila e o workspace do ciclo operacional recebem relatórios reais do Supabase pela camada server-side; edição, atribuição e publicação precisam declarar que permanecem locais.
+- Relatório e action points pertencem à mesma entrega; a publicação deve validar os dois conteúdos juntos.
 
 ## Componentes atuais
 
 | Componente | Uso |
 | --- | --- |
 | `AdminModulesWorkspace` | `/admin/modulos`, KPIs e tabela de módulos. |
+| `AdminOperationsWorkspace` | `/admin/operacao`, métricas e fila de entregas. |
+| `AdminSpecialistsWorkspace` | `/admin/especialistas`, equipe, cadastro local, perfil com foto, ativação, arquivamento e exclusão. |
+| `AdminCompanyDetail` | `/admin/empresas/[id]`, atribuição, entregas e acessos. |
+| `AdminDeliveryWorkspace` | `/admin/entregas/[id]`, seleção e download de relatório, overview analítico, detalhe por dimensão, edição persistida, action points e publicação no Supabase. |
+| `AdminDeliveryStatusBadge` | Estados operacionais compartilhados das entregas. |
 | `AdminCampaignsWorkspace` | `/admin/campanhas`, KPIs, criação, tabela e drawer de campanhas. |
 | `CampaignEditorDrawer` | Drawer para criar/editar campanha, selecionar módulo, definir slug de aquisição e campos do formulário. |
 | `AdminLeadsTable` | `/admin/leads`, listagem de leads capturados com navegação por linha para o detalhe. |

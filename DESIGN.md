@@ -131,10 +131,16 @@ No Maturidade, não usar verde/vermelho para maturidade. Score deve ser comunica
 
 Camadas atuais:
 
-- Fundador/Diretoria: família `--omdx-layer-diretoria-*`.
-- Liderança: família `--omdx-layer-lideranca-*`.
-- Operação/Time: família `--omdx-layer-time-*`.
-- Dimensões: famílias neutras `cool-gray`, `gray`, `warm-gray`.
+- Fundador/Diretoria: `--omdx-layer-diretoria-70` (azul).
+- Liderança: `--omdx-layer-lideranca-60` (ciano).
+- Operação/Time: `--omdx-layer-time-50` (teal).
+- Dimensões: `--chart-1` para série única e escala sequencial `cool-gray` para matrizes de intensidade.
+
+Esse mapeamento é estável entre dashboards, detalhes e tooltips: o mesmo grupo nunca troca de cor entre visualizações.
+
+Todas as séries ECharts do tipo barra usam raio de `2px`, inclusive barras simples e empilhadas.
+
+Em comparações temporais, o diagnóstico mais recente ocupa as barras coloridas. A média dos diagnósticos anteriores aparece somente como traços neutros; nunca como uma segunda barra ou pilha colorida.
 
 ## Gradiente de marca para site e auth
 
@@ -162,8 +168,8 @@ Uso recomendado:
 
 | Token | Fonte atual | Uso |
 | --- | --- | --- |
-| `--font-sans` | Inter | UI, body, dashboards, tabelas, botões |
-| `--font-heading` | Inter | Títulos de produto |
+| `--font-sans` | Funnel Sans | UI, body, dashboards, tabelas, botões |
+| `--font-heading` | Plus Jakarta Sans | Títulos de produto |
 | `--font-serif` | Instrument Serif | Ênfase editorial rara, preferencialmente marketing |
 | `--font-mono` | JetBrains Mono | Código, ids, valores técnicos |
 | `--font-figma-heading` | Plus Jakarta Sans | Paridade com telas de auth vindas do Figma |
@@ -172,8 +178,8 @@ Uso recomendado:
 
 Recomendação para novas superfícies:
 
-- Produto/app: Inter para quase tudo.
-- Site/marketing: Instrument Sans ou Inter para corpo; Instrument Serif apenas para uma camada editorial clara.
+- Produto/app: Plus Jakarta Sans para títulos e Funnel Sans para corpo e UI.
+- Site/marketing: Funnel Sans para corpo; Instrument Serif apenas para uma camada editorial clara.
 - Monospace: JetBrains Mono para código e metadados técnicos.
 - Não usar serif em labels, botões, tabelas ou formulários.
 
@@ -236,16 +242,16 @@ Escala atual:
 | --- | --- | --- |
 | `--radius-sm` | 6px | Elementos pequenos, detalhes |
 | `--radius-md` | 8px | Itens de menu, tabs internas |
-| `--radius-lg` | 10px | Cards, botões, inputs, popovers |
+| `--radius-lg` | 10px | Cards, inputs, popovers |
 | `--radius-xl` | 14px | Superfícies especiais |
 | `--radius-2xl` | 20px | Superfícies públicas específicas |
 | `999px` / `rounded-full` | Pill | Badges, avatars, pills |
 
 Componentes:
 
-- Button: `rounded-lg`, com ajustes `min(var(--radius-md), 10px/12px)` em tamanhos pequenos.
+- Button: raio de 5px. `default` usa azul `#124BD1` e texto/ícones `#EFEFEE`; `outline` e `secondary` usam a superfície neutra sem borda. Todas as dimensões compactas permanecem intactas em ambos os temas.
 - Card: `rounded-lg`.
-- Input/Select: `rounded-lg`.
+- Input: `rounded-lg`; Select trigger neutro com 32px de altura, sem borda e raio de 5px, usando a mesma superfície dos botões neutros.
 - Tabs list: `rounded-lg`; trigger: `rounded-md`.
 - Dialog/Popover/Select content: `rounded-lg`.
 - Badge/status: pill.
@@ -275,10 +281,10 @@ Arquivo: `src/components/ui/button.tsx`.
 
 Variantes:
 
-- `default`: `bg-primary text-primary-foreground`.
-- `outline`: borda neutra, hover `bg-muted`.
-- `secondary`: superfície secundária.
-- `ghost`: hover discreto.
+- `default`: CTA azul `#124BD1`, texto claro e espaçamento de 12px entre conteúdo e ícone quando houver.
+- `outline`: controle neutro sem borda, superfície neutra e espaçamento de 16px entre conteúdo e ícone quando houver.
+- `secondary`: mesmo acabamento neutro de `outline`, para ações secundárias semânticas.
+- `ghost`: hover discreto nos dois temas.
 - `destructive`: fundo destrutivo leve, texto destrutivo.
 - `link`: texto primary com underline no hover.
 
@@ -347,7 +353,7 @@ Input:
 Select:
 
 - Usar sempre o primitive do sistema, não `<select>` nativo.
-- Trigger com altura 36px, borda `border-input`, popup `bg-popover`, sombra discreta.
+- Trigger com altura 32px, raio de 5px, sem borda e superfície neutra; preserva a chevron de abertura e o popup em `bg-popover`.
 - Item com `data-highlighted:bg-accent`.
 
 ### Table
@@ -403,8 +409,10 @@ Sidebar:
 - Base shadcn `sidebar-07`, adaptada para Directscal.
 - Collapsible para ícones.
 - Navegação principal do cliente plana, sem o título de seção `Módulos` e sem subitens expansíveis.
-- `Maturidade`, `Camadas`, `Diagnósticos`, `Cronograma` e as seis dimensões ficam no mesmo nível.
-- A sidebar não exibe a seção `Recursos` nem o item `Documentação`; `/docs` permanece como rota acessível diretamente.
+- `Maturidade`, `Camadas`, `Diagnósticos`, `Action Points` e as seis dimensões ficam no mesmo nível.
+- A sidebar exibe a seção `Documentos`, com `Contratos` e `Relatórios` desabilitados enquanto não houver rotas. A seção `Recursos` e o item `Documentação` continuam ausentes; `/docs` permanece acessível diretamente.
+- `Configurações` fica isolado no rodapé da sidebar do cliente e leva para `/configuracoes`; dados pessoais permanecem em `/perfil`.
+- CTAs `Salvar alterações` de Perfil e Configurações ficam na topbar, imediatamente antes do sino, e não no rodapé dos cards.
 - Em admin, a navegação troca para a seção `Administração`.
 - `SidebarMenuButton` usa `render={<Link />}`, não `asChild`.
 
@@ -490,7 +498,7 @@ Para manter site e apps parecidos, todos devem compartilhar os mesmos papéis se
   --ds-primary: var(--ds-brand-500);
   --ds-primary-foreground: #FFFFFF;
 
-  --ds-font-sans: "Inter", "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ds-font-sans: "Funnel Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --ds-font-serif: "Instrument Serif", Georgia, serif;
   --ds-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
@@ -510,7 +518,7 @@ Para manter site e apps parecidos, todos devem compartilhar os mesmos papéis se
 | Card | `bg-card text-card-foreground rounded-lg ring-1 ring-foreground/10` |
 | Borda | `border border-border` |
 | Texto secundário | `text-muted-foreground` |
-| CTA primário | `bg-primary text-primary-foreground` |
+| CTA primário | `bg-action-primary text-control-foreground` |
 | Hover neutro | `hover:bg-muted hover:text-foreground` |
 | Foco | `focus-visible:ring-3 focus-visible:ring-ring/50` |
 | Números | `tabular-nums` |

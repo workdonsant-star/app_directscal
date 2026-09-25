@@ -1,9 +1,19 @@
 import type { RespondentGroup } from "@/lib/types";
 
-const layerColorByGroup: Record<RespondentGroup, string> = {
-  fundador: "var(--omdx-layer-lideranca-70)",
-  lideranca: "var(--omdx-layer-lideranca-60)",
-  operacao: "var(--omdx-layer-lideranca-50)",
+export const chartBarBorderRadius = 2;
+export const chartHistoricalMarkerSymbol =
+  "path://M0 0H6V3H0ZM11 0H17V3H11ZM22 0H28V3H22Z";
+
+export const layerColorTokenByGroup: Record<RespondentGroup, string> = {
+  fundador: "--omdx-layer-diretoria-70",
+  lideranca: "--omdx-layer-lideranca-60",
+  operacao: "--omdx-layer-time-50",
+};
+
+export const layerColorFallbacks: Record<string, string> = {
+  "--omdx-layer-diretoria-70": "#0043CE",
+  "--omdx-layer-lideranca-60": "#0072C3",
+  "--omdx-layer-time-50": "#009D9A",
 };
 
 const layerScaleByGroup: Record<RespondentGroup, Record<number, string>> = {
@@ -37,7 +47,7 @@ const layerScaleByGroup: Record<RespondentGroup, Record<number, string>> = {
 };
 
 export function getLayerColor(group: RespondentGroup) {
-  return layerColorByGroup[group];
+  return `var(${layerColorTokenByGroup[group]})`;
 }
 
 export function getLayerScoreColor(group: RespondentGroup, score: number) {

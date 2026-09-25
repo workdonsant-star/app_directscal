@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import {
-  Inter,
+  Funnel_Sans,
   Instrument_Sans,
   Instrument_Serif,
   JetBrains_Mono,
@@ -11,8 +11,8 @@ import {
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const funnelSans = Funnel_Sans({
+  variable: "--font-funnel-sans",
   subsets: ["latin"],
   display: "swap",
 });
@@ -68,7 +68,7 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       suppressHydrationWarning
-      className={`${inter.variable} ${plusJakartaSans.variable} ${instrumentSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} ${robotoFlex.variable} h-full antialiased`}
+      className={`${funnelSans.variable} ${plusJakartaSans.variable} ${instrumentSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} ${robotoFlex.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-background text-foreground">
         <ThemeProvider

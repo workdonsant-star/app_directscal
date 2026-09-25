@@ -459,7 +459,7 @@ export function RoleMatrixWorkspace() {
                     onClick={() => setSelectedPersonId(person.id)}
                     className={cn(
                       stickyPanelClass,
-                      "min-h-24 cursor-pointer border-b px-6 py-3 text-left transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:pl-10",
+                      "min-h-24 cursor-pointer rounded-[calc(var(--radius)*.8)] border-b px-6 py-3 text-left transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:pl-10",
                       isSelected && "bg-muted/60",
                     )}
                   >
@@ -498,7 +498,7 @@ export function RoleMatrixWorkspace() {
                         type="button"
                         onClick={() => setSelectedPersonId(person.id)}
                         className={cn(
-                          "flex min-h-24 cursor-pointer items-center justify-center border-b border-r px-3 transition-colors last:border-r-0 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                          "flex min-h-24 cursor-pointer items-center justify-center rounded-[calc(var(--radius)*.8)] border-b border-r px-3 transition-colors last:border-r-0 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                           isSelected && "bg-muted/30",
                         )}
                         aria-label={`${person.name}, ${column.label}: ${roleLevelMeta[level].label}`}

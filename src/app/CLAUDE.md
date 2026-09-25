@@ -37,24 +37,35 @@ src/app/
 │   └── docs/
 │       └── page.tsx          ← manual prático de uso do módulo Maturidade
 │   └── gantt/
-│       └── page.tsx          ← Cronograma operacional em calendário semanal
+│       └── page.tsx          ← Action Points em calendário semanal
+│   └── configuracoes/
+│       └── page.tsx          ← dados empresariais e comerciais da conta
 │   └── perfil/
-│       └── page.tsx          ← perfil iniciado pela sessão, com edição local
+│       └── page.tsx          ← dados pessoais e segurança da sessão
 │   └── ativos-de-gestao/
-│       ├── page.tsx          ← rota legada inativa; redirect para /omdx
-│       └── sops/page.tsx     ← rota legada inativa; redirect para /omdx
+│       ├── page.tsx          ← redirect para a biblioteca de SOPs
+│       ├── sops/
+│       │   ├── page.tsx      ← biblioteca de SOPs por categoria
+│       │   └── [id]/page.tsx ← leitura individual do SOP publicado
+│       ├── playbooks/page.tsx ← biblioteca de Playbooks por categoria
+│       ├── governanca/page.tsx ← biblioteca de Governança por categoria
+│       └── matriz-raci/page.tsx ← biblioteca de matrizes RACI
 │   └── sops/
 │       └── page.tsx          ← redirect legado para /omdx
 ├── r/
 │   └── [token]/
 │       ├── page.tsx          ← formulário público do respondente por token real
 │       └── obrigado/page.tsx ← confirmação após resposta registrada
+├── (auth)/convites/lideranca/[token]/page.tsx ← revisão pública do convite de liderança
 ├── a/
 │   └── [slug]/
 │       ├── page.tsx          ← início público de aquisição por campanha
 │       └── completar/page.tsx ← conclusão Google da campanha
+├── aula-executiva/
+│   └── page.tsx              ← landing pública da aula sobre estrutura de gestão
 ├── api/
-│   └── auth/                 ← Auth.js Google OAuth + fallback mockado
+│   ├── auth/                 ← Auth.js Google OAuth + fallback mockado
+│   └── profile/              ← atualização autenticada das informações comerciais
 ├── globals.css               ← tokens da Directscal mapeados para shadcn
 ├── layout.tsx                ← root: <html> <body>, ThemeProvider, fontes
 └── page.tsx                  ← redirect("/omdx")
@@ -74,7 +85,7 @@ src/app/
 - **Redirects no servidor** com `redirect()` de `next/navigation` (vide `src/app/page.tsx`).
 - **Metadata** vem de `export const metadata` em `layout.tsx` e `page.tsx`.
 - O favicon atual é `public/favicon.png`, registrado no metadata global.
-- **Fontes** declaradas no root `layout.tsx` via `next/font/google` e expostas como variáveis CSS (`--font-inter`, `--font-instrument-serif`, `--font-jetbrains-mono`).
+- **Fontes** declaradas no root `layout.tsx` via `next/font/google` e expostas como variáveis CSS (`--font-funnel-sans`, `--font-plus-jakarta-sans`, `--font-instrument-serif`, `--font-jetbrains-mono`). Títulos semânticos usam Plus Jakarta Sans; corpo e UI usam Funnel Sans.
 - **Dark mode** controlado por `next-themes` (atributo `class` em `<html>`). Default: `system`, com `enableSystem`; o usuário pode alternar manualmente claro/escuro pelo dropdown do usuário.
 
 ## globals.css — regras
@@ -96,12 +107,13 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | Rota | Pasta | Propósito |
 | --- | --- | --- |
 | `/entrar` | `(auth)/entrar/` | Tela pública de entrada com Google OAuth, redireciona conforme role quando já existe sessão. |
+| `/aula-executiva` | `aula-executiva/` | Landing pública da aula executiva sobre dependência do fundador, com CTA configurável por ambiente. |
 | `/criar-conta` | `(auth)/criar-conta/` | Cadastro mockado que cria uma sessão local apenas no fallback de desenvolvimento. |
 | `/recuperar-senha` | `(auth)/recuperar-senha/` | Recuperação mockada de senha. |
 | `/omdx` | `(app)/omdx/` | Dashboard autenticado que compara Fundador, Liderança e Time em escala de 1 a 5. |
 | `/omdx/camadas` | `(app)/omdx/camadas/` | Redirect legado para `/omdx`, preservando o filtro de diagnóstico. |
 | `/omdx/diagnosticos` | `(app)/omdx/diagnosticos/` | Área operacional acessada pela sidebar, com lista, filtros, criação e configuração em drawer lateral. |
-| `/gantt` | `(app)/gantt/` | Cronograma operacional em calendário semanal de action points, exposto dentro do módulo Maturidade na sidebar. |
+| `/gantt` | `(app)/gantt/` | Action Points em calendário semanal, exposto dentro do módulo Maturidade na sidebar. |
 | `/omdx/[id]/compartilhar` | `(app)/omdx/[id]/compartilhar/` | Central de coleta persistida com links por grupo, copy sugerida e resumo compacto. |
 | `/omdx/[id]/action-points` | `(app)/omdx/[id]/action-points/` | Route Handler Node autenticado para download direto do plano de ação RACI. |
 <<<<<<< Updated upstream
@@ -116,34 +128,49 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/insights` | `(app)/insights/` | Redireciona para `/insights/cultura`. |
 | `/insights/[dimensao]` | `(app)/insights/[dimensao]/` | Dashboard agregado por dimensão, com filtro por diagnóstico. |
 | `/docs` | `(app)/docs/` | Documentação prática em página única para uso do módulo pelo cliente administrador. |
-| `/perfil` | `(app)/perfil/` | Perfil iniciado pela sessão autenticada: e-mail e empresa bloqueados, edição local de nome, senha simulada e dados básicos da empresa. |
+| `/configuracoes` | `(app)/configuracoes/` | Configurações empresariais reais derivadas do onboarding e do CNPJ. |
+| `/perfil` | `(app)/perfil/` | Perfil iniciado pela sessão autenticada: dados pessoais locais, posição na empresa e senha simulada. |
+| `/api/profile` | `api/profile/` | Atualiza os campos comerciais permitidos do lead autenticado e preserva dados cadastrais e desafios. |
 | `/omdx/membros-da-operacao` | `(app)/omdx/membros-da-operacao/` | Redirect legado para `/omdx/diagnosticos`. |
-| `/ativos-de-gestao` | `(app)/ativos-de-gestao/` | Rota legada inativa; redireciona para `/omdx`. |
-| `/ativos-de-gestao/sops` | `(app)/ativos-de-gestao/sops/` | Rota legada inativa; redireciona para `/omdx`. |
+| `/ativos-de-gestao` | `(app)/ativos-de-gestao/` | Redireciona para `/ativos-de-gestao/sops`. |
+| `/ativos-de-gestao/sops` | `(app)/ativos-de-gestao/sops/` | Biblioteca de SOPs com busca e filtro por categoria. |
+| `/ativos-de-gestao/sops/[id]` | `(app)/ativos-de-gestao/sops/[id]/` | Leitura autenticada de um SOP publicado, com metadados e sumário lateral. |
+| `/ativos-de-gestao/playbooks` | `(app)/ativos-de-gestao/playbooks/` | Biblioteca de Playbooks com busca e filtro por categoria. |
+| `/ativos-de-gestao/governanca` | `(app)/ativos-de-gestao/governanca/` | Biblioteca de Governança com busca e filtro por categoria. |
+| `/ativos-de-gestao/matriz-raci` | `(app)/ativos-de-gestao/matriz-raci/` | Biblioteca de matrizes RACI com busca. |
 | `/sops` | `(app)/sops/` | Redirect legado para `/omdx`. |
 | `/r/[token]` | `r/[token]/` | Formulário público do respondente por token real — **fora** do route group `(app)`, sem sidebar/topbar |
 | `/r/[token]/obrigado` | `r/[token]/obrigado/` | Página pública de agradecimento após resposta registrada ou navegador já marcado. |
-| `/admin` | `(app)/admin/` | Redireciona para `/admin/modulos`. |
-| `/admin/modulos` | `(app)/admin/modulos/` | Superadmin: módulos disponíveis. |
+| `/admin` | `(app)/admin/` | Redireciona para `/admin/operacao`. |
+| `/admin/operacao` | `(app)/admin/operacao/` | Superadmin: indicadores e fila de entregas. |
+| `/admin/especialistas` | `(app)/admin/especialistas/` | Superadmin: equipe interna e cadastro local. |
+| `/admin/modulos` | `(app)/admin/modulos/` | Rota legada do catálogo de módulos. |
 | `/admin/campanhas` | `(app)/admin/campanhas/` | Superadmin: campanhas, links e campos de aquisição. |
 | `/admin/leads` | `(app)/admin/leads/` | Superadmin: leads capturados pelos links. |
 | `/admin/leads/[id]` | `(app)/admin/leads/[id]/` | Superadmin: detalhe completo do lead capturado. |
 | `/admin/empresas` | `(app)/admin/empresas/` | Superadmin: empresas derivadas dos leads. |
+| `/admin/empresas/[id]` | `(app)/admin/empresas/[id]/` | Superadmin: especialista, entregas e acessos da empresa. |
+| `/admin/entregas/[id]` | `(app)/admin/entregas/[id]/` | Superadmin: workspace de análise e publicação. |
 | `/a/[slug]` | `a/[slug]/` | Fluxo público de aquisição por campanha — **fora** do route group `(app)`, sem sidebar/topbar |
 | `/a/[slug]/completar` | `a/[slug]/completar/` | Completa dados de empresa após Google e cria lead/membership `cliente`. |
 
 ## Navegação e breadcrumb
 
-- O shell autenticado usa o bloco shadcn `sidebar-07` como base visual, adaptado para Directscal.
+- O shell autenticado usa o bloco shadcn `sidebar-07` como base visual, adaptado para Directscal. O subtítulo do usuário na sidebar vem do nome fantasia resolvido por `getProfileSettingsData()`, com fallback para o nome oficial.
 - O route group `(app)` valida o cookie de sessão no layout antes de renderizar sidebar/topbar.
 - As rotas de autenticação em `(auth)` ficam fora do shell e redirecionam usuários autenticados conforme role.
-- A sidebar colapsa para ícones e mantém a navegação principal do cliente plana. `Maturidade`, `Diagnósticos`, `Cronograma` e Insights aparecem no mesmo nível. `Pessoas` e `Ativos de gestão` foram removidos da navegação e do catálogo de módulos.
-- `Cronograma` aparece dentro de `Maturidade` e aponta para `/gantt`; a rota usa o plano de ação mais recente quando houver diagnóstico consolidável.
-- A sidebar tem uma seção `Insights` com as seis dimensões de Maturidade.
-- Quando o pathname começa com `/admin`, a sidebar muda para `Administração`, com `Módulos`, `Campanhas`, `Leads` e `Empresas`.
-- Usuários `superadmin` ficam restritos à superfície `/admin/*`. Tentativas de abrir `/omdx`, `/insights`, `/gantt`, `/docs` ou `/perfil` redirecionam para `/admin/modulos`; APIs internas de cliente respondem `403`.
-- `Empresas` e `Relatórios` não fazem parte da navegação principal nesta fase.
+- A sidebar colapsa para ícones e mantém a navegação principal do cliente plana. `Overview`, `Coletas` e `Action Points` aparecem no grupo principal; `Coletas` preserva a rota `/omdx/diagnosticos`. `Pessoas` permanece fora da navegação.
+- `Action Points` aparece dentro de `Maturidade` e aponta para `/gantt`; a rota usa o plano de ação mais recente quando houver diagnóstico consolidável.
+- A sidebar tem uma seção `Maturidade` com as seis dimensões analíticas.
+- A sidebar tem uma seção `Ativos de gestão` com links ativos para `SOPs`, `Playbooks`, `Governança` e `Matriz RACI`.
+- A sidebar tem uma seção `Documentos` com `Contratos` e `Relatórios` desabilitados como placeholders, sem rotas nesta fase. `Contratos` não aparece para `admin` da empresa.
+- `Configurações` fica fixado no rodapé da sidebar do Superadmin da empresa (`cliente`) e aponta para `/configuracoes`; não aparece para `admin` da empresa nem para o `superadmin` global.
+- Quando o pathname começa com `/admin`, a sidebar muda para `Administração`, com `Operação`, `Especialistas`, `Empresas`, `Leads` e `Campanhas`.
+- Usuários `superadmin` ficam restritos à superfície `/admin/*`. Tentativas de abrir `/omdx`, `/insights`, `/gantt`, `/docs`, `/configuracoes` ou `/perfil` redirecionam para `/admin/operacao`; APIs internas de cliente respondem `403`.
+- Usuários `admin` da empresa acessam toda a superfície cliente, exceto Configurações e Contratos. A rota `/configuracoes` redireciona para `/omdx` e as APIs `/api/settings/*` respondem `403`.
+- `Empresas` não faz parte da navegação principal nesta fase.
 - A topbar é limpa: trigger da sidebar, separador e breadcrumb quando houver camada.
+- Ações primárias de página, incluindo `Salvar alterações` em Perfil e Configurações, ficam antes do sino na topbar; não se repetem no rodapé dos cards.
 - `/omdx` é a raiz do módulo e não usa breadcrumb na topbar.
 - Páginas abaixo de `/omdx` usam breadcrumb para mostrar a camada atual.
 - `/omdx/camadas` redireciona para `/omdx` e não renderiza breadcrumb próprio.
@@ -158,18 +185,25 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 >>>>>>> Stashed changes
 - `/insights/[dimensao]` usa `Insights / Nome da dimensão`.
 - `/docs` usa `Documentação`.
-- `/gantt` usa `Cronograma`.
+- `/gantt` usa `Action Points`.
+- `/configuracoes` usa `Configurações`.
 - `/perfil` usa `Perfil`.
-- `/ativos-de-gestao`, `/ativos-de-gestao/sops` e `/sops` redirecionam para `/omdx` e não renderizam breadcrumb.
+- `/ativos-de-gestao` redireciona para `/ativos-de-gestao/sops`; as quatro bibliotecas usam `Ativos de gestão / Nome da biblioteca` no breadcrumb.
+- `/ativos-de-gestao/sops/[id]` usa `Ativos de gestão / SOPs / Nome do SOP`.
+- `/ativos-de-gestao/matriz-de-papeis` redireciona para `/ativos-de-gestao/matriz-raci`; `/sops` continua como redirect legado para `/omdx`.
 - `/omdx/membros-da-operacao` redireciona para `/omdx/diagnosticos` e não renderiza breadcrumb.
-- `/admin/modulos` usa `Admin / Módulos`.
+- `/admin/operacao` usa `Admin / Operação`.
+- `/admin/especialistas` usa `Admin / Especialistas`.
+- `/admin/modulos` usa `Admin / Módulos` e permanece apenas como rota legada.
 - `/admin/campanhas` usa `Admin / Campanhas`.
 - `/admin/leads` usa `Admin / Leads`.
 - `/admin/leads/[id]` usa `Admin / Leads / Detalhe`.
 - `/admin/empresas` usa `Admin / Empresas`.
+- `/admin/empresas/[id]` usa `Admin / Empresas / Detalhe`.
+- `/admin/entregas/[id]` usa `Admin / Operação / Empresa`.
 - Futuras rotas de acompanhamento e resultado usam `Overview / Diagnósticos / ...`.
 - Criação e configuração não devem abrir páginas próprias; acontecem em drawer dentro de `/omdx/diagnosticos`.
-- `Diagnósticos` deve ser item da sidebar; não use CTA no Overview para acessar essa área.
+- `Coletas` deve ser item da sidebar e apontar para `/omdx/diagnosticos`; não use CTA no Overview para acessar essa área.
 - As rotas temporárias `/omdx/novo` e `/omdx/[id]/configurar`, enquanto existirem, devem redirecionar para `/omdx/diagnosticos` ou indicar depreciação.
 
 ## Largura de página

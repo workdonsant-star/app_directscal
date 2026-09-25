@@ -2,6 +2,7 @@ import {
   profileSettingsDataSchema,
   type AuthUser,
   type ProfileSettingsData,
+  type UpdateProfileCommercialInput,
 } from "@/lib/contracts";
 import { mockUserProfile } from "@/lib/mock-data";
 import { maybeCreateSupabaseAdminClient } from "@/lib/supabase/server";
@@ -30,6 +31,16 @@ type MemberProfileRow = Pick<
   "organization_id"
 >;
 
+type LeadCommercialRow = Pick<
+  Database["public"]["Tables"]["acquisition_leads"]["Row"],
+  "field_values" | "id"
+>;
+
+type OrganizationPersonProfileRow = Pick<
+  Database["public"]["Tables"]["organization_people"]["Row"],
+  "position"
+>;
+
 function assertNoSupabaseError(error: { message: string } | null) {
   if (error) throw new Error(error.message);
 }
@@ -56,6 +67,152 @@ function valueOrNull(value: string | null | undefined) {
   return normalized ? normalized : null;
 }
 
+const lowercaseCompanyNameWords = new Set([
+  "a",
+  "as",
+  "da",
+  "das",
+  "de",
+  "do",
+  "dos",
+  "e",
+]);
+
+export function formatCompanyDisplayName(value: string | null) {
+  if (!value) return null;
+
+  const normalized = value.trim().replace(/\s+/g, " ");
+  if (normalized !== normalized.toLocaleUpperCase("pt-BR")) {
+    return normalized;
+  }
+
+  return normalized
+    .toLocaleLowerCase("pt-BR")
+    .split(" ")
+    .map((word, index) => {
+      if (index > 0 && lowercaseCompanyNameWords.has(word)) return word;
+      if (/\d/.test(word)) return word.toLocaleUpperCase("pt-BR");
+
+      return `${word.charAt(0).toLocaleUpperCase("pt-BR")}${word.slice(1)}`;
+    })
+    .join(" ");
+}
+
+const commercialFieldMap = {
+  companySize: "tamanho_empresa",
+  industry: "nicho_atuacao",
+  instagram: "instagram_empresa",
+  lastQuarterRevenue: "faturamento_ultimo_trimestre",
+  position: "cargo",
+  socialName: "nome_fantasia",
+  website: "website",
+} as const satisfies Record<keyof UpdateProfileCommercialInput, string>;
+
+export function mergeProfileCommercialValues(
+  fieldValues: Json,
+  input: UpdateProfileCommercialInput,
+): Json {
+  const nextValues: Record<string, Json | undefined> =
+    fieldValues && typeof fieldValues === "object" && !Array.isArray(fieldValues)
+      ? { ...fieldValues }
+      : {};
+
+  for (const [inputKey, fieldKey] of Object.entries(commercialFieldMap) as Array<
+    [keyof UpdateProfileCommercialInput, string]
+  >) {
+    const value = input[inputKey];
+
+    if (value) {
+      nextValues[fieldKey] = value;
+    } else {
+      delete nextValues[fieldKey];
+    }
+  }
+
+  return nextValues;
+}
+
+export async function updateProfileCommercialData(
+  userId: string,
+  organizationId: string,
+  input: UpdateProfileCommercialInput,
+) {
+  if (!isUuid(userId) || !isUuid(organizationId)) {
+    throw new Error("Não foi possível localizar o cadastro da empresa.");
+  }
+
+  const supabase = maybeCreateSupabaseAdminClient();
+  if (!supabase) {
+    throw new Error("Não foi possível acessar os dados da empresa.");
+  }
+
+  const { data: membership, error: membershipError } = await supabase
+    .from("organization_members")
+    .select("role")
+    .eq("organization_id", organizationId)
+    .eq("user_id", userId)
+    .maybeSingle<{ role: Database["public"]["Enums"]["auth_role"] }>();
+  assertNoSupabaseError(membershipError);
+
+  if (membership?.role !== "cliente") {
+    throw new Error("Apenas o Superadmin da empresa pode alterar estes dados.");
+  }
+
+  const { data: lead, error: leadError } = await supabase
+    .from("acquisition_leads")
+    .select("id,field_values")
+    .eq("organization_id", organizationId)
+    .eq("status", "account_created")
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<LeadCommercialRow>();
+
+  assertNoSupabaseError(leadError);
+
+  if (!lead) {
+    throw new Error("Não foi possível localizar o cadastro da empresa.");
+  }
+
+  const { error: updateError } = await supabase
+    .from("acquisition_leads")
+    .update({
+      company_size: input.companySize,
+      field_values: mergeProfileCommercialValues(lead.field_values, input),
+      role: input.position,
+    })
+    .eq("id", lead.id)
+    .eq("organization_id", organizationId);
+
+  assertNoSupabaseError(updateError);
+
+  return input;
+}
+
+export async function updateOrganizationPersonPosition(
+  userId: string,
+  position: UpdateProfileCommercialInput["position"],
+) {
+  if (!isUuid(userId)) {
+    throw new Error("Não foi possível localizar seu perfil na empresa.");
+  }
+
+  const supabase = maybeCreateSupabaseAdminClient();
+  if (!supabase) throw new Error("Não foi possível acessar seu perfil.");
+
+  const { data, error } = await supabase
+    .from("organization_people")
+    .update({ position: position ?? "Liderança" })
+    .eq("auth_user_id", userId)
+    .select("id")
+    .limit(1)
+    .maybeSingle<{ id: string }>();
+
+  assertNoSupabaseError(error);
+  if (!data) throw new Error("Não foi possível localizar seu perfil na empresa.");
+
+  return position;
+}
+
 export function buildProfileSettingsData({
   lead = null,
   organization = null,
@@ -71,7 +228,9 @@ export function buildProfileSettingsData({
     valueOrNull(lead?.company_name) ??
     valueOrNull(organization?.name) ??
     user.company;
-  const socialName = valueOrNull(values.nome_fantasia);
+  const socialName = formatCompanyDisplayName(
+    valueOrNull(values.nome_fantasia),
+  );
 
   return profileSettingsDataSchema.parse({
     ...mockUserProfile,
@@ -159,6 +318,21 @@ async function getOrganization(
   return data;
 }
 
+async function getOrganizationPersonByUser(
+  supabase: Supabase,
+  userId: string,
+) {
+  const { data, error } = await supabase
+    .from("organization_people")
+    .select("position")
+    .eq("auth_user_id", userId)
+    .limit(1)
+    .maybeSingle<OrganizationPersonProfileRow>();
+
+  assertNoSupabaseError(error);
+  return data;
+}
+
 async function getLatestLeadByOrganization(
   supabase: Supabase,
   organizationId: string,
@@ -199,5 +373,20 @@ export async function getProfileSettingsData(
     lead = await getLatestLeadByOrganization(supabase, organizationId);
   }
 
-  return buildProfileSettingsData({ lead, organization, user });
+  const organizationPerson = await getOrganizationPersonByUser(
+    supabase,
+    user.id,
+  );
+
+  const profile = buildProfileSettingsData({ lead, organization, user });
+
+  return organizationPerson
+    ? {
+        ...profile,
+        companyDetails: {
+          ...profile.companyDetails,
+          position: organizationPerson.position,
+        },
+      }
+    : profile;
 }

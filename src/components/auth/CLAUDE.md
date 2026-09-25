@@ -18,3 +18,4 @@ Componentes das telas `/entrar`, `/criar-conta` e `/recuperar-senha`. A tela de 
 - Fluxos públicos longos podem usar `contentAlignment="start"` para preservar o mesmo shell sem sobrepor o formulário ao logo; o padrão continua centralizado para o login e etapas curtas.
 - Assets locais `auth-figma-*` podem ser usados quando forem parte da identidade ou de provedores externos, mas não devem impor fonte, cor ou proporção fora do design system.
 - No modo real, o formulário usa Auth.js Credentials com `flow: "app"`; o servidor resolve superadmin primeiro e depois credenciais de contas de aquisição. No fallback dev, continua usando `/api/auth/login`.
+- `LeadershipInvitationGoogleAction` inicia a intenção temporária antes do OAuth, pede seleção explícita da conta e nunca decide no navegador se o e-mail pode ser aceito.

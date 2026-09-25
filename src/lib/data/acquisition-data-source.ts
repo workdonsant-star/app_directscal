@@ -89,11 +89,24 @@ function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
 
-function getEmailDomain(email: string) {
+const personalEmailDomains = new Set([
+  "gmail.com",
+  "hotmail.com",
+  "icloud.com",
+  "live.com",
+  "outlook.com",
+  "proton.me",
+  "protonmail.com",
+  "yahoo.com",
+  "yahoo.com.br",
+]);
+
+export function getAcquisitionOrganizationDomain(email: string) {
   const normalizedEmail = normalizeEmail(email);
   const match = normalizedEmail.match(/^[^\s@]+@([^\s@]+\.[^\s@]+)$/);
+  const domain = match?.[1]?.trim().toLowerCase() ?? null;
 
-  return match?.[1]?.trim().toLowerCase() ?? null;
+  return domain && !personalEmailDomains.has(domain) ? domain : null;
 }
 
 function getFallbackName(email: string) {
@@ -516,7 +529,8 @@ async function findOrCreateOrganization({
   companySize: string | null;
   supabase: Supabase;
 }) {
-  const authorizedDomain = getEmailDomain(adminEmail);
+  const authorizedDomain = getAcquisitionOrganizationDomain(adminEmail);
+  const employeeCount = employeeCountFromCompanySize(companySize);
 
   if (authorizedDomain) {
     const { data: existingByDomain, error: domainSelectError } = await supabase
@@ -531,7 +545,15 @@ async function findOrCreateOrganization({
       | OrganizationRow
       | undefined;
 
-    if (existingOrganization) return existingOrganization.id;
+    if (existingOrganization) {
+      const { error: updateError } = await supabase
+        .from("organizations")
+        .update({ employee_count: employeeCount, name: companyName })
+        .eq("id", existingOrganization.id);
+
+      assertNoSupabaseError(updateError);
+      return existingOrganization.id;
+    }
   }
 
   const { data: existingOrganizations, error: organizationSelectError } =
@@ -547,13 +569,21 @@ async function findOrCreateOrganization({
     | OrganizationRow
     | undefined;
 
-  if (existingOrganization) return existingOrganization.id;
+  if (existingOrganization) {
+    const { error: updateError } = await supabase
+      .from("organizations")
+      .update({ employee_count: employeeCount })
+      .eq("id", existingOrganization.id);
+
+    assertNoSupabaseError(updateError);
+    return existingOrganization.id;
+  }
 
   const { data: organization, error: organizationError } = await supabase
     .from("organizations")
     .insert({
       domain: authorizedDomain,
-      employee_count: employeeCountFromCompanySize(companySize),
+      employee_count: employeeCount,
       name: companyName,
       operational_onboarding_required: true,
     })
@@ -565,7 +595,7 @@ async function findOrCreateOrganization({
       .from("organizations")
       .insert({
         domain: authorizedDomain,
-        employee_count: employeeCountFromCompanySize(companySize),
+        employee_count: employeeCount,
         name: companyName,
       })
       .select("id")

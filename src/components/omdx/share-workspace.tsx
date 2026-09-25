@@ -25,7 +25,6 @@ import type {
   Diagnostic,
   DiagnosticShareLink,
   DiagnosticStatus,
-  RespondentGroup,
 } from "@/lib/types";
 
 type ShareWorkspaceProps = {
@@ -46,7 +45,7 @@ async function readMutationResponse(response: Response) {
 export function ShareWorkspace({ diagnostic, links }: ShareWorkspaceProps) {
   const router = useRouter();
   const [status, setStatus] = useState<DiagnosticStatus>(diagnostic.status);
-  const [copiedGroup, setCopiedGroup] = useState<RespondentGroup | null>(null);
+  const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -54,14 +53,14 @@ export function ShareWorkspace({ diagnostic, links }: ShareWorkspaceProps) {
   const canDownloadReport = canGenerateDiagnosticReport(diagnostic);
   const canDownloadActionPlan = canGenerateDiagnosticActionPlan(diagnostic);
 
-  async function handleCopy(group: RespondentGroup, value: string) {
+  async function handleCopy(linkId: string, value: string) {
     try {
       await navigator.clipboard.writeText(value);
-      setCopiedGroup(group);
+      setCopiedLinkId(linkId);
       setNotice("Link copiado para a área de transferência.");
 
       window.setTimeout(() => {
-        setCopiedGroup((current) => (current === group ? null : current));
+        setCopiedLinkId((current) => (current === linkId ? null : current));
       }, 1800);
     } catch {
       setNotice("Não foi possível copiar automaticamente. Selecione o link e copie manualmente.");
@@ -81,7 +80,7 @@ export function ShareWorkspace({ diagnostic, links }: ShareWorkspaceProps) {
       }
 
       setStatus("encerrado");
-      setCopiedGroup(null);
+      setCopiedLinkId(null);
       setNotice("Coleta encerrada no banco.");
       router.refresh();
     } catch (error) {
@@ -134,15 +133,17 @@ export function ShareWorkspace({ diagnostic, links }: ShareWorkspaceProps) {
               Baixar action points
             </Button>
           )}
-          <Button
-            type="button"
-            variant="destructive"
-            disabled={isClosed || pending}
-            onClick={handleCloseCollection}
-          >
-            <Lock className="size-4" />
-            Encerrar coleta
-          </Button>
+          {diagnostic.permissions?.canManage && (
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={isClosed || pending}
+              onClick={handleCloseCollection}
+            >
+              <Lock className="size-4" />
+              Encerrar coleta
+            </Button>
+          )}
         </div>
       </div>
 
@@ -175,7 +176,7 @@ export function ShareWorkspace({ diagnostic, links }: ShareWorkspaceProps) {
       <ShareLinks
         links={links}
         disabled={isClosed}
-        copiedGroup={copiedGroup}
+        copiedLinkId={copiedLinkId}
         onCopy={handleCopy}
       />
     </div>

@@ -86,6 +86,10 @@ export function canAccessCustomerApp(user: Pick<AuthUser, "role">) {
   return user.role !== "superadmin";
 }
 
+export function canManageOrganization(user: Pick<AuthUser, "role">) {
+  return user.role === "cliente";
+}
+
 export function isSuperadminEmail(email: string) {
   return normalizeList(process.env.AUTH_SUPERADMIN_EMAILS).includes(
     normalizeEmail(email),

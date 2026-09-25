@@ -1,6 +1,7 @@
 import { cache } from "react";
 
 import { getAccessibleOrganizationIdsForUser } from "@/lib/auth/authorization";
+import { getDiagnosticAccessDecision } from "@/lib/auth/diagnostic-access";
 import { getCurrentAuthSession } from "@/lib/auth/session";
 import {
   dashboardSummarySchema,
@@ -33,7 +34,6 @@ import {
   type DimensionInsightSummary,
   type DimensionQuestionResult,
   type GanttWorkspaceData,
-  type AuthUser,
   type RespondentGroup,
   type ResponsesByGroup,
 } from "@/lib/contracts";
@@ -75,6 +75,17 @@ type LikertScalePointRow =
   Database["public"]["Tables"]["likert_scale_points"]["Row"];
 type DiagnosticShareLinkRow =
   Database["public"]["Tables"]["diagnostic_share_links"]["Row"];
+type OrganizationMemberRow =
+  Database["public"]["Tables"]["organization_members"]["Row"];
+type OrganizationPersonRow =
+  Database["public"]["Tables"]["organization_people"]["Row"];
+type OrganizationSectorRow =
+  Database["public"]["Tables"]["organization_sectors"]["Row"];
+type DiagnosticSectorScopeRow =
+  Database["public"]["Tables"]["diagnostic_sector_scopes"]["Row"];
+type DiagnosticLeaderAssignmentRow =
+  Database["public"]["Tables"]["diagnostic_leader_assignments"]["Row"];
+type NextAuthUserRow = Database["next_auth"]["Tables"]["users"]["Row"];
 type ResponseSessionRow = Omit<
   Database["public"]["Tables"]["response_sessions"]["Row"],
   "respondent_id"
@@ -111,7 +122,7 @@ const highGapThreshold = 1;
 const mediumScoreThreshold = 3.5;
 const varianceThreshold = 0.6;
 const diagnosticSelectColumns =
-  "id,organization_id,template_id,name,description,status,created_at,updated_at,activated_at,closed_at,deadline,general_score";
+  "id,organization_id,template_id,name,description,status,created_at,updated_at,activated_at,closed_at,deadline,general_score,created_by_user_id";
 
 function getSupabase() {
   return createSupabaseAdminClient();
@@ -330,6 +341,223 @@ const loadAuthorizedOrganizationRows = cache(
   },
 );
 
+type DiagnosticAccessMetadata = {
+  assignedSectorIds: string[];
+  canManage: boolean;
+  canView: boolean;
+  canViewAllTeamLinks: boolean;
+  canViewFounderLink: boolean;
+  creator: {
+    userId: string;
+    name: string;
+    avatarUrl: string | null;
+    role: "cliente" | "admin";
+  } | null;
+  sectors: Array<{
+    id: string;
+    name: string;
+    leaderIds: string[];
+  }>;
+};
+
+async function loadDiagnosticAccessMetadata(
+  diagnosticRows: DiagnosticRow[],
+  userId: string,
+) {
+  const metadataByDiagnosticId = new Map<string, DiagnosticAccessMetadata>();
+
+  if (diagnosticRows.length === 0) return metadataByDiagnosticId;
+
+  const supabase = getSupabase();
+  const diagnosticIds = diagnosticRows.map((diagnostic) => diagnostic.id);
+  const organizationIds = [
+    ...new Set(diagnosticRows.map((diagnostic) => diagnostic.organization_id)),
+  ];
+  const creatorIds = [
+    ...new Set(
+      diagnosticRows
+        .map((diagnostic) => diagnostic.created_by_user_id)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  ];
+
+  const [viewerMembershipsResult, scopesResult, peopleResult, sectorsResult] =
+    await Promise.all([
+      supabase
+        .from("organization_members")
+        .select("id,organization_id,user_id,role,created_at,updated_at")
+        .eq("user_id", userId)
+        .in("organization_id", organizationIds)
+        .returns<OrganizationMemberRow[]>(),
+      supabase
+        .from("diagnostic_sector_scopes")
+        .select("id,organization_id,diagnostic_id,sector_id,created_at")
+        .in("diagnostic_id", diagnosticIds)
+        .returns<DiagnosticSectorScopeRow[]>(),
+      supabase
+        .from("organization_people")
+        .select(
+          "id,organization_id,auth_user_id,email,normalized_email,name,avatar_url,position,status,verified_at,created_at,updated_at",
+        )
+        .in("organization_id", organizationIds)
+        .returns<OrganizationPersonRow[]>(),
+      supabase
+        .from("organization_sectors")
+        .select(
+          "id,organization_id,name,normalized_name,active,created_at,updated_at",
+        )
+        .in("organization_id", organizationIds)
+        .returns<OrganizationSectorRow[]>(),
+    ]);
+
+  if (viewerMembershipsResult.error) throw viewerMembershipsResult.error;
+  if (scopesResult.error) throw scopesResult.error;
+  if (peopleResult.error) throw peopleResult.error;
+  if (sectorsResult.error) throw sectorsResult.error;
+
+  const scopeIds = scopesResult.data.map((scope) => scope.id);
+  const assignmentsResult =
+    scopeIds.length > 0
+      ? await supabase
+          .from("diagnostic_leader_assignments")
+          .select(
+            "id,organization_id,diagnostic_sector_scope_id,person_id,assigned_by_user_id,created_at",
+          )
+          .in("diagnostic_sector_scope_id", scopeIds)
+          .returns<DiagnosticLeaderAssignmentRow[]>()
+      : { data: [] as DiagnosticLeaderAssignmentRow[], error: null };
+
+  if (assignmentsResult.error) throw assignmentsResult.error;
+
+  const [creatorUsersResult, creatorMembershipsResult] = await Promise.all([
+    creatorIds.length > 0
+      ? supabase
+          .schema("next_auth")
+          .from("users")
+          .select("id,name,email,emailVerified,image")
+          .in("id", creatorIds)
+          .returns<NextAuthUserRow[]>()
+      : Promise.resolve({ data: [] as NextAuthUserRow[], error: null }),
+    creatorIds.length > 0
+      ? supabase
+          .from("organization_members")
+          .select("id,organization_id,user_id,role,created_at,updated_at")
+          .in("user_id", creatorIds)
+          .in("organization_id", organizationIds)
+          .returns<OrganizationMemberRow[]>()
+      : Promise.resolve({ data: [] as OrganizationMemberRow[], error: null }),
+  ]);
+
+  if (creatorUsersResult.error) throw creatorUsersResult.error;
+  if (creatorMembershipsResult.error) throw creatorMembershipsResult.error;
+
+  const viewerRoleByOrganizationId = new Map(
+    viewerMembershipsResult.data.map((membership) => [
+      membership.organization_id,
+      membership.role,
+    ]),
+  );
+  const peopleById = new Map(
+    peopleResult.data.map((person) => [person.id, person]),
+  );
+  const sectorsById = new Map(
+    sectorsResult.data.map((sector) => [sector.id, sector]),
+  );
+  const creatorsById = new Map(
+    creatorUsersResult.data.map((creator) => [creator.id, creator]),
+  );
+  const creatorRoleByOrganizationAndUser = new Map(
+    creatorMembershipsResult.data.map((membership) => [
+      `${membership.organization_id}:${membership.user_id}`,
+      membership.role,
+    ]),
+  );
+  const assignmentsByScopeId = assignmentsResult.data.reduce(
+    (acc, assignment) => {
+      acc.set(assignment.diagnostic_sector_scope_id, [
+        ...(acc.get(assignment.diagnostic_sector_scope_id) ?? []),
+        assignment,
+      ]);
+      return acc;
+    },
+    new Map<string, DiagnosticLeaderAssignmentRow[]>(),
+  );
+  const scopesByDiagnosticId = scopesResult.data.reduce((acc, scope) => {
+    acc.set(scope.diagnostic_id, [
+      ...(acc.get(scope.diagnostic_id) ?? []),
+      scope,
+    ]);
+    return acc;
+  }, new Map<string, DiagnosticSectorScopeRow[]>());
+
+  for (const diagnostic of diagnosticRows) {
+    const viewerRole = viewerRoleByOrganizationId.get(
+      diagnostic.organization_id,
+    );
+    const scopes = scopesByDiagnosticId.get(diagnostic.id) ?? [];
+    const assignedToViewer = scopes.some((scope) =>
+      (assignmentsByScopeId.get(scope.id) ?? []).some(
+        (assignment) => peopleById.get(assignment.person_id)?.auth_user_id === userId,
+      ),
+    );
+    const assignedSectorIds = scopes
+      .filter((scope) =>
+        (assignmentsByScopeId.get(scope.id) ?? []).some(
+          (assignment) =>
+            peopleById.get(assignment.person_id)?.auth_user_id === userId,
+        ),
+      )
+      .map((scope) => scope.sector_id);
+    const access = getDiagnosticAccessDecision({
+      assignedToViewer,
+      creatorUserId: diagnostic.created_by_user_id,
+      viewerRole: viewerRole ?? null,
+      viewerUserId: userId,
+    });
+    const creatorUser = diagnostic.created_by_user_id
+      ? creatorsById.get(diagnostic.created_by_user_id)
+      : undefined;
+    const creatorRole = diagnostic.created_by_user_id
+      ? creatorRoleByOrganizationAndUser.get(
+          `${diagnostic.organization_id}:${diagnostic.created_by_user_id}`,
+        )
+      : undefined;
+
+    metadataByDiagnosticId.set(diagnostic.id, {
+      assignedSectorIds,
+      canManage: access.canManage,
+      canView: access.canView,
+      canViewAllTeamLinks: access.canViewAllTeamLinks,
+      canViewFounderLink: access.canViewFounderLink,
+      creator:
+        diagnostic.created_by_user_id && creatorUser
+          ? {
+              userId: diagnostic.created_by_user_id,
+              name: creatorUser.name ?? creatorUser.email ?? "Usuário removido",
+              avatarUrl: creatorUser.image,
+              role: creatorRole === "cliente" ? "cliente" : "admin",
+            }
+          : null,
+      sectors: scopes.flatMap((scope) => {
+        const sector = sectorsById.get(scope.sector_id);
+        if (!sector) return [];
+
+        return [
+          {
+            id: sector.id,
+            name: sector.name,
+            leaderIds: (assignmentsByScopeId.get(scope.id) ?? []).map(
+              (assignment) => assignment.person_id,
+            ),
+          },
+        ];
+      }),
+    });
+  }
+
+  return metadataByDiagnosticId;
+}
+
 const loadAuthorizedDiagnosticRows = cache(
   async function loadAuthorizedDiagnosticRows(userId: string, id = "") {
     const organizationRows = await loadAuthorizedOrganizationRows(userId);
@@ -338,6 +566,7 @@ const loadAuthorizedDiagnosticRows = cache(
       return {
         diagnosticRows: [] as DiagnosticRow[],
         organizationRows,
+        metadataByDiagnosticId: new Map<string, DiagnosticAccessMetadata>(),
       };
     }
 
@@ -355,9 +584,17 @@ const loadAuthorizedDiagnosticRows = cache(
 
     if (error) throw error;
 
+    const metadataByDiagnosticId = await loadDiagnosticAccessMetadata(
+      data,
+      userId,
+    );
+
     return {
-      diagnosticRows: data,
+      diagnosticRows: data.filter(
+        (diagnostic) => metadataByDiagnosticId.get(diagnostic.id)?.canView,
+      ),
       organizationRows,
+      metadataByDiagnosticId,
     };
   },
 );
@@ -369,6 +606,7 @@ async function loadAuthorizedDiagnostics(id?: string) {
     return {
       diagnosticRows: [] as DiagnosticRow[],
       organizationRows: [] as OrganizationRow[],
+      metadataByDiagnosticId: new Map<string, DiagnosticAccessMetadata>(),
     };
   }
 
@@ -647,11 +885,13 @@ const loadDiagnosticComputations = cache(async function loadDiagnosticComputatio
 function mapDiagnostic({
   computation,
   diagnostic,
+  metadata,
   organization,
   template,
 }: {
   computation: DiagnosticComputation | undefined;
   diagnostic: DiagnosticRow;
+  metadata?: DiagnosticAccessMetadata;
   organization: OrganizationRow;
   template?: Pick<DiagnosticTemplateRow, "slug">;
 }): Diagnostic {
@@ -671,6 +911,13 @@ function mapDiagnostic({
     deadline: diagnostic.deadline,
     responses: computation?.responses ?? getEmptyResponses(),
     generalScore: computation?.generalScore ?? diagnostic.general_score,
+    creator: metadata?.creator ?? null,
+    sectors: metadata?.sectors ?? [],
+    permissions: {
+      canManage: metadata?.canManage ?? false,
+      canViewFounderLink: metadata?.canViewFounderLink ?? false,
+      canViewAllTeamLinks: metadata?.canViewAllTeamLinks ?? false,
+    },
   });
 }
 
@@ -1047,11 +1294,13 @@ function buildReportsFromAggregateRows({
   aggregateRows,
   diagnosticRows,
   generatedAt,
+  metadataByDiagnosticId,
   organizationRows,
 }: {
   aggregateRows: OmdxQuestionAggregateRow[];
   diagnosticRows: DiagnosticRow[];
   generatedAt: string;
+  metadataByDiagnosticId?: Map<string, DiagnosticAccessMetadata>;
   organizationRows: OrganizationRow[];
 }) {
   const rowsByDiagnosticId = new Map<string, OmdxQuestionAggregateRow[]>();
@@ -1090,6 +1339,7 @@ function buildReportsFromAggregateRows({
           responses,
         },
         diagnostic: diagnosticRow,
+        metadata: metadataByDiagnosticId?.get(diagnosticRow.id),
         organization,
       });
 
@@ -1106,12 +1356,14 @@ function buildDiagnosticReportFromRow({
   computation,
   diagnosticRow,
   generatedAt,
+  metadataByDiagnosticId,
   model,
   organizationRows,
 }: {
   computation: DiagnosticComputation | undefined;
   diagnosticRow: DiagnosticRow;
   generatedAt: string;
+  metadataByDiagnosticId?: Map<string, DiagnosticAccessMetadata>;
   model: OmdxModel;
   organizationRows: OrganizationRow[];
 }) {
@@ -1126,6 +1378,7 @@ function buildDiagnosticReportFromRow({
   const diagnostic = mapDiagnostic({
     computation,
     diagnostic: diagnosticRow,
+    metadata: metadataByDiagnosticId?.get(diagnosticRow.id),
     organization,
     template: model.templateRow,
   });
@@ -1140,10 +1393,12 @@ function buildDiagnosticReportFromRow({
 async function buildReportsFromRows({
   diagnosticRows,
   generatedAt,
+  metadataByDiagnosticId,
   organizationRows,
 }: {
   diagnosticRows: DiagnosticRow[];
   generatedAt: string;
+  metadataByDiagnosticId?: Map<string, DiagnosticAccessMetadata>;
   organizationRows: OrganizationRow[];
 }) {
   const diagnosticIdsKey = diagnosticRows
@@ -1156,6 +1411,7 @@ async function buildReportsFromRows({
       aggregateRows,
       diagnosticRows,
       generatedAt,
+      metadataByDiagnosticId,
       organizationRows,
     });
   }
@@ -1169,6 +1425,7 @@ async function buildReportsFromRows({
         computation: computations.get(diagnosticRow.id),
         diagnosticRow,
         generatedAt,
+        metadataByDiagnosticId,
         model,
         organizationRows,
       }),
@@ -1176,14 +1433,23 @@ async function buildReportsFromRows({
     .filter((report): report is DiagnosticReport => Boolean(report));
 }
 
-function buildShareLink(row: DiagnosticShareLinkRow): DiagnosticShareLink {
+function buildShareLink(
+  row: DiagnosticShareLinkRow,
+  sectorName: string | null = null,
+): DiagnosticShareLink {
   return diagnosticShareLinkSchema.parse({
+    id: row.id,
     diagnosticId: row.diagnostic_id,
     group: row.group_id,
+    sectorId: row.sector_id,
+    sectorName,
     token: row.token,
     publicUrl: `${getPublicAppUrl()}/r/${row.token}`,
     previewPath: `/r/${row.token}`,
-    suggestedMessage: suggestedMessages[row.group_id],
+    suggestedMessage:
+      row.group_id === "operacao" && sectorName
+        ? `Compartilhe este link com o time de ${sectorName}. As respostas são anônimas e entram na leitura consolidada da empresa.`
+        : suggestedMessages[row.group_id],
   });
 }
 
@@ -1192,30 +1458,82 @@ async function loadShareLinks(diagnosticIds: string[]) {
     return {} as Record<string, DiagnosticShareLink[]>;
   }
 
+  const session = await getCurrentAuthSession();
+  if (!session) return {} as Record<string, DiagnosticShareLink[]>;
+
   const supabase = getSupabase();
   const { data, error } = await supabase
     .from("diagnostic_share_links")
-    .select("id,diagnostic_id,group_id,token,created_at,expires_at")
+    .select("id,diagnostic_id,group_id,sector_id,token,created_at,expires_at")
     .in("diagnostic_id", diagnosticIds)
     .returns<DiagnosticShareLinkRow[]>();
 
   if (error) throw error;
 
-  return data.reduce(
+  const { diagnosticRows, metadataByDiagnosticId } =
+    await loadAuthorizedDiagnosticRows(session.user.id);
+  const visibleDiagnosticIds = new Set(
+    diagnosticRows.map((diagnostic) => diagnostic.id),
+  );
+  const sectorIds = [
+    ...new Set(
+      data
+        .map((row) => row.sector_id)
+        .filter((sectorId): sectorId is string => Boolean(sectorId)),
+    ),
+  ];
+  const sectorsResult =
+    sectorIds.length > 0
+      ? await supabase
+          .from("organization_sectors")
+          .select(
+            "id,organization_id,name,normalized_name,active,created_at,updated_at",
+          )
+          .in("id", sectorIds)
+          .returns<OrganizationSectorRow[]>()
+      : { data: [] as OrganizationSectorRow[], error: null };
+
+  if (sectorsResult.error) throw sectorsResult.error;
+
+  const sectorNamesById = new Map(
+    sectorsResult.data.map((sector) => [sector.id, sector.name]),
+  );
+
+  return data
+    .filter((row) => {
+      if (!visibleDiagnosticIds.has(row.diagnostic_id)) return false;
+
+      const metadata = metadataByDiagnosticId.get(row.diagnostic_id);
+      if (!metadata) return false;
+      if (row.group_id === "fundador") return metadata.canViewFounderLink;
+      if (row.group_id === "lideranca") return true;
+      if (metadata.canViewAllTeamLinks) return true;
+
+      return Boolean(
+        row.sector_id && metadata.assignedSectorIds.includes(row.sector_id),
+      );
+    })
+    .reduce(
     (acc, row) => {
       acc[row.diagnostic_id] = [
         ...(acc[row.diagnostic_id] ?? []),
-        buildShareLink(row),
+        buildShareLink(
+          row,
+          row.sector_id ? sectorNamesById.get(row.sector_id) ?? null : null,
+        ),
       ].sort((a, b) => {
         const order = ["fundador", "lideranca", "operacao"];
 
-        return order.indexOf(a.group) - order.indexOf(b.group);
+        const groupOrder = order.indexOf(a.group) - order.indexOf(b.group);
+        if (groupOrder !== 0) return groupOrder;
+
+        return (a.sectorName ?? "").localeCompare(b.sectorName ?? "", "pt-BR");
       });
 
       return acc;
     },
-    {} as Record<string, DiagnosticShareLink[]>,
-  );
+      {} as Record<string, DiagnosticShareLink[]>,
+    );
 }
 
 export const getDimensions = cache(async function getDimensions(): Promise<Dimension[]> {
@@ -1246,7 +1564,8 @@ export async function getDiagnosticTemplates(): Promise<DiagnosticTemplate[]> {
 }
 
 export const getDiagnostics = cache(async function getDiagnostics(): Promise<Diagnostic[]> {
-  const { diagnosticRows, organizationRows } = await loadAuthorizedDiagnostics();
+  const { diagnosticRows, metadataByDiagnosticId, organizationRows } =
+    await loadAuthorizedDiagnostics();
   const organizationsById = new Map(
     organizationRows.map((organization) => [organization.id, organization]),
   );
@@ -1268,6 +1587,7 @@ export const getDiagnostics = cache(async function getDiagnostics(): Promise<Dia
             responseCounts.get(diagnostic.id) ?? getEmptyResponses(),
         },
         diagnostic,
+        metadata: metadataByDiagnosticId.get(diagnostic.id),
         organization,
       });
     })
@@ -1277,7 +1597,8 @@ export const getDiagnostics = cache(async function getDiagnostics(): Promise<Dia
 export const getDiagnosticById = cache(async function getDiagnosticById(
   id: string,
 ): Promise<Diagnostic | undefined> {
-  const { diagnosticRows, organizationRows } = await loadAuthorizedDiagnostics(id);
+  const { diagnosticRows, metadataByDiagnosticId, organizationRows } =
+    await loadAuthorizedDiagnostics(id);
   const diagnostic = diagnosticRows[0];
 
   if (!diagnostic) return undefined;
@@ -1297,6 +1618,7 @@ export const getDiagnosticById = cache(async function getDiagnosticById(
       responses: responseCounts.get(diagnostic.id) ?? getEmptyResponses(),
     },
     diagnostic,
+    metadata: metadataByDiagnosticId.get(diagnostic.id),
     organization,
   });
 });
@@ -1317,7 +1639,7 @@ export async function getDiagnosticShareWorkspace(
   const linksByDiagnosticId = await loadShareLinks([diagnostic.id]);
   const links = linksByDiagnosticId[diagnostic.id] ?? [];
 
-  if (links.length !== 3) return undefined;
+  if (links.length === 0) return undefined;
 
   return diagnosticShareWorkspaceSchema.parse({
     diagnostic,
@@ -1332,7 +1654,7 @@ export async function getDiagnosticByResponseToken(
   const supabase = getSupabase();
   const { data: shareLink, error: shareLinkError } = await supabase
     .from("diagnostic_share_links")
-    .select("id,diagnostic_id,group_id,token,created_at,expires_at")
+    .select("id,diagnostic_id,group_id,sector_id,token,created_at,expires_at")
     .eq("token", token)
     .maybeSingle<DiagnosticShareLinkRow>();
 
@@ -1344,7 +1666,7 @@ export async function getDiagnosticByResponseToken(
       supabase
         .from("diagnostics")
         .select(
-          "id,organization_id,template_id,name,description,status,created_at,updated_at,activated_at,closed_at,deadline,general_score",
+          "id,organization_id,template_id,name,description,status,created_at,updated_at,activated_at,closed_at,deadline,general_score,created_by_user_id",
         )
         .eq("id", shareLink.diagnostic_id)
         .maybeSingle<DiagnosticRow>(),
@@ -1406,7 +1728,7 @@ export const getDiagnosticReport = cache(async function getDiagnosticReport(
   diagnosticId: string,
   generatedAt = new Date().toISOString(),
 ): Promise<DiagnosticReport | undefined> {
-  const { diagnosticRows, organizationRows } =
+  const { diagnosticRows, metadataByDiagnosticId, organizationRows } =
     await loadAuthorizedDiagnostics(diagnosticId);
   const diagnosticRow = diagnosticRows[0];
 
@@ -1415,11 +1737,55 @@ export const getDiagnosticReport = cache(async function getDiagnosticReport(
   const reports = await buildReportsFromRows({
     diagnosticRows: [diagnosticRow],
     generatedAt,
+    metadataByDiagnosticId,
     organizationRows,
   });
 
   return reports[0];
 });
+
+export async function getAdminDiagnosticReports(
+  diagnosticId?: string,
+  generatedAt = new Date().toISOString(),
+): Promise<DiagnosticReport[]> {
+  const session = await getCurrentAuthSession();
+
+  if (!session || session.user.role !== "superadmin") return [];
+
+  const supabase = getSupabase();
+  let diagnosticsQuery = supabase
+    .from("diagnostics")
+    .select(diagnosticSelectColumns)
+    .eq("status", "encerrado")
+    .order("closed_at", { ascending: false });
+
+  if (diagnosticId) {
+    diagnosticsQuery = diagnosticsQuery.eq("id", diagnosticId);
+  }
+
+  const { data: diagnosticRows, error: diagnosticsError } =
+    await diagnosticsQuery.returns<DiagnosticRow[]>();
+
+  if (diagnosticsError) throw diagnosticsError;
+  if (diagnosticRows.length === 0) return [];
+
+  const organizationIds = [
+    ...new Set(diagnosticRows.map((diagnostic) => diagnostic.organization_id)),
+  ];
+  const { data: organizationRows, error: organizationsError } = await supabase
+    .from("organizations")
+    .select("id,name,employee_count,domain,created_at,updated_at")
+    .in("id", organizationIds)
+    .returns<OrganizationRow[]>();
+
+  if (organizationsError) throw organizationsError;
+
+  return buildReportsFromRows({
+    diagnosticRows,
+    generatedAt,
+    organizationRows,
+  });
+}
 
 export async function getDiagnosticActionPlan(
   diagnosticId: string,
@@ -1519,13 +1885,13 @@ export async function getLatestActionPlanGanttWorkspace(
 
 const getReportsForFilter = cache(
   async function getReportsForFilter(filter: "todos" | string = "todos") {
-    const { diagnosticRows, organizationRows } = await loadAuthorizedDiagnostics(
-      filter === "todos" ? undefined : filter,
-    );
+    const { diagnosticRows, metadataByDiagnosticId, organizationRows } =
+      await loadAuthorizedDiagnostics(filter === "todos" ? undefined : filter);
 
     return buildReportsFromRows({
       diagnosticRows,
       generatedAt: new Date().toISOString(),
+      metadataByDiagnosticId,
       organizationRows,
     });
   },

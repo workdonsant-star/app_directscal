@@ -7,7 +7,7 @@ import { OverviewDiagnosticFilter } from "@/components/omdx/overview-diagnostic-
 import { getOmdxOverviewPageData } from "@/lib/data/omdx-data-source";
 
 export const metadata: Metadata = {
-  title: "Camadas — Maturidade",
+  title: "Overview — Maturidade",
 };
 
 type MaturityPageProps = {
@@ -41,7 +41,7 @@ export default async function MaturityPage({
         <div className="flex w-full flex-col gap-8">
           <header className="max-w-2xl">
             <h1 className="text-2xl font-semibold text-foreground">
-              Maturidade de Gestão
+              Overview
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               Compare como Fundador, Liderança e Time percebem a maturidade da
@@ -54,6 +54,7 @@ export default async function MaturityPage({
             dimensionScores={analytics.dimensions}
             dimensionSummary={analytics.dimensionSummary}
             leverageRows={analytics.leverageRows}
+            metrics={analytics.summaryMetrics}
             scores={analytics.layerScores}
             summary={analytics.layerSummary}
             vulnerabilityRows={analytics.vulnerabilityRows}

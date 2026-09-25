@@ -8,7 +8,7 @@ import { getCurrentAuthSession } from "@/lib/auth/session";
 import { getLatestActionPlanGanttWorkspace } from "@/lib/data/omdx-data-source";
 
 export const metadata: Metadata = {
-  title: "Cronograma — Directscal",
+  title: "Action Points — Directscal",
 };
 
 export default async function GanttPage() {
@@ -19,7 +19,7 @@ export default async function GanttPage() {
   }
 
   if (!canAccessCustomerApp(session.user)) {
-    redirect("/admin/modulos");
+    redirect("/admin/operacao");
   }
 
   const workspace = await getLatestActionPlanGanttWorkspace();
@@ -29,7 +29,7 @@ export default async function GanttPage() {
 
   return (
     <>
-      <AppTopbar breadcrumb={[{ label: "Cronograma" }]} />
+      <AppTopbar breadcrumb={[{ label: "Action Points" }]} />
 
       <main className="flex h-[calc(100svh-4rem)] min-h-0 flex-col">
         <div className="flex min-h-0 flex-1 flex-col">
