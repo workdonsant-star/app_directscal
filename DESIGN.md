@@ -127,16 +127,16 @@ Dark:
 | `--chart-4` | `#697077` | `#697077` | Neutro frio |
 | `--chart-5` | `#726E6E` | `#726E6E` | Neutro quente |
 
-No Maturidade, não usar verde/vermelho para maturidade. Score deve ser comunicado por posição, tamanho, número e famílias fixas por camada.
+Cada token de cor representa um papel estável e possui um valor equivalente em `:root` e `.dark`. Componentes usam sempre o mesmo nome; o switch de tema altera o valor resolvido automaticamente. Cores coincidentes só compartilham um token quando também compartilham o mesmo papel e a mesma possibilidade de evolução.
 
-Camadas atuais:
+Charts ainda não migrados podem preservar temporariamente o mapeamento legado:
 
 - Fundador/Diretoria: `--omdx-layer-diretoria-70` (azul).
 - Liderança: `--omdx-layer-lideranca-60` (ciano).
 - Operação/Time: `--omdx-layer-time-50` (teal).
 - Dimensões: `--chart-1` para série única e escala sequencial `cool-gray` para matrizes de intensidade.
 
-Esse mapeamento é estável entre dashboards, detalhes e tooltips: o mesmo grupo nunca troca de cor entre visualizações.
+Os cinco SVGs da Overview usam tokens próprios documentados em `src/components/omdx/CHART_COLOR_SYSTEM.md`, também com pares light/dark. Não propague o mapeamento legado para novos charts.
 
 Todas as séries ECharts do tipo barra usam raio de `2px`, inclusive barras simples e empilhadas.
 

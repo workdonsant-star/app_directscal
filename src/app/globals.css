@@ -243,6 +243,21 @@
   --chart-5: #726E6E;
   --chart-positive: #117A4D;
   --chart-negative: #B42318;
+  /* Overview charts: one semantic token per role, resolved by theme */
+  --overview-chart-founder: #9CCE15;
+  --overview-chart-leadership: #98D389;
+  --overview-chart-tactical: #0A5F4F;
+  --overview-chart-dimensions: #CAA1FF;
+  --overview-chart-label: #F7F7F8;
+  --overview-matrix-leverage-low: #DDF4A0;
+  --overview-matrix-leverage-soft: #CFF078;
+  --overview-matrix-leverage-mid: #BBE93E;
+  --overview-matrix-leverage-high: #9CCE15;
+  --overview-matrix-leverage-text: #577700;
+  --overview-matrix-vulnerability-low: #4D109C;
+  --overview-matrix-vulnerability-mid: #7E1AFF;
+  --overview-matrix-vulnerability-soft: #B47AFF;
+  --overview-matrix-vulnerability-high: #CAA1FF;
   --omdx-chart-lime: #A8E017;
   --omdx-chart-lime-deep: #6E9C11;
   --omdx-chart-lime-soft: #D0F768;
@@ -399,6 +414,21 @@
   --chart-5: #726E6E;
   --chart-positive: #2BB673;
   --chart-negative: #E5564C;
+  /* Same public tokens as light mode; only their resolved values change */
+  --overview-chart-founder: #56770A;
+  --overview-chart-leadership: #2F6A28;
+  --overview-chart-tactical: #075447;
+  --overview-chart-dimensions: #BE95FF;
+  --overview-chart-label: #F7F7F8;
+  --overview-matrix-leverage-low: #263409;
+  --overview-matrix-leverage-soft: #35490C;
+  --overview-matrix-leverage-mid: #46610E;
+  --overview-matrix-leverage-high: #577A11;
+  --overview-matrix-leverage-text: #F7F7F8;
+  --overview-matrix-vulnerability-low: #2D0A5E;
+  --overview-matrix-vulnerability-mid: #4D109C;
+  --overview-matrix-vulnerability-soft: #6414C4;
+  --overview-matrix-vulnerability-high: #7E1AFF;
   --omdx-layer-diretoria-30: #A6C8FF;
   --omdx-layer-diretoria-40: #78A9FF;
   --omdx-layer-diretoria-50: #4589FF;

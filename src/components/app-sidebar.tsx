@@ -33,6 +33,7 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 const data = {
@@ -150,6 +151,12 @@ export function AppSidebar({
   };
 }) {
   const pathname = usePathname();
+  const { isCompact, setOpen } = useSidebar();
+  const closeCompactSidebar = () => {
+    if (isCompact) {
+      setOpen(false);
+    }
+  };
   const sidebarUser = {
     ...user,
     initials: user.initials ?? (getInitials(user.name) || "DS"),
@@ -237,22 +244,43 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         {isAdmin ? (
-          <NavMain label="Administração" items={admin} />
+          <NavMain
+            label="Administração"
+            items={admin}
+            onNavigate={closeCompactSidebar}
+          />
         ) : (
           <>
-            <NavMain label={null} items={primaryNavigation} />
-            <NavMain label="Maturidade" items={dimensionNavigation} />
+            <NavMain
+              label={null}
+              items={primaryNavigation}
+              onNavigate={closeCompactSidebar}
+            />
+            <NavMain
+              label="Maturidade"
+              items={dimensionNavigation}
+              onNavigate={closeCompactSidebar}
+            />
             <NavMain
               label="Ativos de gestão"
               items={managementAssetNavigation}
+              onNavigate={closeCompactSidebar}
             />
-            <NavMain label="Documentos" items={documentNavigation} />
+            <NavMain
+              label="Documentos"
+              items={documentNavigation}
+              onNavigate={closeCompactSidebar}
+            />
           </>
         )}
       </SidebarContent>
       {!isAdmin && settingsNavigation.length > 0 ? (
         <SidebarFooter className="p-0">
-          <NavMain label={null} items={settingsNavigation} />
+          <NavMain
+            label={null}
+            items={settingsNavigation}
+            onNavigate={closeCompactSidebar}
+          />
         </SidebarFooter>
       ) : null}
       <SidebarRail />

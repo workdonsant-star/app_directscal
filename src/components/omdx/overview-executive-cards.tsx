@@ -22,8 +22,9 @@ export type ExecutiveCardMetric = Omit<
 };
 
 type OverviewExecutiveCardsProps = {
+  layout?: "grid" | "stack";
   metrics: ExecutiveCardMetric[];
-  presentation?: "gauge" | "number";
+  presentation?: "gauge" | "number" | "overview";
 };
 
 function getStatusColor(status: ExecutiveCardMetric["classification"]) {
@@ -158,8 +159,10 @@ function getMetricDetail(metric: ExecutiveCardMetric) {
 
 function MetricComparison({
   comparison,
+  compact = false,
 }: {
   comparison: NonNullable<ExecutiveCardMetric["comparison"]>;
+  compact?: boolean;
 }) {
   const direction =
     comparison.percentage > 0
@@ -191,20 +194,36 @@ function MetricComparison({
   );
 
   return (
-    <p className="mt-1 flex items-center gap-1.5 text-xs">
+    <p
+      className={cn(
+        "flex items-center",
+        compact ? "gap-0.5" : "mt-1 gap-1.5 text-xs",
+      )}
+    >
       <span
-        className="flex items-center gap-0.5 font-medium tabular-nums"
+        className={cn(
+          "flex items-center gap-0.5 font-medium tabular-nums",
+          compact && "text-xs leading-4",
+        )}
         style={{ color }}
       >
         <DirectionIcon aria-hidden="true" className="size-3.5" />
         {formattedPercentage}%
       </span>
-      <span className="text-muted-foreground">{comparison.label}</span>
+      <span
+        className={cn(
+          "text-muted-foreground",
+          compact && "text-[10px] leading-[13px]",
+        )}
+      >
+        {comparison.label}
+      </span>
     </p>
   );
 }
 
 export function OverviewExecutiveCards({
+  layout = "grid",
   metrics,
   presentation = "gauge",
 }: OverviewExecutiveCardsProps) {
@@ -214,8 +233,11 @@ export function OverviewExecutiveCards({
     <TooltipProvider delay={120}>
       <section
         className={cn(
-          "grid gap-4 sm:grid-cols-2",
-          metrics.length === 3 ? "xl:grid-cols-3" : "xl:grid-cols-4",
+          layout === "stack"
+            ? "flex h-[434px] flex-col justify-between"
+            : "grid gap-4 sm:grid-cols-2",
+          layout === "grid" &&
+            (metrics.length === 3 ? "xl:grid-cols-3" : "xl:grid-cols-4"),
         )}
       >
         {metrics.map((metric) => (
@@ -225,11 +247,25 @@ export function OverviewExecutiveCards({
             className={cn(
               presentation === "number"
                 ? "h-[128px] gap-1 rounded-[5px] border-0 bg-sidebar py-2 shadow-none ring-0"
+                : presentation === "overview"
+                  ? "h-[109px] gap-3 rounded-[5px] border-0 bg-sidebar px-5 py-2.5 shadow-none ring-0"
                 : "gap-2",
             )}
           >
-            <CardHeader className="flex flex-row items-start justify-between gap-3 pb-0">
-              <CardTitle className="text-muted-foreground text-sm font-normal">
+            <CardHeader
+              className={cn(
+                "flex flex-row items-start justify-between gap-3 pb-0",
+                presentation === "overview" && "px-0",
+              )}
+            >
+              <CardTitle
+                className={cn(
+                  "text-muted-foreground font-normal",
+                  presentation === "overview"
+                    ? "text-[10px] leading-[13px]"
+                    : "text-sm",
+                )}
+              >
                 {metric.title}
               </CardTitle>
               {presentation === "gauge" ? (
@@ -259,23 +295,41 @@ export function OverviewExecutiveCards({
                 </Tooltip>
               ) : null}
             </CardHeader>
-            <CardContent>
+            <CardContent
+              className={presentation === "overview" ? "px-0" : undefined}
+            >
               {presentation === "gauge" ? (
                 <GaugeChart metric={metric} />
               ) : (
-                <div className="py-2">
+                <div
+                  className={
+                    presentation === "overview"
+                      ? "flex flex-col gap-3"
+                      : "py-2"
+                  }
+                >
                   <p className="flex items-baseline justify-start gap-1 tabular-nums">
-                    <span className="text-foreground text-3xl font-semibold tracking-tight">
+                    <span
+                      className={cn(
+                        "text-foreground tracking-tight",
+                        presentation === "overview"
+                          ? "text-[40px] leading-9 font-light tracking-[-0.75px]"
+                          : "text-3xl font-semibold",
+                      )}
+                    >
                       {metric.value}
                     </span>
-                    {metric.suffix && (
+                    {metric.suffix && presentation !== "overview" ? (
                       <span className="text-muted-foreground text-sm font-medium">
                         {metric.suffix}
                       </span>
-                    )}
+                    ) : null}
                   </p>
                   {metric.comparison ? (
-                    <MetricComparison comparison={metric.comparison} />
+                    <MetricComparison
+                      comparison={metric.comparison}
+                      compact={presentation === "overview"}
+                    />
                   ) : null}
                 </div>
               )}

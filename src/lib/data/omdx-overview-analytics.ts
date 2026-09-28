@@ -485,11 +485,12 @@ function buildSummaryMetrics(
     dimensions.length > 0
       ? round(average(dimensions.map((dimension) => dimension.maturity)), 1)
       : null;
-  const averageGap = calculateAverageGap(dimensions);
   const maturityIndex =
     maturity === null ? null : normalizeLikertToIndex(maturity);
-  const gapIndex =
-    averageGap === null ? null : normalizeGapToIndex(averageGap);
+  const risk =
+    dimensions.length === 0
+      ? null
+      : Math.round(average(dimensions.map(calculateDimensionCriticality)));
   const comparisonLabel = "vs. média dos anteriores";
   const buildComparison = (
     currentValue: number | null,
@@ -511,27 +512,19 @@ function buildSummaryMetrics(
       ),
     };
   };
-  const historicalGaps = historicalReports.flatMap((report) => {
-    const gap = calculateAverageGap(
-      report.dimensions.map(buildDimensionResult),
-    );
+  const historicalRisks = historicalReports.flatMap((report) => {
+    const historicalDimensions = report.dimensions.map(buildDimensionResult);
 
-    return gap === null ? [] : [gap];
+    return historicalDimensions.length === 0
+      ? []
+      : [
+          Math.round(
+            average(historicalDimensions.map(calculateDimensionCriticality)),
+          ),
+        ];
   });
 
   return [
-    {
-      title: "Base de respostas",
-      value: responses.toLocaleString("pt-BR"),
-      classification: responses === 0 ? "Sem dados" : "Consistente",
-      comparison: buildComparison(
-        responses,
-        historicalReports.map((report) => report.responses.total),
-      ),
-      description: "Total de pessoas que responderam ao diagnóstico exibido.",
-      technicalDetail:
-        "Soma das respostas concluídas de Fundador, Liderança e Time.",
-    },
     {
       title: "Maturidade geral",
       value:
@@ -551,17 +544,28 @@ function buildSummaryMetrics(
         "Média simples das pontuações consolidadas das seis dimensões.",
     },
     {
-      title: "Gap médio",
-      value:
-        averageGap === null ? "—" : numberFormatter.format(averageGap),
-      suffix: averageGap === null ? undefined : "/5",
+      title: "Risco",
+      value: risk === null ? "—" : formatIndex(risk),
+      suffix: risk === null ? undefined : "/100",
       classification:
-        gapIndex === null ? "Sem dados" : classifyMisalignmentIndex(gapIndex),
-      comparison: buildComparison(averageGap, historicalGaps, true),
+        risk === null ? "Sem dados" : classifyCriticalityIndex(risk),
+      comparison: buildComparison(risk, historicalRisks, true),
       description:
-        "Diferença média de percepção entre Fundador, Liderança e Time. Quanto menor, melhor.",
+        "Índice consolidado de risco operacional. Quanto menor, melhor.",
       technicalDetail:
-        "Média dos gaps entre a maior e a menor pontuação de camada em cada dimensão.",
+        "Combina maturidade, gap entre camadas, dispersão e percentual de respostas críticas.",
+    },
+    {
+      title: "Base de respostas",
+      value: responses.toLocaleString("pt-BR"),
+      classification: responses === 0 ? "Sem dados" : "Consistente",
+      comparison: buildComparison(
+        responses,
+        historicalReports.map((report) => report.responses.total),
+      ),
+      description: "Total de pessoas que responderam ao diagnóstico exibido.",
+      technicalDetail:
+        "Soma das respostas concluídas de Fundador, Liderança e Time.",
     },
   ];
 }
@@ -788,7 +792,6 @@ function buildLeverageRows(
         calculateDimensionCriticality(second) -
         calculateDimensionCriticality(first),
     )
-    .slice(0, 4)
     .map((dimension) => {
       const gap = calculateDimensionGap(dimension);
       const values: Array<{

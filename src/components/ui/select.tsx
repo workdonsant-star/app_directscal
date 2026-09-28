@@ -7,9 +7,10 @@ import { CheckIcon, ChevronDownIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 function Select<Value, Multiple extends boolean | undefined = false>({
+  modal = false,
   ...props
 }: SelectPrimitive.Root.Props<Value, Multiple>) {
-  return <SelectPrimitive.Root data-slot="select" {...props} />
+  return <SelectPrimitive.Root data-slot="select" modal={modal} {...props} />
 }
 
 function SelectTrigger({

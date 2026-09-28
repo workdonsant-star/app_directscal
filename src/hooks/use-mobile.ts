@@ -1,22 +1,43 @@
 import * as React from "react"
 
 const MOBILE_BREAKPOINT = 768
+const SIDEBAR_COMPACT_BREAKPOINT = 1920
 
-function subscribe(callback: () => void) {
-  const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
+function createBreakpointStore(breakpoint: number) {
+  const query = `(max-width: ${breakpoint - 1}px)`
 
-  mql.addEventListener("change", callback)
-  return () => mql.removeEventListener("change", callback)
-}
+  return {
+    subscribe(callback: () => void) {
+      const mql = window.matchMedia(query)
 
-function getSnapshot() {
-  return window.innerWidth < MOBILE_BREAKPOINT
+      mql.addEventListener("change", callback)
+      return () => mql.removeEventListener("change", callback)
+    },
+    getSnapshot() {
+      return window.matchMedia(query).matches
+    },
+  }
 }
 
 function getServerSnapshot() {
   return false
 }
 
+const mobileStore = createBreakpointStore(MOBILE_BREAKPOINT)
+const sidebarCompactStore = createBreakpointStore(SIDEBAR_COMPACT_BREAKPOINT)
+
 export function useIsMobile() {
-  return React.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+  return React.useSyncExternalStore(
+    mobileStore.subscribe,
+    mobileStore.getSnapshot,
+    getServerSnapshot
+  )
+}
+
+export function useIsSidebarCompact() {
+  return React.useSyncExternalStore(
+    sidebarCompactStore.subscribe,
+    sidebarCompactStore.getSnapshot,
+    getServerSnapshot
+  )
 }

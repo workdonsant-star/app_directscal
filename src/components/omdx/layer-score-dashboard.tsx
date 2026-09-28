@@ -1,11 +1,14 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import type { ReactNode } from "react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { DimensionScoreBarChart } from "@/components/omdx/dimension-score-bar-chart";
+import { LayerDimensionStackedChart } from "@/components/omdx/layer-dimension-stacked-chart";
+import { LayerScoreBarChart } from "@/components/omdx/layer-score-bar-chart";
+import { LeverageMatrix } from "@/components/omdx/leverage-matrix";
 import { OverviewExecutiveCards } from "@/components/omdx/overview-executive-cards";
+import { VulnerabilityQuestionMatrix } from "@/components/omdx/vulnerability-question-matrix";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type {
   DimensionResult,
   ExecutiveMetric,
@@ -37,83 +40,6 @@ type DashboardCardProps = {
   title?: string;
 };
 
-const LayerScoreBarChart = dynamic(
-  () =>
-    import("@/components/omdx/layer-score-bar-chart").then(
-      (module) => module.LayerScoreBarChart,
-    ),
-  {
-    loading: () => <ChartSkeleton label="Carregando pontuação por camada" />,
-    ssr: false,
-  },
-);
-
-const DimensionScoreBarChart = dynamic(
-  () =>
-    import("@/components/omdx/dimension-score-bar-chart").then(
-      (module) => module.DimensionScoreBarChart,
-    ),
-  {
-    loading: () => <ChartSkeleton label="Carregando pontuação por dimensão" />,
-    ssr: false,
-  },
-);
-
-const LayerDimensionStackedChart = dynamic(
-  () =>
-    import("@/components/omdx/layer-dimension-stacked-chart").then(
-      (module) => module.LayerDimensionStackedChart,
-    ),
-  {
-    loading: () => <ChartSkeleton label="Carregando composição por dimensão" />,
-    ssr: false,
-  },
-);
-
-const VulnerabilityQuestionMatrix = dynamic(
-  () =>
-    import("@/components/omdx/vulnerability-question-matrix").then(
-      (module) => module.VulnerabilityQuestionMatrix,
-    ),
-  {
-    loading: () => <MatrixSkeleton label="Carregando vulnerabilidades" />,
-    ssr: false,
-  },
-);
-
-const LeverageMatrix = dynamic(
-  () =>
-    import("@/components/omdx/leverage-matrix").then(
-      (module) => module.LeverageMatrix,
-    ),
-  {
-    loading: () => <MatrixSkeleton label="Carregando alavancas" />,
-    ssr: false,
-  },
-);
-
-function ChartSkeleton({ label }: { label: string }) {
-  return (
-    <div
-      aria-label={label}
-      className="h-[376px]"
-    >
-      <Skeleton className="size-full rounded-[3px]" />
-    </div>
-  );
-}
-
-function MatrixSkeleton({ label }: { label: string }) {
-  return (
-    <div
-      aria-label={label}
-      className="h-[316px]"
-    >
-      <Skeleton className="size-full rounded-[3px]" />
-    </div>
-  );
-}
-
 function DashboardCard({
   children,
   className,
@@ -129,23 +55,33 @@ function DashboardCard({
       className={cn(
         distilled
           ? "gap-0 rounded-[5px] border-0 bg-sidebar p-4 shadow-none ring-0"
-          : "gap-1.5 rounded-[5px] border-0 bg-sidebar p-5 shadow-none ring-0",
+          : "gap-1.5 rounded-[10px] border-0 bg-sidebar p-5 shadow-none ring-0",
         className,
       )}
       data-testid={testId}
     >
-      <CardHeader className={cn("px-0", distilled ? "gap-1 pb-1" : "h-10")}>
+      <CardHeader
+        className={cn(
+          "px-0",
+          distilled ? "gap-1 pb-1" : "h-[46px] gap-0 pb-0",
+        )}
+      >
         <CardTitle
-          className="overflow-hidden text-sm leading-5 font-medium text-card-foreground"
+          className="overflow-hidden text-sm leading-5 font-semibold text-card-foreground"
           title={description}
         >
           {title ?? description}
         </CardTitle>
-        {distilled ? (
-          <p className="line-clamp-2 text-xs leading-5 text-muted-foreground">
-            {description}
-          </p>
-        ) : null}
+        <p
+          className={cn(
+            "line-clamp-2 text-muted-foreground",
+            distilled
+              ? "text-xs leading-5"
+              : "max-w-[299px] text-[10px] leading-[13px]",
+          )}
+        >
+          {description}
+        </p>
       </CardHeader>
       <CardContent className="px-0">{children}</CardContent>
     </Card>
@@ -165,87 +101,155 @@ export function LayerScoreDashboard({
 }: LayerScoreDashboardProps) {
   const distilled = presentation === "distilled";
 
+  if (distilled) {
+    return (
+      <div className="flex flex-col gap-4">
+        <section
+          aria-label="Comparativos de maturidade"
+          className="grid gap-4 xl:grid-cols-3"
+        >
+          <DashboardCard
+            className="h-[462px]"
+            description={summary}
+            presentation={presentation}
+            testId="layer-score-card"
+            title="Maturidade por camada"
+          >
+            <LayerScoreBarChart
+              data={scores}
+              historicalData={comparison?.historicalAnalytics.layerScores}
+              referenceLabel={comparison?.referenceLabel}
+            />
+          </DashboardCard>
+
+          <DashboardCard
+            className="h-[462px]"
+            description={dimensionSummary}
+            presentation={presentation}
+            testId="dimension-score-card"
+            title="Dimensões gerenciais"
+          >
+            <DimensionScoreBarChart
+              data={dimensionScores}
+              historicalData={comparison?.historicalAnalytics.dimensions}
+              referenceLabel={comparison?.referenceLabel}
+            />
+          </DashboardCard>
+
+          <DashboardCard
+            className="h-[462px]"
+            description={
+              comparison
+                ? "Compare como Fundador, Liderança e Operação compõem a pontuação atual; os traços indicam a média anterior."
+                : "Compare como Fundador, Liderança e Operação compõem a pontuação consolidada de cada dimensão."
+            }
+            presentation={presentation}
+            testId="layer-dimension-score-card"
+            title="Dimensões por camadas"
+          >
+            <LayerDimensionStackedChart
+              data={dimensionScores}
+              historicalData={comparison?.historicalAnalytics.dimensions}
+              referenceLabel={comparison?.referenceLabel}
+            />
+          </DashboardCard>
+        </section>
+
+        <section
+          aria-label="Matrizes de vulnerabilidades e alavancas"
+          className="grid gap-4 xl:grid-cols-2"
+        >
+          <DashboardCard
+            className="min-h-[414px]"
+            description="Principais vulnerabilidades operacionais encontradas nas perguntas de cada dimensão."
+            presentation={presentation}
+            testId="vulnerability-matrix-card"
+            title="Vulnerabilidades por pergunta"
+          >
+            <VulnerabilityQuestionMatrix rows={vulnerabilityRows} />
+          </DashboardCard>
+
+          <DashboardCard
+            className="min-h-[414px]"
+            description="Cruza maturidade, alinhamento, consenso e prioridade."
+            presentation={presentation}
+            testId="leverage-matrix-card"
+            title="Alavancas prioritárias"
+          >
+            <LeverageMatrix rows={leverageRows} />
+          </DashboardCard>
+        </section>
+      </div>
+    );
+  }
+
   return (
-    <div className={cn("flex flex-col", distilled ? "gap-4" : "gap-6")}>
-      {distilled ? null : (
-        <OverviewExecutiveCards metrics={metrics} presentation="number" />
-      )}
+    <section
+      aria-label="Visão executiva de maturidade"
+      className="grid gap-x-6 gap-y-5 xl:grid-cols-3"
+    >
+      <OverviewExecutiveCards
+        layout="stack"
+        metrics={metrics}
+        presentation="overview"
+      />
 
-      <section
-        aria-label="Comparativos de maturidade"
-        className={cn("grid xl:grid-cols-3", distilled ? "gap-4" : "gap-6")}
+      <DashboardCard
+        className="h-[434px]"
+        description="O índice de maturidade que cada dimensão da empresa atingiu na pesquisa de maturidade."
+        testId="dimension-score-card"
+        title="Dimensões gerenciais"
       >
-        <DashboardCard
-          className="h-[462px]"
-          description={summary}
-          presentation={presentation}
-          testId="layer-score-card"
-          title="Maturidade por camada"
-        >
-          <LayerScoreBarChart
-            data={scores}
-            historicalData={comparison?.historicalAnalytics.layerScores}
-            referenceLabel={comparison?.referenceLabel}
-          />
-        </DashboardCard>
+        <DimensionScoreBarChart
+          data={dimensionScores}
+          historicalData={comparison?.historicalAnalytics.dimensions}
+          referenceLabel={comparison?.referenceLabel}
+        />
+      </DashboardCard>
 
-        <DashboardCard
-          className="h-[462px]"
-          description={dimensionSummary}
-          presentation={presentation}
-          testId="dimension-score-card"
-          title="Maturidade por dimensão"
-        >
-          <DimensionScoreBarChart
-            data={dimensionScores}
-            historicalData={comparison?.historicalAnalytics.dimensions}
-            referenceLabel={comparison?.referenceLabel}
-          />
-        </DashboardCard>
-
-        <DashboardCard
-          className="h-[462px]"
-          description={
-            comparison
-              ? "Compare como Fundador, Liderança e Operação compõem a pontuação atual; os traços indicam a média anterior."
-              : "Compare como Fundador, Liderança e Operação compõem a pontuação consolidada de cada dimensão."
-          }
-          presentation={presentation}
-          testId="layer-dimension-score-card"
-          title="Composição por dimensão"
-        >
-          <LayerDimensionStackedChart
-            data={dimensionScores}
-            historicalData={comparison?.historicalAnalytics.dimensions}
-            referenceLabel={comparison?.referenceLabel}
-          />
-        </DashboardCard>
-      </section>
-
-      <section
-        aria-label="Matrizes de vulnerabilidades e alavancas"
-        className={cn("grid xl:grid-cols-2", distilled ? "gap-4" : "gap-6")}
+      <DashboardCard
+        className="h-[434px]"
+        description="Principais vulnerabilidades operacionais encontradas nas perguntas de cada dimensão."
+        testId="vulnerability-matrix-card"
+        title="Vulnerabilidades por pergunta"
       >
-        <DashboardCard
-          className="min-h-[414px]"
-          description="Principais vulnerabilidades operacionais encontradas nas perguntas de cada dimensão."
-          presentation={presentation}
-          testId="vulnerability-matrix-card"
-          title="Vulnerabilidades por pergunta"
-        >
-          <VulnerabilityQuestionMatrix rows={vulnerabilityRows} />
-        </DashboardCard>
+        <VulnerabilityQuestionMatrix rows={vulnerabilityRows} />
+      </DashboardCard>
 
-        <DashboardCard
-          className="min-h-[414px]"
-          description="Cruza maturidade, alinhamento, consenso e prioridade."
-          presentation={presentation}
-          testId="leverage-matrix-card"
-          title="Alavancas prioritárias"
-        >
-          <LeverageMatrix rows={leverageRows} />
-        </DashboardCard>
-      </section>
-    </div>
+      <DashboardCard
+        className="h-[434px]"
+        description="Entenda as nuances de percepção ao nível de maturidade em gestão sobre cada camada da empresa."
+        testId="leverage-matrix-card"
+        title="Alavancas prioritárias"
+      >
+        <LeverageMatrix rows={leverageRows} />
+      </DashboardCard>
+
+      <DashboardCard
+        className="h-[434px]"
+        description="Entenda as nuances de percepção ao nível de maturidade em gestão sobre cada camada da empresa."
+        testId="layer-score-card"
+        title="Maturidade por camada"
+      >
+        <LayerScoreBarChart
+          data={scores}
+          historicalData={comparison?.historicalAnalytics.layerScores}
+          referenceLabel={comparison?.referenceLabel}
+        />
+      </DashboardCard>
+
+      <DashboardCard
+        className="h-[434px]"
+        description="Pontuação de maturidade por dimensão discriminada por camada de gestão."
+        testId="layer-dimension-score-card"
+        title="Dimensões por Camadas"
+      >
+        <LayerDimensionStackedChart
+          data={dimensionScores}
+          historicalData={comparison?.historicalAnalytics.dimensions}
+          referenceLabel={comparison?.referenceLabel}
+        />
+      </DashboardCard>
+    </section>
   );
 }

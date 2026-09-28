@@ -37,12 +37,12 @@ Maturidade avalia maturidade operacional em **6 dimensões** (Cultura, Visão, C
 | `OverviewExecutiveCards` | `overview-executive-cards.tsx` | `/omdx` e `/insights/[dimensao]` | Indicadores executivos em superfície neutra sem borda ou sombra. No Overview e em Insights usa a apresentação numérica compacta, sem gauge, ícone ou status visível. Com três métricas, a grade desktop usa três colunas. |
 | `OverviewDiagnosticFilter` | `overview-diagnostic-filter.tsx` | `/omdx` | Wrapper client do filtro de diagnósticos na topbar, reutilizando `DimensionDiagnosticFilter`. |
 | `OverviewDimensionResultsTable` | `overview-dimension-results-table.tsx` | `/omdx` | Tabela compacta de leitura executiva por dimensão, exibindo dimensão, pontuação consolidada, status e gap entre camadas. |
-| `LayerScoreDashboard` | `layer-score-dashboard.tsx` | `/omdx` e workspace admin da entrega | Grade com três charts no topo e duas matrizes abaixo; aceita apresentação `distilled` sem KPIs repetidos e com títulos objetivos para contextos que já exibem o resumo executivo. Mantém a comparação histórica nos gráficos e tooltips e carrega ECharts apenas no cliente. |
-| `LayerScoreBarChart` | `layer-score-bar-chart.tsx` | `/omdx` | Barras verticais ECharts para Fundador, Liderança e Time em escala fixa de 0 a 5. A barra sólida representa o diagnóstico atual e o traço transversal representa a média dos anteriores. |
-| `DimensionScoreBarChart` | `dimension-score-bar-chart.tsx` | `/omdx` | Barras verticais ECharts com a pontuação das seis dimensões em escala fixa de 0 a 5. A barra sólida representa o diagnóstico atual e o traço transversal representa a média dos anteriores. |
-| `LayerDimensionStackedChart` | `layer-dimension-stacked-chart.tsx` | `/omdx` | Uma pilha atual por dimensão com as três cores de camada; a média histórica aparece apenas como traços neutros nos limites acumulados. O tooltip compara atual, histórico e delta por camada. |
-| `VulnerabilityQuestionMatrix` | `vulnerability-question-matrix.tsx` | `/omdx` | Heatmap ECharts cartesiano dimensão × pergunta, com escala sequencial azul, classificação nas células e detalhe do score no tooltip. |
-| `LeverageMatrix` | `leverage-matrix.tsx` | `/omdx` | Heatmap ECharts cartesiano das quatro dimensões mais críticas por maturidade, alinhamento, consenso e prioridade, com escala sequencial teal. |
+| `LayerScoreDashboard` | `layer-score-dashboard.tsx` | `/omdx` e workspace admin da entrega | Na Overview, organiza uma grade 3 × 2: KPIs e Dimensões/Vulnerabilidades no topo; Alavancas/Camadas/Dimensões por Camadas abaixo. Cada visual ocupa um card independente de 512 × 434 no desktop. A apresentação `distilled` preserva a grade analítica sem KPIs. |
+| `LayerScoreBarChart` | `layer-score-bar-chart.tsx` | `/omdx` | SVG responsivo de barras horizontais para Fundador, Liderança e Tático em escala fixa de 0 a 5, com geometria e cores do Figma. |
+| `DimensionScoreBarChart` | `dimension-score-bar-chart.tsx` | `/omdx` | SVG responsivo de barras verticais roxas com a pontuação real das seis dimensões em escala fixa de 0 a 5 e na ordem definida no Figma. |
+| `LayerDimensionStackedChart` | `layer-dimension-stacked-chart.tsx` | `/omdx` | SVG responsivo com uma pilha por dimensão em escala fixa de 0 a 15, labels internos e cores de Fundador, Liderança e Tático definidas no Figma. |
+| `VulnerabilityQuestionMatrix` | `vulnerability-question-matrix.tsx` | `/omdx` | Matriz SVG 6 × 4 em escala roxa específica da Overview, com score e classificação reais na célula. |
+| `LeverageMatrix` | `leverage-matrix.tsx` | `/omdx` | Matriz SVG 6 × 4 por maturidade, alinhamento, consenso e prioridade, em escala verde específica da Overview. |
 | `LayerStackedScoreChart` | `layer-stacked-score-chart.tsx` | `/omdx` | Barras verticais empilhadas por dimensão, com Fundador, Liderança e Operação, labels internos e total acumulado no topo. |
 | `OverviewCharts` | `overview-charts.tsx` | `/omdx` | Wrapper client mínimo que carrega os charts ECharts do Overview por dynamic import, preservando o shell inicial leve. |
 | `OrganizationalAlignmentChart` | `organizational-alignment-chart.tsx` | Disponível para telas futuras | Scatter ECharts de maturidade e criticidade por dimensão. Não é exibido no overview atual. |
@@ -59,15 +59,16 @@ Maturidade avalia maturidade operacional em **6 dimensões** (Cultura, Visão, C
 - **Sentence case** em títulos, botões e labels. Sem ponto de exclamação.
 - **Score 1-5** sempre formatado com **uma casa decimal** (`(3.4).toFixed(1)`), com vírgula em pt-BR quando aplicável (formatação automática se vier de `toLocaleString("pt-BR")`).
 - **Classificação** vem da função `classifyScore()` em `src/lib/data/omdx-domain.ts`. Não inline a regra em componente. A régua textual do score Likert é: `<= 2.0` Crítico, `<= 3.0` Inconsistente, `<= 4.0` Atenção, acima de `4.0` Consistente.
-- **Biblioteca principal de visualização:** usar Apache ECharts via `echarts` e `echarts-for-react` para charts analíticos de Maturidade. Evite shadcn/ui Charts e Recharts como base principal.
-- **Charts reutilizáveis:** componentes de visualização devem ser tipados, receber dados já preparados por props ou pela camada `src/lib/data/`, e manter opções ECharts próximas do componente de domínio que as governa.
+- **Biblioteca principal de visualização:** usar Apache ECharts via `echarts` e `echarts-for-react` para charts analíticos gerais de Maturidade. Os cinco charts manuais da Overview são a exceção deliberada: usam SVG responsivo para preservar a geometria aprovada no Figma. Evite shadcn/ui Charts e Recharts como base principal.
+- **Charts reutilizáveis:** componentes de visualização devem ser tipados e receber dados já preparados por props ou pela camada `src/lib/data/`. Na Overview, preserve `viewBox="0 0 472 342"`, barras de 33 px, células de 80 × 33 px e os offsets documentados no código.
 - **Tipografia dos charts:** eixos, legendas, tooltips e demais textos auxiliares usam Funnel Sans, preservando Plus Jakarta Sans para os títulos do app.
-- **Charts e tema:** ECharts não reage sozinho a CSS variables após troca de tema. Use `useChartThemeColors()` para ler tokens e recomputar `option` quando light/dark mudar; não congele cores com `useMemo(..., [])`.
-- **Barras com raio consistente:** todas as séries ECharts do tipo `bar`, incluindo barras simples, empilhadas e fundos de referência, usam `borderRadius: 2`, centralizado em `chartBarBorderRadius` de `chart-colors.ts`.
-- **Cores de score em charts:** não use vermelho/verde para maturidade. Use cores fixas por série/camada; a posição e o tamanho da barra comunicam o score.
-- **Cores por camada:** preserve o mesmo mapeamento em todos os charts e comparativos: Fundador/Diretoria usa `--omdx-layer-diretoria-70` (azul), Liderança usa `--omdx-layer-lideranca-60` (ciano) e Time/Operação usa `--omdx-layer-time-50` (teal). Não varie a família pela pontuação.
-- **Cores por dimensão:** séries únicas usam `--chart-1`. Os heatmaps cartesianos do Overview usam escalas sequenciais azul e teal, sem semáforo e sem legenda visual abaixo do chart. Vermelho e verde ficam restritos a estados semânticos fora dos charts.
-- **Histórico não usa cor de série:** preserve as cores de camada apenas nas barras do diagnóstico atual. Represente a média histórica exclusivamente com três pequenos traços neutros, centralizados em `chartHistoricalMarkerSymbol`, acompanhados pela legenda global e pelo tooltip.
+- **Charts e tema:** ECharts não reage sozinho a CSS variables após troca de tema. Use `useChartThemeColors()` nos charts ECharts. Os SVGs da Overview consomem as variáveis CSS diretamente em `fill` e `stroke`, reagindo ao tema sem JavaScript.
+- **Barras com raio consistente:** charts gerais usam `chartBarBorderRadius`; os três charts do Overview usam `overviewChartBarBorderRadius`, ambos centralizados em `chart-colors.ts`.
+- **Sistema de cor da Overview:** siga `CHART_COLOR_SYSTEM.md`. Cada papel usa o mesmo token nos dois temas; `:root` e `.dark` fornecem os equivalentes e o switch os resolve sem lógica no componente. Valores coincidentes podem continuar separados quando pertencem a funções que evoluem de forma independente.
+- **Cores de score em charts:** vermelho e verde só aparecem quando o dado possui significado negativo ou positivo documentado. A posição, o tamanho e o número continuam carregando o valor.
+- **Cores por camada fora da Overview:** os charts ainda não migrados preservam temporariamente o mapeamento legado: Fundador/Diretoria azul, Liderança ciano e Time/Operação teal. Não propague esse padrão para novos charts.
+- **Cores por dimensão:** não atribua uma família forte a cada dimensão. Use posição, label, ordem e tooltip; a série consolidada superior usa o token roxo específico aprovado no Figma.
+- **Histórico não usa cor de série:** represente a média histórica exclusivamente com três pequenos traços neutros, centralizados em `chartHistoricalMarkerSymbol`, acompanhados pelo tooltip.
 - **Comparação histórica:** mostre variação de maturidade em pontos na escala `1-5`; percentual pode existir como informação secundária, mas não substitui o delta em pontos.
 - **Nomes humanos, não técnicos**, em títulos visíveis: "O que mais pesa no resultado", não "GraficoItensDimensao". O nome técnico fica no código.
 - **Rótulos curtos** (`shortName` em `dimensions[]`) para gráficos. A pergunta completa vai em tooltip ou texto secundário.
@@ -122,12 +123,8 @@ Para o respondente, prever:
 - O link de Fundador fica restrito ao Superadmin da empresa. O criador Admin gerencia o diagnóstico, mas não recebe esse link.
 - Cada link deve ter mensagem sugerida própria e ação de prévia pública em `/r/[token]`.
 - `Encerrar coleta` chama a API e persiste `status = encerrado` no Supabase.
-<<<<<<< Updated upstream
-- `Baixar relatório` e `Baixar action points` aparecem como ações contextuais quando o diagnóstico já possui base de Fundador e relatório consolidável.
-=======
 - `Baixar relatório` abre opções de PDF e CSV; `Baixar action points` aparece como ação contextual quando o diagnóstico já possui base de Fundador e relatório consolidável.
 - `Baixar respostas CSV` aparece quando houver ao menos uma resposta, pois exporta dados brutos anônimos e não depende de base consolidável.
->>>>>>> Stashed changes
 - Acompanhamento detalhado e lista de respondentes ficam para `/omdx/[id]/acompanhamento`.
 
 ## Insights por dimensão
@@ -151,11 +148,11 @@ Para o respondente, prever:
 
 ### Cards do Overview
 
-O Overview exibe três cards acima dos charts, reutilizando exatamente a apresentação numérica das páginas de dimensão: raio de 5 px, título discreto e valor alinhado à esquerda, sem gauge, ícone ou status visível. Em `Todos os diagnósticos`, os valores consolidam todos os relatórios e a linha auxiliar compara o relatório mais recente com o imediatamente anterior. No filtro individual, quando há histórico anterior comparável, cada card mostra a variação percentual contra a média anterior; em `Gap médio`, redução é evolução positiva.
+O Overview exibe três cards empilhados na primeira coluna da grade de analytics: raio de 5 px, título discreto e valor alinhado à esquerda, sem gauge, ícone ou status visível. Em `Todos os diagnósticos`, os valores consolidam todos os relatórios e a linha auxiliar compara o relatório mais recente com o imediatamente anterior. No filtro individual, quando há histórico anterior comparável, cada card mostra a variação percentual contra a média anterior; em `Risco`, redução é evolução positiva.
 
-- **Base de respostas**: soma das respostas concluídas de Fundador, Liderança e Time em todos os diagnósticos incluídos no filtro.
 - **Maturidade geral**: média simples das seis dimensões, exibida na escala original `1-5` com uma casa decimal.
-- **Gap médio**: média da diferença entre a maior e a menor pontuação de camada em cada dimensão, na escala `0-5`. Quanto menor, melhor. Com menos de duas camadas comparáveis, exibe `—`.
+- **Risco**: média do índice de criticidade das seis dimensões, exibida na escala `0-100`. Quanto menor, melhor.
+- **Base de respostas**: soma das respostas concluídas de Fundador, Liderança e Time em todos os diagnósticos incluídos no filtro.
 
 ### Cards dos Insights por dimensão
 

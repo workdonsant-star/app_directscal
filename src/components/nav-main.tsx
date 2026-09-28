@@ -14,8 +14,10 @@ import {
 export function NavMain({
   items,
   label = "Módulos",
+  onNavigate,
 }: {
   label?: string | null;
+  onNavigate?: () => void;
   items: {
     title: string;
     url?: string;
@@ -35,6 +37,7 @@ export function NavMain({
               disabled={item.disabled}
               isActive={item.isActive}
               render={item.url ? <Link href={item.url} /> : undefined}
+              onClick={item.url ? onNavigate : undefined}
               type={item.url ? undefined : "button"}
             >
               <item.icon className="size-4" />

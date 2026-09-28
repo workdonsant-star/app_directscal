@@ -1,9 +1,10 @@
 "use client";
 
-import { CalendarDays, ChevronRight, Search } from "lucide-react";
+import { ChevronRight, Search } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { AppTopbarActionsPortal } from "@/components/app-topbar-actions-portal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,14 +46,16 @@ function ManagementAssetCard({ asset }: { asset: ManagementAsset }) {
     <Card
       className={
         href
-          ? "h-full min-h-64 transition-[background-color,box-shadow] duration-150 group-hover:bg-muted/40 group-hover:ring-foreground/20 group-active:bg-muted/60"
-          : "h-full min-h-64"
+          ? "h-full min-h-[277px] rounded-[5px] bg-sidebar ring-0 transition-colors duration-150 group-hover:bg-muted/50 group-active:bg-muted"
+          : "h-full min-h-[277px] rounded-[5px] bg-sidebar ring-0"
       }
     >
       <CardHeader className="gap-3">
         <div className="flex items-start justify-between gap-3">
           {asset.category ? (
-            <Badge variant="outline">{asset.category}</Badge>
+            <Badge className="h-5 rounded-[5px] px-2 text-[10px] leading-4" variant="outline">
+              {asset.category}
+            </Badge>
           ) : (
             <span />
           )}
@@ -63,11 +66,13 @@ function ManagementAssetCard({ asset }: { asset: ManagementAsset }) {
             />
           ) : null}
         </div>
-        <CardTitle className="line-clamp-2 text-lg">{asset.title}</CardTitle>
+        <CardTitle className="line-clamp-2 text-lg leading-7">
+          {asset.title}
+        </CardTitle>
       </CardHeader>
 
       <CardContent className="flex flex-1 flex-col justify-between gap-6">
-        <p className="line-clamp-3 text-sm text-muted-foreground">
+        <p className="line-clamp-3 text-sm leading-5 text-muted-foreground">
           {asset.summary}
         </p>
 
@@ -91,8 +96,7 @@ function ManagementAssetCard({ asset }: { asset: ManagementAsset }) {
             </div>
           </div>
 
-          <p className="flex items-center gap-2 text-sm text-muted-foreground">
-            <CalendarDays aria-hidden="true" className="size-4" />
+          <p className="text-sm leading-5 text-muted-foreground">
             <time
               dateTime={asset.updatedAt}
               aria-label={`Atualizado em ${dateFormatter.format(new Date(asset.updatedAt))}`}
@@ -178,55 +182,50 @@ export function ManagementAssetsLibrary({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative w-full sm:max-w-sm">
-          <Search
-            aria-hidden="true"
-            className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.currentTarget.value)}
-            placeholder="Buscar por título ou conteúdo"
-            aria-label="Buscar ativos"
-            className="pl-8"
-          />
-        </div>
-
-        {categoryFilter ? (
-          <Select
-            value={category}
-            items={categoryItems}
-            onValueChange={(value) => {
-              if (typeof value === "string") {
-                setCategory(value);
-              }
-            }}
-          >
-            <SelectTrigger
-              aria-label="Filtrar por categoria"
-              className="w-full sm:w-56"
+      <AppTopbarActionsPortal>
+        <div className="flex min-w-0 items-center gap-3">
+          {categoryFilter ? (
+            <Select
+              value={category}
+              items={categoryItems}
+              onValueChange={(value) => {
+                if (typeof value === "string") {
+                  setCategory(value);
+                }
+              }}
             >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((item) => (
-                <SelectItem key={item} value={item}>
-                  {item}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        ) : null}
+              <SelectTrigger
+                aria-label="Filtrar por categoria"
+                className="w-44 xl:w-56"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((item) => (
+                  <SelectItem key={item} value={item}>
+                    {item}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : null}
 
-        <p
-          aria-live="polite"
-          className="text-sm tabular-nums text-muted-foreground sm:ml-auto"
-        >
-          {filteredAssets.length} {filteredAssets.length === 1 ? "ativo" : "ativos"}
-        </p>
-      </div>
+          <div className="relative w-56 xl:w-96">
+            <Search
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+            />
+            <Input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.currentTarget.value)}
+              placeholder="Buscar por título ou conteúdo"
+              aria-label="Buscar ativos"
+              className="pl-8"
+            />
+          </div>
+        </div>
+      </AppTopbarActionsPortal>
 
       {filteredAssets.length === 0 ? (
         <div className="rounded-lg border border-dashed px-6 py-12 text-center">

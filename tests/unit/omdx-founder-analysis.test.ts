@@ -225,7 +225,7 @@ describe("Maturidade founder analysis base", () => {
         score: 3.4,
       }),
     ]);
-    expect(analytics.leverageRows).toHaveLength(4);
+    expect(analytics.leverageRows).toHaveLength(6);
     expect(analytics.leverageRows[0].cells).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -286,6 +286,17 @@ describe("Maturidade founder analysis base", () => {
       lowerIsBetter: false,
       percentage: 50,
     });
+    expect(
+      result.analytics.summaryMetrics.find(
+        (metric) => metric.title === "Risco",
+      ),
+    ).toMatchObject({
+      suffix: "/100",
+      comparison: {
+        label: "vs. média dos anteriores",
+        lowerIsBetter: true,
+      },
+    });
   });
 
   it("aggregates every diagnostic and compares the latest report with the previous one", () => {
@@ -314,6 +325,7 @@ describe("Maturidade founder analysis base", () => {
     expect(result.analytics.dimensions[0].maturity).toBe(3.5);
     expect(result.analytics.layerScores[0].score).toBe(3.5);
     expect(result.analytics.vulnerabilityRows[0].cells[0].score).toBe(3.5);
+    expect(result.analytics.leverageRows).toHaveLength(6);
     expect(
       result.analytics.summaryMetrics.find(
         (metric) => metric.title === "Base de respostas",

@@ -35,16 +35,16 @@ Esta pasta contém os **primitives do shadcn/ui** — botões, cards, tabelas, s
 | Badge | `badge.tsx` | use para status discretos; status complexos têm wrapper em `omdx/status-badge.tsx` |
 | Breadcrumb | `breadcrumb.tsx` | usado na topbar limpa do shell autenticado |
 | Table | `table.tsx` | header em `bg-muted/40`, cells densas — use `tabular-nums` para números |
-| Sidebar | `sidebar.tsx` | API extensa (Provider, Sidebar, SidebarMenuButton com `render`, …) |
+| Sidebar | `sidebar.tsx` | API extensa; abaixo de 1920px inicia na variante existente de ícones; em larguras maiores inicia expandida e continua colapsável |
 | Collapsible | `collapsible.tsx` | primitive base-ui instalado pelo bloco `sidebar-07` |
-| DropdownMenu | `dropdown-menu.tsx` | menu base-ui; trigger via `render` |
+| DropdownMenu | `dropdown-menu.tsx` | menu base-ui; trigger via `render`; não modal por padrão para preservar a scrollbar da página |
 | Dialog | `dialog.tsx` | modal central base-ui para confirmações e decisões curtas |
 | Tabs | `tabs.tsx` | filtros e seções dentro de cards |
 | Tooltip | `tooltip.tsx` | provider com `delay`; conteúdo com setinha automática |
 | Avatar | `avatar.tsx` | inicial 2 letras quando sem imagem |
 | Input | `input.tsx` | sem `Label` próprio — use `<label>` HTML |
 | Separator | `separator.tsx` | vertical e horizontal; usar com altura/largura definida |
-| Select | `select.tsx` | trigger Base UI neutro de 32px, sem borda, com raio de 5px e a chevron de abertura; usar no lugar de `<select>` nativo |
+| Select | `select.tsx` | trigger Base UI neutro de 32px, sem borda, com raio de 5px e a chevron de abertura; não modal por padrão para preservar a scrollbar da página; usar no lugar de `<select>` nativo |
 | Sheet | `sheet.tsx` | drawer mobile do sidebar usa internamente |
 | Skeleton | `skeleton.tsx` | use para estados de carregamento |
 | Switch | `switch.tsx` | toggle Base UI para estados binários; sempre acompanhe com label visível ou `aria-label` |
@@ -74,6 +74,7 @@ Isso baixa o componente para `src/components/ui/`. **Ao adicionar:**
 
 - `SidebarProvider` limita o shell a `w-dvw max-w-dvw` com `overflow-x-clip`; não use `w-full` aqui, porque a sidebar cria um gap próprio.
 - `SidebarInset` usa `basis-0`, `min-w-0`, `max-w-full` e `overflow-x-clip`; não use `w-full` no inset de conteúdo em layouts com sidebar.
+- Abaixo de `1920px`, a sidebar desktop usa `collapsible="icon"` recolhida por padrão. O `Sheet` permanece exclusivo do mobile real, abaixo de `768px`.
 
 ## Quando reescrever um primitive
 

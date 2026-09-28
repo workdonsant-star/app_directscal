@@ -49,6 +49,7 @@ Cada subpasta de domínio tem seu próprio `CLAUDE.md`. Crie um quando adicionar
 
 - **Server Components por padrão.** `"use client"` somente quando o componente precisar (`useState`, `usePathname`, eventos, etc.).
 - O shell autenticado usa o bloco **shadcn `sidebar-07`** como base visual, adaptado para Directscal.
+- Abaixo de `1920px`, a sidebar inicia na variante de ícones já existente e volta a ela depois de uma navegação. O trigger da topbar pode expandi-la quando necessário. Em `1920px` ou mais, inicia expandida e preserva o comportamento desktop colapsável.
 - A sidebar do app cliente não usa o título de seção `Módulos` nem navegação expansível. `Overview` aponta diretamente para a visão executiva de Maturidade em `/omdx`; `Coletas` aponta para a rota existente `/omdx/diagnosticos`, `Action Points` permanece no grupo principal e os seis insights aparecem como itens independentes sob o rótulo `Maturidade`.
 - A seção `Ativos de gestão` apresenta links ativos para `SOPs`, `Playbooks`, `Governança` e `Matriz RACI`, todos sob `/ativos-de-gestao/*`.
 - A sidebar inclui a seção `Documentos`. `Contratos` permanece desabilitado e fica oculto para `admin` da empresa; `Relatórios` aponta para `/relatorios`, que renderiza o diagnóstico como conteúdo nativo do app, sem `iframe` ou simulação de folha A4. A antiga seção `Recursos` e o item `Documentação` não aparecem; `/docs` continua disponível por acesso direto.
