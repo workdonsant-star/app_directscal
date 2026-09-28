@@ -1,6 +1,6 @@
 import type { RespondentGroup } from "@/lib/types";
 
-export const chartBarBorderRadius = 2;
+export const chartBarBorderRadius = 0;
 export const chartHistoricalMarkerSymbol =
   "path://M0 0H6V3H0ZM11 0H17V3H11ZM22 0H28V3H22Z";
 

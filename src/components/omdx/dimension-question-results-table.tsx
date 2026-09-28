@@ -83,40 +83,43 @@ export function DimensionQuestionResultsTable({
           Nenhuma pergunta consolidada para esta dimensão no filtro atual.
         </div>
       ) : (
-        <table className="w-full table-fixed caption-bottom overflow-hidden rounded-[5px] text-sm ring-1 ring-foreground/10">
-          <thead className="border-b bg-muted/30">
+        <table className="w-full table-fixed caption-bottom overflow-hidden rounded-[5px] text-sm">
+          <thead>
             <tr>
-              <th className="h-11 px-4 text-left font-medium text-foreground">
+              <th className="h-11 rounded-l-[5px] bg-muted px-4 text-left font-medium text-foreground">
                 Pergunta
               </th>
-              <th className="h-11 w-[440px] px-4 text-left font-medium text-foreground">
+              <th className="h-11 w-[440px] bg-muted px-4 text-left font-medium text-foreground">
                 Pontuação empilhada
               </th>
-              <th className="h-11 w-28 px-4 text-left font-medium text-foreground">
+              <th className="h-11 w-28 bg-muted px-4 text-left font-medium text-foreground">
                 Gap médio
               </th>
-              <th className="h-11 w-36 px-4 text-left font-medium text-foreground">
+              <th className="h-11 w-36 rounded-r-[5px] bg-muted px-4 text-left font-medium text-foreground">
                 Status
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y">
-            {questions.map((question) => (
-              <tr key={question.id} className="hover:bg-muted/30">
-                <td className="px-4 py-4 align-middle">
+          <tbody>
+            {questions.map((question, index) => (
+              <tr
+                key={question.id}
+                className={index < questions.length - 1 ? "border-b-[0.5px] border-border" : undefined}
+              >
+                <td className="h-[55px] px-4 py-4 align-middle">
                   <p className="text-foreground text-sm font-medium leading-snug">
                     {question.text}
                   </p>
                 </td>
-                <td className="px-4 py-4 text-left align-middle">
+                <td className="h-[55px] px-4 py-4 text-left align-middle">
                   <QuestionLayerStackedBar scores={question.layerScores} />
                 </td>
-                <td className="px-4 py-4 align-middle text-sm text-foreground">
+                <td className="h-[55px] px-4 py-4 align-middle text-sm text-foreground">
                   <span className="block w-full text-left tabular-nums">
                     {formatGap(question.gap)}
                   </span>
                 </td>
-                <td className="px-4 py-4 text-left align-middle">
+                <td className="h-[55px] px-4 py-4 text-left align-middle">
                   <QuestionStatus classification={question.classification} />
                 </td>
               </tr>

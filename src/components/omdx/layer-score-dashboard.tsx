@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import type { ReactNode } from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { OverviewExecutiveCards } from "@/components/omdx/overview-executive-cards";
 import type {
   DimensionResult,
@@ -95,9 +96,9 @@ function ChartSkeleton({ label }: { label: string }) {
   return (
     <div
       aria-label={label}
-      className="flex h-[376px] items-center justify-center text-sm text-muted-foreground"
+      className="h-[376px]"
     >
-      {label}
+      <Skeleton className="size-full rounded-[3px]" />
     </div>
   );
 }
@@ -106,9 +107,9 @@ function MatrixSkeleton({ label }: { label: string }) {
   return (
     <div
       aria-label={label}
-      className="flex h-[316px] items-center justify-center text-sm text-muted-foreground"
+      className="h-[316px]"
     >
-      {label}
+      <Skeleton className="size-full rounded-[3px]" />
     </div>
   );
 }
