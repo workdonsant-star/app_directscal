@@ -33,6 +33,11 @@ Componentes específicos da visão de superadministrador da Directscal. Eles adm
 | `AdminCompanyDetail` | `/admin/empresas/[id]`, atribuição, entregas e acessos. |
 | `AdminDeliveryWorkspace` | `/admin/entregas/[id]`, seleção e download de relatório, overview analítico, detalhe por dimensão, edição persistida, action points e publicação no Supabase. |
 | `AdminDeliveryStatusBadge` | Estados operacionais compartilhados das entregas. |
+| `ManagementAssetsWorkspace` | `/admin/ativos`, abas por estado, filtro por empresa, tabela e drawer de criação. |
+| `ManagementAssetCreateForm` | Drawer em três etapas para criar ativo a partir de modelo ou em branco, no padrão do formulário de diagnóstico. |
+| `ManagementAssetEditorWorkspace` | `/admin/ativos/[id]`, editor, prévia, versão publicada, metadados, índice, histórico e ações editoriais. |
+| `ManagementAssetStatusBadge` | Estados do ativo e das versões. |
+| `AssetQuestionAuditsWorkspace` | `/admin/ativos/perguntas`, lacunas e histórico de perguntas ao agente. |
 | `AdminCampaignsWorkspace` | `/admin/campanhas`, KPIs, criação, tabela e drawer de campanhas. |
 | `CampaignEditorDrawer` | Drawer para criar/editar campanha, selecionar módulo, definir slug de aquisição e campos do formulário. |
 | `AdminLeadsTable` | `/admin/leads`, listagem de leads capturados com navegação por linha para o detalhe. |

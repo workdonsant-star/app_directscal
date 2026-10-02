@@ -1,28 +1,18 @@
 "use client";
 
-import { useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
-function subscribeToTopbarActions() {
-  return () => {};
-}
-
-function getTopbarActionsContainer() {
-  return document.querySelector<HTMLElement>(
-    '[data-slot="app-topbar-actions"]',
-  );
-}
-
-function getServerTopbarActionsContainer() {
-  return null;
-}
-
 export function AppTopbarActionsPortal({ children }: { children: ReactNode }) {
-  const container = useSyncExternalStore(
-    subscribeToTopbarActions,
-    getTopbarActionsContainer,
-    getServerTopbarActionsContainer,
-  );
+  const [container, setContainer] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    // The portal target only exists after the server-rendered topbar is mounted.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setContainer(
+      document.querySelector<HTMLElement>('[data-slot="app-topbar-actions"]'),
+    );
+  }, []);
 
   return container ? createPortal(children, container) : null;
 }

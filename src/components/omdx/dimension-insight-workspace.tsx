@@ -9,14 +9,12 @@ import { DimensionDiagnosticFilter } from "@/components/omdx/dimension-diagnosti
 import { DimensionInsightDashboard } from "@/components/omdx/dimension-insight-dashboard";
 import type {
   Diagnostic,
-  Dimension,
   DimensionInsightSummary,
   DimensionQuestionResult,
 } from "@/lib/types";
 
 type DimensionInsightWorkspaceProps = {
   diagnosticOptions: Diagnostic[];
-  dimension: Dimension;
   questionResults: DimensionQuestionResult[];
   selectedDiagnostic: string;
   summary: DimensionInsightSummary;
@@ -24,7 +22,6 @@ type DimensionInsightWorkspaceProps = {
 
 export function DimensionInsightWorkspace({
   diagnosticOptions,
-  dimension,
   questionResults,
   selectedDiagnostic,
   summary,
@@ -52,7 +49,6 @@ export function DimensionInsightWorkspace({
   return (
     <>
       <AppTopbar
-        breadcrumb={[{ label: "Insights" }, { label: dimension.shortName }]}
         actions={
           <DimensionDiagnosticFilter
             diagnostics={validDiagnosticOptions}

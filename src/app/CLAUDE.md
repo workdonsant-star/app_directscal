@@ -38,6 +38,8 @@ src/app/
 │       └── page.tsx          ← manual prático de uso do módulo Maturidade
 │   └── gantt/
 │       └── page.tsx          ← Action Points em calendário semanal
+│   └── assistente/
+│       └── page.tsx          ← chat IA frontend-only com mensagens demonstrativas
 │   └── configuracoes/
 │       └── page.tsx          ← dados empresariais e comerciais da conta
 │   └── perfil/
@@ -95,6 +97,7 @@ src/app/
 - Usa Tailwind v4: tokens declarados em `@theme inline { ... }` com `var(--*)`.
 - Tokens da marca em `:root` (light) e `.dark` (dark mode).
 - Sempre que adicionar um token novo (ex.: nova cor de chart), declare em `@theme inline` **e** nos dois temas.
+- As variáveis semânticas de cor do Figma (`surface/*`, `content/*`, `brand/*` e `border/default`) são espelhadas em CSS com nomes sem a categoria `color/`; os aliases shadcn (`background`, `foreground`, `muted`, `primary`, `sidebar`, etc.) devem resolver para esses tokens, não duplicar valores.
 - Não use unidades diferentes do design system: spacing 4px-base, raios 0/4/6/10/14/20/999px, durations 120/180/280ms.
 - O app desativa o overscroll elástico do macOS com `overscroll-behavior: none` no viewport e em containers internos de scroll.
 - O shell autenticado bloqueia scroll horizontal no wrapper da sidebar e no `SidebarInset`; páginas internas não devem depender de overflow horizontal do documento.
@@ -114,6 +117,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/omdx/camadas` | `(app)/omdx/camadas/` | Redirect legado para `/omdx`, preservando o filtro de diagnóstico. |
 | `/omdx/diagnosticos` | `(app)/omdx/diagnosticos/` | Área operacional acessada pela sidebar, com lista, filtros, criação e configuração em drawer lateral. |
 | `/gantt` | `(app)/gantt/` | Action Points em calendário semanal, exposto dentro do módulo Maturidade na sidebar. |
+| `/assistente` | `(app)/assistente/` | Interface frontend-only do WorkFlow, com conversa demonstrativa e foto do perfil autenticado nas mensagens da pessoa. |
 | `/omdx/[id]/compartilhar` | `(app)/omdx/[id]/compartilhar/` | Central de coleta persistida com links por grupo, copy sugerida e resumo compacto. |
 | `/omdx/[id]/action-points` | `(app)/omdx/[id]/action-points/` | Route Handler Node autenticado para download direto do plano de ação RACI. |
 <<<<<<< Updated upstream
@@ -159,23 +163,23 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - O shell autenticado usa o bloco shadcn `sidebar-07` como base visual, adaptado para Directscal. O subtítulo do usuário na sidebar vem do nome fantasia resolvido por `getProfileSettingsData()`, com fallback para o nome oficial.
 - O route group `(app)` valida o cookie de sessão no layout antes de renderizar sidebar/topbar.
 - As rotas de autenticação em `(auth)` ficam fora do shell e redirecionam usuários autenticados conforme role.
-- A sidebar colapsa para ícones e mantém a navegação principal do cliente plana. `Overview`, `Coletas` e `Action Points` aparecem no grupo principal; `Coletas` preserva a rota `/omdx/diagnosticos`. `Pessoas` permanece fora da navegação.
+- A sidebar colapsa para ícones e mantém a navegação principal do cliente plana. `Overview`, `Coletas`, `Action Points` e `WorkFlow` aparecem no grupo principal; `Coletas` preserva a rota `/omdx/diagnosticos`. `Pessoas` permanece fora da navegação.
 - `Action Points` aparece dentro de `Maturidade` e aponta para `/gantt`; a rota usa o plano de ação mais recente quando houver diagnóstico consolidável.
 - A sidebar tem uma seção `Maturidade` com as seis dimensões analíticas.
 - A sidebar tem uma seção `Ativos de gestão` com links ativos para `SOPs`, `Playbooks`, `Governança` e `Matriz RACI`.
 - A sidebar tem uma seção `Documentos` com `Contratos` e `Relatórios` desabilitados como placeholders, sem rotas nesta fase. `Contratos` não aparece para `admin` da empresa.
 - `Configurações` fica fixado no rodapé da sidebar do Superadmin da empresa (`cliente`) e aponta para `/configuracoes`; não aparece para `admin` da empresa nem para o `superadmin` global.
 - Quando o pathname começa com `/admin`, a sidebar muda para `Administração`, com `Operação`, `Especialistas`, `Empresas`, `Leads` e `Campanhas`.
-- Usuários `superadmin` ficam restritos à superfície `/admin/*`. Tentativas de abrir `/omdx`, `/insights`, `/gantt`, `/docs`, `/configuracoes` ou `/perfil` redirecionam para `/admin/operacao`; APIs internas de cliente respondem `403`.
+- Usuários `superadmin` ficam restritos à superfície `/admin/*`. Tentativas de abrir `/omdx`, `/insights`, `/gantt`, `/assistente`, `/docs`, `/configuracoes` ou `/perfil` redirecionam para `/admin/operacao`; APIs internas de cliente respondem `403`.
 - Usuários `admin` da empresa acessam toda a superfície cliente, exceto Configurações e Contratos. A rota `/configuracoes` redireciona para `/omdx` e as APIs `/api/settings/*` respondem `403`.
 - `Empresas` não faz parte da navegação principal nesta fase.
 - A topbar é limpa: trigger da sidebar, separador e breadcrumb quando houver camada.
 - Ações primárias de página, incluindo `Salvar alterações` em Perfil e Configurações, ficam antes do sino na topbar; não se repetem no rodapé dos cards.
-- `/omdx` é a raiz do módulo e não usa breadcrumb na topbar.
-- Páginas abaixo de `/omdx` usam breadcrumb para mostrar a camada atual.
+- Páginas raiz abertas diretamente pela sidebar ou pelo menu do usuário não usam breadcrumb na topbar.
+- O breadcrumb começa apenas em uma página aberta a partir da raiz e parte da raiz imediata, sem repetir a seção superior da sidebar.
 - `/omdx/camadas` redireciona para `/omdx` e não renderiza breadcrumb próprio.
-- `/omdx/diagnosticos` usa `Overview / Diagnósticos`.
-- `/omdx/[id]/compartilhar` usa `Overview / Diagnósticos / Compartilhar`.
+- `/omdx`, `/omdx/diagnosticos`, `/gantt`, `/assistente`, `/insights/[dimensao]`, `/docs`, `/relatorios`, `/perfil`, `/configuracoes` e as quatro bibliotecas de Ativos de gestão são raízes sem breadcrumb.
+- `/omdx/[id]/compartilhar` usa `Coletas / Compartilhar`.
 - `/omdx/[id]/action-points` não renderiza página nem breadcrumb; retorna PDF como attachment.
 <<<<<<< Updated upstream
 - `/omdx/[id]/relatorio` não renderiza página nem breadcrumb; retorna PDF como attachment.
@@ -183,25 +187,16 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - `/omdx/[id]/respostas` não renderiza página nem breadcrumb; retorna CSV anônimo como attachment.
 - `/omdx/[id]/relatorio` não renderiza página nem breadcrumb; retorna PDF como attachment por padrão e CSV consolidado quando recebe `?formato=csv`.
 >>>>>>> Stashed changes
-- `/insights/[dimensao]` usa `Insights / Nome da dimensão`.
-- `/docs` usa `Documentação`.
-- `/gantt` usa `Action Points`.
-- `/configuracoes` usa `Configurações`.
-- `/perfil` usa `Perfil`.
-- `/ativos-de-gestao` redireciona para `/ativos-de-gestao/sops`; as quatro bibliotecas usam `Ativos de gestão / Nome da biblioteca` no breadcrumb.
-- `/ativos-de-gestao/sops/[id]` usa `Ativos de gestão / SOPs / Nome do SOP`.
+- `/configuracoes` mantém apenas as ações da página na topbar.
+- `/ativos-de-gestao` redireciona para `/ativos-de-gestao/sops`.
+- `/ativos-de-gestao/sops/[id]` usa `SOPs / Nome do SOP`.
 - `/ativos-de-gestao/matriz-de-papeis` redireciona para `/ativos-de-gestao/matriz-raci`; `/sops` continua como redirect legado para `/omdx`.
 - `/omdx/membros-da-operacao` redireciona para `/omdx/diagnosticos` e não renderiza breadcrumb.
-- `/admin/operacao` usa `Admin / Operação`.
-- `/admin/especialistas` usa `Admin / Especialistas`.
-- `/admin/modulos` usa `Admin / Módulos` e permanece apenas como rota legada.
-- `/admin/campanhas` usa `Admin / Campanhas`.
-- `/admin/leads` usa `Admin / Leads`.
-- `/admin/leads/[id]` usa `Admin / Leads / Detalhe`.
-- `/admin/empresas` usa `Admin / Empresas`.
-- `/admin/empresas/[id]` usa `Admin / Empresas / Detalhe`.
-- `/admin/entregas/[id]` usa `Admin / Operação / Empresa`.
-- Futuras rotas de acompanhamento e resultado usam `Overview / Diagnósticos / ...`.
+- `/admin/operacao`, `/admin/especialistas`, `/admin/modulos`, `/admin/campanhas`, `/admin/leads` e `/admin/empresas` são raízes sem breadcrumb.
+- `/admin/leads/[id]` usa `Leads / Detalhe`.
+- `/admin/empresas/[id]` usa `Empresas / Detalhe`.
+- `/admin/entregas/[id]` usa `Operação / Empresa`.
+- Futuras rotas de acompanhamento e resultado começam o breadcrumb pela raiz imediata `Coletas`.
 - Criação e configuração não devem abrir páginas próprias; acontecem em drawer dentro de `/omdx/diagnosticos`.
 - `Coletas` deve ser item da sidebar e apontar para `/omdx/diagnosticos`; não use CTA no Overview para acessar essa área.
 - As rotas temporárias `/omdx/novo` e `/omdx/[id]/configurar`, enquanto existirem, devem redirecionar para `/omdx/diagnosticos` ou indicar depreciação.

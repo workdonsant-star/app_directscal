@@ -14,7 +14,7 @@ Página autenticada para editar os dados pessoais do usuário.
 
 ## Convenções
 
-- Usar breadcrumb `Perfil`.
+- Como página raiz aberta pelo menu do usuário, não exibir breadcrumb.
 - A página é Server Component, lê `getCurrentAuthSession()`, resolve `getProfileSettingsData()` no servidor e delega interatividade para `ProfileSettings`.
 - A página pertence à aplicação do cliente; `superadmin` não recebe o atalho no menu e é redirecionado para `/admin/operacao` em acesso direto.
 - Usar `AppPage` com o mesmo recuo horizontal de Dimensões e conteúdo em largura total.

@@ -4,6 +4,7 @@ import { Loader2, Mail, MoreHorizontal, Plus, RotateCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { AppTopbarActionsPortal } from "@/components/app-topbar-actions-portal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -88,7 +89,7 @@ function StatusBadge({ status }: { status: LeadershipInviteDisplayStatus }) {
       variant={status === "envio_falhou" ? "destructive" : "outline"}
       className={
         status === "ativo"
-          ? "border-transparent bg-primary/10 text-primary"
+          ? "border-transparent bg-brand-subtle text-brand-default"
           : undefined
       }
     >
@@ -210,18 +211,25 @@ export function OrganizationStructureSettings({
 
   return (
     <section className="grid min-w-0 gap-5">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0">
-          <h2 className="text-base font-semibold">Setores e lideranças</h2>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Cadastre a estrutura que será usada para distribuir os convites e,
-            no futuro, direcionar os action points do diagnóstico.
-          </p>
-        </div>
-        <Button type="button" onClick={() => setIsOpen(true)}>
+      <AppTopbarActionsPortal>
+        <Button
+          type="button"
+          className="bg-brand-default text-content-on-action hover:bg-brand-default/90 active:bg-brand-default/80"
+          onClick={() => setIsOpen(true)}
+        >
           <Plus aria-hidden="true" />
           Adicionar setor
         </Button>
+      </AppTopbarActionsPortal>
+
+      <div className="min-w-0">
+        <h1 className="font-heading text-2xl leading-8 font-bold tracking-[-0.5px]">
+          Setores e lideranças
+        </h1>
+        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+          Cadastre a estrutura que será usada para distribuir os convites e,
+          no futuro, direcionar os action points do diagnóstico.
+        </p>
       </div>
 
       {notice ? (
@@ -237,9 +245,9 @@ export function OrganizationStructureSettings({
         </p>
       ) : null}
 
-      <div className="overflow-hidden rounded-[5px] ring-1 ring-foreground/10">
+      <div className="overflow-hidden rounded-[5px]">
         <Table className="min-w-[1040px] table-fixed">
-          <TableHeader className="bg-muted/30">
+          <TableHeader className="bg-surface-sidebar [&_tr]:border-b-0">
             <TableRow>
               <TableHead className="h-11 w-[180px] px-4">Setor</TableHead>
               <TableHead className="h-11 w-[220px] px-4">Liderança</TableHead>

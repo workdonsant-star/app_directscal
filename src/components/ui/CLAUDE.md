@@ -42,7 +42,7 @@ Esta pasta contém os **primitives do shadcn/ui** — botões, cards, tabelas, s
 | Tabs | `tabs.tsx` | filtros e seções dentro de cards |
 | Tooltip | `tooltip.tsx` | provider com `delay`; conteúdo com setinha automática |
 | Avatar | `avatar.tsx` | inicial 2 letras quando sem imagem |
-| Input | `input.tsx` | sem `Label` próprio — use `<label>` HTML |
+| Input | `input.tsx` | sem `Label` próprio — use `<label>` HTML; o estado desabilitado resolve por `surface-disabled` nos dois temas |
 | Separator | `separator.tsx` | vertical e horizontal; usar com altura/largura definida |
 | Select | `select.tsx` | trigger Base UI neutro de 32px, sem borda, com raio de 5px e a chevron de abertura; não modal por padrão para preservar a scrollbar da página; usar no lugar de `<select>` nativo |
 | Sheet | `sheet.tsx` | drawer mobile do sidebar usa internamente |

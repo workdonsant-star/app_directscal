@@ -26,7 +26,7 @@ export default async function ProfilePage() {
 
   return (
     <>
-      <AppTopbar breadcrumb={[{ label: "Perfil" }]} />
+      <AppTopbar />
 
       <AppPage className="min-w-0 overflow-x-clip">
         <div className="flex min-w-0 w-full flex-col gap-6">

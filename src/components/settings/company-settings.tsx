@@ -91,10 +91,15 @@ function ReadOnlyCompanyField({
           value={displayValue}
           disabled
           rows={3}
-          className="border-input bg-input/50 text-foreground min-h-20 w-full cursor-not-allowed resize-none rounded-lg border px-3 py-2 text-sm opacity-50 outline-none disabled:pointer-events-none dark:bg-input/80"
+          className="min-h-20 w-full cursor-not-allowed resize-none rounded-sm border border-border-default bg-surface-disabled px-3 py-2 text-sm text-content-primary opacity-50 outline-none disabled:pointer-events-none"
         />
       ) : (
-        <Input id={id} value={displayValue} disabled />
+        <Input
+          id={id}
+          value={displayValue}
+          disabled
+          className="rounded-sm border-border-default bg-surface-disabled text-content-primary disabled:bg-surface-disabled"
+        />
       )}
     </div>
   );
@@ -174,23 +179,30 @@ export function CompanySettings({ profile }: CompanySettingsProps) {
   return (
     <>
       <AppTopbarActionsPortal>
-        <Button type="button" disabled={isSaving} onClick={handleSave}>
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={isSaving}
+          onClick={handleSave}
+        >
           {isSaving ? "Salvando" : "Salvar alterações"}
         </Button>
       </AppTopbarActionsPortal>
 
-      <Card className="min-w-0">
-        <CardContent className="grid min-w-0 gap-8">
-        <section className="grid min-w-0 gap-5">
-          <div className="min-w-0">
-            <h2 className="text-base font-semibold">Empresa</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Dados oficiais do CNPJ e informações fornecidas no onboarding.
-            </p>
-          </div>
+      <Card className="min-w-0 bg-surface-sidebar ring-0">
+        <CardContent className="grid min-w-0 gap-8 px-5">
+          <section className="grid min-w-0 gap-5">
+            <div className="min-w-0">
+              <h2 className="font-heading text-[17px] leading-6 font-semibold">
+                Empresa
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Dados oficiais do CNPJ e informações fornecidas no onboarding.
+              </p>
+            </div>
 
           <div className="grid min-w-0 gap-4 md:grid-cols-2">
-            <div className="grid min-w-0 gap-1.5">
+            <div className="grid min-w-0 gap-2">
               <label
                 htmlFor="settings-company-social-name"
                 className="text-sm font-medium"
@@ -199,6 +211,7 @@ export function CompanySettings({ profile }: CompanySettingsProps) {
               </label>
               <Input
                 id="settings-company-social-name"
+                className="rounded-[5px] border-border-default"
                 value={draft.socialName}
                 onChange={(event) => {
                   updateField("socialName", event.target.value);
@@ -266,15 +279,17 @@ export function CompanySettings({ profile }: CompanySettingsProps) {
               value={profile.companyDetails.state}
             />
           </div>
-        </section>
+          </section>
 
-        <section className="grid min-w-0 gap-5 border-t pt-6">
-          <div className="min-w-0">
-            <h2 className="text-base font-semibold">Informações comerciais</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Dados informados durante o cadastro da empresa.
-            </p>
-          </div>
+          <section className="grid min-w-0 gap-5 border-t pt-6">
+            <div className="min-w-0">
+              <h2 className="font-heading text-[17px] leading-6 font-semibold">
+                Informações comerciais
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Dados informados durante o cadastro da empresa.
+              </p>
+            </div>
 
           <div className="grid min-w-0 gap-4 md:grid-cols-2">
             <div className="flex min-w-0 flex-col gap-2">
@@ -391,22 +406,22 @@ export function CompanySettings({ profile }: CompanySettingsProps) {
               className="md:col-span-2"
             />
           </div>
-        </section>
+          </section>
 
-        {notice ? (
-          <div className="border-t pt-6">
-            <p
-              aria-live="polite"
-              className={
-                notice.tone === "error"
-                  ? "text-sm text-destructive"
-                  : "text-sm text-foreground"
-              }
-            >
-              {notice.message}
-            </p>
-          </div>
-        ) : null}
+          {notice ? (
+            <div className="border-t pt-6">
+              <p
+                aria-live="polite"
+                className={
+                  notice.tone === "error"
+                    ? "text-sm text-destructive"
+                    : "text-sm text-foreground"
+                }
+              >
+                {notice.message}
+              </p>
+            </div>
+          ) : null}
         </CardContent>
       </Card>
     </>

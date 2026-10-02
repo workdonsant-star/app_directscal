@@ -12,7 +12,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  getDimensionById,
   getDimensionInsightPageData,
 } from "@/lib/data/omdx-data-source";
 import { isDimensionId } from "@/lib/data/omdx-domain";
@@ -35,7 +34,7 @@ export default async function DimensionInsightPage({
   if (!isDimensionId(dimensao)) {
     return (
       <>
-        <AppTopbar breadcrumb={[{ label: "Insights" }, { label: "Inválido" }]} />
+        <AppTopbar />
         <main className="flex flex-1 items-center justify-center p-6 lg:p-8">
           <Card className="max-w-md">
             <CardHeader>
@@ -63,15 +62,14 @@ export default async function DimensionInsightPage({
     typeof resolvedSearchParams?.diagnostico === "string"
       ? resolvedSearchParams.diagnostico
       : "todos";
-  const [dimension, pageData] = await Promise.all([
-    getDimensionById(dimensao),
-    getDimensionInsightPageData(dimensao, requestedDiagnostic),
-  ]);
+  const pageData = await getDimensionInsightPageData(
+    dimensao,
+    requestedDiagnostic,
+  );
 
   return (
     <DimensionInsightWorkspace
       diagnosticOptions={pageData.diagnosticOptions}
-      dimension={dimension}
       questionResults={pageData.questionResults}
       selectedDiagnostic={pageData.selectedDiagnostic}
       summary={pageData.summary}

@@ -14,6 +14,63 @@ export type Database = {
   }
   app_private: {
     Tables: {
+      slack_event_receipts: {
+        Row: {
+          event_id: string
+          received_at: string
+          team_id: string | null
+        }
+        Insert: {
+          event_id: string
+          received_at?: string
+          team_id?: string | null
+        }
+        Update: {
+          event_id?: string
+          received_at?: string
+          team_id?: string | null
+        }
+        Relationships: []
+      }
+      slack_installations: {
+        Row: {
+          bot_token: string
+          bot_user_id: string | null
+          installed_at: string
+          installed_by_user_id: string | null
+          organization_id: string
+          revoked_at: string | null
+          scope: string | null
+          team_id: string
+          team_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          bot_token: string
+          bot_user_id?: string | null
+          installed_at?: string
+          installed_by_user_id?: string | null
+          organization_id: string
+          revoked_at?: string | null
+          scope?: string | null
+          team_id: string
+          team_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bot_token?: string
+          bot_user_id?: string | null
+          installed_at?: string
+          installed_by_user_id?: string | null
+          organization_id?: string
+          revoked_at?: string | null
+          scope?: string | null
+          team_id?: string
+          team_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       acquisition_oauth_intents: {
         Row: {
           campaign_id: string
@@ -175,6 +232,15 @@ export type Database = {
         Returns: boolean
       }
       is_superadmin: { Args: never; Returns: boolean }
+      publish_management_asset_version: {
+        Args: {
+          p_actor_user_id: string
+          p_chunks: Json
+          p_published_at?: string
+          p_version_id: string
+        }
+        Returns: Json
+      }
       sync_diagnostic_leaders: {
         Args: {
           p_actor_user_id: string
@@ -507,6 +573,93 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      asset_answer_feedback: {
+        Row: {
+          comment: string | null
+          created_at: string
+          external_user_id: string | null
+          id: string
+          organization_id: string
+          question_audit_id: string
+          user_id: string | null
+          value: Database["public"]["Enums"]["asset_answer_feedback_value"]
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          external_user_id?: string | null
+          id?: string
+          organization_id: string
+          question_audit_id: string
+          user_id?: string | null
+          value: Database["public"]["Enums"]["asset_answer_feedback_value"]
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          external_user_id?: string | null
+          id?: string
+          organization_id?: string
+          question_audit_id?: string
+          user_id?: string | null
+          value?: Database["public"]["Enums"]["asset_answer_feedback_value"]
+        }
+        Relationships: []
+      }
+      asset_question_audits: {
+        Row: {
+          answer: string
+          answer_status: Database["public"]["Enums"]["asset_question_status"]
+          channel: string
+          citations: Json
+          confidence: string
+          created_at: string
+          external_user_id: string | null
+          id: string
+          latency_ms: number | null
+          model: string | null
+          organization_id: string
+          provider: string | null
+          question: string
+          source_version_ids: string[]
+          user_id: string | null
+        }
+        Insert: {
+          answer: string
+          answer_status: Database["public"]["Enums"]["asset_question_status"]
+          channel?: string
+          citations?: Json
+          confidence: string
+          created_at?: string
+          external_user_id?: string | null
+          id?: string
+          latency_ms?: number | null
+          model?: string | null
+          organization_id: string
+          provider?: string | null
+          question: string
+          source_version_ids?: string[]
+          user_id?: string | null
+        }
+        Update: {
+          answer?: string
+          answer_status?: Database["public"]["Enums"]["asset_question_status"]
+          channel?: string
+          citations?: Json
+          confidence?: string
+          created_at?: string
+          external_user_id?: string | null
+          id?: string
+          latency_ms?: number | null
+          model?: string | null
+          organization_id?: string
+          provider?: string | null
+          question?: string
+          source_version_ids?: string[]
+          user_id?: string | null
+        }
+        Relationships: []
       }
       admin_deliveries: {
         Row: {
@@ -930,6 +1083,168 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      management_asset_chunks: {
+        Row: {
+          asset_id: string
+          content: string
+          created_at: string
+          embedding: string | null
+          embedding_model: string | null
+          heading_path: string
+          id: string
+          ordinal: number
+          organization_id: string
+          token_count: number
+          version_id: string
+        }
+        Insert: {
+          asset_id: string
+          content: string
+          created_at?: string
+          embedding?: string | null
+          embedding_model?: string | null
+          heading_path: string
+          id?: string
+          ordinal: number
+          organization_id: string
+          token_count?: number
+          version_id: string
+        }
+        Update: {
+          asset_id?: string
+          content?: string
+          created_at?: string
+          embedding?: string | null
+          embedding_model?: string | null
+          heading_path?: string
+          id?: string
+          ordinal?: number
+          organization_id?: string
+          token_count?: number
+          version_id?: string
+        }
+        Relationships: []
+      }
+      management_asset_versions: {
+        Row: {
+          asset_id: string
+          change_note: string | null
+          content: Json
+          content_format: Database["public"]["Enums"]["management_asset_content_format"]
+          created_at: string
+          created_by_user_id: string | null
+          id: string
+          index_error: string | null
+          index_status: Database["public"]["Enums"]["management_asset_index_status"]
+          organization_id: string
+          published_at: string | null
+          published_by_user_id: string | null
+          review_status: Database["public"]["Enums"]["management_asset_version_status"]
+          reviewed_at: string | null
+          reviewed_by_user_id: string | null
+          summary: string | null
+          updated_at: string
+          version_number: string
+        }
+        Insert: {
+          asset_id: string
+          change_note?: string | null
+          content: Json
+          content_format: Database["public"]["Enums"]["management_asset_content_format"]
+          created_at?: string
+          created_by_user_id?: string | null
+          id?: string
+          index_error?: string | null
+          index_status?: Database["public"]["Enums"]["management_asset_index_status"]
+          organization_id: string
+          published_at?: string | null
+          published_by_user_id?: string | null
+          review_status?: Database["public"]["Enums"]["management_asset_version_status"]
+          reviewed_at?: string | null
+          reviewed_by_user_id?: string | null
+          summary?: string | null
+          updated_at?: string
+          version_number: string
+        }
+        Update: {
+          asset_id?: string
+          change_note?: string | null
+          content?: Json
+          content_format?: Database["public"]["Enums"]["management_asset_content_format"]
+          created_at?: string
+          created_by_user_id?: string | null
+          id?: string
+          index_error?: string | null
+          index_status?: Database["public"]["Enums"]["management_asset_index_status"]
+          organization_id?: string
+          published_at?: string | null
+          published_by_user_id?: string | null
+          review_status?: Database["public"]["Enums"]["management_asset_version_status"]
+          reviewed_at?: string | null
+          reviewed_by_user_id?: string | null
+          summary?: string | null
+          updated_at?: string
+          version_number?: string
+        }
+        Relationships: []
+      }
+      management_assets: {
+        Row: {
+          archived_at: string | null
+          assigned_specialist_id: string | null
+          category: string | null
+          created_at: string
+          created_by_user_id: string | null
+          current_published_version_id: string | null
+          description: string | null
+          id: string
+          organization_id: string
+          owner_label: string | null
+          owner_person_id: string | null
+          review_cycle: string | null
+          status: Database["public"]["Enums"]["management_asset_status"]
+          title: string
+          type: Database["public"]["Enums"]["management_asset_type"]
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          assigned_specialist_id?: string | null
+          category?: string | null
+          created_at?: string
+          created_by_user_id?: string | null
+          current_published_version_id?: string | null
+          description?: string | null
+          id?: string
+          organization_id: string
+          owner_label?: string | null
+          owner_person_id?: string | null
+          review_cycle?: string | null
+          status?: Database["public"]["Enums"]["management_asset_status"]
+          title: string
+          type: Database["public"]["Enums"]["management_asset_type"]
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          assigned_specialist_id?: string | null
+          category?: string | null
+          created_at?: string
+          created_by_user_id?: string | null
+          current_published_version_id?: string | null
+          description?: string | null
+          id?: string
+          organization_id?: string
+          owner_label?: string | null
+          owner_person_id?: string | null
+          review_cycle?: string | null
+          status?: Database["public"]["Enums"]["management_asset_status"]
+          title?: string
+          type?: Database["public"]["Enums"]["management_asset_type"]
+          updated_at?: string
+        }
+        Relationships: []
       }
       operational_members: {
         Row: {
@@ -1435,6 +1750,29 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      search_management_asset_chunks_for_organization: {
+        Args: {
+          query_embedding?: string | null
+          query_embedding_model?: string | null
+          query_text: string
+          result_limit?: number
+          target_organization_id: string
+        }
+        Returns: {
+          asset_id: string
+          asset_type: Database["public"]["Enums"]["management_asset_type"]
+          chunk_id: string
+          content: string
+          heading_path: string
+          published_at: string
+          score: number
+          text_rank: number | null
+          title: string
+          vector_similarity: number | null
+          version_id: string
+          version_number: string
+        }[]
+      }
       omdx_question_aggregates: {
         Args: { diagnostic_ids: string[] }
         Returns: {
@@ -1472,8 +1810,38 @@ export type Database = {
         | "select"
         | "textarea"
       acquisition_lead_status: "lead" | "pending_company" | "account_created"
+      asset_answer_feedback_value: "util" | "nao_util"
+      asset_question_status: "respondida" | "insuficiente" | "erro"
       auth_role: "superadmin" | "admin" | "cliente"
       diagnostic_status: "rascunho" | "ativo" | "encerrado"
+      management_asset_content_format: "markdown" | "json"
+      management_asset_index_status:
+        | "pendente"
+        | "processando"
+        | "pronto"
+        | "erro"
+      management_asset_status:
+        | "rascunho"
+        | "em_revisao"
+        | "pronto_para_publicar"
+        | "publicado"
+        | "arquivado"
+      management_asset_type:
+        | "sop"
+        | "playbook"
+        | "politica"
+        | "governanca"
+        | "raci"
+        | "checklist"
+        | "criterio_qualidade"
+        | "template"
+        | "outro"
+      management_asset_version_status:
+        | "rascunho"
+        | "em_revisao"
+        | "pronto_para_publicar"
+        | "publicado"
+        | "substituido"
       operational_member_status: "aprovado" | "pendente_aprovacao" | "rejeitado"
       organization_membership_role: "lideranca" | "membro"
       organization_person_status: "convite_pendente" | "ativo" | "inativo"

@@ -29,7 +29,6 @@ export default async function AdminLeadDetailPage({
     <>
       <AppTopbar
         breadcrumb={[
-          { label: "Admin", href: "/admin/operacao" },
           { label: "Leads", href: "/admin/leads" },
           { label: "Detalhe" },
         ]}

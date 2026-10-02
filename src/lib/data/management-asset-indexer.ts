@@ -1,7 +1,8 @@
-import type {
-  ManagementSopContentBlock,
-  ManagementSopDocument,
-} from "@/lib/types";
+import type { RichTextDocument } from "@/lib/contracts";
+import {
+  blockToPlainText,
+  splitRichTextSections,
+} from "@/lib/data/rich-text";
 
 const DEFAULT_CHUNK_SIZE = 1400;
 const DEFAULT_CHUNK_OVERLAP = 180;
@@ -13,41 +14,13 @@ export type ManagementAssetChunkInput = {
   tokenCount: number;
 };
 
-export type ManagementAssetIndexPayload = {
-  asset: {
-    organizationId: string;
-    type: ManagementSopDocument["type"];
-    title: string;
-    description: string;
-    ownerLabel: string;
-    status: "publicado";
-  };
-  version: {
-    versionNumber: string;
-    contentFormat: "json";
-    content: ManagementSopDocument["document"];
-    summary: string;
-    indexStatus: "pronto";
-  };
-  chunks: ManagementAssetChunkInput[];
-};
-
-function blockToText(block: ManagementSopContentBlock) {
-  if (block.type === "paragraph") return block.text;
-
-  if (block.type === "list") {
-    return block.items
-      .map((item, index) => (block.ordered ? `${index + 1}. ${item}` : `• ${item}`))
-      .join("\n");
-  }
-
-  const header = block.columns.join(" | ");
-  const rows = block.rows.map((row) => row.join(" | "));
-  return [header, ...rows].join("\n");
-}
-
 function normalizeWhitespace(value: string) {
-  return value.replace(/\s+/g, " ").trim();
+  return value
+    .split("\n")
+    .map((line) => line.replace(/[ \t]+/g, " ").trimEnd())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 function estimateTokenCount(value: string) {
@@ -56,7 +29,7 @@ function estimateTokenCount(value: string) {
 
 function splitText(value: string, chunkSize: number, overlap: number) {
   const normalized = normalizeWhitespace(value);
-  if (normalized.length <= chunkSize) return [normalized];
+  if (normalized.length <= chunkSize) return normalized ? [normalized] : [];
 
   const chunks: string[] = [];
   let start = 0;
@@ -67,8 +40,9 @@ function splitText(value: string, chunkSize: number, overlap: number) {
       end === normalized.length
         ? end
         : Math.max(
+            normalized.lastIndexOf("\n", end),
+            normalized.lastIndexOf(". ", end) + 1,
             normalized.lastIndexOf(" ", end),
-            normalized.lastIndexOf(".", end),
           );
     const stop = boundary > start + Math.floor(chunkSize * 0.6) ? boundary : end;
     const chunk = normalized.slice(start, stop).trim();
@@ -82,22 +56,26 @@ function splitText(value: string, chunkSize: number, overlap: number) {
   return chunks;
 }
 
+// Trechos determinísticos por seção (H2 e H3). Cada trecho carrega o caminho
+// de títulos que a resposta do agente cita como fonte.
 export function buildManagementAssetChunks(
-  sop: ManagementSopDocument,
+  asset: { title: string; content: RichTextDocument },
   options: { chunkSize?: number; overlap?: number } = {},
 ) {
   const chunkSize = options.chunkSize ?? DEFAULT_CHUNK_SIZE;
   const overlap = options.overlap ?? DEFAULT_CHUNK_OVERLAP;
   const chunks: ManagementAssetChunkInput[] = [];
 
-  for (const section of sop.document.sections) {
-    const sectionText = section.blocks.map(blockToText).join("\n\n");
-    const sectionChunks = splitText(sectionText, chunkSize, overlap);
+  for (const section of splitRichTextSections(asset.content, asset.title)) {
+    const sectionText = section.blocks
+      .map(blockToPlainText)
+      .filter(Boolean)
+      .join("\n\n");
 
-    for (const content of sectionChunks) {
+    for (const content of splitText(sectionText, chunkSize, overlap)) {
       chunks.push({
         ordinal: chunks.length,
-        headingPath: section.title,
+        headingPath: section.headingPath,
         content,
         tokenCount: estimateTokenCount(content),
       });
@@ -107,26 +85,11 @@ export function buildManagementAssetChunks(
   return chunks;
 }
 
-export function buildManagementAssetIndexPayload(
-  sop: ManagementSopDocument,
-  options?: { chunkSize?: number; overlap?: number },
-): ManagementAssetIndexPayload {
-  return {
-    asset: {
-      organizationId: sop.organizationId,
-      type: sop.type,
-      title: sop.title,
-      description: sop.summary,
-      ownerLabel: sop.author.name,
-      status: "publicado",
-    },
-    version: {
-      versionNumber: sop.document.version,
-      contentFormat: "json",
-      content: sop.document,
-      summary: sop.summary,
-      indexStatus: "pronto",
-    },
-    chunks: buildManagementAssetChunks(sop, options),
-  };
+// Texto enviado ao modelo de embeddings: título e seção ajudam a pergunta
+// "quem aprova desconto" a encontrar o trecho certo mesmo sem os termos exatos.
+export function getChunkEmbeddingText(
+  assetTitle: string,
+  chunk: Pick<ManagementAssetChunkInput, "headingPath" | "content">,
+) {
+  return `${assetTitle} — ${chunk.headingPath}\n${chunk.content}`;
 }

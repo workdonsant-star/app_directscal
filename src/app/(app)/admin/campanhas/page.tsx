@@ -17,12 +17,7 @@ export default function AdminCampaignsPage() {
 
   return (
     <>
-      <AppTopbar
-        breadcrumb={[
-          { label: "Admin", href: "/admin/operacao" },
-          { label: "Campanhas" },
-        ]}
-      />
+      <AppTopbar />
 
       <AppPage>
         <div className="w-full">

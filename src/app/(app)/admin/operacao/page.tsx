@@ -34,7 +34,7 @@ export default async function AdminOperationsPage() {
 
   return (
     <>
-      <AppTopbar breadcrumb={[{ label: "Admin" }, { label: "Operação" }]} />
+      <AppTopbar />
       <AppPage>
         <AdminOperationsWorkspace deliveries={deliveries} />
       </AppPage>

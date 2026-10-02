@@ -11,12 +11,7 @@ export const metadata: Metadata = {
 export default function AdminSpecialistsPage() {
   return (
     <>
-      <AppTopbar
-        breadcrumb={[
-          { label: "Admin", href: "/admin/operacao" },
-          { label: "Especialistas" },
-        ]}
-      />
+      <AppTopbar />
       <AppPage>
         <AdminSpecialistsWorkspace />
       </AppPage>

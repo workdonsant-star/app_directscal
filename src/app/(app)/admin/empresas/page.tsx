@@ -17,9 +17,7 @@ export default function AdminCompaniesPage() {
 
   return (
     <>
-      <AppTopbar
-        breadcrumb={[{ label: "Admin", href: "/admin/operacao" }, { label: "Empresas" }]}
-      />
+      <AppTopbar />
 
       <AppPage>
         <div className="flex w-full flex-col gap-6">

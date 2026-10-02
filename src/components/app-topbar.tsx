@@ -27,10 +27,12 @@ export function AppTopbar({ breadcrumb = [], actions }: AppTopbarProps) {
       <div className="flex h-full min-w-0 flex-1 items-center gap-4 px-4">
         <div className="flex min-w-0 items-center gap-2">
           <SidebarTrigger className="-ml-1 self-center" />
-          <Separator
-            orientation="vertical"
-            className="mr-2 self-center data-[orientation=vertical]:h-4 data-[orientation=vertical]:self-center"
-          />
+          {breadcrumb.length > 0 ? (
+            <Separator
+              orientation="vertical"
+              className="mr-2 self-center data-[orientation=vertical]:h-4 data-[orientation=vertical]:self-center"
+            />
+          ) : null}
 
           {breadcrumb.length > 0 && (
             <Breadcrumb className="flex min-w-0 items-center">
@@ -70,7 +72,7 @@ export function AppTopbar({ breadcrumb = [], actions }: AppTopbarProps) {
         <div className="ml-auto flex min-w-0 items-center justify-end gap-2">
           <div
             data-slot="app-topbar-actions"
-            className="flex min-w-0 items-center justify-end"
+            className="flex min-w-0 items-center justify-end gap-2"
           >
             {actions}
           </div>

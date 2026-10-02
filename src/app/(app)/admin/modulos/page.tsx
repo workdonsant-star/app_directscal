@@ -11,9 +11,7 @@ export const metadata: Metadata = {
 export default function AdminModulesPage() {
   return (
     <>
-      <AppTopbar
-        breadcrumb={[{ label: "Admin", href: "/admin/operacao" }, { label: "Módulos" }]}
-      />
+      <AppTopbar />
 
       <AppPage>
         <div className="w-full">

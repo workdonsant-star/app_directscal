@@ -2,6 +2,7 @@
 
 import {
   Blocks,
+  Bot,
   BookOpenCheck,
   BookText,
   Building2,
@@ -56,6 +57,7 @@ const data = {
   omdxItems: [
     { title: "Coletas", url: "/omdx/diagnosticos", icon: SquarePlus },
     { title: "Action Points", url: "/gantt", icon: CalendarDays },
+    { title: "WorkFlow", url: "/assistente", icon: Bot },
   ],
   admin: [
     {
@@ -68,6 +70,12 @@ const data = {
       title: "Especialistas",
       url: "/admin/especialistas",
       icon: UserRoundCheck,
+      requiresAcquisition: false,
+    },
+    {
+      title: "Ativos de gestão",
+      url: "/admin/ativos",
+      icon: BookOpenCheck,
       requiresAcquisition: false,
     },
     {

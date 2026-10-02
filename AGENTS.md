@@ -50,9 +50,11 @@ Princípios do produto:
 - **next-themes** para dark mode (default `system`, com alternância manual no dropdown do usuário).
 - **Auth.js/NextAuth `5 beta`** para Google OAuth.
 - **lucide-react** para ícones.
+- **Tiptap 3** para o editor de texto dos ativos de gestão (vocabulário restrito, JSON validado por Zod).
+- **@anthropic-ai/sdk** para o provedor Anthropic do agente de consulta; Gemini e Ollama via REST. O provedor é escolhido por variável de ambiente (`src/lib/agent/CLAUDE.md`).
 - Fontes Google: **Funnel Sans** (corpo e UI), **Plus Jakarta Sans** (títulos), **Instrument Serif** (display itálico) e **JetBrains Mono** (mono — substitui IBM Plex Mono do design system original).
 
-Estado atual: **scaffold inicial + dashboard Maturidade + Google OAuth com allowlist corporativa, fallback mockado de autenticação para desenvolvimento, diagnóstico com criador e lideranças por setor, compartilhamento setorial, relatórios PDF, insights, documentação, perfil, configurações empresariais com setores e convites de liderança, superadmin e aquisição por campanha em Supabase**. O core de Maturidade, a aquisição, os dados empresariais e a estrutura organizacional usam Supabase via camada server-side; nome e foto de uma liderança ainda dependem da futura confirmação Google. Nome, avatar e senha do perfil autenticado preservam comportamento local ou simulado. O cookie mockado fica restrito ao fallback de desenvolvimento.
+Estado atual: **scaffold inicial + dashboard Maturidade + Google OAuth com allowlist corporativa, fallback mockado de autenticação para desenvolvimento, diagnóstico com criador e lideranças por setor, compartilhamento setorial, relatórios PDF, insights, documentação, perfil, configurações empresariais com setores e convites de liderança, superadmin e aquisição por campanha em Supabase, ativos de gestão com fluxo editorial e agente de consulta no app e no Slack**. O core de Maturidade, a aquisição, os dados empresariais e a estrutura organizacional usam Supabase via camada server-side; nome e foto de uma liderança ainda dependem da futura confirmação Google. Nome, avatar e senha do perfil autenticado preservam comportamento local ou simulado. O cookie mockado fica restrito ao fallback de desenvolvimento. Ativos de gestão são escritos e publicados pela operação Directscal em `/admin/ativos`; o agente responde só com versões publicadas da empresa, com fonte ou recusa explícita, em `/assistente` e no Slack.
 
 ## Fontes de verdade
 
@@ -125,6 +127,8 @@ src/
 │   ├── a/[slug]/             ← aquisição pública por campanha
 │   ├── api/auth/             ← Auth.js Google OAuth + endpoints mockados de fallback
 │   ├── api/settings/         ← setores, lideranças e envio/reenvio de convites
+│   ├── api/assistant/        ← perguntas e avaliações do agente de consulta
+│   ├── api/integrations/     ← webhooks e OAuth de provedores externos (Slack)
 │   ├── globals.css           ← tokens da Directscal mapeados p/ shadcn
 │   ├── layout.tsx            ← root layout, ThemeProvider, fontes
 │   └── page.tsx              ← redirect("/omdx")
@@ -139,10 +143,12 @@ src/
 │   ├── theme-provider.tsx    ← wrapper de next-themes
 │   └── theme-toggle.tsx      ← botão sol/lua
 └── lib/
+    ├── agent/                ← agente de consulta: busca híbrida, provedores de IA e auditoria
     ├── auth/                 ← Google OAuth, sessão e fallback mockado
     ├── contracts/            ← schemas Zod, tipos e mappers Supabase-friendly
     ├── data/                 ← data-sources server-side, helpers puros e regras de produção
     ├── email/                ← e-mails transacionais server-side via Resend
+    ├── integrations/         ← adaptadores externos (Slack)
     ├── supabase/             ← clients server-side Supabase
     ├── mock-data.ts          ← seed temporário dos dados fictícios
     ├── types.ts              ← reexports dos tipos públicos
@@ -161,14 +167,16 @@ Rotas atuais:
 - `/omdx/[id]/relatorio` → download autenticado do PDF consolidado.
 - `/ativos-de-gestao` → redireciona para `/ativos-de-gestao/sops`.
 - `/ativos-de-gestao/sops` → biblioteca de SOPs por categoria.
-- `/ativos-de-gestao/sops/[id]` → leitura individual de um SOP publicado para a empresa.
+- `/ativos-de-gestao/sops/[id]`, `/ativos-de-gestao/playbooks/[id]` e `/ativos-de-gestao/governanca/[id]` → leitura individual da versão publicada vigente.
 - `/ativos-de-gestao/playbooks` → biblioteca de Playbooks por categoria.
 - `/ativos-de-gestao/governanca` → biblioteca de ativos de Governança por categoria.
 - `/ativos-de-gestao/matriz-raci` → biblioteca de matrizes RACI.
+- `/assistente` → WorkFlow: conversa com o agente de consulta dos ativos publicados, com fontes citadas e avaliação útil/não útil.
 - `/sops` → redirect legado para `/omdx`.
 - `/admin` → redireciona para `/admin/operacao`.
 - `/admin/operacao` → central interna com fila de entregas.
 - `/admin/especialistas` → cadastro frontend-only de especialistas Directscal.
+- `/admin/ativos` → ativos de gestão por empresa; `/admin/ativos/[id]` é o workspace editorial (editor, revisão, publicação, versões) e `/admin/ativos/perguntas` lista lacunas do agente.
 - `/admin/modulos` → rota legada do catálogo de módulos, fora da navegação principal.
 - `/admin/campanhas` → campanhas, links e campos de aquisição.
 - `/admin/leads` → leads capturados por links de aquisição.
@@ -187,14 +195,14 @@ Rotas e fluxos planejados:
 - `/r/[token]` (público, sem auth) — fluxo do respondente.
 
 Regras de breadcrumb no Maturidade:
-- `/omdx` não usa breadcrumb; é a raiz executiva do módulo.
-- Camadas abaixo usam breadcrumb, por exemplo `Maturidade / Diagnósticos` e `Maturidade / Diagnósticos / Compartilhar`.
+- Páginas raiz abertas diretamente pela sidebar não usam breadcrumb, incluindo Overview, Coletas, Action Points, WorkFlow, dimensões, bibliotecas, Relatórios e raízes do Admin.
+- O breadcrumb começa somente depois que a pessoa abre uma página a partir da raiz e deve partir da raiz imediata, por exemplo `Coletas / Compartilhar`, `SOPs / Nome do SOP` e `Relatórios / Nome do relatório`.
 - Drawers de criação/configuração não têm breadcrumb próprio.
 - `Coletas` é o nome visível do item próprio da sidebar que aponta para `/omdx/diagnosticos`; não deve depender de CTA dentro do dashboard.
 
 ## Dados e mocks
 
-O core de Maturidade, a aquisição por campanha e a estrutura organizacional usam Supabase versionado em `supabase/`. Páginas e componentes consomem `src/lib/data/`; route handlers de produção em `src/app/api/omdx/`, `src/app/api/acquisition/`, `src/app/api/admin/` e `src/app/api/settings/` escrevem via service role no servidor. Convites de liderança aceitam qualquer conta Google pelo e-mail exato e escolhem entre Superadmin da empresa (`cliente`) e Admin (`admin`). O aceite transacional confirma nome/foto, cria `organization_members` e mantém a sessão Google para entrada imediata. O papel técnico `superadmin` permanece exclusivo da administração global Directscal e nunca pode ser concedido por convite de empresa. Google OAuth do painel exige e-mail verificado, domínio/e-mail permitidos, membership ativo ou intent de campanha/convite. O fallback demo por senha usa `/api/auth/login` e `src/lib/auth/mock-auth.ts`; fica disponível apenas fora de produção e quando `AUTH_ENABLE_DEV_PASSWORD_LOGIN=true`.
+O core de Maturidade, a aquisição por campanha e a estrutura organizacional usam Supabase versionado em `supabase/`. Páginas e componentes consomem `src/lib/data/`; route handlers de produção em `src/app/api/omdx/`, `src/app/api/acquisition/`, `src/app/api/admin/`, `src/app/api/settings/`, `src/app/api/assistant/` e `src/app/api/integrations/` escrevem via service role no servidor. Convites de liderança aceitam qualquer conta Google pelo e-mail exato e escolhem entre Superadmin da empresa (`cliente`) e Admin (`admin`). O aceite transacional confirma nome/foto, cria `organization_members` e mantém a sessão Google para entrada imediata. O papel técnico `superadmin` permanece exclusivo da administração global Directscal e nunca pode ser concedido por convite de empresa. Google OAuth do painel exige e-mail verificado, domínio/e-mail permitidos, membership ativo ou intent de campanha/convite. O fallback demo por senha usa `/api/auth/login` e `src/lib/auth/mock-auth.ts`; fica disponível apenas fora de produção e quando `AUTH_ENABLE_DEV_PASSWORD_LOGIN=true`.
 
 Convenções:
 - Componentes e páginas **não devem** importar `mock-data.ts` diretamente; use `src/lib/data/omdx-data-source.ts`.
@@ -237,6 +245,7 @@ npm run build             # build de produção
 npm run lint              # ESLint
 npm run test              # testes unitários Vitest
 npm run test:e2e          # testes E2E Playwright
+npm run eval:agent        # avaliação offline do agente (ver tests/eval/CLAUDE.md)
 npx tsc --noEmit          # type-check
 ```
 

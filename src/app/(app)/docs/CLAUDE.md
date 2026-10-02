@@ -10,7 +10,7 @@ Página autenticada de recurso para orientar o cliente administrador no uso do s
 
 ## Convenções
 
-- Usar breadcrumb `Documentação`.
+- Como página raiz, não exibir breadcrumb.
 - Manter a página como Server Component; não usar `"use client"` sem interação real.
 - A página pertence à aplicação do cliente e redireciona `superadmin` para `/admin/operacao`.
 - Manter formato de página única com sumário lateral e âncoras internas.

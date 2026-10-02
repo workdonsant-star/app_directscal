@@ -10,10 +10,12 @@ Antes de editar, releia o **AGENTS.md** da raiz e este documento.
 
 ```
 src/lib/
+├── agent/                  ← agente de consulta: busca, provedores de IA e auditoria
 ├── auth/                   ← Google OAuth, sessão e fallback mockado
 ├── contracts/              ← schemas Zod, tipos e mappers de dados
 ├── data/                   ← data-sources, regras de domínio e agregações Maturidade
 ├── email/                  ← templates e envio transacional server-side
+├── integrations/           ← adaptadores externos (Slack)
 ├── supabase/               ← clients server-side Supabase
 ├── pdf/                    ← documentos PDF renderizados a partir da camada data
 ├── mock-data.ts            ← seed temporário e bruto dos dados mockados
@@ -34,6 +36,7 @@ src/lib/
 - IDs continuam como `string` na UI, mas o core de Maturidade já recebe UUIDs do Supabase.
 
 Contratos principais:
+- `ManagementAsset`, `ManagementAssetDocument`, `AdminManagementAssetDetail`, `CreateManagementAssetInput`, `UpdateManagementAssetInput`, `RichTextDocument`, `AssetQuestionAnswer`, `AssetQuestionCitation`.
 - `AdminModule`, `AcquisitionCampaign`, `AcquisitionFormField`, `Lead`, `LeadCompany`.
 - `AuthUser`, `AuthSession`, `SignInInput`, `SignUpInput`, `ResetPasswordInput`.
 - `Diagnostic`, `DiagnosticListItem`, `DiagnosticDetail`.
@@ -60,8 +63,8 @@ Contratos principais:
 - `calculateLatestVsPreviousComparison()` ordena séries por `createdAt` e compara o valor mais recente à média dos anteriores; com menos de dois pontos ou média anterior zero, retorna `null`.
 - `DimensionInsightTrendPoint` inclui `gap`, calculado por diagnóstico a partir da diferença entre a maior e a menor média de camada da dimensão; o campo fica `null` quando não há camadas suficientes para comparação.
 - `sops-data-source.ts` permanece apenas como legado inativo da antiga experiência de Ativos de gestão. A funcionalidade não aparece no catálogo de módulos nem na sidebar; não conectar persistência real ou reativar rotas sem nova decisão explícita.
-- `management-assets-data-source.ts` sustenta a nova indexação frontend-only dos ativos publicados. Não reutilize `sops-data-source.ts`, que continua reservado ao protótipo legado do editor.
-- O conteúdo estruturado de SOP aceita blocos de parágrafo, lista e tabela; tabelas vindas de documentos Markdown devem permanecer em dados tipados e ser renderizadas semanticamente.
+- `management-assets-data-source.ts` lê do Supabase a versão publicada vigente dos ativos das organizações da sessão; `management-assets-admin-data-source.ts` concentra o fluxo editorial da operação Directscal. Não reutilize `sops-data-source.ts`, que continua reservado ao protótipo legado.
+- O conteúdo dos ativos é o documento do editor (`RichTextDocument`, contrato em `contracts/rich-text.ts`), restrito a títulos H2/H3, parágrafos, listas, destaque, links seguros e tabelas simples. Versões antigas em blocos por seção são convertidas na leitura por `parseStoredAssetContent()`.
 - Leituras Maturidade Supabase ficam em `omdx-data-source.ts`; helpers puros compartilhados com Client Components ficam em `omdx-domain.ts`.
 - Cálculos agregados e helpers de domínio devem ficar em `data/` ou em funções puras de contrato, não em componentes.
 - Planos de ação PDF devem consumir DTOs consolidados daqui, como `getDiagnosticActionPlan()`, sem gerar regra dentro do documento PDF.

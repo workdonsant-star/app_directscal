@@ -7,7 +7,7 @@ Seção autenticada para analisar dados agregados de Maturidade por dimensão, c
 ## Convenções locais
 
 - `/insights` redireciona para `/insights/cultura`.
-- `/insights/[dimensao]` usa breadcrumb `Insights / Nome da dimensão`.
+- As dimensões são raízes abertas diretamente pela sidebar e não exibem breadcrumb.
 - A navegação lateral lista as seis dimensões como seção própria `Insights`.
 - O estado de carregamento acompanha o leiaute atual em largura total: três KPIs numéricos sem gauge e tabela aberta de quatro colunas, sem card ou wrapper externo.
 - O estado de conteúdo usa três métricas numéricas em grid com 16px de espaçamento, seguidas por uma tabela sem superfície própria, cabeçalho em `muted`, linhas de 55px e divisores inferiores de 0,5px nas quatro primeiras linhas; não há alternância de fundos.

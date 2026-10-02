@@ -16,6 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { managementAssetTypeLabels } from "@/lib/contracts/management-assets";
+import { getManagementAssetHref } from "@/lib/data/management-asset-routes";
 import type { ManagementAsset } from "@/lib/types";
 
 const allCategories = "Todas as categorias";
@@ -35,9 +37,7 @@ function authorInitials(name: string) {
 }
 
 function getAssetHref(asset: ManagementAsset) {
-  return asset.type === "sop"
-    ? `/ativos-de-gestao/sops/${asset.id}`
-    : null;
+  return getManagementAssetHref(asset.type, asset.id);
 }
 
 function ManagementAssetCard({ asset }: { asset: ManagementAsset }) {
@@ -114,7 +114,7 @@ function ManagementAssetCard({ asset }: { asset: ManagementAsset }) {
     <Link
       href={href}
       className="group rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-      aria-label={`Abrir SOP ${asset.title}`}
+      aria-label={`Abrir ${managementAssetTypeLabels[asset.type]} ${asset.title}`}
     >
       {card}
     </Link>

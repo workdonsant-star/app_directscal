@@ -276,10 +276,6 @@ export function DiagnosticsWorkspace({
   return (
     <>
       <AppTopbar
-        breadcrumb={[
-          { label: "Overview", href: "/omdx" },
-          { label: "Diagnósticos" },
-        ]}
         actions={
           <div className="flex min-w-0 items-center gap-2">
             <Tabs

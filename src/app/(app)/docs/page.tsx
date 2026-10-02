@@ -56,7 +56,7 @@ export default async function DocumentationPage() {
 
   return (
     <>
-      <AppTopbar breadcrumb={[{ label: "Documentação" }]} />
+      <AppTopbar />
 
       <AppPage>
         <div className="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-[220px_minmax(0,760px)]">

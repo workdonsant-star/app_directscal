@@ -19,12 +19,7 @@ export async function ManagementAssetsPage({
 
   return (
     <>
-      <AppTopbar
-        breadcrumb={[
-          { label: "Ativos de gestão", href: "/ativos-de-gestao" },
-          { label: title },
-        ]}
-      />
+      <AppTopbar />
 
       <AppPage>
         <section aria-labelledby="management-assets-title" className="space-y-6">

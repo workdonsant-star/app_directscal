@@ -29,7 +29,7 @@ export default async function GanttPage() {
 
   return (
     <>
-      <AppTopbar breadcrumb={[{ label: "Action Points" }]} />
+      <AppTopbar />
 
       <main className="flex h-[calc(100svh-4rem)] min-h-0 flex-col">
         <div className="flex min-h-0 flex-1 flex-col">

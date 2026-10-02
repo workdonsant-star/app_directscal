@@ -8,16 +8,26 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "eval:agent": "vitest run --config vitest.eval.config.ts tests/eval/asset-agent.eval.ts",
+    "eval:seed": "vitest run --config vitest.eval.config.ts tests/eval/seed-pilot-assets.eval.ts"
   },
   "engines": {
     "node": ">=22 <25"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.131.0",
     "@auth/supabase-adapter": "^1.11.2",
     "@base-ui/react": "^1.4.1",
     "@react-pdf/renderer": "^4.5.1",
     "@supabase/supabase-js": "^2.105.4",
+    "@tiptap/extension-blockquote": "^3.31.4",
+    "@tiptap/extension-list": "^3.31.4",
+    "@tiptap/extension-table": "^3.31.4",
+    "@tiptap/extensions": "^3.31.4",
+    "@tiptap/pm": "^3.31.4",
+    "@tiptap/react": "^3.31.4",
+    "@tiptap/starter-kit": "^3.31.4",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "class-variance-authority": "^0.7.1",

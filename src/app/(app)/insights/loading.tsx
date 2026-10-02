@@ -10,7 +10,6 @@ export default function InsightsLoading() {
   return (
     <>
       <AppTopbar
-        breadcrumb={[{ label: "Insights" }, { label: "Dimensão" }]}
         actions={<Skeleton className="h-7 w-[18ch]" />}
       />
 

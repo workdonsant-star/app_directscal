@@ -33,7 +33,7 @@ export default async function ReportsPage() {
 
   return (
     <>
-      <AppTopbar breadcrumb={[{ label: "Relatórios" }]} />
+      <AppTopbar />
 
       <AppPage>
         <section aria-labelledby="reports-title" className="space-y-6">

@@ -33,8 +33,7 @@ export default async function ShareDiagnosticPage({
       <>
         <AppTopbar
           breadcrumb={[
-            { label: "Maturidade", href: "/omdx" },
-            { label: "Diagnósticos", href: "/omdx/diagnosticos" },
+            { label: "Coletas", href: "/omdx/diagnosticos" },
             { label: "Compartilhar" },
           ]}
         />
@@ -66,8 +65,7 @@ export default async function ShareDiagnosticPage({
     <>
       <AppTopbar
         breadcrumb={[
-          { label: "Maturidade", href: "/omdx" },
-          { label: "Diagnósticos", href: "/omdx/diagnosticos" },
+          { label: "Coletas", href: "/omdx/diagnosticos" },
           { label: "Compartilhar" },
         ]}
       />

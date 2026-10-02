@@ -1,8 +1,8 @@
 # Ativos de gestão e agente de consulta
 
-Status: especificação aprovada para planejamento  
-Data: 25 de setembro de 2026  
-Escopo atual: aplicação Directscal com adaptador inicial da Slack Events API
+Status: fases 1 a 4 implementadas; piloto pendente de migration aplicada e avaliação com empresa de teste  
+Data: 25 de setembro de 2026 · atualizado em 1 de outubro de 2026  
+Escopo atual: fluxo editorial no admin, biblioteca do cliente no Supabase, agente no app e no Slack com instalação por empresa
 
 ## 1. Contexto
 
@@ -27,7 +27,10 @@ Estão aprovadas as seguintes decisões para o planejamento:
 9. Jarvs é uma camada opcional e substituível de interpretação e geração de respostas. Ele não controla documentos, publicações, permissões ou índices.
 10. O Slack funciona como adaptador de entrada e saída; o Directscal/Supabase continua sendo a fonte de verdade.
 
-11. O adaptador inicial responde a menções ao app usando somente trechos publicados da organização configurada no ambiente. A pergunta é validada pela assinatura do Slack e a resposta é publicada na mesma thread com referência ao ativo e à versão.
+11. O Slack é instalado por empresa via OAuth (um workspace ativo pertence a uma empresa). O app responde menções na thread e mensagens diretas, sempre com a organização da instalação, e oferece avaliação útil/não útil na própria mensagem.
+12. O conteúdo dos ativos textuais (SOP, playbook, governança) é escrito num editor de texto (Tiptap) com vocabulário restrito e guardado como JSON validado. A matriz RACI terá componente tabular próprio em etapa futura.
+13. A criação replica o fluxo de diagnósticos: drawer em três etapas para identificar o ativo e o ponto de partida; o conteúdo é escrito numa página própria do ativo.
+14. A IA participa só da redação da resposta. Busca, filtro por empresa, permissões e citações são do Directscal. O provedor é configurável (Anthropic, Gemini, Ollama ou modo extrativo sem IA).
 
 ## 3. Objetivo da primeira entrega
 
@@ -361,14 +364,13 @@ Ativos publicados no Supabase
 
 Assim, Jarvs pode ser introduzido, substituído ou removido sem migrar documentos ou reescrever as regras de publicação.
 
-## 12. Superfícies planejadas
-
-As rotas são propostas e precisam ser confirmadas antes da implementação.
+## 12. Superfícies
 
 ### Operação Directscal
 
-- `/admin/empresas/[id]/ativos`: lista dos ativos da empresa.
+- `/admin/ativos`: lista de ativos de todas as empresas, com filtro por empresa (substitui a proposta `/admin/empresas/[id]/ativos`, porque o detalhe de empresa ainda usa identificadores derivados de leads).
 - `/admin/ativos/[id]`: workspace editorial do especialista.
+- `/admin/ativos/perguntas`: perguntas ao agente, com foco em lacunas.
 
 O workspace deve concentrar:
 
@@ -387,11 +389,12 @@ O workspace deve concentrar:
 - A sidebar apresenta a seção `Ativos de gestão` com links ativos para `SOPs`, `Playbooks`, `Governança` e `Matriz RACI`.
 - SOPs, Playbooks e Governança são indexados por categoria para suportar conteúdos de diferentes áreas; Matriz RACI permanece organizada sem categoria nesta primeira versão.
 - Na biblioteca de SOPs, cada card publicado abre uma página de leitura contínua com autoria, data de atualização, versão, responsável operacional, ciclo de revisão e sumário navegável por seção.
-- O conteúdo do SOP é representado por blocos tipados de parágrafo e lista; a interface não renderiza HTML livre. Nesta etapa, a leitura usa dados frontend-only e ainda não está persistida no Supabase.
+- O conteúdo é o documento do editor, renderizado por componentes próprios; a interface não renderiza HTML livre. A leitura vem do Supabase.
 - Cada card da biblioteca registra título, resumo, autor responsável e data de atualização, seguindo a densidade visual do grid de Relatórios.
-- `/ativos`: biblioteca de ativos publicados.
-- `/ativos/[id]`: leitura nativa da versão vigente.
+- `/ativos-de-gestao/<tipo>`: bibliotecas de ativos publicados (SOPs, Playbooks, Governança, Matriz RACI).
+- `/ativos-de-gestao/<tipo>/[id]`: leitura nativa da versão vigente (SOP, Playbook e Governança).
 - `/assistente`: pesquisa conversacional dos ativos.
+- `/configuracoes`: conexão do Slack pelo Superadmin da empresa.
 
 O agente deve sempre permitir abrir a fonte original na aplicação.
 
@@ -478,7 +481,6 @@ Critérios de aceite:
 
 ## 14. Fora do escopo atual
 
-- Slack;
 - WhatsApp;
 - ClickUp;
 - leitura de conversas externas;
@@ -518,21 +520,44 @@ Antes do piloto:
 7. Medir latência e custo por consulta.
 8. Executar advisors e testes de RLS antes de qualquer uso com cliente.
 
-## 17. Questões que permanecem abertas
+## 17. Questões abertas
 
-Estas decisões não bloqueiam a documentação, mas precisam ser fechadas antes da respectiva fase:
+Resolvidas em 1 de outubro de 2026:
 
-- Qual editor e formato canônico serão usados para o conteúdo: Markdown estruturado, JSON rico ou ambos?
+- Editor e formato: Tiptap, com JSON do editor como formato canônico (`content_format = json`).
+- Fluxo de revisão: qualquer superadmin move de `em_revisao` para `pronto_para_publicar`; revisão e publicação podem ser feitas pela mesma pessoa nesta primeira versão, com `reviewed_by` e `published_by` registrados.
+- Provedor: configurável. Recomendação para dados reais é a API da Anthropic; testes com Gemini gratuito ou Ollama local, somente com conteúdo fictício no caso do Gemini.
+- Histórico do agente: apenas a conversa aberta; sem memória entre sessões.
+
+Ainda abertas:
+
 - Arquivos PDF e DOCX serão apenas anexos ou poderão originar conteúdo editável?
 - O primeiro corte terá acesso amplo por organização ou escopo por setor desde o início?
-- Quem pode mover um ativo de `em_revisao` para `pronto_para_publicar`?
-- Publicação e revisão precisam ser feitas por pessoas diferentes?
 - Qual política de retenção será aplicada às perguntas e respostas?
-- Qual provedor será usado para embeddings e geração?
 - Qual produto ou implementação específica é chamada de Jarvs e quais contratos ela oferece?
-- O agente manterá histórico entre sessões ou apenas contexto da conversa atual?
 
-## 18. Definição de pronto do produto
+## 18. Estado da implementação
+
+Implementado em 1 de outubro de 2026:
+
+- Migration `20261001120000_management_asset_editorial_agent.sql`: estado editorial por versão, imutabilidade de versões publicadas, rascunho único por ativo, publicação transacional (`app_private.publish_management_asset_version`), busca híbrida em português (`pt_unaccent` + `pgvector`, fusão RRF) filtrada pela organização antes do ranking, auditoria multicanal e instalação do Slack por workspace.
+- Fase 1: `/admin/ativos` com criação a partir de modelos, editor Tiptap, revisão, publicação, arquivamento, restauração e histórico; bibliotecas e leitura do cliente lendo do Supabase.
+- Fase 2: trechos por seção H2/H3, embeddings opcionais (Gemini ou Ollama, 768 dimensões) e `Reindexar vetores` para completar falhas.
+- Fase 3: `answerAssetQuestion` com citações, recusa por evidência insuficiente, auditoria, feedback e painel de lacunas; `/assistente` ligado ao serviço.
+- Slack: OAuth por empresa, menções e mensagens diretas, confirmação imediata com processamento em segundo plano, descarte de reenvios e botões de avaliação.
+- Fase 4 (preparação): `npm run eval:seed` publica os SOPs de modelo numa empresa de teste e `npm run eval:agent` mede o conjunto de 50 perguntas contra a meta de 85% e testa isolamento entre empresas.
+
+Pendências:
+
+- Aplicar a migration no Supabase antes de usar as telas novas.
+- Rodar o piloto (seção 16) com o provedor escolhido.
+- Persistir especialistas no banco; hoje o catálogo é local, como nas entregas.
+- Escopo por setor, papel ou pessoa: o modelo existe (`management_asset_scopes`), mas a leitura ainda é por organização.
+- Política de retenção das perguntas e respostas.
+- Componente tabular da matriz RACI.
+- Adaptador Jarvs (fase opcional).
+
+## 19. Definição de pronto do produto
 
 A primeira entrega funcional estará pronta quando:
 

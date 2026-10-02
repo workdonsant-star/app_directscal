@@ -3,6 +3,7 @@ export * from "./admin-operations";
 export * from "./auth";
 export * from "./gantt";
 export * from "./management-assets";
+export * from "./rich-text";
 export * from "./omdx";
 export * from "./organization-structure";
 export * from "./operational-onboarding";
