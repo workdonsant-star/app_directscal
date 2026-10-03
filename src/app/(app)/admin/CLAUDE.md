@@ -11,7 +11,7 @@ Rotas autenticadas da visão de superadministrador. Usam a mesma shell do app (`
 - `/admin` redireciona para `/admin/operacao`.
 - `/admin/operacao` concentra indicadores e a fila de entregas.
 - `/admin/especialistas` lista e cadastra especialistas internos em estado local.
-- `/admin/ativos` cria, edita, revisa e publica ativos de gestão por empresa; `/admin/ativos/[id]` é o workspace editorial e `/admin/ativos/perguntas` lista as perguntas feitas ao agente.
+- `/admin/operacao/criacao-dos-ativos` seleciona a empresa; toda produção, edição, revisão, publicação e auditoria fica em `/admin/empresas/[id]/criacao-dos-ativos` e suas subrotas.
 - `/admin/campanhas` lista e configura campanhas de aquisição.
 - `/admin/leads` lista leads capturados.
 - `/admin/leads/[id]` mostra o detalhe completo de um lead capturado.

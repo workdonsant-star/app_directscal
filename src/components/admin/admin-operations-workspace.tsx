@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { AdminOperationsNavigation } from "@/components/admin/admin-operations-navigation";
 import { AdminDeliveryStatusBadge } from "@/components/admin/admin-delivery-status-badge";
 import { KpiCard } from "@/components/kpi-card";
 import { Button } from "@/components/ui/button";
@@ -80,6 +81,7 @@ export function AdminOperationsWorkspace({
 
   return (
     <div className="flex w-full flex-col gap-8">
+      <AdminOperationsNavigation section="deliveries" />
       <section
         aria-labelledby="operation-title"
         className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"

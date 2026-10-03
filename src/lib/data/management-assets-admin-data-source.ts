@@ -102,17 +102,26 @@ export async function listAdminOrganizations() {
   return data.map((row) => ({ id: row.id, name: row.name }));
 }
 
-export async function listAdminManagementAssets(): Promise<
+export async function getAdminManagementAssetCompany(companyId: string) {
+  const organizations = await listAdminOrganizations();
+  const organization = organizations.find((item) => `company_${item.id}` === companyId);
+  return organization
+    ? { id: companyId, organizationId: organization.id, name: organization.name }
+    : null;
+}
+
+export async function listAdminManagementAssets(organizationId?: string): Promise<
   AdminManagementAssetListItem[]
 > {
   const supabase = createSupabaseAdminClient();
+  const assetQuery = supabase.from("management_assets").select("*");
+  if (organizationId) {
+    assertUuid(organizationId, "Empresa não encontrada.");
+    assetQuery.eq("organization_id", organizationId);
+  }
   const [{ data: assets, error }, { data: drafts, error: draftsError }] =
     await Promise.all([
-      supabase
-        .from("management_assets")
-        .select("*")
-        .order("updated_at", { ascending: false })
-        .returns<AssetRow[]>(),
+      assetQuery.order("updated_at", { ascending: false }).returns<AssetRow[]>(),
       supabase
         .from("management_asset_versions")
         .select("asset_id,review_status,updated_at")
@@ -695,15 +704,21 @@ export async function transitionManagementAsset(
 
 export async function listAdminAssetQuestionAudits(filter: {
   onlyGaps: boolean;
+  organizationId?: string;
 }): Promise<AdminAssetQuestionAudit[]> {
   const supabase = createSupabaseAdminClient();
-  const { data: audits, error } = await supabase
+  const auditQuery = supabase
     .from("asset_question_audits")
     .select(
       "id,organization_id,channel,question,answer,answer_status,citations,provider,latency_ms,created_at",
     )
     .order("created_at", { ascending: false })
     .limit(200);
+  if (filter.organizationId) {
+    assertUuid(filter.organizationId, "Empresa não encontrada.");
+    auditQuery.eq("organization_id", filter.organizationId);
+  }
+  const { data: audits, error } = await auditQuery;
 
   if (error) throw error;
 

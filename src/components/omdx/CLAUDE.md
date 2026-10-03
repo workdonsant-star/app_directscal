@@ -50,6 +50,7 @@ Maturidade avalia maturidade operacional em **6 dimensões** (Cultura, Visão, C
 | `InterventionPriorityChart` | `intervention-priority-chart.tsx` | `/omdx` | Barras horizontais ECharts para priorizar intervenção por criticidade operacional, maturidade, gap e dispersão. |
 | `TopResearchBottlenecks` | `top-research-bottlenecks.tsx` | `/omdx` | Ranking React de perguntas com maior percentual de respostas críticas, sem ECharts. |
 | `LayerHeatmapComparisonChart` | `layer-heatmap-comparison-chart.tsx` | `/omdx` | Heatmap ECharts para comparar diretoria, liderança e time por dimensão em escala de 1 a 5. |
+| `ProcessUsageSection` | `process-usage-section.tsx` | `/omdx` | Server Component da seção `Uso dos processos`: três cards (Adoção, Cobertura, Utilidade) com variação em pontos percentuais contra os 30 dias anteriores, barras empilhadas por semana (8 semanas) e ranking dos processos mais consultados com a fração de avaliações negativas. SVG/HTML com tooltips nativos e tabela `sr-only`. Recebe `ProcessUsageAnalytics` pronto. |
 | `useChartThemeColors` | `use-chart-theme-colors.ts` | Charts ECharts Maturidade | Hook client-side que lê tokens CSS e observa mudanças da classe `dark` no `<html>` para recalcular cores sem refresh. |
 | `OperationalMemberRegistrationForm` | `operational-member-registration-form.tsx` | `/o/[token]` | Formulário público curto para a própria pessoa informar área, papel operacional e responsabilidades percebidas. Após cadastro aceito, mostra confirmação sem redirecionar automaticamente para pesquisa. |
 

@@ -4,7 +4,9 @@ import { AppPage } from "@/components/app-page";
 import { AppTopbar } from "@/components/app-topbar";
 import { LayerScoreDashboard } from "@/components/omdx/layer-score-dashboard";
 import { OverviewDiagnosticFilter } from "@/components/omdx/overview-diagnostic-filter";
+import { ProcessUsageSection } from "@/components/omdx/process-usage-section";
 import { getOmdxOverviewPageData } from "@/lib/data/omdx-data-source";
+import { getProcessUsageOverview } from "@/lib/data/process-usage-data-source";
 
 export const metadata: Metadata = {
   title: "Overview — Maturidade",
@@ -23,8 +25,17 @@ export default async function MaturityPage({
       ? resolvedSearchParams.diagnostico
       : "todos";
 
-  const { analytics, comparison, diagnosticOptions, selectedDiagnostic } =
-    await getOmdxOverviewPageData(requestedDiagnostic);
+  const [
+    { analytics, comparison, diagnosticOptions, selectedDiagnostic },
+    processUsage,
+  ] = await Promise.all([
+    getOmdxOverviewPageData(requestedDiagnostic),
+    // Indicadores de uso são complementares: uma falha aqui não derruba o Overview.
+    getProcessUsageOverview().catch((error: unknown) => {
+      console.error("[overview] process usage failed", error);
+      return null;
+    }),
+  ]);
 
   return (
     <>
@@ -59,6 +70,8 @@ export default async function MaturityPage({
             summary={analytics.layerSummary}
             vulnerabilityRows={analytics.vulnerabilityRows}
           />
+
+          {processUsage ? <ProcessUsageSection analytics={processUsage} /> : null}
         </div>
       </AppPage>
     </>

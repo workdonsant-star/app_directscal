@@ -15,6 +15,7 @@ Valores iguais não tornam dois tokens redundantes quando representam espaços d
 - **Dimensões por camadas:** reutiliza os três tokens de camada do chart horizontal. Labels internos, ordem da pilha e tooltip preservam a identificação de cada camada.
 - **Vulnerabilidades por pergunta:** usa a escala roxa `--overview-matrix-vulnerability-*`; scores baixos permanecem visualmente mais densos e cada célula mostra classificação e média.
 - **Alavancas prioritárias:** usa a escala verde `--overview-matrix-leverage-*`; cada célula mostra o nível e o índice convertido para a escala visual de 0 a 5.
+- **Uso dos processos:** `--overview-chart-usage-resolved` (violeta) marca perguntas respondidas com fonte e consultas; `--overview-chart-usage-gap` (laranja) marca perguntas sem resposta publicada e respostas avaliadas como não úteis. O par foi validado pelo `validate_palette.js` da skill de dataviz nos dois temas (faixa de luminosidade, croma, separação para daltonismo e contraste 3:1 sobre `--surface-sidebar`). Legenda e números diretos acompanham as duas séries.
 - **Histórico:** fica disponível no título acessível de cada marca SVG quando existe base comparável; não cria uma segunda família cromática nem altera a geometria aprovada.
 
 ## Regras

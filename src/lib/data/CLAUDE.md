@@ -26,6 +26,7 @@ Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no
 - `management-asset-templates.ts` guarda os modelos de partida (estruturas vazias por tipo e SOPs de referência). Modelos viram rascunho; nada é publicado automaticamente.
 - `management-asset-routes.ts` é puro e resolve os caminhos das bibliotecas e da leitura individual por tipo.
 - `rich-text.ts` é puro: sumário com âncoras únicas, texto plano, divisão em seções H2/H3 e conversão do formato legado em blocos.
+- `process-usage-analytics.ts` é puro e calcula os indicadores de uso dos processos: Adoção (pessoas distintas que perguntaram ÷ lideranças ativas + time aprovado, limitada a 100%), Cobertura (respondidas com fonte ÷ respondidas + sem evidência; falhas técnicas ficam fora), Utilidade (úteis ÷ avaliadas), 8 semanas móveis e top 6 processos citados. Compara os últimos 30 dias com os 30 anteriores em pontos percentuais. `process-usage-data-source.ts` (server-only) busca as perguntas da organização principal da sessão e delega o cálculo.
 - `management-asset-indexer.ts` é puro e transforma o documento em trechos determinísticos por seção (`H2 › H3`), incluindo listas e tabelas. A publicação grava esses trechos com embeddings opcionais.
 - `acquisition-data-source.ts` é server-side e fala com Supabase para campanhas, leads, empresas, intents OAuth e credenciais de senha.
 - `company-registry-data-source.ts` valida o CNPJ, consulta a API Minha Receita somente no servidor e normaliza razão social e dados cadastrais. A interface antecipa a consulta, mas a criação da conta repete a validação antes de persistir organização e lead.
@@ -99,3 +100,5 @@ Faixas de classificação:
 - Criticidade: `<= 25` Consistente, `<= 50` Atenção, `<= 75` Inconsistente, acima de `75` Crítico.
 - Desalinhamento: `<= 10` Consistente, `<= 24` Atenção, `<= 50` Inconsistente, acima de `50` Crítico.
 - Consenso: `>= 80` Consistente, `>= 60` Atenção, `>= 40` Inconsistente, abaixo de `40` Crítico.
+
+- Produção de ativos na instância: `getAdminManagementAssetCompany()` resolve `company_<organizationId>`; listagens de ativos e auditorias recebem organizationId e filtram no banco antes de retornar resultados. Rotas editoriais conferem se o ativo pertence à empresa da URL.

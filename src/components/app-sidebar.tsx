@@ -73,12 +73,6 @@ const data = {
       requiresAcquisition: false,
     },
     {
-      title: "Ativos de gestão",
-      url: "/admin/ativos",
-      icon: BookOpenCheck,
-      requiresAcquisition: false,
-    },
-    {
       title: "Empresas",
       url: "/admin/empresas",
       icon: Building2,

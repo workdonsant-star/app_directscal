@@ -33,11 +33,11 @@ Componentes específicos da visão de superadministrador da Directscal. Eles adm
 | `AdminCompanyDetail` | `/admin/empresas/[id]`, atribuição, entregas e acessos. |
 | `AdminDeliveryWorkspace` | `/admin/entregas/[id]`, seleção e download de relatório, overview analítico, detalhe por dimensão, edição persistida, action points e publicação no Supabase. |
 | `AdminDeliveryStatusBadge` | Estados operacionais compartilhados das entregas. |
-| `ManagementAssetsWorkspace` | `/admin/ativos`, abas por estado, filtro por empresa, tabela e drawer de criação. |
+| `ManagementAssetsWorkspace` | `/admin/empresas/[id]/criacao-dos-ativos`, abas por estado, empresa fixa, tabela e drawer de criação. |
 | `ManagementAssetCreateForm` | Drawer em três etapas para criar ativo a partir de modelo ou em branco, no padrão do formulário de diagnóstico. |
-| `ManagementAssetEditorWorkspace` | `/admin/ativos/[id]`, editor, prévia, versão publicada, metadados, índice, histórico e ações editoriais. |
+| `ManagementAssetEditorWorkspace` | `/admin/empresas/[id]/criacao-dos-ativos/[assetId]`, editor, prévia, versão publicada, metadados, índice, histórico e ações editoriais. |
 | `ManagementAssetStatusBadge` | Estados do ativo e das versões. |
-| `AssetQuestionAuditsWorkspace` | `/admin/ativos/perguntas`, lacunas e histórico de perguntas ao agente. |
+| `AssetQuestionAuditsWorkspace` | `/admin/empresas/[id]/criacao-dos-ativos/perguntas`, lacunas e histórico de perguntas ao agente. |
 | `AdminCampaignsWorkspace` | `/admin/campanhas`, KPIs, criação, tabela e drawer de campanhas. |
 | `CampaignEditorDrawer` | Drawer para criar/editar campanha, selecionar módulo, definir slug de aquisição e campos do formulário. |
 | `AdminLeadsTable` | `/admin/leads`, listagem de leads capturados com navegação por linha para o detalhe. |
@@ -48,3 +48,9 @@ Componentes específicos da visão de superadministrador da Directscal. Eles adm
 | `AcquisitionProgressiveForm` | Formulário progressivo compartilhado pelos fluxos de e-mail e Google, com até três campos de campanha por bloco, avanço automático e altura estável. |
 | `AdminStatusBadge` | Status discretos de módulos/campanhas. |
 | `useAdminData` | Busca client-side do snapshot Supabase em `/api/admin/acquisition`. |
+
+- `AdminOperationsNavigation` organiza as áreas Entregas e Criação dos ativos sob Operação. Não criar entrada independente de ativos na sidebar administrativa.
+- `ManagementAssetCreateForm` recebe `initialOrganizationId` e `organizationLocked` da instância; a empresa fica fixa. `ManagementAssetsWorkspace` recebe só a empresa da instância e os ativos dela.
+
+- `AdminDeliveryWorkspace` inclui Criação dos ativos no mesmo menu Dados / Relatório / Action points / Publicação. Recebe `assetsContent` do servidor; listagem, editor e perguntas são renderizados nessa aba com `embedded`, compartilhando topbar e espaçamento.
+- Editor e perguntas dentro de uma entrega navegam por `?aba=ativos&ativo=<id>` e `?aba=ativos&perguntas=1`; voltar à lista mantém `?aba=ativos`. A empresa é resolvida pela organização do diagnóstico.

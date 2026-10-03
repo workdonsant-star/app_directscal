@@ -11,15 +11,9 @@ import {
 } from "@/components/admin/management-asset-create-form";
 import { ManagementAssetStatusBadge } from "@/components/admin/management-asset-status-badge";
 import { AppPage } from "@/components/app-page";
+import { AppTopbarActionsPortal } from "@/components/app-topbar-actions-portal";
 import { AppTopbar } from "@/components/app-topbar";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Sheet,
   SheetContent,
@@ -53,8 +47,6 @@ const filters: Array<{ value: Filter; label: string }> = [
   { value: "arquivado", label: "Arquivado" },
 ];
 
-const allOrganizations = "todas";
-
 // Rascunho e Em revisão olham para a versão em andamento, inclusive a nova
 // versão de um ativo já publicado; o mesmo ativo pode aparecer em Publicado.
 function matchesFilter(asset: AdminManagementAssetListItem, filter: Filter) {
@@ -78,49 +70,41 @@ function formatDate(iso: string) {
 
 export function ManagementAssetsWorkspace({
   assets,
-  organizations,
+  embedded = false,
+  deliveryId,
+  company,
   specialists,
   templates,
 }: {
   assets: AdminManagementAssetListItem[];
-  organizations: Option[];
+  embedded?: boolean;
+  deliveryId?: string;
+  company: Option & { organizationId: string };
   specialists: Option[];
   templates: ManagementAssetTemplateOption[];
 }) {
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>("todos");
-  const [organizationId, setOrganizationId] = useState(allOrganizations);
+  const assetHref = (assetId: string) => deliveryId
+    ? `/admin/entregas/${deliveryId}?aba=ativos&ativo=${encodeURIComponent(assetId)}`
+    : `${basePath}/${assetId}`;
+  const basePath = `/admin/empresas/${company.id}/criacao-dos-ativos`;
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
-  const scopedAssets = useMemo(
-    () =>
-      organizationId === allOrganizations
-        ? assets
-        : assets.filter((asset) => asset.organizationId === organizationId),
-    [assets, organizationId],
-  );
   const counts = useMemo(
     () =>
       Object.fromEntries(
         filters.map((item) => [
           item.value,
-          scopedAssets.filter((asset) => matchesFilter(asset, item.value)).length,
+          assets.filter((asset) => matchesFilter(asset, item.value)).length,
         ]),
       ) as Record<Filter, number>,
-    [scopedAssets],
+    [assets],
   );
-  const visibleAssets = scopedAssets.filter((asset) => matchesFilter(asset, filter));
+  const visibleAssets = assets.filter((asset) => matchesFilter(asset, filter));
   const specialistNames = new Map(specialists.map((item) => [item.id, item.name]));
-  const organizationItems = [
-    { value: allOrganizations, label: "Todas as empresas" },
-    ...organizations.map((organization) => ({
-      value: organization.id,
-      label: organization.name,
-    })),
-  ];
-
   async function handleCreate(input: CreateManagementAssetInput) {
     try {
       setPending(true);
@@ -128,7 +112,7 @@ export function ManagementAssetsWorkspace({
       const response = await fetch("/api/admin/management-assets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
+        body: JSON.stringify({ ...input, organizationId: company.organizationId }),
       });
       const data = (await response.json().catch(() => ({}))) as {
         assetId?: string;
@@ -139,7 +123,7 @@ export function ManagementAssetsWorkspace({
         throw new Error(data.message ?? "Não foi possível criar o ativo.");
       }
 
-      router.push(`/admin/ativos/${data.assetId}`);
+      router.push(assetHref(data.assetId));
     } catch (error) {
       setOpen(false);
       setNotice(error instanceof Error ? error.message : "Não foi possível criar o ativo.");
@@ -147,10 +131,9 @@ export function ManagementAssetsWorkspace({
     }
   }
 
-  return (
-    <>
-      <AppTopbar
-        actions={
+  const PageContent = embedded ? "div" : AppPage;
+  const Heading = embedded ? "h2" : "h1";
+  const actions = (
           <div className="flex min-w-0 items-center gap-2">
             <Tabs value={filter} onValueChange={(value) => setFilter(value as Filter)}>
               <TabsList>
@@ -167,49 +150,44 @@ export function ManagementAssetsWorkspace({
             <Button
               variant="outline"
               nativeButton={false}
-              render={<Link href="/admin/ativos/perguntas" />}
+              render={<Link href={deliveryId ? `/admin/entregas/${deliveryId}?aba=ativos&perguntas=1` : `${basePath}/perguntas`} />}
             >
               <MessageSquareText className="size-4" />
               Perguntas
             </Button>
             <Button
               onClick={() => setOpen(true)}
-              disabled={pending || organizations.length === 0}
+              disabled={pending}
             >
               <Plus className="size-4" />
               Criar ativo
             </Button>
           </div>
-        }
-      />
+  );
 
-      <AppPage>
+  return (
+    <>
+      {embedded ? <AppTopbarActionsPortal>{actions}</AppTopbarActionsPortal> : (
+      <AppTopbar
+        breadcrumb={[
+          { label: "Empresas", href: "/admin/empresas" },
+          { label: company.name, href: `/admin/empresas/${company.id}` },
+          { label: "Criação dos ativos" },
+        ]}
+        actions={actions}
+      />
+      )}
+
+      <PageContent>
         <div className="flex w-full flex-col gap-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="space-y-1">
-              <h1 className="font-heading text-2xl font-semibold">Ativos de gestão</h1>
+              <Heading className="font-heading text-2xl font-semibold">Criação dos ativos</Heading>
               <p className="text-sm text-muted-foreground">
-                SOPs, playbooks e governança preparados pela Directscal para cada empresa.
+                SOPs, playbooks e governança de {company.name}.
               </p>
             </div>
-            <Select
-              value={organizationId}
-              items={organizationItems}
-              onValueChange={(value) => {
-                if (typeof value === "string") setOrganizationId(value);
-              }}
-            >
-              <SelectTrigger aria-label="Filtrar por empresa" className="w-full sm:w-64">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {organizationItems.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+
           </div>
 
           {notice ? (
@@ -226,7 +204,7 @@ export function ManagementAssetsWorkspace({
               <p className="mt-1 text-sm text-muted-foreground">
                 {assets.length === 0
                   ? "Crie o primeiro ativo para uma empresa a partir de um modelo ou do zero."
-                  : "Ajuste o status ou a empresa selecionada."}
+                  : "Ajuste o status selecionado."}
               </p>
             </div>
           ) : (
@@ -248,12 +226,12 @@ export function ManagementAssetsWorkspace({
                     <TableRow
                       key={asset.id}
                       className="cursor-pointer hover:bg-muted/30"
-                      onClick={() => router.push(`/admin/ativos/${asset.id}`)}
+                      onClick={() => router.push(assetHref(asset.id))}
                     >
                       <TableCell className="px-4 py-4 whitespace-normal">
                         <div className="flex flex-col">
                           <Link
-                            href={`/admin/ativos/${asset.id}`}
+                            href={assetHref(asset.id)}
                             className="rounded-sm font-medium text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             onClick={(event) => event.stopPropagation()}
                           >
@@ -299,7 +277,7 @@ export function ManagementAssetsWorkspace({
             </div>
           )}
         </div>
-      </AppPage>
+      </PageContent>
 
       <Sheet open={open} onOpenChange={(value) => !pending && setOpen(value)}>
         <SheetContent className="gap-0 overflow-hidden bg-card text-card-foreground data-[side=right]:!w-[min(100vw,56rem)] data-[side=right]:!max-w-none">
@@ -311,7 +289,9 @@ export function ManagementAssetsWorkspace({
           </SheetHeader>
           {open ? (
             <ManagementAssetCreateForm
-              organizations={organizations}
+              organizations={[{ id: company.organizationId, name: company.name }]}
+              initialOrganizationId={company.organizationId}
+              organizationLocked
               specialists={specialists}
               templates={templates}
               pending={pending}

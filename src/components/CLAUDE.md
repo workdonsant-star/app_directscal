@@ -59,7 +59,7 @@ Cada subpasta de domínio tem seu próprio `CLAUDE.md`. Crie um quando adicionar
 - `Action Points` aparece como item independente no mesmo nível de `Overview` e aponta para `/gantt`; não transforme a funcionalidade em módulo próprio sem nova decisão explícita.
 - `Pessoas` foi removido da navegação, do catálogo de módulos e dos componentes autenticados. Não reintroduza `module_people` sem nova decisão explícita.
 - Não reintroduza `Empresas` na navegação principal do cliente sem nova decisão. `Relatórios` pertence à seção `Documentos` e aponta para `/relatorios`.
-- Em `/admin`, a sidebar troca para `Administração` (`Operação`, `Especialistas`, `Ativos de gestão`, `Empresas`, `Leads`, `Campanhas`).
+- Em `/admin`, a sidebar troca para `Administração` (`Operação`, `Especialistas`, `Empresas`, `Leads`, `Campanhas`).
 - Componentes em `auth/` conversam com `/api/auth/*`; não leem nem escrevem cookies diretamente.
 - O header da sidebar mostra o selector de usuário (`NavUser`) com nome e nome fantasia da empresa resolvido pelo perfil empresarial, além de perfil, tema e saída. Quando o CNPJ não possui nome fantasia, use o nome oficial como fallback. O e-mail não ocupa o resumo visível do cliente. O switcher de módulos (`AppSwitcher`) não fica visível na sidebar principal.
 - O logout encerra as sessões, mas preserva os overrides locais de perfil escopados por `user.id`; não limpe foto e nome persistidos no navegador ao sair.
@@ -116,3 +116,5 @@ Não use spinners centrais. Skeletons localizados são mais informativos.
 - **Foco visível** (ring brand de 2px) — herdado do shadcn.
 - **`aria-label`** em ações sem texto visível (ícones isolados).
 - **Contraste WCAG AA** em todos os textos. Tokens `--muted-foreground` e abaixo já estão calibrados.
+
+- A produção de ativos de gestão pertence a `Operação / Criação dos ativos`, com seleção da empresa em Operação e produção dentro de `/admin/empresas/[id]/criacao-dos-ativos`, sem item independente na sidebar.
