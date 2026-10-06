@@ -32,3 +32,4 @@ Pergunta → embedding da pergunta (opcional) → busca híbrida filtrada pela o
 - Trocar de provedor é configuração, não código. Novos provedores entram em `answer-providers.ts` com o mesmo contrato `GroundedAnswer`.
 - Planos gratuitos (Gemini) podem usar os dados enviados para melhorar o produto do provedor: use apenas conteúdo fictício nesses testes. Dados reais de cliente exigem plano pago com cláusula de não uso para treino.
 - Mudou prompt, limiar ou provedor: rode `npm run eval:agent` (ver `tests/eval/`) e compare com a meta de 85%.
+- `repeat-questions.ts` conta quantas vezes a mesma pessoa (`external_user_id`) já fez a mesma pergunta nos últimos 30 dias, a partir de `asset_question_audits`. Texto normalizado igual sempre conta; com `ASSET_AGENT_PROVIDER=gemini`, o Gemini julga o sentido (timeout de 8 s, cai no texto se falhar). Embeddings não são usados aqui porque não separam assuntos vizinhos.

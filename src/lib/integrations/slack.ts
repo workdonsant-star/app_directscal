@@ -262,6 +262,23 @@ export async function postSlackMessage(
   });
 }
 
+export async function addSlackReaction(
+  token: string,
+  reaction: { channel: string; ts: string; name: string },
+) {
+  try {
+    await callSlack(token, "reactions.add", {
+      channel: reaction.channel,
+      timestamp: reaction.ts,
+      name: reaction.name,
+    });
+  } catch (error) {
+    // Reenvio do mesmo evento já deixou a reação.
+    if (error instanceof Error && error.message.endsWith("already_reacted")) return;
+    throw error;
+  }
+}
+
 export async function respondToSlackAction(responseUrl: string, body: Record<string, unknown>) {
   // response_url só aceita hosts do Slack.
   if (!/^https:\/\/hooks\.slack\.com\//.test(responseUrl)) return;

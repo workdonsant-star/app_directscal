@@ -5,6 +5,7 @@ import {
   buildSlackConversationHistory,
   cleanSlackMentionText,
   computeSlackSignature,
+  getSlackRepeatReaction,
   isValidSlackSignature,
   replaceSlackFeedbackBlock,
   signSlackInstallState,
@@ -113,5 +114,14 @@ describe("slack conversation history", () => {
         { botUserId: "UBOT", currentTs: "1.2" },
       ).botParticipated,
     ).toBe(false);
+  });
+});
+
+describe("slack repeat reaction", () => {
+  it("escalates from thumbs up to eyes to monocle as the same question repeats", () => {
+    expect(getSlackRepeatReaction(0)).toBe("+1");
+    expect(getSlackRepeatReaction(1)).toBe("eyes");
+    expect(getSlackRepeatReaction(2)).toBe("face_with_monocle");
+    expect(getSlackRepeatReaction(7)).toBe("face_with_monocle");
   });
 });

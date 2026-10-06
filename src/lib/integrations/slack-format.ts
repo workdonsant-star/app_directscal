@@ -10,6 +10,7 @@ export const SLACK_BOT_SCOPES = [
   "im:history",
   "channels:history",
   "groups:history",
+  "reactions:write",
 ];
 export const SLACK_FEEDBACK_ACTIONS = {
   util: "asset_feedback_util",
@@ -17,6 +18,14 @@ export const SLACK_FEEDBACK_ACTIONS = {
 } as const;
 
 const STATE_TTL_SECONDS = 10 * 60;
+
+// Reação na mensagem da pessoa conforme quantas vezes ela já fez a mesma
+// pergunta: 👍 na primeira, 👀 na segunda e 🧐 da terceira em diante.
+export function getSlackRepeatReaction(previousAsks: number) {
+  if (previousAsks <= 0) return "+1";
+  if (previousAsks === 1) return "eyes";
+  return "face_with_monocle";
+}
 
 function constantTimeEquals(left: string, right: string) {
   const leftBuffer = Buffer.from(left);

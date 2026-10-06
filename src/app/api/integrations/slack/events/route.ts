@@ -1,8 +1,10 @@
 import { after } from "next/server";
 
 import { answerAssetQuestion } from "@/lib/agent/asset-question-service";
+import { countPreviousAsks } from "@/lib/agent/repeat-questions";
 import { getPublicAppUrl } from "@/lib/env";
 import {
+  addSlackReaction,
   claimSlackEvent,
   fetchSlackConversation,
   getSlackBotUserId,
@@ -15,6 +17,7 @@ import {
   buildSlackAnswerMessage,
   buildSlackConversationHistory,
   cleanSlackMentionText,
+  getSlackRepeatReaction,
 } from "@/lib/integrations/slack-format";
 
 export const runtime = "nodejs";
@@ -175,11 +178,30 @@ async function answerSlackQuestion(question: SlackQuestionEvent) {
     return;
   }
 
+  const externalUserId = `${question.teamId}:${question.userId}`;
+
+  // A contagem roda antes de a resposta gravar a pergunta atual na auditoria.
+  const reacting = countPreviousAsks({
+    organizationId: installation.organizationId,
+    externalUserId,
+    question: text,
+  })
+    .then((previousAsks) =>
+      addSlackReaction(installation.botToken, {
+        channel: question.channel,
+        ts: question.ts,
+        name: getSlackRepeatReaction(previousAsks),
+      }),
+    )
+    .catch((error: unknown) => {
+      console.error("[slack] reaction failed", error);
+    });
+
   const answer = await answerAssetQuestion({
     organizationId: installation.organizationId,
     question: text,
     channel: "slack",
-    externalUserId: `${question.teamId}:${question.userId}`,
+    externalUserId,
     history: conversation.history,
   });
   const message = buildSlackAnswerMessage(answer, getPublicAppUrl());
@@ -189,6 +211,7 @@ async function answerSlackQuestion(question: SlackQuestionEvent) {
     threadTs: question.threadTs,
     ...message,
   });
+  await reacting;
 }
 
 export async function POST(request: Request) {
