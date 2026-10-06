@@ -131,6 +131,19 @@ export function AdminCompanyDetail({ companyId }: { companyId: string }) {
         </p>
       ) : null}
 
+      {company.organizationId ? (
+        <section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" aria-labelledby="company-assets-title">
+          <div className="space-y-1">
+            <h2 id="company-assets-title" className="font-heading text-lg font-semibold">Criação dos ativos</h2>
+            <p className="text-sm text-muted-foreground">Produção, revisão e publicação dos ativos de gestão desta empresa.</p>
+          </div>
+          <Button nativeButton={false} variant="outline" render={<Link href={`/admin/empresas/${company.id}/criacao-dos-ativos`} />}>
+            Abrir criação dos ativos
+            <ArrowRight aria-hidden="true" />
+          </Button>
+        </section>
+      ) : null}
+
       <section className="grid gap-4 lg:grid-cols-3" aria-label="Resumo da empresa">
         <Card>
           <CardHeader>

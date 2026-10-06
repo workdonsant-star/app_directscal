@@ -4,6 +4,7 @@ import { ThumbsDown, ThumbsUp } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { AppPage } from "@/components/app-page";
+import { AppTopbarActionsPortal } from "@/components/app-topbar-actions-portal";
 import { AppTopbar } from "@/components/app-topbar";
 import {
   Table,
@@ -40,21 +41,20 @@ function formatDateTime(iso: string) {
 
 export function AssetQuestionAuditsWorkspace({
   audits,
+  embedded = false,
+  company,
 }: {
   audits: AdminAssetQuestionAudit[];
+  embedded?: boolean;
+  company: { id: string; name: string };
 }) {
   const [filter, setFilter] = useState<Filter>("lacunas");
   const gaps = useMemo(() => audits.filter(isGap), [audits]);
   const visible = filter === "lacunas" ? gaps : audits;
 
-  return (
-    <>
-      <AppTopbar
-        breadcrumb={[
-          { label: "Ativos", href: "/admin/ativos" },
-          { label: "Perguntas ao agente" },
-        ]}
-        actions={
+  const PageContent = embedded ? "div" : AppPage;
+  const Heading = embedded ? "h2" : "h1";
+  const actions = (
           <Tabs value={filter} onValueChange={(value) => setFilter(value as Filter)}>
             <TabsList>
               <TabsTrigger value="lacunas" className="gap-2">
@@ -71,13 +71,26 @@ export function AssetQuestionAuditsWorkspace({
               </TabsTrigger>
             </TabsList>
           </Tabs>
-        }
-      />
+  );
 
-      <AppPage>
+  return (
+    <>
+      {embedded ? <AppTopbarActionsPortal>{actions}</AppTopbarActionsPortal> : (
+      <AppTopbar
+        breadcrumb={[
+          { label: "Empresas", href: "/admin/empresas" },
+          { label: company.name, href: `/admin/empresas/${company.id}` },
+          { label: "Criação dos ativos", href: `/admin/empresas/${company.id}/criacao-dos-ativos` },
+          { label: "Perguntas ao agente" },
+        ]}
+        actions={actions}
+      />
+      )}
+
+      <PageContent>
         <div className="flex w-full flex-col gap-5">
           <div className="space-y-1">
-            <h1 className="font-heading text-2xl font-semibold">Perguntas ao agente</h1>
+            <Heading className="font-heading text-2xl font-semibold">Perguntas ao agente</Heading>
             <p className="max-w-[75ch] text-sm text-muted-foreground">
               Lacunas reúnem perguntas sem evidência publicada, falhas técnicas e
               respostas avaliadas como não úteis. Cada uma é candidata a um ativo
@@ -174,7 +187,7 @@ export function AssetQuestionAuditsWorkspace({
             </div>
           )}
         </div>
-      </AppPage>
+      </PageContent>
     </>
   );
 }

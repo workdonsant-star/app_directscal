@@ -25,12 +25,7 @@ src/app/
 │       └── [id]/
 │           ├── compartilhar/page.tsx ← central de coleta com links Supabase
 │           ├── action-points/route.ts ← download direto de PDF RACI
-<<<<<<< Updated upstream
-│           └── relatorio/route.ts ← download direto de PDF
-=======
-│           ├── respostas/route.ts ← download direto de CSV anônimo
 │           └── relatorio/route.ts ← download direto de relatório PDF ou CSV consolidado
->>>>>>> Stashed changes
 │   └── insights/
 │       ├── page.tsx          ← redirect para /insights/cultura
 │       └── [dimensao]/page.tsx ← dashboard compacto por dimensão
@@ -120,12 +115,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/assistente` | `(app)/assistente/` | Interface frontend-only do WorkFlow, com conversa demonstrativa e foto do perfil autenticado nas mensagens da pessoa. |
 | `/omdx/[id]/compartilhar` | `(app)/omdx/[id]/compartilhar/` | Central de coleta persistida com links por grupo, copy sugerida e resumo compacto. |
 | `/omdx/[id]/action-points` | `(app)/omdx/[id]/action-points/` | Route Handler Node autenticado para download direto do plano de ação RACI. |
-<<<<<<< Updated upstream
-| `/omdx/[id]/relatorio` | `(app)/omdx/[id]/relatorio/` | Route Handler Node autenticado para download direto do PDF consolidado. |
-=======
-| `/omdx/[id]/respostas` | `(app)/omdx/[id]/respostas/` | Route Handler Node autenticado para download direto do CSV anônimo de respostas brutas. |
 | `/omdx/[id]/relatorio` | `(app)/omdx/[id]/relatorio/` | Route Handler Node autenticado para download direto do relatório consolidado em PDF ou CSV. |
->>>>>>> Stashed changes
 | `/omdx/[id]/acompanhamento` | `(app)/omdx/[id]/acompanhamento/` | Coleta em andamento |
 | `/omdx/[id]/resultado` | `(app)/omdx/[id]/resultado/` | Visão executiva |
 | `/omdx/[id]/resultado/[dimensao]` | `(app)/omdx/[id]/resultado/[dimensao]/` | Detalhe por dimensão |
@@ -163,7 +153,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - O shell autenticado usa o bloco shadcn `sidebar-07` como base visual, adaptado para Directscal. O subtítulo do usuário na sidebar vem do nome fantasia resolvido por `getProfileSettingsData()`, com fallback para o nome oficial.
 - O route group `(app)` valida o cookie de sessão no layout antes de renderizar sidebar/topbar.
 - As rotas de autenticação em `(auth)` ficam fora do shell e redirecionam usuários autenticados conforme role.
-- A sidebar colapsa para ícones e mantém a navegação principal do cliente plana. `Overview`, `Coletas`, `Action Points` e `WorkFlow` aparecem no grupo principal; `Coletas` preserva a rota `/omdx/diagnosticos`. `Pessoas` permanece fora da navegação.
+- A sidebar colapsa para ícones e mantém a navegação principal do cliente plana. `Analytics`, `Pesquisas`, `Action Points` e `Agente` aparecem no grupo principal; `Pesquisas` preserva a rota `/omdx/diagnosticos`. `Pessoas` permanece fora da navegação.
 - `Action Points` aparece dentro de `Maturidade` e aponta para `/gantt`; a rota usa o plano de ação mais recente quando houver diagnóstico consolidável.
 - A sidebar tem uma seção `Maturidade` com as seis dimensões analíticas.
 - A sidebar tem uma seção `Ativos de gestão` com links ativos para `SOPs`, `Playbooks`, `Governança` e `Matriz RACI`.
@@ -178,17 +168,12 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - Páginas raiz abertas diretamente pela sidebar ou pelo menu do usuário não usam breadcrumb na topbar.
 - O breadcrumb começa apenas em uma página aberta a partir da raiz e parte da raiz imediata, sem repetir a seção superior da sidebar.
 - `/omdx/camadas` redireciona para `/omdx` e não renderiza breadcrumb próprio.
-- `/omdx`, `/omdx/diagnosticos`, `/gantt`, `/assistente`, `/insights/[dimensao]`, `/docs`, `/relatorios`, `/perfil`, `/configuracoes` e as quatro bibliotecas de Ativos de gestão são raízes sem breadcrumb.
-- `/omdx/[id]/compartilhar` usa `Coletas / Compartilhar`.
+- `/omdx`, `/omdx/diagnosticos`, `/gantt`, `/assistente`, `/insights/[dimensao]`, `/docs`, `/relatorios`, `/perfil`, `/configuracoes` e as categorias de Ativos de gestão são raízes sem breadcrumb.
+- `/omdx/[id]/compartilhar` usa `Pesquisas / Compartilhar`.
 - `/omdx/[id]/action-points` não renderiza página nem breadcrumb; retorna PDF como attachment.
-<<<<<<< Updated upstream
-- `/omdx/[id]/relatorio` não renderiza página nem breadcrumb; retorna PDF como attachment.
-=======
-- `/omdx/[id]/respostas` não renderiza página nem breadcrumb; retorna CSV anônimo como attachment.
 - `/omdx/[id]/relatorio` não renderiza página nem breadcrumb; retorna PDF como attachment por padrão e CSV consolidado quando recebe `?formato=csv`.
->>>>>>> Stashed changes
 - `/configuracoes` mantém apenas as ações da página na topbar.
-- `/ativos-de-gestao` redireciona para `/ativos-de-gestao/sops`.
+- `/ativos-de-gestao` mostra as pastas por categoria.
 - `/ativos-de-gestao/sops/[id]` usa `SOPs / Nome do SOP`.
 - `/ativos-de-gestao/matriz-de-papeis` redireciona para `/ativos-de-gestao/matriz-raci`; `/sops` continua como redirect legado para `/omdx`.
 - `/omdx/membros-da-operacao` redireciona para `/omdx/diagnosticos` e não renderiza breadcrumb.
@@ -196,9 +181,9 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - `/admin/leads/[id]` usa `Leads / Detalhe`.
 - `/admin/empresas/[id]` usa `Empresas / Detalhe`.
 - `/admin/entregas/[id]` usa `Operação / Empresa`.
-- Futuras rotas de acompanhamento e resultado começam o breadcrumb pela raiz imediata `Coletas`.
+- Futuras rotas de acompanhamento e resultado começam o breadcrumb pela raiz imediata `Pesquisas`.
 - Criação e configuração não devem abrir páginas próprias; acontecem em drawer dentro de `/omdx/diagnosticos`.
-- `Coletas` deve ser item da sidebar e apontar para `/omdx/diagnosticos`; não use CTA no Overview para acessar essa área.
+- `Pesquisas` deve ser item da sidebar e apontar para `/omdx/diagnosticos`; não use CTA no Overview para acessar essa área.
 - As rotas temporárias `/omdx/novo` e `/omdx/[id]/configurar`, enquanto existirem, devem redirecionar para `/omdx/diagnosticos` ou indicar depreciação.
 
 ## Largura de página
@@ -237,3 +222,13 @@ A pasta `src/app/r/[token]/` será **um layout próprio**, não dentro de `(app)
 - Espalhar `"use client"` no topo da página inteira só porque um filho precisa — extraia o filho interativo.
 - Adicionar metadata específica de página no `layout.tsx` global.
 - Criar nova rota sem documentar o estado dela aqui.
+
+## Interface Symbach
+
+A referência local é `Symbach Os`, portada para a branch `symbach`. O shell usa `app-shell` e `bg-shell`, topbar de 56px, sidebar de 256px expandida a partir de 1280px e conteúdo com raio de 20px.
+
+A navegação cliente agrupa Iniciativas, Ativos de gestão por categoria, Análises e relatórios. Essa organização substitui as antigas seções Maturidade e Documentos da sidebar. Analytics, Pesquisas, Agente e Action Points preservam as rotas existentes.
+
+`/iniciativas` oferece lista e criação local por usuário/empresa. `/iniciativas/[id]` abre o workspace de projeto da opção 2, com atenção do gestor, tarefas de demonstração, atividade, ativos relacionados e edição dos metadados locais. As tarefas não têm persistência nem integração; ver `iniciativas/[id]/CLAUDE.md` e `docs/experiencia-agentica-projetos-e-action-points.md`. `/ativos-de-gestao/gestao-de-pessoas`, `/ativos-de-gestao/area-governanca`, `/ativos-de-gestao/cultura` e `/ativos-de-gestao/comunicacao` agrupam conteúdo publicado por área. Autenticação e Supabase mantêm os contratos anteriores. Ver `docs/shell-e-iniciativas.md`.
+
+A sidebar concentra os ativos em Ativos de gestão, sem Bibliotecas por tipo. `/ativos-de-gestao/categorias/[categoria]` abre categorias adicionais; Sem categoria preserva ativos não classificados. `/ativos-de-gestao/matriz-raci/[id]` permite leitura do documento publicado. O breadcrumb de cada ativo retorna à sua categoria.

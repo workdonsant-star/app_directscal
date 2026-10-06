@@ -132,6 +132,10 @@
   --color-omdx-dimension-warm-gray-80: var(--omdx-dimension-warm-gray-80);
   --color-omdx-dimension-warm-gray-90: var(--omdx-dimension-warm-gray-90);
 
+  --color-initiative-website: var(--omdx-status-atencao);
+  --color-initiative-app: var(--omdx-chart-lime-deep);
+  --color-shell: var(--surface-shell);
+
   /* Sidebar */
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
@@ -194,6 +198,7 @@
   --surface-card: #FFFFFF;
   --surface-control: #F4F4F4;
   --surface-disabled: rgb(224 224 224 / 50%);
+  --surface-shell: #F7F7F7;
   --surface-sidebar: #FAFAFA;
   --surface-sidebar-selected: #EEEEF0;
   --surface-subtle: #FAFAFA;
@@ -280,6 +285,8 @@
   --overview-chart-leadership: #98D389;
   --overview-chart-tactical: #0A5F4F;
   --overview-chart-dimensions: #CAA1FF;
+  --overview-chart-usage-resolved: #4A3AA7;
+  --overview-chart-usage-gap: #EB6834;
   --overview-chart-label: #F7F7F8;
   --overview-matrix-leverage-low: #DDF4A0;
   --overview-matrix-leverage-soft: #CFF078;
@@ -382,6 +389,7 @@
   --surface-card: #181818;
   --surface-control: #262626;
   --surface-disabled: rgb(57 57 57 / 50%);
+  --surface-shell: #161616;
   --surface-sidebar: #0B0B0B;
   --surface-sidebar-selected: #1C1C20;
   --surface-subtle: #1C1C20;
@@ -468,6 +476,8 @@
   --overview-chart-leadership: #2F6A28;
   --overview-chart-tactical: #075447;
   --overview-chart-dimensions: #BE95FF;
+  --overview-chart-usage-resolved: #9085E9;
+  --overview-chart-usage-gap: #D95926;
   --overview-chart-label: #F7F7F8;
   --overview-matrix-leverage-low: #263409;
   --overview-matrix-leverage-soft: #35490C;
@@ -625,6 +635,19 @@
 }
 
 @layer components {
+  .app-shell [data-slot="sidebar-inner"],
+  .app-shell [data-slot="app-topbar"] {
+    background: var(--surface-shell);
+  }
+
+  .app-shell [data-slot="sidebar-inset"] > main,
+  .app-shell [data-slot="sidebar-inset"] > [data-slot="app-content"] {
+    min-height: calc(100svh - 3.5rem);
+    border-radius: 20px;
+    overflow: clip;
+    background: var(--background);
+  }
+
   .auth-gradient-stage {
     position: relative;
     isolation: isolate;

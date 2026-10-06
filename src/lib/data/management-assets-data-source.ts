@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 
 import { getAccessibleOrganizationIdsForUser } from "@/lib/auth/authorization";
 import { canAccessCustomerApp } from "@/lib/auth/access-control";
@@ -126,6 +127,18 @@ export async function getManagementAssetsByType(type: ManagementAssetType) {
   return rows
     .map(mapLibraryAsset)
     .filter((asset): asset is ManagementAsset => asset !== null);
+}
+
+const getPublishedAssetsForUser = cache(async (userId: string) => {
+  const access = await getAccessibleOrganizationIdsForUser(userId);
+  const rows = await selectPublishedAssets(access.organizationIds, {});
+  return rows.map(mapLibraryAsset).filter((asset): asset is ManagementAsset => asset !== null);
+});
+
+export async function getPublishedManagementAssets() {
+  const session = await getCurrentAuthSession();
+  if (!session || !canAccessCustomerApp(session.user)) return [];
+  return getPublishedAssetsForUser(session.user.id);
 }
 
 export async function getManagementAssetDocument(

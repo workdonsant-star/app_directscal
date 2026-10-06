@@ -5,11 +5,10 @@ import { AppTopbar } from "@/components/app-topbar";
 import { ManagementAssetDocumentView } from "@/components/management-assets/management-asset-document-view";
 import type { ManagementAssetType } from "@/lib/contracts";
 import { getManagementAssetDocument } from "@/lib/data/management-assets-data-source";
-import { getManagementAssetLibraryHref } from "@/lib/data/management-asset-routes";
+import { getManagementAssetCategoryFolder } from "@/lib/data/management-asset-categories";
 
 export async function ManagementAssetReaderPage({
   id,
-  libraryLabel,
   type,
 }: {
   id: string;
@@ -21,12 +20,13 @@ export async function ManagementAssetReaderPage({
   if (!asset) {
     notFound();
   }
+  const folder = getManagementAssetCategoryFolder(asset.category);
 
   return (
     <>
       <AppTopbar
         breadcrumb={[
-          { label: libraryLabel, href: getManagementAssetLibraryHref(type) },
+          { label: folder.title, href: folder.href },
           { label: asset.title },
         ]}
       />

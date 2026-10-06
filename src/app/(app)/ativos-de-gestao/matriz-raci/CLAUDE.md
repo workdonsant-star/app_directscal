@@ -6,4 +6,4 @@ Rota autenticada que lista as matrizes de responsabilidade publicadas para a emp
 
 - Usa `ManagementAssetsPage` com o tipo `raci`.
 - Exibe busca, mas não filtro por categoria nesta primeira versão.
-- A leitura individual será adicionada em etapa própria; a listagem não cria destinos provisórios.
+- A leitura individual está em `[id]`, usando o documento RichText publicado e retornando à pasta da categoria pelo breadcrumb.

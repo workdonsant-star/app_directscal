@@ -1,0 +1,13 @@
+.project-workspace {
+  --project-positive-bg: #e2f3e8;
+  --project-positive-fg: #146442;
+  --project-pending-bg: #fff6d8;
+  --project-pending-fg: #805000;
+}
+.dark .project-workspace {
+  --primary: var(--action-primary-highlight);
+  --project-positive-bg: #173529;
+  --project-positive-fg: #9de1ba;
+  --project-pending-bg: #3a301a;
+  --project-pending-fg: #f2d491;
+}

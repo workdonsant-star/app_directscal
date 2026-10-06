@@ -40,7 +40,7 @@ function getAssetHref(asset: ManagementAsset) {
   return getManagementAssetHref(asset.type, asset.id);
 }
 
-function ManagementAssetCard({ asset }: { asset: ManagementAsset }) {
+function ManagementAssetCard({ asset, showType }: { asset: ManagementAsset; showType: boolean }) {
   const href = getAssetHref(asset);
   const card = (
     <Card
@@ -52,9 +52,9 @@ function ManagementAssetCard({ asset }: { asset: ManagementAsset }) {
     >
       <CardHeader className="gap-3">
         <div className="flex items-start justify-between gap-3">
-          {asset.category ? (
+          {showType || asset.category ? (
             <Badge className="h-5 rounded-[5px] px-2 text-[10px] leading-4" variant="outline">
-              {asset.category}
+              {showType ? managementAssetTypeLabels[asset.type] : asset.category}
             </Badge>
           ) : (
             <span />
@@ -126,9 +126,11 @@ function ManagementAssetCard({ asset }: { asset: ManagementAsset }) {
 export function ManagementAssetsLibrary({
   assets,
   categoryFilter,
+  showType = false,
 }: {
   assets: ManagementAsset[];
   categoryFilter: boolean;
+  showType?: boolean;
 }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState(allCategories);
@@ -239,7 +241,7 @@ export function ManagementAssetsLibrary({
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {filteredAssets.map((asset) => (
-            <ManagementAssetCard key={asset.id} asset={asset} />
+            <ManagementAssetCard key={asset.id} asset={asset} showType={showType} />
           ))}
         </div>
       )}

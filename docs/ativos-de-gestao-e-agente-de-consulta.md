@@ -368,9 +368,9 @@ Assim, Jarvs pode ser introduzido, substituído ou removido sem migrar documento
 
 ### Operação Directscal
 
-- `/admin/ativos`: lista de ativos de todas as empresas, com filtro por empresa (substitui a proposta `/admin/empresas/[id]/ativos`, porque o detalhe de empresa ainda usa identificadores derivados de leads).
-- `/admin/ativos/[id]`: workspace editorial do especialista.
-- `/admin/ativos/perguntas`: perguntas ao agente, com foco em lacunas.
+- `/admin/empresas/[id]/criacao-dos-ativos`: lista de ativos de todas as empresas, com filtro por empresa (substitui a proposta `/admin/empresas/[id]/ativos`, porque o detalhe de empresa ainda usa identificadores derivados de leads).
+- `/admin/empresas/[id]/criacao-dos-ativos/[id]`: workspace editorial do especialista.
+- `/admin/empresas/[id]/criacao-dos-ativos/perguntas`: perguntas ao agente, com foco em lacunas.
 
 O workspace deve concentrar:
 
@@ -541,7 +541,7 @@ Ainda abertas:
 Implementado em 1 de outubro de 2026:
 
 - Migration `20261001120000_management_asset_editorial_agent.sql`: estado editorial por versão, imutabilidade de versões publicadas, rascunho único por ativo, publicação transacional (`app_private.publish_management_asset_version`), busca híbrida em português (`pt_unaccent` + `pgvector`, fusão RRF) filtrada pela organização antes do ranking, auditoria multicanal e instalação do Slack por workspace.
-- Fase 1: `/admin/ativos` com criação a partir de modelos, editor Tiptap, revisão, publicação, arquivamento, restauração e histórico; bibliotecas e leitura do cliente lendo do Supabase.
+- Fase 1: `/admin/empresas/[id]/criacao-dos-ativos` com criação a partir de modelos, editor Tiptap, revisão, publicação, arquivamento, restauração e histórico; bibliotecas e leitura do cliente lendo do Supabase.
 - Fase 2: trechos por seção H2/H3, embeddings opcionais (Gemini ou Ollama, 768 dimensões) e `Reindexar vetores` para completar falhas.
 - Fase 3: `answerAssetQuestion` com citações, recusa por evidência insuficiente, auditoria, feedback e painel de lacunas; `/assistente` ligado ao serviço.
 - Slack: OAuth por empresa, menções e mensagens diretas, confirmação imediata com processamento em segundo plano, descarte de reenvios e botões de avaliação.
@@ -570,3 +570,11 @@ A primeira entrega funcional estará pronta quando:
 - os testes demonstrarem isolamento entre organizações;
 - a documentação técnica das pastas afetadas estiver atualizada;
 - a mudança estrutural estiver registrada no Notion antes da entrega final de implementação.
+
+## Organização da produção — 2 de outubro de 2026
+
+Operação > Criação dos ativos abre a seleção de empresa. O fluxo editorial completo pertence à instância `/admin/empresas/[id]/criacao-dos-ativos`: empresa fixa no formulário, ativos e perguntas filtrados pela organização no servidor e editor validando a empresa proprietária. A página de detalhe da empresa também oferece essa entrada. Os endereços editoriais globais anteriores redirecionam para a instância proprietária.
+
+### Menu da empresa em Operação
+
+Na instância operacional `/admin/entregas/[id]`, Criação dos ativos é uma aba junto de Dados, Relatório, Action points e Publicação. A listagem, o drawer de criação, o editor e as perguntas são apresentados dentro desse mesmo menu. O escopo vem da organização do diagnóstico e a empresa fica fixa. O menu, o título da empresa e a topbar são preservados ao editar ativos ou consultar perguntas.

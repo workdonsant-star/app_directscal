@@ -16,6 +16,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { ManagementAssetStatusBadge } from "@/components/admin/management-asset-status-badge";
 import { AppPage } from "@/components/app-page";
+import { AppTopbarActionsPortal } from "@/components/app-topbar-actions-portal";
 import { AppTopbar } from "@/components/app-topbar";
 import { RichTextEditor } from "@/components/management-assets/rich-text-editor";
 import { RichTextView } from "@/components/management-assets/rich-text-view";
@@ -101,12 +102,18 @@ function Field({
 
 export function ManagementAssetEditorWorkspace({
   initialAsset,
+  embedded = false,
+  deliveryId,
   specialists,
 }: {
   initialAsset: AdminManagementAssetDetail;
+  embedded?: boolean;
+  deliveryId?: string;
   specialists: Option[];
 }) {
   const [asset, setAsset] = useState(initialAsset);
+  const companyPath = `/admin/empresas/company_${asset.organizationId}`;
+  const assetsPath = `${companyPath}/criacao-dos-ativos`;
   const [meta, setMeta] = useState<MetaState>(() => metaFromAsset(initialAsset));
   const [content, setContent] = useState<RichTextDocument | null>(
     initialAsset.draft?.content ?? null,
@@ -263,14 +270,8 @@ export function ManagementAssetEditorWorkspace({
     },
   ];
 
-  return (
-    <>
-      <AppTopbar
-        breadcrumb={[
-          { label: "Ativos", href: "/admin/ativos" },
-          { label: asset.title },
-        ]}
-        actions={
+  const PageContent = embedded ? "div" : AppPage;
+  const actions = (
           <div className="flex items-center gap-2">
             {!archived ? (
               <Button
@@ -300,10 +301,23 @@ export function ManagementAssetEditorWorkspace({
               {pending === primaryAction.action ? "Processando" : primaryAction.label}
             </Button>
           </div>
-        }
-      />
+  );
 
-      <AppPage>
+  return (
+    <>
+      {embedded ? <AppTopbarActionsPortal>{actions}</AppTopbarActionsPortal> : (
+      <AppTopbar
+        breadcrumb={[
+          { label: "Empresas", href: "/admin/empresas" },
+          { label: asset.organizationName, href: companyPath },
+          { label: "Criação dos ativos", href: assetsPath },
+          { label: asset.title },
+        ]}
+        actions={actions}
+      />
+      )}
+
+      <PageContent>
         <div className="grid w-full gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
           <div className="flex min-w-0 flex-col gap-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -602,14 +616,14 @@ export function ManagementAssetEditorWorkspace({
             ) : null}
 
             <Link
-              href="/admin/ativos/perguntas"
+              href={deliveryId ? `/admin/entregas/${deliveryId}?aba=ativos&perguntas=1` : `${assetsPath}/perguntas`}
               className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
             >
               Ver perguntas feitas ao agente
             </Link>
           </aside>
         </div>
-      </AppPage>
+      </PageContent>
     </>
   );
 }

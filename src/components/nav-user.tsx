@@ -6,11 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useState, useSyncExternalStore } from "react";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -123,9 +119,9 @@ export function NavUser({
               <SidebarMenuButton size="lg" className="aria-expanded:bg-muted" />
             }
           >
-            <Avatar className="size-8 rounded-lg">
+            <Avatar className="size-8 rounded-full">
               <AvatarImage src={displayAvatar} alt={displayName} />
-              <AvatarFallback className="rounded-lg">
+              <AvatarFallback className="rounded-full">
                 {displayInitials}
               </AvatarFallback>
             </Avatar>
@@ -143,33 +139,6 @@ export function NavUser({
             align="end"
             sideOffset={4}
           >
-<<<<<<< Updated upstream
-            {user.role !== "superadmin" ? (
-              <>
-                <DropdownMenuItem
-                  render={<Link href="/perfil" />}
-                  className="cursor-pointer p-0 focus:bg-accent focus:text-accent-foreground"
-                >
-                  <div className="flex w-full items-center gap-2 rounded-md px-1 py-1.5 text-left text-sm">
-                    <Avatar className="size-8 rounded-lg">
-                      <AvatarImage src={displayAvatar} alt={displayName} />
-                      <AvatarFallback className="rounded-lg">
-                        {displayInitials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-medium">{displayName}</span>
-                      <span className="truncate text-xs text-muted-foreground">
-                        {user.company}
-                      </span>
-                    </div>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-              </>
-            ) : null}
-=======
->>>>>>> Stashed changes
             <div className="flex justify-start px-1 py-1">
               <Button
                 type="button"

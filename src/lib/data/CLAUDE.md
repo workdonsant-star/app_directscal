@@ -13,12 +13,8 @@ Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no
 - Relatórios PDF devem consumir DTOs consolidados daqui, como `getDiagnosticReport()` e `getDiagnosticActionPlan()`, sem acessar mocks ou recalcular dados dentro do documento.
 - `omdx-native-report-charts.ts` transforma um `DiagnosticReport` consolidado nos datasets dos seis gráficos da leitura nativa; componentes aplicam somente apresentação e tokens visuais.
 - `action-plan-gantt.ts` converte `DiagnosticActionPlan` em tarefas de cronograma (`GanttTask`) para a rota histórica `/gantt`, preservando os metadados do action point usados no calendário e no modal de detalhes. O calendário achata os subitens da frente raiz e usa a data de início como dia do evento. É um motor determinístico baseado apenas nos dados quantitativos consolidados, sem API de IA e sem persistência de tarefas.
-<<<<<<< Updated upstream
-=======
-- Exportações CSV devem consumir dados preparados daqui: respostas brutas anônimas via `getDiagnosticResponseExport()` e relatório consolidado via `buildDiagnosticReportCsv()`.
 - `omdx-data-source.ts` pode usar `cache()` do React apenas para memoização por request de sessão, autorização, modelo Maturidade e bundles derivados. Não use `unstable_cache`, `use cache`, CDN cache ou cache global/persistente para sessão, organizações, diagnósticos, respostas, tokens, cookies, JWT ou resultados obtidos com service role.
 - Helpers memoizados que dependem de usuário devem receber `userId` explicitamente. Não dependa de variável global mutável para decidir escopo de organização ou acesso.
->>>>>>> Stashed changes
 - `admin-data-source.ts` concentra helpers puros, seeds estáticos de módulos e derivação de empresas/módulos.
 - `admin-operations-data-source.ts` fornece o mock tipado da primeira versão frontend de especialistas, entregas e catálogo de action points. Ele não grava no Supabase e deve ser substituído por APIs e políticas próprias na etapa funcional.
 - `management-assets-data-source.ts` (server-only) lê bibliotecas e leitura individual no Supabase, filtrando pelas organizações da sessão de cliente, por `status = publicado`, `archived_at` nulo e pela versão vigente.
@@ -26,6 +22,7 @@ Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no
 - `management-asset-templates.ts` guarda os modelos de partida (estruturas vazias por tipo e SOPs de referência). Modelos viram rascunho; nada é publicado automaticamente.
 - `management-asset-routes.ts` é puro e resolve os caminhos das bibliotecas e da leitura individual por tipo.
 - `rich-text.ts` é puro: sumário com âncoras únicas, texto plano, divisão em seções H2/H3 e conversão do formato legado em blocos.
+- `process-usage-analytics.ts` é puro e calcula os indicadores de uso dos processos: Adoção (pessoas distintas que perguntaram ÷ lideranças ativas + time aprovado, limitada a 100%), Cobertura (respondidas com fonte ÷ respondidas + sem evidência; falhas técnicas ficam fora), Utilidade (úteis ÷ avaliadas), 8 semanas móveis e top 6 processos citados. Compara os últimos 30 dias com os 30 anteriores em pontos percentuais. `process-usage-data-source.ts` (server-only) busca as perguntas da organização principal da sessão e delega o cálculo.
 - `management-asset-indexer.ts` é puro e transforma o documento em trechos determinísticos por seção (`H2 › H3`), incluindo listas e tabelas. A publicação grava esses trechos com embeddings opcionais.
 - `acquisition-data-source.ts` é server-side e fala com Supabase para campanhas, leads, empresas, intents OAuth e credenciais de senha.
 - `company-registry-data-source.ts` valida o CNPJ, consulta a API Minha Receita somente no servidor e normaliza razão social e dados cadastrais. A interface antecipa a consulta, mas a criação da conta repete a validação antes de persistir organização e lead.
@@ -57,17 +54,6 @@ Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no
 - `priorityIndex` é `round((((5 - score) + (gap ?? 0)) / 5) * 100)`, limitado entre `0` e `100`.
 - A classificação textual de score vem de `classifyScore()`: `<= 2.0` Crítico, `<= 3.0` Inconsistente, `<= 4.0` Atenção, acima de `4.0` Consistente.
 
-<<<<<<< Updated upstream
-=======
-## Exportação CSV de respostas
-
-`getDiagnosticResponseExport()` expõe as respostas brutas de um diagnóstico em formato longo para `/omdx/[id]/respostas`.
-
-- Cada linha representa uma pergunta respondida.
-- O respondente é identificado apenas por alias anônimo por grupo, como `fundador-001`.
-- A ordenação segue sessão enviada, dimensão e ordem original da pergunta.
-- A exportação usa dados reais de `response_sessions` + `likert_answers` e não consulta a tabela `respondents`.
-
 ## Exportação CSV de relatório
 
 `buildDiagnosticReportCsv()` transforma um `DiagnosticReport` já consolidado em CSV para `/omdx/[id]/relatorio?formato=csv`.
@@ -76,7 +62,6 @@ Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no
 - O CSV usa UTF-8 com BOM, separador `;` e uma estrutura longa com `secao = resumo | dimensao | pergunta`.
 - As perguntas exportadas são agregados do relatório consolidado, não respostas individuais por respondente.
 
->>>>>>> Stashed changes
 ## Cálculos do Overview Maturidade
 
 `omdx-overview-analytics.ts` consolida os cards executivos do Overview e os dados dos gráficos. Os cards usam índices normalizados em escala `0-100`; os valores Likert originais continuam como base de cálculo e entram no `technicalDetail` quando útil.
@@ -99,3 +84,9 @@ Faixas de classificação:
 - Criticidade: `<= 25` Consistente, `<= 50` Atenção, `<= 75` Inconsistente, acima de `75` Crítico.
 - Desalinhamento: `<= 10` Consistente, `<= 24` Atenção, `<= 50` Inconsistente, acima de `50` Crítico.
 - Consenso: `>= 80` Consistente, `>= 60` Atenção, `>= 40` Inconsistente, abaixo de `40` Crítico.
+
+- Produção de ativos na instância: `getAdminManagementAssetCompany()` resolve `company_<organizationId>`; listagens de ativos e auditorias recebem organizationId e filtram no banco antes de retornar resultados. Rotas editoriais conferem se o ativo pertence à empresa da URL.
+
+## Pastas dos ativos de gestão
+
+`management-asset-categories.ts` normaliza categorias, resolve pastas e conta ativos sem inferir área a partir do tipo. Conserva categorias adicionais e Sem categoria. `getPublishedManagementAssets()` lê todos os tipos publicados das organizações da sessão; a memoização React é somente por request e recebe userId explicitamente. O layout e a página compartilham essa leitura. Os links por tipo permanecem para leitura e compatibilidade.

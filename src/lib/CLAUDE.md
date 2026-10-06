@@ -102,3 +102,7 @@ Os mocks devem continuar realistas, em pt-BR, sem dados pessoais reais e sem `Ma
 - Criar campos opcionais por conveniência sem refletir o contrato real.
 - Criar Supabase client em Client Component ou expor service role.
 - Misturar validação de formulário com contrato de transporte quando o dado ainda não sai do client.
+
+## Iniciativas
+
+`initiatives/storage.ts` contém o contrato Zod e o hook client-only das iniciativas da interface Symbach. Persistência local versionada por usuário/empresa, sem nova API ou tabela. Ver `initiatives/CLAUDE.md`.

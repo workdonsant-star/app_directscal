@@ -10,7 +10,7 @@ import {
   UserRoundCheck,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 import { AdminDeliveryStatusBadge } from "@/components/admin/admin-delivery-status-badge";
 import { AppTopbarActionsPortal } from "@/components/app-topbar-actions-portal";
@@ -150,6 +150,8 @@ export function AdminDeliveryWorkspace({
   delivery,
   deliveryOptions,
   publication,
+  assetsContent,
+  initialTab = "dados",
 }: {
   analysis: AdminDeliveryAnalysis;
   delivery: AdminDelivery;
@@ -159,8 +161,11 @@ export function AdminDeliveryWorkspace({
     id: string;
   }>;
   publication: AdminDeliveryPublication | null;
+  assetsContent: ReactNode;
+  initialTab?: string;
 }) {
   const router = useRouter();
+  const [tab, setTab] = useState(initialTab);
   const [status, setStatus] = useState<AdminDeliveryStatus>(delivery.status);
   const [specialistId, setSpecialistId] = useState(
     delivery.specialistId ?? "unassigned",
@@ -277,7 +282,7 @@ export function AdminDeliveryWorkspace({
 
   return (
     <div className="flex w-full flex-col gap-6">
-      <AppTopbarActionsPortal>
+      {tab !== "ativos" ? <AppTopbarActionsPortal>
         <div className="flex items-center gap-2">
           <Button
             type="button"
@@ -299,7 +304,7 @@ export function AdminDeliveryWorkspace({
             {status === "publicada" ? "Publicado" : "Publicar entrega"}
           </Button>
         </div>
-      </AppTopbarActionsPortal>
+      </AppTopbarActionsPortal> : null}
 
       <section className="space-y-1">
         <div className="space-y-1">
@@ -385,7 +390,7 @@ export function AdminDeliveryWorkspace({
         </p>
       ) : null}
 
-      <Tabs defaultValue="dados" className="gap-6">
+      <Tabs value={tab} onValueChange={(value) => setTab(String(value))} className="gap-6">
         <TabsList variant="line" className="w-full justify-start border-b">
           <TabsTrigger value="dados">Dados</TabsTrigger>
           <TabsTrigger value="relatorio">Relatório</TabsTrigger>
@@ -395,6 +400,7 @@ export function AdminDeliveryWorkspace({
               {selectedActionPointIds.size}
             </span>
           </TabsTrigger>
+          <TabsTrigger value="ativos">Criação dos ativos</TabsTrigger>
           <TabsTrigger value="publicacao">Publicação</TabsTrigger>
         </TabsList>
 
@@ -681,6 +687,9 @@ export function AdminDeliveryWorkspace({
               </p>
             </aside>
           </div>
+        </TabsContent>
+        <TabsContent value="ativos" className="space-y-6">
+          {assetsContent}
         </TabsContent>
       </Tabs>
     </div>

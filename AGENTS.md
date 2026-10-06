@@ -165,7 +165,7 @@ Rotas atuais:
 - `/omdx` → dashboard executivo de Maturidade.
 - `/omdx/[id]/compartilhar` → compartilhamento persistido: um link de Fundador, um de Liderança e um link de Time para cada setor selecionado.
 - `/omdx/[id]/relatorio` → download autenticado do PDF consolidado.
-- `/ativos-de-gestao` → redireciona para `/ativos-de-gestao/sops`.
+- `/ativos-de-gestao` → pastas por categoria dos ativos publicados.
 - `/ativos-de-gestao/sops` → biblioteca de SOPs por categoria.
 - `/ativos-de-gestao/sops/[id]`, `/ativos-de-gestao/playbooks/[id]` e `/ativos-de-gestao/governanca/[id]` → leitura individual da versão publicada vigente.
 - `/ativos-de-gestao/playbooks` → biblioteca de Playbooks por categoria.
@@ -195,10 +195,10 @@ Rotas e fluxos planejados:
 - `/r/[token]` (público, sem auth) — fluxo do respondente.
 
 Regras de breadcrumb no Maturidade:
-- Páginas raiz abertas diretamente pela sidebar não usam breadcrumb, incluindo Overview, Coletas, Action Points, WorkFlow, dimensões, bibliotecas, Relatórios e raízes do Admin.
-- O breadcrumb começa somente depois que a pessoa abre uma página a partir da raiz e deve partir da raiz imediata, por exemplo `Coletas / Compartilhar`, `SOPs / Nome do SOP` e `Relatórios / Nome do relatório`.
+- Páginas raiz abertas diretamente pela sidebar não usam breadcrumb, incluindo Analytics, Pesquisas, Action Points, Agente, dimensões, bibliotecas, Relatórios e raízes do Admin.
+- O breadcrumb começa somente depois que a pessoa abre uma página a partir da raiz e deve partir da raiz imediata, por exemplo `Pesquisas / Compartilhar`, `SOPs / Nome do SOP` e `Relatórios / Nome do relatório`.
 - Drawers de criação/configuração não têm breadcrumb próprio.
-- `Coletas` é o nome visível do item próprio da sidebar que aponta para `/omdx/diagnosticos`; não deve depender de CTA dentro do dashboard.
+- `Pesquisas` é o nome visível do item próprio da sidebar que aponta para `/omdx/diagnosticos`; não deve depender de CTA dentro do dashboard.
 
 ## Dados e mocks
 
@@ -220,7 +220,8 @@ Convenções:
 - **Tokens primeiro.** Use as variáveis CSS de `globals.css` (`bg-background`, `text-muted-foreground`, `border`, etc.). Não cole hex direto em componente.
 - **Brand blue (`#185EFF`) é signal-grade.** Um CTA primário por tela. Nunca tile background.
 - **Cards têm 1px border, sem shadow** por padrão. Sombras só em popovers e elementos elevados.
-- **Tabelas operacionais ficam livres, não dentro de cards/boxes.** Siga o padrão de `src/components/omdx/diagnostics-workspace.tsx`: título, descrição e ações no fluxo da página; a tabela usa apenas o seu próprio wrapper `overflow-hidden rounded-lg border`.
+- **Toda tabela nova segue o componente do Figma `252:438`**, no frame `252:2` do arquivo DirectScal App (`oApRszoNt9EgWVZbF8C7wN`). Use `Table variant="operational"`: cabeçalho neutro de 44px com raio de 5px nos quatro cantos externos, células com padding horizontal de 16px, linhas de 55px e divisórias inferiores de 0,5px. Sem contorno externo, Card ou fundo no hover. Título e ações ficam no fluxo da página. Este padrão substitui a orientação anterior de wrapper com borda; variantes legadas permanecem apenas para compatibilidade. Ver `docs/padroes-de-tabelas-e-seletores.md`.
+- **Novos botões seletores de abas seguem o Figma `252:79`.** Use `TabsList variant="selector"`: altura de 32px, intervalo de 32px, opção ativa com fundo neutro e raio de 6px, sem sublinhado. Preserve foco e navegação por teclado do Base UI. Seletores dropdown continuam usando `Select`.
 - **Margem das páginas autenticadas:** use `AppPage`, com `px-6 py-8 lg:px-10` e conteúdo em largura total, seguindo as páginas de Dimensões. Limite de largura é exceção para leitura documental ou fluxos deliberadamente estreitos.
 - **Tabular numerals** (`.tabular-nums` ou `font-variant-numeric: tabular-nums`) em KPIs, tabelas e qualquer número alinhável.
 - **Use `cn()` de `@/lib/utils`** para compor classes condicionalmente.
@@ -291,3 +292,7 @@ Uma entrega está pronta quando:
 ## Manutenção deste arquivo
 
 Atualize este arquivo quando mudar stack, comandos, arquitetura, fluxo de dados, convenções de agentes ou regras importantes do projeto. Ele deve permanecer **enxuto e operacional**; detalhes extensos vão para os `CLAUDE.md` locais ou para `docs/` (quando essa pasta existir).
+
+## Interface Symbach
+
+Na branch `symbach`, a referência visual portada de `Symbach Os` governa o shell e a navegação: sidebar expandida em >=1280px, topbar de 56px, fundo contínuo e conteúdo com raio de 20px. Os itens Analytics, Pesquisas e Agente preservam `/omdx`, `/omdx/diagnosticos` e `/assistente`. Iniciativas usa armazenamento local por usuário/empresa; ativos por categoria reutilizam leituras publicadas existentes. Bibliotecas por tipo sai da sidebar; cada pasta reúne todos os tipos pela categoria cadastrada. Ver `docs/shell-e-iniciativas.md`.

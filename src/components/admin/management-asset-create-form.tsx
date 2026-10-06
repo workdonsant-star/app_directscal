@@ -103,6 +103,8 @@ function Field({
 
 export function ManagementAssetCreateForm({
   organizations,
+  initialOrganizationId,
+  organizationLocked = false,
   specialists,
   templates,
   pending,
@@ -110,6 +112,8 @@ export function ManagementAssetCreateForm({
   onSubmit,
 }: {
   organizations: Option[];
+  initialOrganizationId?: string;
+  organizationLocked?: boolean;
   specialists: Option[];
   templates: ManagementAssetTemplateOption[];
   pending: boolean;
@@ -119,7 +123,7 @@ export function ManagementAssetCreateForm({
   const [step, setStep] = useState<Step>(1);
   const [errors, setErrors] = useState<FormErrors>({});
   const [form, setForm] = useState<FormState>({
-    organizationId: organizations[0]?.id ?? "",
+    organizationId: initialOrganizationId ?? organizations[0]?.id ?? "",
     type: "sop",
     title: "",
     summary: "",
@@ -267,6 +271,7 @@ export function ManagementAssetCreateForm({
             <div className="grid gap-4 sm:grid-cols-2">
               <Field id="asset-organization" label="Empresa" error={errors.organizationId}>
                 <Select
+                  disabled={organizationLocked}
                   value={form.organizationId}
                   items={organizations.map((organization) => ({
                     value: organization.id,

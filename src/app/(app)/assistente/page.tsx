@@ -7,7 +7,7 @@ import { canAccessCustomerApp } from "@/lib/auth/access-control";
 import { getCurrentAuthSession } from "@/lib/auth/session";
 
 export const metadata: Metadata = {
-  title: "Workflow — Directscal",
+  title: "Agente — Directscal",
 };
 
 export default async function AssistantPage() {

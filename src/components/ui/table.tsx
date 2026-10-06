@@ -4,9 +4,6 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-<<<<<<< Updated upstream
-function Table({ className, ...props }: React.ComponentProps<"table">) {
-=======
 const operationalTableClasses = [
   "border-separate border-spacing-0 text-sm leading-5",
   "[&_thead_tr]:border-0 [&_thead_tr:hover]:bg-transparent",
@@ -24,7 +21,6 @@ function Table({
   variant = "operational",
   ...props
 }: React.ComponentProps<"table"> & { variant?: "default" | "operational" }) {
->>>>>>> Stashed changes
   return (
     <div
       data-slot="table-container"
@@ -32,7 +28,12 @@ function Table({
     >
       <table
         data-slot="table"
-        className={cn("w-full caption-bottom text-sm", className)}
+        data-variant={variant}
+        className={cn(
+          "w-full caption-bottom text-sm",
+          variant === "operational" && operationalTableClasses,
+          className
+        )}
         {...props}
       />
     </div>

@@ -1,7 +1,7 @@
 import * as React from "react"
 
 const MOBILE_BREAKPOINT = 768
-const SIDEBAR_COMPACT_BREAKPOINT = 1920
+const SIDEBAR_COMPACT_BREAKPOINT = 1280
 
 function createBreakpointStore(breakpoint: number) {
   const query = `(max-width: ${breakpoint - 1}px)`
