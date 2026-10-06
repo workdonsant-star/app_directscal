@@ -226,9 +226,9 @@ export function DiagnosticsTable({
 
   return (
     <div>
-      <div className="overflow-hidden rounded-[5px] ring-1 ring-foreground/10">
+      <div className="min-w-0">
         <Table className="min-w-[1180px] table-fixed">
-          <TableHeader className="bg-muted/30">
+          <TableHeader>
             <TableRow>
               <TableHead className="h-11 w-[260px] px-4">Diagnóstico</TableHead>
               <TableHead className="h-11 w-[190px] px-4">Criado por</TableHead>

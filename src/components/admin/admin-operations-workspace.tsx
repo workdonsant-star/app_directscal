@@ -152,9 +152,9 @@ export function AdminOperationsWorkspace({
           </Button>
         </div>
 
-        <div className="overflow-hidden rounded-lg border">
+        <div className="min-w-0">
           <Table>
-            <TableHeader className="bg-muted/40">
+            <TableHeader>
               <TableRow>
                 <TableHead>Empresa e diagnóstico</TableHead>
                 <TableHead>Status</TableHead>

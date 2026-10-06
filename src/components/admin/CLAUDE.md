@@ -15,7 +15,7 @@ Componentes específicos da visão de superadministrador da Directscal. Eles adm
 - O onboarding usa `AcquisitionProgressiveForm`: até três campos de campanha por bloco, sempre em uma única coluna, progresso explícito, avanço automático quando o bloco inteiro fica válido e um único botão para voltar. O último bloco de campanha pode ter menos de três campos; senha e confirmação permanecem juntas no último bloco técnico. A troca de blocos deve preservar a altura da coluna; quando necessário, somente a área dos campos pode rolar, sem transformar o formulário em uma página longa.
 - Campanhas, leads, empresas e aquisição pública ficam disponíveis quando `FEATURE_ACQUISITION=true`; com o flag desligado, as rotas permanecem bloqueadas.
 - Use os mesmos primitives do app autenticado: `Table`, `Card`, `Button`, `Sheet`, `Select`, `Badge` e `KpiCard` compartilhado.
-- Mantenha continuidade visual com Maturidade: tabelas principais de módulos, campanhas, leads e empresas ficam livres no fluxo da página, não dentro de `Card`. Use título/descrição/ações acima da tabela e apenas o wrapper `overflow-hidden rounded-lg border` na própria listagem.
+- Mantenha continuidade visual com Maturidade: tabelas principais de módulos, campanhas, leads e empresas ficam livres no fluxo da página, não dentro de `Card`. Use título/descrição/ações acima da tabela e o container com rolagem horizontal do primitive, sem contorno externo.
 - Use `Card` no admin apenas para KPIs, drawers/modais ou blocos que sejam ferramentas enquadradas, nunca como envelope da tabela operacional principal.
 - Os campos base do onboarding não devem ser removidos. Além de nome, e-mail, WhatsApp, tamanho da empresa e desafios, o conjunto inclui posição, nicho, Instagram, website, CNPJ e faturamento do último trimestre. O nome da empresa não é digitado: a razão social e os demais dados cadastrais vêm da consulta server-side à API Minha Receita.
 - Leads usam página própria de detalhe em `/admin/leads/[id]`; não abrir detalhes em drawer ou modal lateral.
@@ -48,3 +48,14 @@ Componentes específicos da visão de superadministrador da Directscal. Eles adm
 | `AcquisitionProgressiveForm` | Formulário progressivo compartilhado pelos fluxos de e-mail e Google, com até três campos de campanha por bloco, avanço automático e altura estável. |
 | `AdminStatusBadge` | Status discretos de módulos/campanhas. |
 | `useAdminData` | Busca client-side do snapshot Supabase em `/api/admin/acquisition`. |
+<<<<<<< Updated upstream
+=======
+
+- `AdminOperationsNavigation` organiza as áreas Entregas e Criação dos ativos sob Operação. Não criar entrada independente de ativos na sidebar administrativa.
+- `ManagementAssetCreateForm` recebe `initialOrganizationId` e `organizationLocked` da instância; a empresa fica fixa. `ManagementAssetsWorkspace` recebe só a empresa da instância e os ativos dela.
+
+- `AdminDeliveryWorkspace` inclui Criação dos ativos no mesmo menu Dados / Relatório / Action points / Publicação. Recebe `assetsContent` do servidor; listagem, editor e perguntas são renderizados nessa aba com `embedded`, compartilhando topbar e espaçamento.
+- Editor e perguntas dentro de uma entrega navegam por `?aba=ativos&ativo=<id>` e `?aba=ativos&perguntas=1`; voltar à lista mantém `?aba=ativos`. A empresa é resolvida pela organização do diagnóstico.
+
+- Todas as tabelas visíveis usam o padrão das Dimensões de 06/10/2026 via `Table`: cabeçalho neutro de 44px com raio de 5px, padding horizontal de 16px, linhas de pelo menos 55px e divisórias de 0,5px entre linhas, sem borda externa nem fundo no hover. Conteúdo documental pode ampliar a altura; o editor preserva a indicação de células selecionadas.
+>>>>>>> Stashed changes

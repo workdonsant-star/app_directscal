@@ -238,6 +238,7 @@ export function OverviewExecutiveCards({
             : "grid gap-4 sm:grid-cols-2",
           layout === "grid" &&
             (metrics.length === 3 ? "xl:grid-cols-3" : "xl:grid-cols-4"),
+          layout === "grid" && presentation === "overview" && "sm:grid-cols-3",
         )}
       >
         {metrics.map((metric) => (
@@ -248,7 +249,7 @@ export function OverviewExecutiveCards({
               presentation === "number"
                 ? "h-[128px] gap-1 rounded-[5px] border-0 bg-sidebar py-2 shadow-none ring-0"
                 : presentation === "overview"
-                  ? "h-[109px] gap-3 rounded-[5px] border-0 bg-sidebar px-5 py-2.5 shadow-none ring-0"
+                  ? "h-[109px] gap-3 rounded-[5px] border-0 bg-sidebar px-5 py-2.5 shadow-none ring-0 data-[size=sm]:py-2.5"
                 : "gap-2",
             )}
           >
@@ -262,7 +263,7 @@ export function OverviewExecutiveCards({
                 className={cn(
                   "text-muted-foreground font-normal",
                   presentation === "overview"
-                    ? "text-[10px] leading-[13px]"
+                    ? "text-[10px] leading-[13px] group-data-[size=sm]/card:text-[10px]"
                     : "text-sm",
                 )}
               >

@@ -22,3 +22,10 @@ Esta pasta implementa as listagens de SOPs, Playbooks, Governança e Matriz RACI
 - O detalhe do ativo segue o frame `191:3421`: índice lateral de 220px, 40px de distância até o artigo de 768px, cabeçalho com categoria/data, metadados em três colunas e seções com divisórias sutis.
 - Use apenas tokens do sistema e primitives existentes; não introduza cores próprias para categorias.
 - O estado vazio inicial é diferente do estado sem resultados causado pelos filtros.
+<<<<<<< Updated upstream
+=======
+
+`ManagementAssetCategoryPage` resolve categorias principais e adicionais, filtra por categoria normalizada e conserva a autorização cliente. O breadcrumb do leitor volta à pasta da categoria, não à listagem por tipo. `Bibliotecas` não aparece na sidebar.
+
+- Todas as tabelas visíveis usam o padrão das Dimensões de 06/10/2026 via `Table`: cabeçalho neutro de 44px com raio de 5px, padding horizontal de 16px, linhas de pelo menos 55px e divisórias de 0,5px entre linhas, sem borda externa nem fundo no hover. Conteúdo documental pode ampliar a altura; o editor preserva a indicação de células selecionadas.
+>>>>>>> Stashed changes

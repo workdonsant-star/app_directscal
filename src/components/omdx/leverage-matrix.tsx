@@ -26,7 +26,13 @@ function getColor(value: number, min: number, max: number) {
   return "var(--overview-matrix-leverage-high)";
 }
 
-export function LeverageMatrix({ rows }: { rows: LeverageMatrixRow[] }) {
+export function LeverageMatrix({
+  rows,
+  height = 342,
+}: {
+  rows: LeverageMatrixRow[];
+  height?: number;
+}) {
   const chartRows = [...rows].sort((first, second) => {
     const firstIndex = dimensionOrder.indexOf(
       first.dimension as (typeof dimensionOrder)[number],
@@ -46,7 +52,8 @@ export function LeverageMatrix({ rows }: { rows: LeverageMatrixRow[] }) {
 
   if (chartRows.length === 0 || values.length === 0) {
     return (
-      <div className="flex h-[342px] items-center justify-center text-sm text-muted-foreground">
+      <div className="flex items-center justify-center text-sm text-muted-foreground"
+        style={{ height }}>
         Ainda não há dimensões consolidadas para priorizar.
       </div>
     );
@@ -55,7 +62,8 @@ export function LeverageMatrix({ rows }: { rows: LeverageMatrixRow[] }) {
   return (
     <svg
       aria-label="Matriz de alavancas por dimensão"
-      className="block h-[342px] w-full overflow-visible"
+      className="block w-full overflow-visible"
+      style={{ height }}
       preserveAspectRatio="none"
       role="img"
       viewBox="0 0 472 342"

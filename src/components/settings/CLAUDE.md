@@ -22,3 +22,5 @@ Componentes da página `/configuracoes`, responsável pelos dados empresariais d
 - A criação usa um drawer e envia o convite no mesmo submit. Falhas permanecem visíveis na tabela e podem ser reenviadas sem duplicar o setor.
 - O drawer exige o nível `Superadmin` ou `Admin`; a tabela exibe esse acesso. `Superadmin` representa `cliente` no contrato técnico e `Admin` representa `admin`.
 - `SlackIntegrationSettings` mostra o estado da conexão com o Slack e oferece `Conectar Slack` (OAuth em `/api/integrations/slack/install`) ou `Desconectar`. Fica desabilitado quando o app do Slack não está configurado no ambiente.
+
+- Todas as tabelas visíveis usam o padrão das Dimensões de 06/10/2026 via `Table`: cabeçalho neutro de 44px com raio de 5px, padding horizontal de 16px, linhas de pelo menos 55px e divisórias de 0,5px entre linhas, sem borda externa nem fundo no hover. Conteúdo documental pode ampliar a altura; o editor preserva a indicação de células selecionadas.

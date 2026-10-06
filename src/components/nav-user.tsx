@@ -87,6 +87,33 @@ export function NavUser({
     router.refresh();
   }
 
+  if (user.role !== "superadmin") {
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            size="lg"
+            render={<Link href="/perfil" />}
+            aria-label={`Abrir perfil de ${displayName}`}
+          >
+            <Avatar className="size-8 rounded-full">
+              <AvatarImage src={displayAvatar} alt={displayName} />
+              <AvatarFallback className="rounded-full">
+                {displayInitials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="grid min-w-0 flex-1 grid-rows-[17.5px_16px] text-left text-sm">
+              <span className="truncate font-medium leading-[17.5px]">{displayName}</span>
+              <span className="truncate text-[10px] leading-[13px] text-muted-foreground">
+                {user.company}
+              </span>
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    );
+  }
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -102,9 +129,9 @@ export function NavUser({
                 {displayInitials}
               </AvatarFallback>
             </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-medium">{displayName}</span>
-              <span className="truncate text-xs text-muted-foreground">
+            <div className="grid min-w-0 flex-1 grid-rows-[17.5px_16px] text-left text-sm">
+              <span className="truncate font-medium leading-[17.5px]">{displayName}</span>
+              <span className="truncate text-[10px] leading-[13px] text-muted-foreground">
                 {user.company}
               </span>
             </div>
@@ -116,6 +143,7 @@ export function NavUser({
             align="end"
             sideOffset={4}
           >
+<<<<<<< Updated upstream
             {user.role !== "superadmin" ? (
               <>
                 <DropdownMenuItem
@@ -140,6 +168,8 @@ export function NavUser({
                 <DropdownMenuSeparator />
               </>
             ) : null}
+=======
+>>>>>>> Stashed changes
             <div className="flex justify-start px-1 py-1">
               <Button
                 type="button"

@@ -1,3 +1,4 @@
+import { Table } from "@/components/ui/table";
 import {
   calculateDimensionGap,
   type DimensionResult,
@@ -82,10 +83,10 @@ export function OverviewDimensionResultsTable({
           Nenhuma dimensão consolidada no filtro atual.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border bg-card">
+        <div className="min-w-0">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[680px] caption-bottom text-sm">
-              <thead className="border-b bg-muted/30">
+            <Table className="w-full min-w-[680px] caption-bottom text-sm">
+              <thead >
                 <tr>
                   <th
                     scope="col"
@@ -113,9 +114,9 @@ export function OverviewDimensionResultsTable({
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody >
                 {data.map((dimension) => (
-                  <tr key={dimension.dimension} className="hover:bg-muted/30">
+                  <tr key={dimension.dimension} >
                     <td className="px-4 py-4 align-middle">
                       <p className="text-foreground text-sm font-medium leading-snug">
                         {dimension.dimension}
@@ -135,7 +136,7 @@ export function OverviewDimensionResultsTable({
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </Table>
           </div>
         </div>
       )}

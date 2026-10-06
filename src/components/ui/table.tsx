@@ -4,7 +4,27 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+<<<<<<< Updated upstream
 function Table({ className, ...props }: React.ComponentProps<"table">) {
+=======
+const operationalTableClasses = [
+  "border-separate border-spacing-0 text-sm leading-5",
+  "[&_thead_tr]:border-0 [&_thead_tr:hover]:bg-transparent",
+  "[&_thead_th]:h-11 [&_thead_th]:bg-muted [&_thead_th]:px-4 [&_thead_th]:font-medium",
+  "[&_thead_th:first-child]:rounded-l-[5px] [&_thead_th:last-child]:rounded-r-[5px]",
+  "[&_thead]:bg-transparent [&_thead]:border-0",
+  "[&_tbody_tr]:border-0 [&_tbody_tr:hover]:bg-transparent [&_tbody_tr[aria-expanded=true]]:bg-transparent",
+  "[&_tbody_tr:last-child_td]:border-b-0 [&_tbody_tr:last-child_th]:border-b-0",
+  "[&_tbody_th]:h-[55px] [&_tbody_th]:border-b-[0.5px] [&_tbody_th]:border-border [&_tbody_th]:px-4 [&_tbody_th]:py-3",
+  "[&_tbody_td]:h-[55px] [&_tbody_td]:border-b-[0.5px] [&_tbody_td]:border-border [&_tbody_td]:px-4 [&_tbody_td]:py-3",
+].join(" ")
+
+function Table({
+  className,
+  variant = "operational",
+  ...props
+}: React.ComponentProps<"table"> & { variant?: "default" | "operational" }) {
+>>>>>>> Stashed changes
   return (
     <div
       data-slot="table-container"

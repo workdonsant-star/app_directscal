@@ -230,9 +230,9 @@ export function ManagementAssetsWorkspace({
               </p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-[5px] ring-1 ring-foreground/10">
+            <div className="min-w-0">
               <Table className="min-w-[1040px] table-fixed">
-                <TableHeader className="bg-muted/30">
+                <TableHeader>
                   <TableRow>
                     <TableHead className="h-11 w-[300px] px-4">Ativo</TableHead>
                     <TableHead className="h-11 w-[200px] px-4">Empresa</TableHead>

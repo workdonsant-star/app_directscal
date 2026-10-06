@@ -68,8 +68,8 @@ const contentClassName = cn(
   "[&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:mt-1.5 [&_li>p]:m-0",
   "[&_blockquote]:rounded-lg [&_blockquote]:border [&_blockquote]:bg-muted/40 [&_blockquote]:px-4 [&_blockquote]:py-3",
   "[&_a]:font-medium [&_a]:underline [&_a]:underline-offset-4",
-  "[&_table]:w-full [&_table]:border-collapse [&_table]:text-sm",
-  "[&_td]:border [&_td]:px-3 [&_td]:py-2 [&_td]:align-top [&_th]:border [&_th]:bg-muted/40 [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:font-medium",
+  "[&_.tableWrapper]:overflow-x-auto [&_table]:w-full [&_table]:border-separate [&_table]:border-spacing-0 [&_table]:text-sm [&_table]:leading-5",
+  "[&_td]:h-[55px] [&_td]:border-b-[0.5px] [&_td]:border-border [&_td]:px-4 [&_td]:py-3 [&_td]:align-top [&_th]:h-11 [&_th]:bg-muted [&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:font-medium [&_tr:last-child_td]:border-b-0 [&_th:first-child]:rounded-l-[5px] [&_th:last-child]:rounded-r-[5px]",
   "[&_.selectedCell]:bg-primary/10",
   "[&_p.is-editor-empty:first-child]:before:pointer-events-none [&_p.is-editor-empty:first-child]:before:float-left [&_p.is-editor-empty:first-child]:before:h-0 [&_p.is-editor-empty:first-child]:before:text-muted-foreground [&_p.is-editor-empty:first-child]:before:content-[attr(data-placeholder)]",
 );

@@ -154,9 +154,9 @@ export function AdminModulesWorkspace({
           </Button>
         </div>
 
-        <div className="overflow-hidden rounded-lg border">
+        <div className="min-w-0">
           <Table>
-            <TableHeader className="bg-muted/40">
+            <TableHeader>
               <TableRow>
                 <TableHead>Módulo</TableHead>
                 <TableHead>Status</TableHead>
@@ -225,9 +225,9 @@ export function AdminModulesWorkspace({
           </p>
         )}
 
-        <div className="overflow-hidden rounded-lg border">
+        <div className="min-w-0">
           <Table>
-            <TableHeader className="bg-muted/40">
+            <TableHeader>
               <TableRow>
                 <TableHead>Cliente</TableHead>
                 <TableHead className="text-right">Leads</TableHead>

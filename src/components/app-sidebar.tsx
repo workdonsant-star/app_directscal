@@ -2,15 +2,19 @@
 
 import {
   Blocks,
+<<<<<<< Updated upstream
   Bot,
   BookOpenCheck,
   BookText,
+=======
+  FolderClosed,
+  HeartHandshake,
+>>>>>>> Stashed changes
   Building2,
   CalendarDays,
   ChartNoAxesColumn,
   ClipboardCheck,
   Eye,
-  FileText,
   Flag,
   GitBranch,
   Megaphone,
@@ -26,6 +30,10 @@ import {
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 
+<<<<<<< Updated upstream
+=======
+import { getManagementAssetCategoryFolders, type ManagementAssetCategoryFolder } from "@/lib/data/management-asset-categories";
+>>>>>>> Stashed changes
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -55,9 +63,15 @@ const data = {
     },
   ],
   omdxItems: [
+<<<<<<< Updated upstream
     { title: "Coletas", url: "/omdx/diagnosticos", icon: SquarePlus },
     { title: "Action Points", url: "/gantt", icon: CalendarDays },
     { title: "WorkFlow", url: "/assistente", icon: Bot },
+=======
+    { title: "Pesquisas", url: "/omdx/diagnosticos", icon: SquarePlus },
+    { title: "Diagnósticos", url: "/relatorios", icon: ChartNoAxesColumn },
+    { title: "Action Points", url: "/gantt", icon: SquarePlus },
+>>>>>>> Stashed changes
   ],
   admin: [
     {
@@ -105,6 +119,7 @@ const data = {
     { name: "Liderança", url: "/insights/lideranca", icon: Flag },
     { name: "Performance", url: "/insights/performance", icon: Zap },
   ],
+<<<<<<< Updated upstream
   managementAssets: [
     { title: "SOPs", url: "/ativos-de-gestao/sops", icon: BookOpenCheck },
     {
@@ -131,6 +146,8 @@ const data = {
       icon: ChartNoAxesColumn,
     },
   ],
+=======
+>>>>>>> Stashed changes
 };
 
 function getInitials(name: string) {
@@ -143,6 +160,10 @@ function getInitials(name: string) {
 }
 
 export function AppSidebar({
+<<<<<<< Updated upstream
+=======
+  managementAssetCategories = getManagementAssetCategoryFolders([]),
+>>>>>>> Stashed changes
   acquisitionEnabled = false,
   enabledModuleIds,
   user = data.user,
@@ -216,6 +237,7 @@ export function AppSidebar({
     isActive:
       pathname === item.url || pathname.startsWith(`${item.url}/`),
   }));
+<<<<<<< Updated upstream
   const documentNavigation = data.documents
     .filter((item) => !isOrganizationAdmin || item.title !== "Contratos")
     .map((item) => ({
@@ -234,6 +256,20 @@ export function AppSidebar({
         pathname.startsWith("/configuracoes/"),
     },
   ];
+=======
+  const settingsNavigation = isOrganizationAdmin
+    ? []
+    : [
+        {
+          title: "Configurações",
+          url: "/configuracoes",
+          icon: Settings,
+          isActive:
+            pathname === "/configuracoes" ||
+            pathname.startsWith("/configuracoes/"),
+        },
+      ];
+>>>>>>> Stashed changes
   const adminItems = acquisitionEnabled
     ? data.admin
     : data.admin.filter((item) => !item.requiresAcquisition);
@@ -247,7 +283,11 @@ export function AppSidebar({
       collapsible="icon"
       className="[&_[data-slot=sidebar-inner]]:bg-sidebar [&_[data-slot=sidebar-container]]:border-r-0"
     >
+<<<<<<< Updated upstream
       <SidebarHeader className="pb-4">
+=======
+      <SidebarHeader className="h-18 pr-4 pl-0 pt-2 pb-4 group-data-[collapsible=icon]:px-2">
+>>>>>>> Stashed changes
         <NavUser user={sidebarUser} />
       </SidebarHeader>
       <SidebarContent>
@@ -264,19 +304,27 @@ export function AppSidebar({
               items={primaryNavigation}
               onNavigate={closeCompactSidebar}
             />
+<<<<<<< Updated upstream
             <NavMain
               label="Maturidade"
               items={dimensionNavigation}
               onNavigate={closeCompactSidebar}
             />
+=======
+>>>>>>> Stashed changes
             <NavMain
               label="Ativos de gestão"
               items={managementAssetNavigation}
               onNavigate={closeCompactSidebar}
             />
             <NavMain
+<<<<<<< Updated upstream
               label="Documentos"
               items={documentNavigation}
+=======
+              label="Dimensões"
+              items={dimensionNavigation}
+>>>>>>> Stashed changes
               onNavigate={closeCompactSidebar}
             />
           </>

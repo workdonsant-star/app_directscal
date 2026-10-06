@@ -1,3 +1,4 @@
+import { Table } from "@/components/ui/table";
 import { Fragment, type ReactNode } from "react";
 
 import type {
@@ -144,18 +145,18 @@ function Block({
       const bodyRows = hasHeader ? otherRows : block.content;
 
       return (
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full min-w-[560px] border-collapse text-sm leading-6">
+        <div className="min-w-0">
+          <Table className="min-w-[560px] text-sm leading-6">
             {hasHeader && firstRow ? (
-              <thead className="bg-muted/30">
-                <tr className="border-b text-left text-foreground">
+              <thead>
+                <tr className="text-left text-foreground">
                   {firstRow.content.map((cell, cellIndex) => (
                     <th
                       key={`${id}-h-${cellIndex}`}
                       scope="col"
                       colSpan={cell.attrs?.colspan}
                       rowSpan={cell.attrs?.rowspan}
-                      className="px-4 py-3 font-medium"
+                      className="text-left font-medium text-foreground"
                     >
                       {cell.content.map((paragraph, paragraphIndex) => (
                         <Paragraph
@@ -171,7 +172,7 @@ function Block({
             ) : null}
             <tbody>
               {bodyRows.map((row, rowIndex) => (
-                <tr key={`${id}-r-${rowIndex}`} className="border-b last:border-b-0">
+                <tr key={`${id}-r-${rowIndex}`} >
                   {row.content.map((cell, cellIndex) => {
                     const CellTag = cell.type === "tableHeader" ? "th" : "td";
 
@@ -195,7 +196,7 @@ function Block({
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Table>
         </div>
       );
     }

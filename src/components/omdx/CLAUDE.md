@@ -29,15 +29,15 @@ Maturidade avalia maturidade operacional em **6 dimensões** (Cultura, Visão, C
 | `PublicResponseForm` | `public-response-form.tsx` | `/r/[token]` | Formulário público anônimo em lista contínua minimalista, com perguntas embaralhadas por carregamento, controle Likert em linha exibindo todos os rótulos, modal inicial, progresso discreto, validação com âncora na primeira pendência, envio para API, trava leve em `localStorage` e redirecionamento para `/r/[token]/obrigado` após sucesso. |
 | `DimensionInsightWorkspace` | `dimension-insight-workspace.tsx` | `/insights/[dimensao]` | Controla o filtro da dimensão, renderiza topbar e injeta o dashboard. |
 | `DimensionInsightDashboard` | `dimension-insight-dashboard.tsx` | `/insights/[dimensao]` | Dashboard compacto por dimensão, recebendo o diagnóstico filtrado por prop. |
-| `DimensionDiagnosticFilter` | `dimension-diagnostic-filter.tsx` | Topbar de Insights | Select do sistema para alternar entre todos os diagnósticos e diagnóstico individual. Deve ser usado apenas na topbar. |
+| `DimensionDiagnosticFilter` | `dimension-diagnostic-filter.tsx` | Topbar de Insights | Select do sistema para alternar entre todos os diagnósticos e diagnóstico individual. Insights usa a topbar; Overview também usa o cabeçalho da seção, conforme o frame `252:545`. |
 | `DimensionScoreTrend` | `dimension-score-trend.tsx` | Disponível para telas futuras | Barras comparando a dimensão entre diagnósticos. Não é exibido no dashboard atual de Insights. |
 | `LayerInsightComparison` | `layer-insight-comparison.tsx` | Disponível para telas futuras | Comparação entre fundador, liderança e operação. Não é exibido no dashboard atual de Insights. |
 | `DimensionQuestionResultsTable` | `dimension-question-results-table.tsx` | Insights | Tabela por pergunta da dimensão, sem título ou descrição introdutória, respeitando o filtro de diagnóstico e acumulando Diretoria, Liderança e Time em uma barra horizontal empilhada, além de gap médio e status. |
 | `DimensionQuestionLayerChart` | `dimension-question-layer-chart.tsx` + `dimension-question-layer-echarts.tsx` | Tabela de Insights | Wrapper client com carregamento dinâmico da barra horizontal ECharts por pergunta, três séries empilhadas com espessura uniforme de 16 px, escala fixa de 0 a 15, tooltip e tema dinâmico. A identificação das camadas, os valores e o total aparecem somente no hover. |
 | `OverviewExecutiveCards` | `overview-executive-cards.tsx` | `/omdx` e `/insights/[dimensao]` | Indicadores executivos em superfície neutra sem borda ou sombra. No Overview e em Insights usa a apresentação numérica compacta, sem gauge, ícone ou status visível. Com três métricas, a grade desktop usa três colunas. |
-| `OverviewDiagnosticFilter` | `overview-diagnostic-filter.tsx` | `/omdx` | Wrapper client do filtro de diagnósticos na topbar, reutilizando `DimensionDiagnosticFilter`. |
+| `OverviewDiagnosticFilter` | `overview-diagnostic-filter.tsx` | `/omdx` | Wrapper client do filtro compacto de diagnósticos, reutilizando `DimensionDiagnosticFilter`. Na Overview aparece na topbar e no cabeçalho de Resultado de coletas, com IDs distintos e a mesma query string. |
 | `OverviewDimensionResultsTable` | `overview-dimension-results-table.tsx` | `/omdx` | Tabela compacta de leitura executiva por dimensão, exibindo dimensão, pontuação consolidada, status e gap entre camadas. |
-| `LayerScoreDashboard` | `layer-score-dashboard.tsx` | `/omdx` e workspace admin da entrega | Na Overview, organiza uma grade 3 × 2: KPIs e Dimensões/Vulnerabilidades no topo; Alavancas/Camadas/Dimensões por Camadas abaixo. Cada visual ocupa um card independente de 512 × 434 no desktop. A apresentação `distilled` preserva a grade analítica sem KPIs. |
+| `LayerScoreDashboard` | `layer-score-dashboard.tsx` | `/omdx` e workspace admin da entrega | Na Overview, organiza três KPIs em linha e, abaixo, Alavancas prioritárias / Dimensões por camadas / Dimensões gerenciais. Os cards analíticos têm 490px de altura, 20px de padding, gap de 16px e SVGs de 389px. A apresentação `distilled` preserva a grade analítica sem KPIs. |
 | `LayerScoreBarChart` | `layer-score-bar-chart.tsx` | `/omdx` | SVG responsivo de barras horizontais para Fundador, Liderança e Tático em escala fixa de 0 a 5, com geometria e cores do Figma. |
 | `DimensionScoreBarChart` | `dimension-score-bar-chart.tsx` | `/omdx` | SVG responsivo de barras verticais roxas com a pontuação real das seis dimensões em escala fixa de 0 a 5 e na ordem definida no Figma. |
 | `LayerDimensionStackedChart` | `layer-dimension-stacked-chart.tsx` | `/omdx` | SVG responsivo com uma pilha por dimensão em escala fixa de 0 a 15, labels internos e cores de Fundador, Liderança e Tático definidas no Figma. |
@@ -50,6 +50,10 @@ Maturidade avalia maturidade operacional em **6 dimensões** (Cultura, Visão, C
 | `InterventionPriorityChart` | `intervention-priority-chart.tsx` | `/omdx` | Barras horizontais ECharts para priorizar intervenção por criticidade operacional, maturidade, gap e dispersão. |
 | `TopResearchBottlenecks` | `top-research-bottlenecks.tsx` | `/omdx` | Ranking React de perguntas com maior percentual de respostas críticas, sem ECharts. |
 | `LayerHeatmapComparisonChart` | `layer-heatmap-comparison-chart.tsx` | `/omdx` | Heatmap ECharts para comparar diretoria, liderança e time por dimensão em escala de 1 a 5. |
+<<<<<<< Updated upstream
+=======
+| `ProcessUsageSection` | `process-usage-section.tsx` | `/omdx` | Server Component da primeira seção de Analytics, `Aderência dos ativos de gestão`: três cards (Adoção, Cobertura, Utilidade) com variação em pontos percentuais contra os 30 dias anteriores, barras empilhadas por semana (8 semanas) e ranking dos processos mais consultados com a fração de avaliações negativas. Cards de charts com 490px e chart semanal de 360px. SVG/HTML com tooltips nativos e tabela `sr-only`. Recebe `ProcessUsageAnalytics` pronto. |
+>>>>>>> Stashed changes
 | `useChartThemeColors` | `use-chart-theme-colors.ts` | Charts ECharts Maturidade | Hook client-side que lê tokens CSS e observa mudanças da classe `dark` no `<html>` para recalcular cores sem refresh. |
 | `OperationalMemberRegistrationForm` | `operational-member-registration-form.tsx` | `/o/[token]` | Formulário público curto para a própria pessoa informar área, papel operacional e responsabilidades percebidas. Após cadastro aceito, mostra confirmação sem redirecionar automaticamente para pesquisa. |
 
@@ -60,7 +64,7 @@ Maturidade avalia maturidade operacional em **6 dimensões** (Cultura, Visão, C
 - **Score 1-5** sempre formatado com **uma casa decimal** (`(3.4).toFixed(1)`), com vírgula em pt-BR quando aplicável (formatação automática se vier de `toLocaleString("pt-BR")`).
 - **Classificação** vem da função `classifyScore()` em `src/lib/data/omdx-domain.ts`. Não inline a regra em componente. A régua textual do score Likert é: `<= 2.0` Crítico, `<= 3.0` Inconsistente, `<= 4.0` Atenção, acima de `4.0` Consistente.
 - **Biblioteca principal de visualização:** usar Apache ECharts via `echarts` e `echarts-for-react` para charts analíticos gerais de Maturidade. Os cinco charts manuais da Overview são a exceção deliberada: usam SVG responsivo para preservar a geometria aprovada no Figma. Evite shadcn/ui Charts e Recharts como base principal.
-- **Charts reutilizáveis:** componentes de visualização devem ser tipados e receber dados já preparados por props ou pela camada `src/lib/data/`. Na Overview, preserve `viewBox="0 0 472 342"`, barras de 33 px, células de 80 × 33 px e os offsets documentados no código.
+- **Charts reutilizáveis:** componentes de visualização devem ser tipados e receber dados já preparados por props ou pela camada `src/lib/data/`. Na Overview, preserve `viewBox="0 0 472 342"`, barras de 33 px, células de 80 × 33 px e os offsets documentados no código. A Overview renderiza Dimensões, Camadas e Alavancas em 389px de altura; o valor padrão de 342px preserva a apresentação `distilled` do admin.
 - **Tipografia dos charts:** eixos, legendas, tooltips e demais textos auxiliares usam Funnel Sans, preservando Plus Jakarta Sans para os títulos do app.
 - **Charts e tema:** ECharts não reage sozinho a CSS variables após troca de tema. Use `useChartThemeColors()` nos charts ECharts. Os SVGs da Overview consomem as variáveis CSS diretamente em `fill` e `stroke`, reagindo ao tema sem JavaScript.
 - **Barras com raio consistente:** charts gerais usam `chartBarBorderRadius`; os três charts do Overview usam `overviewChartBarBorderRadius`, ambos centralizados em `chart-colors.ts`.
@@ -132,7 +136,7 @@ Para o respondente, prever:
 - `/insights/[dimensao]` mostra uma visão agregada da dimensão em todos os diagnósticos.
 - As seis páginas de dimensão usam o mesmo recuo horizontal de `/omdx` (`px-6 lg:px-10`), sem `max-width` ou centralização adicional no conteúdo.
 - O filtro padrão é `Todos os diagnósticos`; o usuário pode selecionar um diagnóstico individual.
-- Filtros de página ficam na `AppTopbar`, usando a área `actions`. Não renderize filtros globais dentro do corpo do dashboard.
+- Filtros dos Insights ficam na `AppTopbar`, usando a área `actions`. A Overview também repete o controle no cabeçalho de Resultado de coletas, conforme `252:545`, sem estado independente.
 - O filtro de diagnóstico em Insights controla a query string `?diagnostico=...`; `todos` remove o parâmetro.
 - O MVP deve permanecer compacto: KPIs e tabela de perguntas.
 - A tabela de perguntas usa `getDimensionQuestionResults()` e deve respeitar o filtro atual. Em `Todos os diagnósticos`, agrega por `dimensionId + text`; em diagnóstico individual, mostra apenas as perguntas daquele diagnóstico. A tabela fica diretamente no fluxo da página, com o mesmo contorno de 1 px em `foreground/10` dos cards e raio de 5 px, sem card, wrapper com overflow ou rolagem própria. As colunas visíveis são `Pergunta`, `Pontuação empilhada`, `Gap médio` e `Status`. O grupo analítico ocupa a porção direita da tabela, e cada título segue o conteúdo da coluna, com pontuação, gap e status alinhados à esquerda. A barra é renderizada com Apache ECharts, acumula as três médias em escala total de 0 a 15 e usa os mesmos tokens lime, lime deep e purple do chart empilhado do dashboard. A legenda não aparece acima da tabela; a identificação das camadas, os valores e o total ficam restritos ao tooltip. Camadas sem base permanecem ausentes.
@@ -148,7 +152,7 @@ Para o respondente, prever:
 
 ### Cards do Overview
 
-O Overview exibe três cards empilhados na primeira coluna da grade de analytics: raio de 5 px, título discreto e valor alinhado à esquerda, sem gauge, ícone ou status visível. Em `Todos os diagnósticos`, os valores consolidam todos os relatórios e a linha auxiliar compara o relatório mais recente com o imediatamente anterior. No filtro individual, quando há histórico anterior comparável, cada card mostra a variação percentual contra a média anterior; em `Risco`, redução é evolução positiva.
+O Overview exibe três cards em linha acima dos charts (Maturidade geral, Risco e Base de respostas): raio de 5 px, título discreto e valor alinhado à esquerda, sem gauge, ícone ou status visível. Em `Todos os diagnósticos`, os valores consolidam todos os relatórios e a linha auxiliar compara o relatório mais recente com o imediatamente anterior. No filtro individual, quando há histórico anterior comparável, cada card mostra a variação percentual contra a média anterior; em `Risco`, redução é evolução positiva.
 
 - **Maturidade geral**: média simples das seis dimensões, exibida na escala original `1-5` com uma casa decimal.
 - **Risco**: média do índice de criticidade das seis dimensões, exibida na escala `0-100`. Quanto menor, melhor.
@@ -179,3 +183,5 @@ Os componentes desta pasta **não devem** mudar de forma. O que muda:
 - Tipos em `src/lib/types.ts` permanecem os mesmos.
 
 Mantenha as fronteiras estáveis para essa transição ser uma troca de fonte, não um refactor.
+
+- Todas as tabelas visíveis usam o padrão das Dimensões de 06/10/2026 via `Table`: cabeçalho neutro de 44px com raio de 5px, padding horizontal de 16px, linhas de pelo menos 55px e divisórias de 0,5px entre linhas, sem borda externa nem fundo no hover. Conteúdo documental pode ampliar a altura; o editor preserva a indicação de células selecionadas.

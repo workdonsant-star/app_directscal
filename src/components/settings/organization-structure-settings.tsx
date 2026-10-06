@@ -245,7 +245,7 @@ export function OrganizationStructureSettings({
         </p>
       ) : null}
 
-      <div className="overflow-hidden rounded-[5px]">
+      <div className="min-w-0">
         <Table className="min-w-[1040px] table-fixed">
           <TableHeader className="bg-surface-sidebar [&_tr]:border-b-0">
             <TableRow>

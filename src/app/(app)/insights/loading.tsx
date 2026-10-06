@@ -1,3 +1,4 @@
+import { Table } from "@/components/ui/table";
 import { AppPage } from "@/components/app-page";
 import { AppTopbar } from "@/components/app-topbar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -41,7 +42,7 @@ export default function InsightsLoading() {
           </section>
 
           <section aria-label="Carregando resultado das perguntas">
-            <table
+            <Table
               aria-hidden="true"
               className="w-full table-fixed caption-bottom overflow-hidden rounded-[5px] text-sm"
             >
@@ -82,7 +83,7 @@ export default function InsightsLoading() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </Table>
           </section>
         </div>
       </AppPage>

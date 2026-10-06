@@ -141,9 +141,9 @@ export function AdminCampaignsWorkspace() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-lg border">
+        <div className="min-w-0">
           <Table>
-            <TableHeader className="bg-muted/40">
+            <TableHeader>
               <TableRow>
                 <TableHead>Campanha</TableHead>
                 <TableHead>Status</TableHead>

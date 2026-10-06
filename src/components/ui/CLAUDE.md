@@ -34,8 +34,13 @@ Esta pasta contém os **primitives do shadcn/ui** — botões, cards, tabelas, s
 | Card | `card.tsx` | 1px border, sem shadow por padrão (decisão da marca) |
 | Badge | `badge.tsx` | use para status discretos; status complexos têm wrapper em `omdx/status-badge.tsx` |
 | Breadcrumb | `breadcrumb.tsx` | usado na topbar limpa do shell autenticado |
+<<<<<<< Updated upstream
 | Table | `table.tsx` | header em `bg-muted/40`, cells densas — use `tabular-nums` para números |
 | Sidebar | `sidebar.tsx` | API extensa; abaixo de 1920px inicia na variante existente de ícones; em larguras maiores inicia expandida e continua colapsável |
+=======
+| Table | `table.tsx` | `variant="operational"` obrigatório em tabelas novas: cabeçalho de 44px, raio de 5px, linhas de 55px com divisórias finas, sem contorno externo ou fundo no hover; a variante operacional é o padrão de todos os consumidores; `default` é apenas uma opção explícita |
+| Sidebar | `sidebar.tsx` | API extensa; abaixo de 1280px inicia na variante existente de ícones; em larguras maiores inicia expandida e continua colapsável |
+>>>>>>> Stashed changes
 | Collapsible | `collapsible.tsx` | primitive base-ui instalado pelo bloco `sidebar-07` |
 | DropdownMenu | `dropdown-menu.tsx` | menu base-ui; trigger via `render`; não modal por padrão para preservar a scrollbar da página |
 | Dialog | `dialog.tsx` | modal central base-ui para confirmações e decisões curtas |
@@ -49,6 +54,17 @@ Esta pasta contém os **primitives do shadcn/ui** — botões, cards, tabelas, s
 | Skeleton | `skeleton.tsx` | use para estados de carregamento |
 | Switch | `switch.tsx` | toggle Base UI para estados binários; sempre acompanhe com label visível ou `aria-label` |
 
+<<<<<<< Updated upstream
+=======
+## Padrão de tabelas e seletores
+
+A referência aprovada em 04/10/2026 é o frame `252:2` do Figma DirectScal App; tabela `252:438` e seletores `252:79`. Use as variantes compartilhadas, sem duplicar esses estilos em componentes de domínio. A introdução destas variantes é deliberada: o usuário definiu um padrão transversal para todas as próximas tabelas e botões seletores.
+
+Na tabela, o arredondamento pertence às células externas do cabeçalho; `border-separate border-spacing-0` permite os quatro cantos. Divisórias pertencem às células do corpo. O cabeçalho usa `bg-muted` e o seletor ativo usa `bg-muted`, que correspondem às superfícies do Figma na paleta atual do app. Não trocar os tokens globais para adaptar os nomes dos tokens do arquivo Figma. As cores no escuro vêm das mesmas superfícies semânticas existentes.
+
+`Table` continua expondo os primitives semânticos `TableHeader`, `TableRow`, `TableHead`, `TableBody` e `TableCell`. `Tabs` mantém a navegação por teclado e os estados Base UI. A variante altera somente aparência; seleção de registros, ordenação e filtragem precisam de comportamento próprio do domínio. Linhas podem crescer para conteúdo maior. Detalhes e exemplo em `docs/padroes-de-tabelas-e-seletores.md`.
+
+>>>>>>> Stashed changes
 ## Como adicionar um primitive
 
 ```bash
@@ -82,3 +98,10 @@ Quase nunca. Se o componente não atender:
 1. Tente compor com classes Tailwind no consumidor.
 2. Crie um wrapper no domínio.
 3. Última opção: edite o primitive — e justifique no commit + atualize esta lista.
+<<<<<<< Updated upstream
+=======
+
+- Sidebar encaminha a classe do consumidor ao SheetContent móvel para que a superfície do shell seja igual no drawer e no desktop.
+
+O padrão das Dimensões é aplicado por omissão em `Table`, incluindo documentos. A última linha não tem divisória inferior. Cabeçalhos semibold antigos passam a medium.
+>>>>>>> Stashed changes

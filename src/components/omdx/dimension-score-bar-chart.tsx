@@ -4,6 +4,7 @@ import type { DimensionResult } from "@/lib/data/omdx-overview-analytics";
 
 type DimensionScoreBarChartProps = {
   data: DimensionResult[];
+  height?: number;
   historicalData?: DimensionResult[];
   referenceLabel?: string;
 };
@@ -40,6 +41,7 @@ function sortDimensions(data: DimensionResult[]) {
 
 export function DimensionScoreBarChart({
   data,
+  height = 342,
   historicalData = [],
   referenceLabel = "Média histórica",
 }: DimensionScoreBarChartProps) {
@@ -53,7 +55,8 @@ export function DimensionScoreBarChart({
 
   if (chartData.length === 0) {
     return (
-      <div className="flex h-[342px] items-center justify-center text-sm text-muted-foreground">
+      <div className="flex items-center justify-center text-sm text-muted-foreground"
+        style={{ height }}>
         Ainda não há respostas suficientes para exibir a pontuação por dimensão.
       </div>
     );
@@ -62,7 +65,8 @@ export function DimensionScoreBarChart({
   return (
     <svg
       aria-label="Pontuação por dimensão"
-      className="block h-[342px] w-full overflow-visible"
+      className="block w-full overflow-visible"
+      style={{ height }}
       preserveAspectRatio="none"
       role="img"
       viewBox="0 0 472 342"

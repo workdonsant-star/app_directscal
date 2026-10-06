@@ -1,3 +1,4 @@
+import { Table } from "@/components/ui/table";
 import type { DimensionQuestionResult } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -83,7 +84,7 @@ export function DimensionQuestionResultsTable({
           Nenhuma pergunta consolidada para esta dimensão no filtro atual.
         </div>
       ) : (
-        <table className="w-full table-fixed caption-bottom overflow-hidden rounded-[5px] text-sm">
+        <Table className="w-full table-fixed caption-bottom overflow-hidden rounded-[5px] text-sm">
           <thead>
             <tr>
               <th className="h-11 rounded-l-[5px] bg-muted px-4 text-left font-medium text-foreground">
@@ -125,7 +126,7 @@ export function DimensionQuestionResultsTable({
               </tr>
             ))}
           </tbody>
-        </table>
+        </Table>
       )}
     </section>
   );

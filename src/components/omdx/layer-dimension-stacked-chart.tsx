@@ -62,10 +62,12 @@ function sortDimensions(data: DimensionResult[]) {
 
 export function LayerDimensionStackedChart({
   data,
+  height = 342,
   historicalData = [],
   referenceLabel = "Média histórica",
 }: {
   data: DimensionResult[];
+  height?: number;
   historicalData?: DimensionResult[];
   referenceLabel?: string;
 }) {
@@ -76,7 +78,8 @@ export function LayerDimensionStackedChart({
 
   if (chartData.length === 0) {
     return (
-      <div className="flex h-[342px] items-center justify-center text-sm text-muted-foreground">
+      <div className="flex items-center justify-center text-sm text-muted-foreground"
+        style={{ height }}>
         Ainda não há base por camada para exibir.
       </div>
     );
@@ -85,7 +88,8 @@ export function LayerDimensionStackedChart({
   return (
     <svg
       aria-label="Pontuação das dimensões por camada"
-      className="block h-[342px] w-full overflow-visible"
+      className="block w-full overflow-visible"
+      style={{ height }}
       preserveAspectRatio="none"
       role="img"
       viewBox="0 0 472 342"

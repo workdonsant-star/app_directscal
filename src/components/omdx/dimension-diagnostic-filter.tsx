@@ -6,14 +6,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Diagnostic } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 type DimensionDiagnosticFilterProps = {
+  id?: string;
+  compact?: boolean;
   diagnostics: Diagnostic[];
   value: string;
   onChange: (value: string) => void;
 };
 
 export function DimensionDiagnosticFilter({
+  id = "dimension-diagnostic-filter",
+  compact = false,
   diagnostics,
   value,
   onChange,
@@ -29,8 +34,12 @@ export function DimensionDiagnosticFilter({
   return (
     <div className="flex min-w-0 items-center gap-2">
       <label
-        htmlFor="dimension-diagnostic-filter"
-        className="hidden text-xs font-medium text-muted-foreground sm:block"
+        htmlFor={id}
+        className={cn(
+          compact
+            ? "sr-only"
+            : "hidden text-xs font-medium text-muted-foreground sm:block",
+        )}
       >
         Diagnóstico
       </label>
@@ -44,8 +53,13 @@ export function DimensionDiagnosticFilter({
         }}
       >
         <SelectTrigger
-          id="dimension-diagnostic-filter"
-          className="w-auto min-w-[18ch] max-w-[min(48vw,28rem)]"
+          id={id}
+          className={cn(
+            "w-auto min-w-[18ch]",
+            compact
+              ? "h-8 max-w-[min(80vw,28rem)] gap-4 rounded-[5px] border-0 bg-sidebar-accent px-3 shadow-none"
+              : "max-w-[min(48vw,28rem)]",
+          )}
         >
           <SelectValue />
         </SelectTrigger>

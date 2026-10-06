@@ -184,72 +184,50 @@ export function LayerScoreDashboard({
   }
 
   return (
-    <section
-      aria-label="Visão executiva de maturidade"
-      className="grid gap-x-6 gap-y-5 xl:grid-cols-3"
-    >
-      <OverviewExecutiveCards
-        layout="stack"
-        metrics={metrics}
-        presentation="overview"
-      />
+    <div className="flex flex-col gap-4">
+      <OverviewExecutiveCards metrics={metrics} presentation="overview" />
 
-      <DashboardCard
-        className="h-[434px]"
-        description="O índice de maturidade que cada dimensão da empresa atingiu na pesquisa de maturidade."
-        testId="dimension-score-card"
-        title="Dimensões gerenciais"
+      <section
+        aria-label="Visão executiva de maturidade"
+        className="grid gap-4 xl:grid-cols-3"
       >
-        <DimensionScoreBarChart
-          data={dimensionScores}
-          historicalData={comparison?.historicalAnalytics.dimensions}
-          referenceLabel={comparison?.referenceLabel}
-        />
-      </DashboardCard>
+        <DashboardCard
+          className="h-[490px] min-w-0"
+          description="Entenda as nuances de percepção ao nível de maturidade em gestão sobre cada camada da empresa."
+          testId="leverage-matrix-card"
+          title="Alavancas prioritárias"
+        >
+          <LeverageMatrix rows={leverageRows} height={389} />
+        </DashboardCard>
 
-      <DashboardCard
-        className="h-[434px]"
-        description="Principais vulnerabilidades operacionais encontradas nas perguntas de cada dimensão."
-        testId="vulnerability-matrix-card"
-        title="Vulnerabilidades por pergunta"
-      >
-        <VulnerabilityQuestionMatrix rows={vulnerabilityRows} />
-      </DashboardCard>
+        <DashboardCard
+          className="h-[490px] min-w-0"
+          description="Pontuação de maturidade por dimensão discriminada por camada de gestão."
+          testId="layer-dimension-score-card"
+          title="Dimensões por camadas"
+        >
+          <LayerDimensionStackedChart
+            data={dimensionScores}
+            height={389}
+            historicalData={comparison?.historicalAnalytics.dimensions}
+            referenceLabel={comparison?.referenceLabel}
+          />
+        </DashboardCard>
 
-      <DashboardCard
-        className="h-[434px]"
-        description="Entenda as nuances de percepção ao nível de maturidade em gestão sobre cada camada da empresa."
-        testId="leverage-matrix-card"
-        title="Alavancas prioritárias"
-      >
-        <LeverageMatrix rows={leverageRows} />
-      </DashboardCard>
-
-      <DashboardCard
-        className="h-[434px]"
-        description="Entenda as nuances de percepção ao nível de maturidade em gestão sobre cada camada da empresa."
-        testId="layer-score-card"
-        title="Maturidade por camada"
-      >
-        <LayerScoreBarChart
-          data={scores}
-          historicalData={comparison?.historicalAnalytics.layerScores}
-          referenceLabel={comparison?.referenceLabel}
-        />
-      </DashboardCard>
-
-      <DashboardCard
-        className="h-[434px]"
-        description="Pontuação de maturidade por dimensão discriminada por camada de gestão."
-        testId="layer-dimension-score-card"
-        title="Dimensões por Camadas"
-      >
-        <LayerDimensionStackedChart
-          data={dimensionScores}
-          historicalData={comparison?.historicalAnalytics.dimensions}
-          referenceLabel={comparison?.referenceLabel}
-        />
-      </DashboardCard>
-    </section>
+        <DashboardCard
+          className="h-[490px] min-w-0"
+          description="O índice de maturidade que cada dimensão da empresa atingiu na pesquisa de maturidade."
+          testId="dimension-score-card"
+          title="Dimensões gerenciais"
+        >
+          <DimensionScoreBarChart
+            data={dimensionScores}
+            height={389}
+            historicalData={comparison?.historicalAnalytics.dimensions}
+            referenceLabel={comparison?.referenceLabel}
+          />
+        </DashboardCard>
+      </section>
+    </div>
   );
 }

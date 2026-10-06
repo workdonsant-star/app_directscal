@@ -6,11 +6,13 @@ import { DimensionDiagnosticFilter } from "@/components/omdx/dimension-diagnosti
 import type { Diagnostic } from "@/lib/types";
 
 type OverviewDiagnosticFilterProps = {
+  id?: string;
   diagnostics: Diagnostic[];
   value: string;
 };
 
 export function OverviewDiagnosticFilter({
+  id = "overview-diagnostic-filter",
   diagnostics,
   value,
 }: OverviewDiagnosticFilterProps) {
@@ -35,6 +37,8 @@ export function OverviewDiagnosticFilter({
 
   return (
     <DimensionDiagnosticFilter
+      id={id}
+      compact
       diagnostics={diagnostics}
       value={value}
       onChange={handleDiagnosticChange}
