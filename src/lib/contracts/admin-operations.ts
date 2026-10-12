@@ -20,6 +20,7 @@ export const adminSpecialistSchema = z.object({
   id: idSchema,
   name: z.string().min(1),
   email: z.string().email(),
+  avatarUrl: z.union([z.string().url(), z.string().regex(/^\/(?!\/).+/)]).optional(),
   title: z.string().min(1),
   location: z.string().min(1),
   status: adminSpecialistStatusSchema,

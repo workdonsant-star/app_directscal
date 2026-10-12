@@ -388,7 +388,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
             writeTokenUser({ token, user: googleUser });
           }
         }
-      } else if (token.leadershipInvitation === true) {
+      } else if (token.leadershipInvitation === true || token.acquisition === true) {
         const databaseUser = await resolveSupabaseAuthUser(
           typeof token.userId === "string" ? token.userId : null,
           typeof token.email === "string" ? token.email : null,

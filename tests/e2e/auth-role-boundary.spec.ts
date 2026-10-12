@@ -32,7 +32,7 @@ test("superadmin remains inside the administrative surface", async ({ page }) =>
 
   expect(customerApiResponse.status()).toBe(403);
 
-  for (const customerPath of ["/docs", "/gantt", "/insights", "/perfil"]) {
+  for (const customerPath of ["/docs", "/action-points", "/insights", "/perfil"]) {
     await page.goto(customerPath);
     await expect(page).toHaveURL(/\/admin\/operacao$/);
   }

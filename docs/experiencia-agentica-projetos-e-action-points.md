@@ -344,3 +344,29 @@ Cada etapa externa precisa de estado próprio: preparada, pendente, concluída o
 A implementação atual é frontend e determinística. A resposta usa a ação escolhida e a orientação escrita; não há modelo, leitura de Slack, motor periódico, calendário, ferramenta conectada ou envio externo. A confirmação registra três eventos: decisão do líder, comentário preparado e mensagem preparada. Os dois últimos exibem **Prévia · Não enviado**, inclusive na Atividade. Tarefas e logs ficam em estado React e reiniciam na recarga.
 
 Validar: abrir a tarefa e entender a sequência de progresso; localizar decisão e contexto; revisar sem alterar dados; confirmar e encontrar autor/horário e prévias no histórico; adiar sem perder o compromisso original nem resolver bloqueio; suspender sem concluir e retomar com a pendência preservada; solicitar call sem criar reunião ou concluir tarefa; manter aprovação e resolução explícitas. Verificar claro/escuro, foco, teclado e largura do painel. Sincronização externa e visão pessoal dependem das etapas de integração previstas.
+
+## 18. Execução ativa dos action points — decisão de 09/10/2026
+
+Status: direção de produto confirmada pelo usuário; a base (item 1 abaixo) está implementada na interface e no servidor, com a migração do banco escrita e não aplicada. O acompanhamento ativo (itens 3 e 4) não existe ainda.
+
+**Premissa.** Ninguém vai abrir o sistema da Directscal para ler tarefas de implementação. Os action points são gerados e selecionados pelo gestor Directscal na entrega, mas a execução é conduzida pelo agente junto ao responsável, no Slack. A página Action Points deixa de ser lista de leitura e vira o painel de acompanhamento do Superadmin da empresa.
+
+**Identidade do executor.** O responsável é uma pessoa do workspace do Slack da empresa, escolhida pelo Superadmin da empresa numa lista ao vivo. Não há cadastro paralelo de líderes: gravamos a referência `team_id:user_id` e um registro de nome e foto. A auditoria do agente já usa o mesmo formato. Quem não usa Slack fica fora do fluxo na primeira versão.
+
+**Ciclo de vida.** Publicado pelo gestor Directscal, depois Atribuído, Em implementação (o responsável confirma), Bloqueado e Concluído. "Sem responsável" é a ausência de atribuição. A conclusão deve ser declarada pela pessoa e conferida contra o indicador de sucesso; uma promessa de entrega não conclui a ação (seção 6.1).
+
+**Acompanhamento pelo cliente.** Cada ação mostra progresso em %, etapa, prazo e última interação na lista; ao abrir, o painel exibe a Atividade, um log no formato de feed (quem fez o quê, detalhe, tipo e horário). Hoje o progresso e os registros vêm do Superadmin da empresa; quando o agente existir, o log passa a trazer as respostas do líder (tipo `resposta`) e os check-ins atualizam o progresso.
+
+**Parâmetros por ação.** Responsável, início, prazo e cadência de acompanhamento (semanal, quinzenal ou mensal; padrão pela prioridade: Alta semanal, demais quinzenal). Início e prazo partem da data de publicação e podem ser alterados pelo Superadmin da empresa. A cadência é gravada, mas nada a executa ainda.
+
+**Fases.**
+
+1. **Base (implementada):** estado e histórico no banco, escolha do responsável pelo Slack, página com responsável, etapa, prazo e agrupamento por pessoa, e histórico de mudanças.
+2. **Agente que responde (pendente):** conversa sobre o action point no Slack e no app, ancorada no catálogo e nos ativos publicados, com fonte ou recusa.
+3. **Agente que cobra (pendente):** agendador, mensagem privada ativa (`im:write`), cadência, registro dos check-ins e escalonamento ao Superadmin da empresa quando não houver resposta.
+4. **Fechamento (pendente):** conferência do indicador de sucesso na conclusão e resumo periódico ao Superadmin da empresa.
+
+**Dependências técnicas do passo 3.** O projeto não tem agendador (`vercel.json` sem cron), o bot ainda não abre conversas por iniciativa própria e a atualização das permissões do Slack exige que cada empresa reconecte o app. Resposta de quem não foi atribuído deve ser ignorada.
+
+**Critérios de aceite da base.** Somente o Superadmin da empresa altera; o `admin` vê. Só ações da entrega publicada podem ser alteradas. Nome e foto vêm do Slack. Cada mudança de responsável, etapa ou prazo gera um registro no histórico. Sem Slack conectado, ou com permissões antigas, a interface orienta a conectar ou reconectar.
+

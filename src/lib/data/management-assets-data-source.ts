@@ -11,7 +11,7 @@ import {
   type ManagementAssetDocument,
   type ManagementAssetType,
 } from "@/lib/contracts";
-import { getAdminSpecialist } from "@/lib/data/admin-operations-data-source";
+import { getPersistedSpecialist } from "@/lib/data/person-profiles-data-source";
 import { parseStoredAssetContent } from "@/lib/data/rich-text";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
@@ -53,15 +53,15 @@ function isLibraryType(value: string): value is ManagementAssetType {
   return (managementAssetLibraryTypes as readonly string[]).includes(value);
 }
 
-function getAuthor(specialistId: string | null) {
-  const specialist = getAdminSpecialist(specialistId);
+async function getAuthor(specialistId: string | null) {
+  const specialist = await getPersistedSpecialist(specialistId);
 
   return specialist
-    ? { name: specialist.name, role: "Especialista Directscal" }
+    ? { name: specialist.name, role: "Especialista Directscal", avatarUrl: specialist.avatarUrl }
     : { name: "Directscal", role: "Método e operação" };
 }
 
-function mapLibraryAsset(row: AssetWithVersionRow): ManagementAsset | null {
+async function mapLibraryAsset(row: AssetWithVersionRow): Promise<ManagementAsset | null> {
   const version = row.current_version;
 
   if (!version?.published_at || !isLibraryType(row.type)) return null;
@@ -73,7 +73,7 @@ function mapLibraryAsset(row: AssetWithVersionRow): ManagementAsset | null {
     title: row.title,
     summary: version.summary ?? row.description ?? row.title,
     category: row.category,
-    author: getAuthor(row.assigned_specialist_id),
+    author: await getAuthor(row.assigned_specialist_id),
     versionNumber: version.version_number,
     publishedAt: version.published_at,
     updatedAt: version.published_at,
@@ -124,15 +124,14 @@ export async function getManagementAssetsByType(type: ManagementAssetType) {
   const organizationIds = await getReadableOrganizationIds();
   const rows = await selectPublishedAssets(organizationIds, { type });
 
-  return rows
-    .map(mapLibraryAsset)
+  return (await Promise.all(rows.map(mapLibraryAsset)))
     .filter((asset): asset is ManagementAsset => asset !== null);
 }
 
 const getPublishedAssetsForUser = cache(async (userId: string) => {
   const access = await getAccessibleOrganizationIdsForUser(userId);
   const rows = await selectPublishedAssets(access.organizationIds, {});
-  return rows.map(mapLibraryAsset).filter((asset): asset is ManagementAsset => asset !== null);
+  return (await Promise.all(rows.map(mapLibraryAsset))).filter((asset): asset is ManagementAsset => asset !== null);
 });
 
 export async function getPublishedManagementAssets() {
@@ -152,7 +151,7 @@ export async function getManagementAssetDocument(
 
   if (!row) return null;
 
-  const asset = mapLibraryAsset(row);
+  const asset = await mapLibraryAsset(row);
   const content = parseStoredAssetContent(row.current_version?.content);
 
   if (!asset || !content || !row.current_version) return null;

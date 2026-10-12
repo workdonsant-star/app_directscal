@@ -45,6 +45,7 @@ import type {
 
 type OrganizationStructureSettingsProps = {
   sectors: OrganizationSector[];
+  inlineActions?: boolean;
 };
 
 type Draft = {
@@ -126,6 +127,7 @@ function LeaderIdentity({ sector }: { sector: OrganizationSector }) {
 
 export function OrganizationStructureSettings({
   sectors,
+  inlineActions = false,
 }: OrganizationStructureSettingsProps) {
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>(emptyDraft);
@@ -209,23 +211,27 @@ export function OrganizationStructureSettings({
     router.refresh();
   }
 
+  const addButton = (
+    <Button
+      type="button"
+      variant={inlineActions ? "outline" : "default"}
+      className={inlineActions ? undefined : "bg-brand-default text-content-on-action hover:bg-brand-default/90 active:bg-brand-default/80"}
+      onClick={() => setIsOpen(true)}
+    >
+      <Plus aria-hidden="true" />
+      Adicionar setor
+    </Button>
+  );
+  const Heading = inlineActions ? "h2" : "h1";
+
   return (
     <section className="grid min-w-0 gap-5">
-      <AppTopbarActionsPortal>
-        <Button
-          type="button"
-          className="bg-brand-default text-content-on-action hover:bg-brand-default/90 active:bg-brand-default/80"
-          onClick={() => setIsOpen(true)}
-        >
-          <Plus aria-hidden="true" />
-          Adicionar setor
-        </Button>
-      </AppTopbarActionsPortal>
+      {inlineActions ? <div>{addButton}</div> : <AppTopbarActionsPortal>{addButton}</AppTopbarActionsPortal>}
 
       <div className="min-w-0">
-        <h1 className="font-heading text-2xl leading-8 font-bold tracking-[-0.5px]">
+        <Heading className="font-heading text-2xl leading-8 font-bold tracking-[-0.5px]">
           Setores e lideranças
-        </h1>
+        </Heading>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
           Cadastre a estrutura que será usada para distribuir os convites e,
           no futuro, direcionar os action points do diagnóstico.

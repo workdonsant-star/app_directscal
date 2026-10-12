@@ -13,10 +13,12 @@ import {
   type ManagementAssetStatus,
   type ManagementAssetTransition,
   type ManagementAssetVersionStatus,
+  type ManagementAssetBulkSelection,
+  type ManagementAssetBulkUpdate,
   type RichTextDocument,
   type UpdateManagementAssetInput,
 } from "@/lib/contracts";
-import { getAdminSpecialist } from "@/lib/data/admin-operations-data-source";
+import { canAssignSpecialist } from "@/lib/data/person-profiles-data-source";
 import {
   buildManagementAssetChunks,
   getChunkEmbeddingText,
@@ -279,10 +281,53 @@ export async function getAdminManagementAssetDetail(
   });
 }
 
-function validateSpecialist(specialistId: string | null) {
-  if (specialistId && !getAdminSpecialist(specialistId)) {
+async function validateSpecialist(specialistId: string | null) {
+  if (specialistId && !(await canAssignSpecialist(specialistId))) {
     throw new ManagementAssetError("Selecione um especialista válido.");
   }
+}
+
+async function validateBulkSelection(input: ManagementAssetBulkSelection, editing: boolean) {
+  assertUuid(input.organizationId, "Empresa não encontrada.");
+  for (const id of input.assetIds) assertUuid(id);
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase.from("management_assets")
+    .select("id,archived_at")
+    .eq("organization_id", input.organizationId)
+    .in("id", input.assetIds);
+  if (error) throw error;
+  if (data.length !== input.assetIds.length) {
+    throw new ManagementAssetError("Alguns ativos não estão mais disponíveis nesta empresa. Atualize a lista.", 409);
+  }
+  if (editing && data.some((asset) => asset.archived_at)) {
+    throw new ManagementAssetError("Restaure os ativos arquivados antes de editar.", 409);
+  }
+}
+
+export async function updateManagementAssetsInBulk(input: ManagementAssetBulkUpdate) {
+  if (input.changes.specialistId !== undefined) await validateSpecialist(input.changes.specialistId);
+  await validateBulkSelection(input, true);
+  const changes: Database["public"]["Tables"]["management_assets"]["Update"] = {};
+  if (input.changes.specialistId !== undefined) changes.assigned_specialist_id = input.changes.specialistId;
+  if (input.changes.category !== undefined) changes.category = input.changes.category;
+  if (input.changes.ownerLabel !== undefined) changes.owner_label = input.changes.ownerLabel;
+  if (input.changes.reviewCycle !== undefined) changes.review_cycle = input.changes.reviewCycle;
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase.from("management_assets").update(changes)
+    .eq("organization_id", input.organizationId).in("id", input.assetIds)
+    .is("archived_at", null).select("id");
+  if (error) throw error;
+  return data.map((asset) => asset.id);
+}
+
+export async function deleteManagementAssets(input: ManagementAssetBulkSelection) {
+  await validateBulkSelection(input, false);
+  const supabase = createSupabaseAdminClient();
+  // As FKs existentes removem versões, escopos e trechos na mesma instrução.
+  const { data, error } = await supabase.from("management_assets").delete()
+    .eq("organization_id", input.organizationId).in("id", input.assetIds).select("id");
+  if (error) throw error;
+  return data.map((asset) => asset.id);
 }
 
 function nextVersionNumber(versions: Pick<VersionRow, "version_number">[]) {
@@ -299,7 +344,7 @@ export async function createManagementAsset(
   input: CreateManagementAssetInput,
 ) {
   assertUuid(input.organizationId, "Empresa não encontrada.");
-  validateSpecialist(input.specialistId);
+  await validateSpecialist(input.specialistId);
 
   const template = input.templateId
     ? getManagementAssetTemplate(input.templateId)
@@ -426,7 +471,7 @@ export async function updateManagementAsset(
   input: UpdateManagementAssetInput,
 ) {
   const asset = await getAssetRow(assetId);
-  validateSpecialist(input.specialistId);
+  if (input.specialistId !== asset.assigned_specialist_id) await validateSpecialist(input.specialistId);
 
   if (asset.archived_at) {
     throw new ManagementAssetError("Restaure o ativo antes de editar.", 409);

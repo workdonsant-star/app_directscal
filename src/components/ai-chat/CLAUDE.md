@@ -8,7 +8,7 @@ Esta pasta concentra a interface conversacional autenticada da Directscal, ligad
 
 - Mantenha o chat em uma coluna de leitura com largura controlada, sem transformar cada área em card.
 - Mensagens do assistente ficam em texto livre, sem avatar ou superfície; mensagens da pessoa ficam alinhadas à direita sobre `bg-sidebar`.
-- Toda mensagem da pessoa usa a foto do perfil autenticado, incluindo overrides locais; quando ela não existir, mostre as iniciais do nome como fallback.
+- Toda mensagem da pessoa usa a foto do perfil autenticado, resolvida no banco pelo servidor; quando ela não existir, mostre as iniciais do nome como fallback.
 - O azul de marca permanece reservado para ações e foco.
 - A conversa abre com uma mensagem explicando o escopo (ativos publicados, fonte citada, recusa quando não houver regra). Não use mensagens de demonstração.
 - Cada resposta do assistente mostra as fontes (ativo, seção, versão e data) como links para a leitura e os botões `Resposta útil`/`Resposta não útil`.

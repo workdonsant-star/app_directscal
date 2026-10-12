@@ -13,3 +13,5 @@
 - O conteúdo mantém o ciclo rascunho → em revisão → pronto para publicar → publicado; versões publicadas permanecem imutáveis.
 - A biblioteca do cliente continua em `/ativos-de-gestao/*`.
 - Operação possui apenas a seleção de empresa; nenhuma produção acontece na listagem global.
+
+- Opções de autores vêm de specialists no Supabase; somente especialistas ativos, não arquivados e não excluídos podem receber novas atribuições.

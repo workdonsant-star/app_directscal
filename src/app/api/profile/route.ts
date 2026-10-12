@@ -1,3 +1,5 @@
+import { personalProfileInputSchema } from "@/lib/contracts/profile";
+import { saveAccountProfile } from "@/lib/data/person-profiles-data-source";
 import { NextResponse } from "next/server";
 
 import { getCurrentAuthSession } from "@/lib/auth/session";
@@ -63,5 +65,18 @@ export async function PATCH(request: Request) {
       },
       { status: 400 },
     );
+  }
+}
+
+export async function PUT(request: Request) {
+  const session = await getCurrentAuthSession();
+  if (!session) return NextResponse.json({ message: "Entre para continuar." }, { status: 401 });
+  const parsed = personalProfileInputSchema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) return NextResponse.json({ message: "Revise o nome e a foto." }, { status: 400 });
+  try {
+    const profile = await saveAccountProfile(session.user.id, parsed.data);
+    return NextResponse.json({ profile }, { headers: { "Cache-Control": "no-store" } });
+  } catch {
+    return NextResponse.json({ message: "Não foi possível salvar o perfil." }, { status: 500 });
   }
 }

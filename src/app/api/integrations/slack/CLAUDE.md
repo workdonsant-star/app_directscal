@@ -11,3 +11,5 @@ Endpoints públicos do app do Slack. Toda requisição valida a assinatura do Sl
 Eventos de bot a assinar: `app_mention`, `message.im`, `message.channels`, `message.groups`, `app_uninstalled`, `tokens_revoked`.
 
 URLs a configurar no app do Slack: Event Subscriptions → `/api/integrations/slack/events`; Interactivity → `/api/integrations/slack/interactions`; Redirect URL → `/api/integrations/slack/oauth`.
+
+Install e callback OAuth consultam a conclusão inicial da empresa: enquanto pendente, sucesso/cancelamento/erro retornam a `/onboarding`; após concluir, retornam a `/configuracoes`. Destino é fixo e derivado no servidor, sem return URL arbitrária.

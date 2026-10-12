@@ -10,3 +10,5 @@ Route Handlers privados para a visão de superadmin. Servem snapshots e mutaçõ
 - Usar DTOs de `src/lib/contracts/` em camelCase na fronteira HTTP.
 - Service role fica restrita a `src/lib/data/`; handlers não expõem detalhes de banco.
 - Respostas de erro devem ser curtas e em pt-BR.
+
+- /specialists persiste o cadastro interno, nome, foto e estados. Exclusão é lógica. As rotas de atribuição usam o mesmo cadastro do banco.

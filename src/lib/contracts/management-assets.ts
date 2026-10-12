@@ -55,7 +55,7 @@ export const managementAssetVersionStatusSchema = z.enum(
 export const managementAssetAuthorSchema = z.object({
   name: z.string().min(1),
   role: z.string().min(1),
-  avatarUrl: z.string().url().optional(),
+  avatarUrl: z.union([z.string().url(), z.string().regex(/^\/(?!\/).+/)]).optional(),
 });
 
 // Card das bibliotecas do cliente: somente a versão publicada vigente.
@@ -190,6 +190,24 @@ export const updateManagementAssetInputSchema = z.object({
   changeNote: z.string().trim().max(600).nullable(),
   content: richTextDocumentSchema.nullable(),
 });
+
+export const managementAssetBulkSelectionSchema = z.object({
+  organizationId: z.uuid(),
+  assetIds: z.array(z.uuid()).min(1).max(200)
+    .refine((ids) => new Set(ids).size === ids.length, "Selecione cada ativo uma única vez."),
+}).strict();
+
+export const managementAssetBulkUpdateSchema = managementAssetBulkSelectionSchema.extend({
+  changes: z.object({
+    specialistId: z.string().trim().min(1).nullable().optional(),
+    category: trimmedText(2, 80).nullable().optional(),
+    ownerLabel: trimmedText(2, 120).optional(),
+    reviewCycle: trimmedText(2, 80).optional(),
+  }).strict().refine((changes) => Object.values(changes).some((value) => value !== undefined), "Escolha pelo menos um campo."),
+});
+
+export type ManagementAssetBulkSelection = z.infer<typeof managementAssetBulkSelectionSchema>;
+export type ManagementAssetBulkUpdate = z.infer<typeof managementAssetBulkUpdateSchema>;
 
 export const managementAssetTransitionValues = [
   "abrir_rascunho",

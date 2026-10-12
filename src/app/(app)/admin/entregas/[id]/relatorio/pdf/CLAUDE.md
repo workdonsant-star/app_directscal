@@ -1,4 +1,4 @@
-# `/admin/entregas/[id]/relatorio` — Download administrativo
+# `/admin/entregas/[id]/relatorio/pdf` — Download administrativo
 
 Rota de download do PDF consolidado de uma entrega no workspace interno.
 

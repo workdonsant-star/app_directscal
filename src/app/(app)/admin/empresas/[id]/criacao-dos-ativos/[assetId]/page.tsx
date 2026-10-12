@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ManagementAssetEditorWorkspace } from "@/components/admin/management-asset-editor-workspace";
-import { adminSpecialists } from "@/lib/data/admin-operations-data-source";
+import { getSpecialists } from "@/lib/data/person-profiles-data-source";
 import {
   getAdminManagementAssetDetail,
   getAdminManagementAssetCompany,
@@ -31,7 +31,7 @@ export default async function AdminManagementAssetPage({
   return (
     <ManagementAssetEditorWorkspace
       initialAsset={asset}
-      specialists={adminSpecialists
+      specialists={(await getSpecialists())
         .filter((specialist) => specialist.status === "ativo")
         .map((specialist) => ({ id: specialist.id, name: specialist.name }))}
     />

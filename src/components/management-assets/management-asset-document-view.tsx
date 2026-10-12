@@ -1,8 +1,9 @@
-import { RefreshCcw } from "lucide-react";
+import { Download, RefreshCcw } from "lucide-react";
 
 import { DocumentTableOfContents } from "@/components/document-table-of-contents";
 import { RichTextView } from "@/components/management-assets/rich-text-view";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { managementAssetTypeLabels, type ManagementAssetDocument } from "@/lib/contracts";
 import { getRichTextOutline } from "@/lib/data/rich-text";
 
@@ -11,6 +12,19 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   month: "long",
   year: "numeric",
 });
+
+function DownloadButton({ asset }: { asset: ManagementAssetDocument }) {
+  return (
+    <Button
+      variant="secondary"
+      nativeButton={false}
+      render={<a href={`/ativos-de-gestao/download/${asset.type}/${asset.id}`} download />}
+    >
+      <Download aria-hidden="true" className="size-4" />
+      Baixar MD
+    </Button>
+  );
+}
 
 export function ManagementAssetDocumentView({
   asset,
@@ -32,10 +46,16 @@ export function ManagementAssetDocumentView({
               items={tableOfContents}
             />
           ) : null}
+          <div className="mt-6">
+            <DownloadButton asset={asset} />
+          </div>
         </div>
       </aside>
 
       <article className="min-w-0">
+        <div className="mb-6 lg:hidden">
+          <DownloadButton asset={asset} />
+        </div>
         <header className="border-b pb-8">
           <div className="flex flex-wrap items-center gap-2">
             {asset.category ? (
@@ -80,7 +100,11 @@ export function ManagementAssetDocumentView({
           </div>
         </dl>
 
-        <RichTextView content={asset.content} className="py-8" />
+        <RichTextView
+          content={asset.content}
+          className="py-8"
+          callouts={asset.type === "sop"}
+        />
       </article>
     </div>
   );

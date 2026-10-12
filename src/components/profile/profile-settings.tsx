@@ -3,7 +3,6 @@
 import {
   useCallback,
   useState,
-  useSyncExternalStore,
   type ChangeEvent,
 } from "react";
 import { useRouter } from "next/navigation";
@@ -31,12 +30,7 @@ import { AvatarCropDialog } from "@/components/profile/avatar-crop-dialog";
 import {
   profilePositionOptions,
 } from "@/lib/contracts";
-import {
-  getProfileOverridesServerSnapshot,
-  getProfileOverridesSnapshot,
-  saveProfileOverrides,
-  subscribeProfileOverrides,
-} from "@/lib/profile-storage";
+import { clearProfileOverrides } from "@/lib/profile-storage";
 import type { ProfileSettingsData } from "@/lib/types";
 
 type ProfileSettingsProps = {
@@ -87,11 +81,6 @@ function getInitials(name: string) {
 
 export function ProfileSettings({ profile }: ProfileSettingsProps) {
   const router = useRouter();
-  const storedOverrides = useSyncExternalStore(
-    (callback) => subscribeProfileOverrides(profile.id, callback),
-    () => getProfileOverridesSnapshot(profile.id),
-    getProfileOverridesServerSnapshot,
-  );
   const [draft, setDraft] = useState<ProfileDraft>({});
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -107,11 +96,11 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
     null,
   );
 
-  const name = draft.name ?? storedOverrides?.name ?? profile.name;
+  const name = draft.name ?? profile.name;
   const avatarPreviewUrl =
     draft.avatarUrl !== undefined
       ? draft.avatarUrl
-      : (storedOverrides?.avatarUrl ?? profile.avatarUrl);
+      : profile.avatarUrl;
 
   function validatePassword() {
     const nextErrors: PasswordErrors = {};
@@ -201,20 +190,18 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
       }
     }
 
-    const didSave = saveProfileOverrides(profile.id, {
-      avatarUrl: avatarPreviewUrl ?? null,
-      name: trimmedName,
-    });
-
-    if (!didSave) {
+    const response = await fetch("/api/profile", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: trimmedName, avatarUrl: avatarPreviewUrl ?? null }),
+    }).catch(() => null);
+    const result = await response?.json().catch(() => null);
+    if (!response?.ok) {
       setIsSaving(false);
-      setNotice({
-        message:
-          "Não foi possível salvar as alterações neste navegador. Libere espaço e tente novamente.",
-        tone: "error",
-      });
+      setNotice({ message: result?.message ?? "Não foi possível salvar o perfil.", tone: "error" });
       return;
     }
+    clearProfileOverrides(profile.id);
 
     if (currentPassword || newPassword || confirmPassword) {
       setCurrentPassword("");
@@ -315,7 +302,7 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
                 <p className="text-sm font-medium">Foto de perfil</p>
                 <p className="mt-1 max-w-md text-xs leading-relaxed text-muted-foreground">
                   Envie uma imagem em JPG, PNG ou WebP de até 15 MB. A foto será
-                  recortada, otimizada e salva neste navegador.
+                  recortada, otimizada e salva no seu perfil.
                 </p>
               </div>
             </div>

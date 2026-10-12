@@ -29,9 +29,9 @@ Componentes específicos da visão de superadministrador da Directscal. Eles adm
 | --- | --- |
 | `AdminModulesWorkspace` | `/admin/modulos`, KPIs e tabela de módulos. |
 | `AdminOperationsWorkspace` | `/admin/operacao`, métricas e fila de entregas. |
-| `AdminSpecialistsWorkspace` | `/admin/especialistas`, equipe, cadastro local, perfil com foto, ativação, arquivamento e exclusão. |
+| `AdminSpecialistsWorkspace` | `/admin/especialistas`, equipe, cadastro persistido, perfil com nome e foto, ativação, arquivamento e exclusão. |
 | `AdminCompanyDetail` | `/admin/empresas/[id]`, atribuição, entregas e acessos. |
-| `AdminDeliveryWorkspace` | `/admin/entregas/[id]`, seleção e download de relatório, overview analítico, detalhe por dimensão, edição persistida, action points e publicação no Supabase. |
+| `DeliveryDraftProvider` / `DeliveryShell` e etapas em `delivery/` | `/admin/entregas/[id]/*`, rascunho compartilhado, cabeçalho, navegação lateral por fase, checklist de publicação e uma etapa por rota (dados, relatório, action points, publicação). Ver `delivery/CLAUDE.md`. |
 | `AdminDeliveryStatusBadge` | Estados operacionais compartilhados das entregas. |
 | `ManagementAssetsWorkspace` | `/admin/empresas/[id]/criacao-dos-ativos`, abas por estado, empresa fixa, tabela e drawer de criação. |
 | `ManagementAssetCreateForm` | Drawer em três etapas para criar ativo a partir de modelo ou em branco, no padrão do formulário de diagnóstico. |
@@ -52,7 +52,12 @@ Componentes específicos da visão de superadministrador da Directscal. Eles adm
 - `AdminOperationsNavigation` organiza as áreas Entregas e Criação dos ativos sob Operação. Não criar entrada independente de ativos na sidebar administrativa.
 - `ManagementAssetCreateForm` recebe `initialOrganizationId` e `organizationLocked` da instância; a empresa fica fixa. `ManagementAssetsWorkspace` recebe só a empresa da instância e os ativos dela.
 
-- `AdminDeliveryWorkspace` inclui Criação dos ativos no mesmo menu Dados / Relatório / Action points / Publicação. Recebe `assetsContent` do servidor; listagem, editor e perguntas são renderizados nessa aba com `embedded`, compartilhando topbar e espaçamento.
-- Editor e perguntas dentro de uma entrega navegam por `?aba=ativos&ativo=<id>` e `?aba=ativos&perguntas=1`; voltar à lista mantém `?aba=ativos`. A empresa é resolvida pela organização do diagnóstico.
+- A entrega reúne Dados, Relatório, Action points, Criação dos ativos e Publicação como rotas aninhadas de `/admin/entregas/[id]/`; o menu lateral agrupa as etapas em Analisar, Produzir e Entregar. Listagem, editor e perguntas dos ativos rodam em `/ativos`, `/ativos/[assetId]` e `/ativos/perguntas` com `embedded`, compartilhando topbar e espaçamento. A empresa é resolvida pela organização do diagnóstico.
 
 - Todas as tabelas visíveis usam o padrão das Dimensões de 06/10/2026 via `Table`: cabeçalho neutro de 44px com raio de 5px, padding horizontal de 16px, linhas de pelo menos 55px e divisórias de 0,5px entre linhas, sem borda externa nem fundo no hover. Conteúdo documental pode ampliar a altura; o editor preserva a indicação de células selecionadas.
+
+## Edição e exclusão de ativos
+
+`ManagementAssetsWorkspace` usa tabela operacional com seleção de até 200 ativos, ação individual de editar e exclusão com confirmação explícita. Editar cria a próxima versão em rascunho quando não há uma aberta e mantém o contexto da entrega. A publicação continua passando pela revisão editorial. `ManagementAssetsBulkEditDialog` altera um campo por operação: autor (especialista atribuído, ou Directscal), categoria, líder responsável ou ciclo de revisão. Metadados são comuns às versões; a edição em massa não altera conteúdo nem cria versões. Ativos arquivados precisam ser restaurados antes da edição. Exclusão definitiva individual ou em massa remove também versões, escopos e índice de busca; a seleção e os erros permanecem visíveis em caso de falha.
+
+- useSpecialists lê o cadastro compartilhado via /api/admin/specialists, no carregamento, foco e a cada minuto. Seletores da operação, empresa e entrega não consultam a lista fixa de demonstração. Edição de especialista não concede acesso ao painel.

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -21,12 +21,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  getProfileOverridesServerSnapshot,
-  getProfileOverridesSnapshot,
-  subscribeProfileOverrides,
-} from "@/lib/profile-storage";
-import { ChevronsUpDownIcon, LogOutIcon, Moon, Sun } from "lucide-react";
+import { ChevronsUpDownIcon, LogOutIcon, Moon, Sun, UserRound } from "lucide-react";
 
 function getInitials(name: string) {
   return name
@@ -50,22 +45,23 @@ export function NavUser({
   };
 }) {
   const router = useRouter();
+  useEffect(() => {
+    function refresh() { if (document.visibilityState === "visible") router.refresh(); }
+    window.addEventListener("focus", refresh);
+    const timer = window.setInterval(refresh, 60_000);
+    return () => { window.removeEventListener("focus", refresh); window.clearInterval(timer); };
+  }, [router]);
   const { isMobile } = useSidebar();
   const { resolvedTheme, setTheme } = useTheme();
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const storedOverrides = useSyncExternalStore(
-    (callback) => subscribeProfileOverrides(user.id, callback),
-    () => getProfileOverridesSnapshot(user.id),
-    getProfileOverridesServerSnapshot,
-  );
   const mounted = useSyncExternalStore(
     () => () => {},
     () => true,
     () => false,
   );
   const isDark = mounted && resolvedTheme === "dark";
-  const displayName = storedOverrides?.name ?? user.name;
-  const displayAvatar = storedOverrides?.avatarUrl ?? user.avatar;
+  const displayName = user.name;
+  const displayAvatar = user.avatar;
   const displayInitials = getInitials(displayName) || user.initials;
 
   function handleThemeToggle() {
@@ -83,38 +79,12 @@ export function NavUser({
     router.refresh();
   }
 
-  if (user.role !== "superadmin") {
-    return (
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            size="lg"
-            render={<Link href="/perfil" />}
-            aria-label={`Abrir perfil de ${displayName}`}
-          >
-            <Avatar className="size-8 rounded-full">
-              <AvatarImage src={displayAvatar} alt={displayName} />
-              <AvatarFallback className="rounded-full">
-                {displayInitials}
-              </AvatarFallback>
-            </Avatar>
-            <div className="grid min-w-0 flex-1 grid-rows-[17.5px_16px] text-left text-sm">
-              <span className="truncate font-medium leading-[17.5px]">{displayName}</span>
-              <span className="truncate text-[10px] leading-[13px] text-muted-foreground">
-                {user.company}
-              </span>
-            </div>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
-    );
-  }
-
   return (
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger
+            aria-label={`Abrir menu de ${displayName}`}
             render={
               <SidebarMenuButton size="lg" className="aria-expanded:bg-muted" />
             }
@@ -139,6 +109,15 @@ export function NavUser({
             align="end"
             sideOffset={4}
           >
+            {user.role !== "superadmin" ? (
+              <>
+                <DropdownMenuItem render={<Link href="/perfil" />}>
+                  <UserRound aria-hidden="true" className="size-4" />
+                  Meu perfil
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            ) : null}
             <div className="flex justify-start px-1 py-1">
               <Button
                 type="button"

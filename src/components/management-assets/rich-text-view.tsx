@@ -51,17 +51,43 @@ function Paragraph({
   node,
   id,
   className,
+  callouts = false,
 }: {
   node: RichTextParagraph;
   id: string;
   className?: string;
+  callouts?: boolean;
 }) {
   if (!node.content?.length) return null;
 
-  return <p className={className}>{renderInline(node.content, id)}</p>;
+  const text = node.content
+    .map((inline) => (inline.type === "text" ? inline.text : "\n"))
+    .join("")
+    .trim()
+    .normalize("NFKC");
+  const tone = callouts
+    ? /^(?:i\s*)?informação\s*:/iu.test(text)
+      ? "information"
+      : /^(?:⚠(?:︎|️)?\s*)?atenção\s*:/iu.test(text)
+        ? "attention"
+        : null
+    : null;
+
+  return (
+    <p
+      className={cn(
+        tone && "rounded-lg border-0 p-5",
+        tone === "information" && "bg-brand-100",
+        tone === "attention" && "bg-attention-100",
+        className,
+      )}
+    >
+      {renderInline(node.content, id)}
+    </p>
+  );
 }
 
-function List({ node, id }: { node: RichTextList; id: string }) {
+function List({ node, id, callouts }: { node: RichTextList; id: string; callouts: boolean }) {
   const ordered = node.type === "orderedList";
   const ListTag = ordered ? "ol" : "ul";
 
@@ -83,10 +109,15 @@ function List({ node, id }: { node: RichTextList; id: string }) {
                 key={`${id}-${itemIndex}-${childIndex}`}
                 node={child}
                 id={`${id}-${itemIndex}-${childIndex}`}
+                callouts={callouts}
               />
             ) : (
               <div key={`${id}-${itemIndex}-${childIndex}`} className="mt-2">
-                <List node={child} id={`${id}-${itemIndex}-${childIndex}`} />
+                <List
+                  node={child}
+                  id={`${id}-${itemIndex}-${childIndex}`}
+                  callouts={callouts}
+                />
               </div>
             ),
           )}
@@ -100,10 +131,12 @@ function Block({
   block,
   id,
   headingId,
+  callouts,
 }: {
   block: RichTextBlock;
   id: string;
   headingId?: string;
+  callouts: boolean;
 }) {
   switch (block.type) {
     case "heading":
@@ -123,18 +156,28 @@ function Block({
         </h3>
       );
     case "paragraph":
-      return <Paragraph node={block} id={id} />;
+      return <Paragraph node={block} id={id} callouts={callouts} />;
     case "bulletList":
     case "orderedList":
-      return <List node={block} id={id} />;
+      return <List node={block} id={id} callouts={callouts} />;
     case "blockquote":
       return (
         <div className="space-y-2 rounded-lg border bg-muted/40 px-4 py-3 text-foreground">
           {block.content.map((child, index) =>
             child.type === "paragraph" ? (
-              <Paragraph key={`${id}-${index}`} node={child} id={`${id}-${index}`} />
+              <Paragraph
+                key={`${id}-${index}`}
+                node={child}
+                id={`${id}-${index}`}
+                callouts={callouts}
+              />
             ) : (
-              <List key={`${id}-${index}`} node={child} id={`${id}-${index}`} />
+              <List
+                key={`${id}-${index}`}
+                node={child}
+                id={`${id}-${index}`}
+                callouts={callouts}
+              />
             ),
           )}
         </div>
@@ -163,6 +206,7 @@ function Block({
                           key={`${id}-h-${cellIndex}-${paragraphIndex}`}
                           node={paragraph}
                           id={`${id}-h-${cellIndex}-${paragraphIndex}`}
+                          callouts={callouts}
                         />
                       ))}
                     </th>
@@ -188,6 +232,7 @@ function Block({
                             key={`${id}-r-${rowIndex}-${cellIndex}-${paragraphIndex}`}
                             node={paragraph}
                             id={`${id}-r-${rowIndex}-${cellIndex}-${paragraphIndex}`}
+                            callouts={callouts}
                           />
                         ))}
                       </CellTag>
@@ -206,9 +251,11 @@ function Block({
 export function RichTextView({
   content,
   className,
+  callouts = false,
 }: {
   content: RichTextDocument;
   className?: string;
+  callouts?: boolean;
 }) {
   const headingIds = getHeadingIds(content);
 
@@ -225,6 +272,7 @@ export function RichTextView({
           block={block}
           id={`block-${index}`}
           headingId={block.type === "heading" ? headingIds.get(block) : undefined}
+          callouts={callouts}
         />
       ))}
     </div>

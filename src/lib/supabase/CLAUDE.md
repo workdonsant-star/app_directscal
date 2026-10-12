@@ -10,3 +10,7 @@ Esta pasta concentra os clientes Supabase usados pelo servidor Next.js.
 - `createSupabaseAdminClient()` é server-only e deve ser usado apenas em Route Handlers, callbacks Auth.js e leituras administrativas controladas.
 - `createSupabaseRlsClient()` recebe o JWT assinado pela sessão Auth.js e respeita RLS.
 - Tipos de banco ficam em `database.types.ts` até serem substituídos por tipos gerados pelo Supabase CLI.
+
+- account_profiles e specialists têm RLS e acesso exclusivo por service role através de handlers autenticados; não conceder acesso direto aos clientes.
+
+`client_onboarding_completions` no schema privado registra a conclusão inicial por empresa, com horário e usuário. RLS e grants apenas SELECT/INSERT para service_role; acesso e validação ficam no servidor.

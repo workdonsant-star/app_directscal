@@ -2,27 +2,43 @@
 
 ## Propósito
 
-Componentes específicos da página Action Points. A rota histórica continua em `/gantt`, mas a superfície principal é um calendário semanal de action points, não uma visualização Gantt.
+Componentes da página Action Points (rota `/action-points`; a pasta e os contratos mantêm o nome histórico `gantt`). A superfície principal é uma lista gerencial em árvore, inspirada na lista de iniciativas do Linear: um pai agrega os filhos e o clique abre os detalhes e a execução. Os nomes `GanttTask` e `GanttWorkspaceData` do contrato continuam por compatibilidade, mas não devem aparecer na interface.
 
-## `CalendarWorkspace`
+## `ActionPointsWorkspace`
 
-Componente client-side que recebe as tarefas produzidas por `getLatestActionPlanGanttWorkspace()`, achata a frente raiz `Action points` e posiciona cada subitem na data de início. O contrato de dados ainda preserva os nomes `GanttTask` e `GanttWorkspaceData` enquanto a fonte do cronograma não for migrada; esses nomes não devem aparecer na interface.
+Client Component. Recebe `tasks`, `diagnosticId`, `assignments`, `events`, `today` (YYYY-MM-DD, vindo do servidor), `sourceLabel`, `canEdit` e `slackStatus`. Usa helpers puros de `src/lib/data/action-points-list.ts` para juntar a seleção publicada às atribuições, marcar atrasos e agrupar.
 
-### Estrutura do calendário
+- Abas `TabsList variant="selector"`, com contagem: Em andamento (Em implementação e Bloqueado), Planejados (Sem responsável e Atribuído), Concluídos e Todos.
+- `Select` Agrupar por: Dimensão (padrão, menor nota primeiro), Responsável (quem não tem responsável por último) ou Prazo (mês do prazo). Agrupar por responsável mostra a carga de cada pessoa.
+- `Table variant="operational"` com Nome, Responsável (avatar do Slack e nome), Progresso (barra e %), Prazo (com `Atrasado` quando vencido e não concluído), Etapa e Última interação (Hoje, Ontem, Há N dias ou a data). A prioridade fica no painel e na ordenação. A linha do grupo mostra nota (por dimensão), quantidade, progresso médio, próximo prazo, quantos estão em andamento e a última interação do grupo; é recolhível (`aria-expanded`). A linha filha mostra o título da ação do catálogo e a descrição como subtítulo.
+- Estado vazio sem entrega publicada: texto simples, sem CTA.
 
-- Cabeçalho livre com título, origem do plano, botão `Hoje`, navegação semanal, intervalo do período e filtro por estado.
-- Semana de segunda a domingo no eixo horizontal e faixa de `08:00` a `18:00` no eixo vertical.
-- Cabeçalho dos dias e coluna de horários ficam sticky dentro do scroller do calendário.
-- Fins de semana usam apenas fundo neutro sutil; dia e horário atuais usam o token `primary`.
-- Cada action point vira um botão acessível. A seleção abre um `Dialog` com contexto, impacto esperado, indicador de sucesso, prioridade e prazo sugerido quando esses metadados existirem.
-- Como o contrato atual registra apenas datas, o componente distribui deterministicamente os itens do mesmo dia em blocos sequenciais. Essa posição horária é somente da interface e não deve ser gravada ou tratada como agenda persistida.
-- O fallback local existe apenas quando não há plano consolidável e deve usar datas relativas à semana atual.
+## `ActionPointSheet` e `ExecutionForm`
+
+Painel lateral de até 672px (padrão do `ProjectTaskSheet`). Abre com Responsável, Etapa, Prazo, Progresso, Última interação e Prioridade; logo abaixo vem a Atividade, o log da ação (`ActionPointTimeline`). Para quem edita, o formulário Execução reúne responsável (seletor do Slack), etapa, cadência, progresso (0 a 100% em passos de 5; concluir fecha em 100%), início, prazo (campos de data usam `onInput`) e uma nota opcional, com Salvar e Remover responsável. O formulário é remontado quando o responsável muda (`key`). Erros do servidor aparecem em texto no próprio formulário; após salvar, `router.refresh()` traz o estado novo.
+
+Abaixo ficam Por que existe (leitura do especialista, ou o problema do diagnóstico, mais nota e gap), O que fazer, O que resolve, Como saber que funcionou e Prazo sugerido.
+
+## `ActionPointTimeline`
+
+Log vertical no estilo de feed de atividades: ícone circular por tipo, "**Autor** frase de ação", detalhe opcional, etiqueta do tipo (Responsável, Etapa, Prazo, Andamento, Nota, Resposta ao agente) e horário, do mais novo ao mais antigo. As etiquetas azuis usam `action-primary-highlight` para manter contraste no escuro. O tipo `resposta` já está previsto para as respostas do líder ao agente no Slack; nada o grava ainda, e hoje o autor dos registros é a pessoa que editou no app.
+
+## `SlackUserPicker`
+
+Busca `/api/action-points/slack-users` ao abrir, filtra por nome no cliente e devolve `{ userId, name, avatarUrl }`. O servidor repete a consulta do usuário no Slack ao salvar; nome e foto nunca vêm do navegador.
+
+## `action-point-badges.tsx`
+
+Etapa (ícone + rótulo), prioridade (ícone de sinal + rótulo), avatar e célula do responsável. O texto carrega o significado; a cor do ícone é só reforço (`text-primary`, `text-chart-negative`, `text-chart-positive`).
+
+## `CalendarWorkspace` (fora de uso)
+
+`calendar-workspace.tsx` é a agenda semanal anterior e não é mais renderizada. Posicionava os itens em horas fictícias porque o dado só tem data. Fica reservado como ponto de partida de uma visão Calendário futura, que deve ser refeita por dia e sem horas. Remova o arquivo se essa visão for descartada.
 
 ## Convenções locais
 
-- Não importar `mock-data.ts`; dados reais entram por props e o fallback de apresentação fica próximo do componente.
-- Não reintroduzir barras, resize, dependências, frentes expansíveis ou ações de edição próprias do Gantt sem nova decisão explícita.
-- Não envolver a grade em `Card`; o próprio calendário fornece borda, alinhamento e overflow.
-- Use tokens semânticos para estado e preserve significado além da cor por meio dos rótulos no filtro e no diálogo.
-- O calendário deve tolerar overflow horizontal no próprio wrapper sem criar scroll horizontal no documento.
-- Preserve foco visível, botões semânticos, labels acessíveis em ações de ícone e contraste em light e dark.
+- Não importar `mock-data.ts`; os dados entram por props.
+- O componente não decide o que entra: as ações vêm filtradas pela seleção publicada do gestor.
+- Progresso e etapa são gravados pelo Superadmin da empresa; atraso é só um aviso calculado pelo prazo. Não apresente a etapa como andamento confirmado pela pessoa responsável enquanto o agente não registrar check-ins.
+- Não reintroduzir barras, resize ou dependências do Gantt sem nova decisão explícita.
+- Foco visível, botões semânticos, `cursor-pointer` e contraste em light e dark. Números alinháveis usam `tabular-nums`.

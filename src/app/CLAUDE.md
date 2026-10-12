@@ -31,8 +31,8 @@ src/app/
 │       └── [dimensao]/page.tsx ← dashboard compacto por dimensão
 │   └── docs/
 │       └── page.tsx          ← manual prático de uso do módulo Maturidade
-│   └── gantt/
-│       └── page.tsx          ← Action Points em calendário semanal
+│   └── action-points/
+│       └── page.tsx          ← Action Points em lista gerencial agrupada, com painel de detalhes (`/gantt` redireciona)
 │   └── assistente/
 │       └── page.tsx          ← chat IA frontend-only com mensagens demonstrativas
 │   └── configuracoes/
@@ -111,7 +111,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/omdx` | `(app)/omdx/` | Dashboard autenticado que compara Fundador, Liderança e Time em escala de 1 a 5. |
 | `/omdx/camadas` | `(app)/omdx/camadas/` | Redirect legado para `/omdx`, preservando o filtro de diagnóstico. |
 | `/omdx/diagnosticos` | `(app)/omdx/diagnosticos/` | Área operacional acessada pela sidebar, com lista, filtros, criação e configuração em drawer lateral. |
-| `/gantt` | `(app)/gantt/` | Action Points em calendário semanal, exposto dentro do módulo Maturidade na sidebar. |
+| `/action-points` | `(app)/action-points/` | Action Points em lista gerencial agrupada por dimensão, responsável ou prazo, com painel de detalhes. Item independente da sidebar. |
 | `/assistente` | `(app)/assistente/` | Interface frontend-only do WorkFlow, com conversa demonstrativa e foto do perfil autenticado nas mensagens da pessoa. |
 | `/omdx/[id]/compartilhar` | `(app)/omdx/[id]/compartilhar/` | Central de coleta persistida com links por grupo, copy sugerida e resumo compacto. |
 | `/omdx/[id]/action-points` | `(app)/omdx/[id]/action-points/` | Route Handler Node autenticado para download direto do plano de ação RACI. |
@@ -123,7 +123,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/insights/[dimensao]` | `(app)/insights/[dimensao]/` | Dashboard agregado por dimensão, com filtro por diagnóstico. |
 | `/docs` | `(app)/docs/` | Documentação prática em página única para uso do módulo pelo cliente administrador. |
 | `/configuracoes` | `(app)/configuracoes/` | Configurações empresariais reais derivadas do onboarding e do CNPJ. |
-| `/perfil` | `(app)/perfil/` | Perfil iniciado pela sessão autenticada: dados pessoais locais, posição na empresa e senha simulada. |
+| `/perfil` | `(app)/perfil/` | Perfil iniciado pela sessão autenticada: nome/foto persistidos, posição na empresa e senha simulada. |
 | `/api/profile` | `api/profile/` | Atualiza os campos comerciais permitidos do lead autenticado e preserva dados cadastrais e desafios. |
 | `/omdx/membros-da-operacao` | `(app)/omdx/membros-da-operacao/` | Redirect legado para `/omdx/diagnosticos`. |
 | `/ativos-de-gestao` | `(app)/ativos-de-gestao/` | Redireciona para `/ativos-de-gestao/sops`. |
@@ -137,7 +137,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/r/[token]/obrigado` | `r/[token]/obrigado/` | Página pública de agradecimento após resposta registrada ou navegador já marcado. |
 | `/admin` | `(app)/admin/` | Redireciona para `/admin/operacao`. |
 | `/admin/operacao` | `(app)/admin/operacao/` | Superadmin: indicadores e fila de entregas. |
-| `/admin/especialistas` | `(app)/admin/especialistas/` | Superadmin: equipe interna e cadastro local. |
+| `/admin/especialistas` | `(app)/admin/especialistas/` | Superadmin: equipe interna e cadastro persistido. |
 | `/admin/modulos` | `(app)/admin/modulos/` | Rota legada do catálogo de módulos. |
 | `/admin/campanhas` | `(app)/admin/campanhas/` | Superadmin: campanhas, links e campos de aquisição. |
 | `/admin/leads` | `(app)/admin/leads/` | Superadmin: leads capturados pelos links. |
@@ -154,13 +154,13 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - O route group `(app)` valida o cookie de sessão no layout antes de renderizar sidebar/topbar.
 - As rotas de autenticação em `(auth)` ficam fora do shell e redirecionam usuários autenticados conforme role.
 - A sidebar colapsa para ícones e mantém a navegação principal do cliente plana. `Analytics`, `Pesquisas`, `Action Points` e `Agente` aparecem no grupo principal; `Pesquisas` preserva a rota `/omdx/diagnosticos`. `Pessoas` permanece fora da navegação.
-- `Action Points` aparece dentro de `Maturidade` e aponta para `/gantt`; a rota usa o plano de ação mais recente quando houver diagnóstico consolidável.
+- `Action Points` aponta para `/action-points` (`/gantt` é redirect legado); a rota usa o plano de ação mais recente quando houver diagnóstico consolidável e mostra estado vazio quando não houver.
 - A sidebar tem uma seção `Maturidade` com as seis dimensões analíticas.
 - A sidebar tem uma seção `Ativos de gestão` com links ativos para `SOPs`, `Playbooks`, `Governança` e `Matriz RACI`.
 - A sidebar tem uma seção `Documentos` com `Contratos` e `Relatórios` desabilitados como placeholders, sem rotas nesta fase. `Contratos` não aparece para `admin` da empresa.
 - `Configurações` fica fixado no rodapé da sidebar do Superadmin da empresa (`cliente`) e aponta para `/configuracoes`; não aparece para `admin` da empresa nem para o `superadmin` global.
 - Quando o pathname começa com `/admin`, a sidebar muda para `Administração`, com `Operação`, `Especialistas`, `Empresas`, `Leads` e `Campanhas`.
-- Usuários `superadmin` ficam restritos à superfície `/admin/*`. Tentativas de abrir `/omdx`, `/insights`, `/gantt`, `/assistente`, `/docs`, `/configuracoes` ou `/perfil` redirecionam para `/admin/operacao`; APIs internas de cliente respondem `403`.
+- Usuários `superadmin` ficam restritos à superfície `/admin/*`. Tentativas de abrir `/omdx`, `/insights`, `/action-points`, `/assistente`, `/docs`, `/configuracoes` ou `/perfil` redirecionam para `/admin/operacao`; APIs internas de cliente respondem `403`.
 - Usuários `admin` da empresa acessam toda a superfície cliente, exceto Configurações e Contratos. A rota `/configuracoes` redireciona para `/omdx` e as APIs `/api/settings/*` respondem `403`.
 - `Empresas` não faz parte da navegação principal nesta fase.
 - A topbar é limpa: trigger da sidebar, separador e breadcrumb quando houver camada.
@@ -168,7 +168,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - Páginas raiz abertas diretamente pela sidebar ou pelo menu do usuário não usam breadcrumb na topbar.
 - O breadcrumb começa apenas em uma página aberta a partir da raiz e parte da raiz imediata, sem repetir a seção superior da sidebar.
 - `/omdx/camadas` redireciona para `/omdx` e não renderiza breadcrumb próprio.
-- `/omdx`, `/omdx/diagnosticos`, `/gantt`, `/assistente`, `/insights/[dimensao]`, `/docs`, `/relatorios`, `/perfil`, `/configuracoes` e as categorias de Ativos de gestão são raízes sem breadcrumb.
+- `/omdx`, `/omdx/diagnosticos`, `/action-points`, `/assistente`, `/insights/[dimensao]`, `/docs`, `/relatorios`, `/perfil`, `/configuracoes` e as categorias de Ativos de gestão são raízes sem breadcrumb.
 - `/omdx/[id]/compartilhar` usa `Pesquisas / Compartilhar`.
 - `/omdx/[id]/action-points` não renderiza página nem breadcrumb; retorna PDF como attachment.
 - `/omdx/[id]/relatorio` não renderiza página nem breadcrumb; retorna PDF como attachment por padrão e CSV consolidado quando recebe `?formato=csv`.
@@ -232,3 +232,7 @@ A navegação cliente agrupa Iniciativas, Ativos de gestão por categoria, Anál
 `/iniciativas` oferece lista e criação local por usuário/empresa. `/iniciativas/[id]` abre o workspace de projeto da opção 2, com atenção do gestor, tarefas de demonstração, atividade, ativos relacionados e edição dos metadados locais. As tarefas não têm persistência nem integração; ver `iniciativas/[id]/CLAUDE.md` e `docs/experiencia-agentica-projetos-e-action-points.md`. `/ativos-de-gestao/gestao-de-pessoas`, `/ativos-de-gestao/area-governanca`, `/ativos-de-gestao/cultura` e `/ativos-de-gestao/comunicacao` agrupam conteúdo publicado por área. Autenticação e Supabase mantêm os contratos anteriores. Ver `docs/shell-e-iniciativas.md`.
 
 A sidebar concentra os ativos em Ativos de gestão, sem Bibliotecas por tipo. `/ativos-de-gestao/categorias/[categoria]` abre categorias adicionais; Sem categoria preserva ativos não classificados. `/ativos-de-gestao/matriz-raci/[id]` permite leitura do documento publicado. O breadcrumb de cada ativo retorna à sua categoria.
+
+## Configuração inicial do cliente
+
+`/onboarding` é uma rota autenticada fora do shell `(app)`. Donos com empresa sem registro de conclusão passam por Slack, setores/lideranças e revisão dos convites antes da navegação normal. `/api/settings/onboarding` revalida dados reais e grava conclusão idempotente por empresa. OAuth Slack volta ao onboarding enquanto pendente, e a Configurações depois de concluído. O cadastro anterior do Herbert será capturado sem alterar sua conta.

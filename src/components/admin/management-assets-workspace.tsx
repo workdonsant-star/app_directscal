@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquareText, Plus } from "lucide-react";
+import { MessageSquareText, Pencil, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -10,10 +10,12 @@ import {
   type ManagementAssetTemplateOption,
 } from "@/components/admin/management-asset-create-form";
 import { ManagementAssetStatusBadge } from "@/components/admin/management-asset-status-badge";
+import { ManagementAssetsBulkEditDialog } from "@/components/admin/management-assets-bulk-edit-dialog";
 import { AppPage } from "@/components/app-page";
 import { AppTopbarActionsPortal } from "@/components/app-topbar-actions-portal";
 import { AppTopbar } from "@/components/app-topbar";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Sheet,
   SheetContent,
@@ -34,6 +36,7 @@ import {
   managementAssetTypeLabels,
   type AdminManagementAssetListItem,
   type CreateManagementAssetInput,
+  type ManagementAssetBulkUpdate,
 } from "@/lib/contracts";
 
 type Filter = "todos" | "rascunho" | "em_revisao" | "publicado" | "arquivado";
@@ -86,12 +89,17 @@ export function ManagementAssetsWorkspace({
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>("todos");
   const assetHref = (assetId: string) => deliveryId
-    ? `/admin/entregas/${deliveryId}?aba=ativos&ativo=${encodeURIComponent(assetId)}`
+    ? `/admin/entregas/${deliveryId}/ativos/${encodeURIComponent(assetId)}`
     : `${basePath}/${assetId}`;
   const basePath = `/admin/empresas/${company.id}/criacao-dos-ativos`;
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkEditOpen, setBulkEditOpen] = useState(false);
+  const [deleteIds, setDeleteIds] = useState<string[]>([]);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const counts = useMemo(
     () =>
@@ -105,6 +113,53 @@ export function ManagementAssetsWorkspace({
   );
   const visibleAssets = assets.filter((asset) => matchesFilter(asset, filter));
   const specialistNames = new Map(specialists.map((item) => [item.id, item.name]));
+  const selectedAssets = assets.filter((asset) => selectedIds.includes(asset.id));
+  const currentSelection = selectedAssets.map((asset) => asset.id);
+  const allVisibleSelected = visibleAssets.length > 0 && visibleAssets.every((asset) => selectedIds.includes(asset.id));
+  const someVisibleSelected = visibleAssets.some((asset) => selectedIds.includes(asset.id));
+
+  async function handleEdit(asset: AdminManagementAssetListItem) {
+    try {
+      setPending(true);
+      setEditingId(asset.id);
+      setActionError(null);
+      if (!asset.draftStatus) {
+        const response = await fetch(`/api/admin/management-assets/${asset.id}/transition`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "abrir_rascunho" }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message ?? "Não foi possível abrir a edição.");
+      }
+      router.push(assetHref(asset.id));
+      router.refresh();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Não foi possível abrir a edição.");
+    } finally { setPending(false); setEditingId(null); }
+  }
+
+  async function mutateSelection(ids: string[], changes?: ManagementAssetBulkUpdate["changes"]) {
+    setPending(true);
+    setActionError(null);
+    try {
+      const response = await fetch("/api/admin/management-assets/bulk", {
+        method: changes ? "PATCH" : "DELETE", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ organizationId: company.organizationId, assetIds: ids, ...(changes ? { changes } : {}) }),
+      });
+      const data = await response.json().catch(() => ({})) as { ids?: string[]; message?: string };
+      if (!response.ok || !data.ids) throw new Error(data.message ?? "Não foi possível concluir a ação.");
+      const affected = data.ids;
+      setSelectedIds((current) => current.filter((id) => !affected.includes(id)));
+      setBulkEditOpen(false);
+      setDeleteIds([]);
+      const result = changes ? (affected.length === 1 ? "atualizado" : "atualizados") : (affected.length === 1 ? "excluído" : "excluídos");
+      setNotice(`${affected.length} ${affected.length === 1 ? "ativo" : "ativos"} ${result}.${affected.length !== ids.length ? " Alguns ativos ficaram indisponíveis durante a operação. Confira a lista." : ""}`);
+      router.refresh();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Não foi possível concluir a ação.");
+      router.refresh();
+    } finally { setPending(false); }
+  }
   async function handleCreate(input: CreateManagementAssetInput) {
     try {
       setPending(true);
@@ -135,10 +190,10 @@ export function ManagementAssetsWorkspace({
   const Heading = embedded ? "h2" : "h1";
   const actions = (
           <div className="flex min-w-0 items-center gap-2">
-            <Tabs value={filter} onValueChange={(value) => setFilter(value as Filter)}>
+            <Tabs value={filter} onValueChange={(value) => { setFilter(value as Filter); setSelectedIds([]); }}>
               <TabsList>
                 {filters.map((item) => (
-                  <TabsTrigger key={item.value} value={item.value} className="gap-2">
+                  <TabsTrigger key={item.value} value={item.value} className="gap-2" disabled={pending}>
                     {item.label}
                     <span className="rounded-full border bg-background px-1.5 text-xs font-medium tabular-nums text-muted-foreground">
                       {counts[item.value]}
@@ -150,7 +205,7 @@ export function ManagementAssetsWorkspace({
             <Button
               variant="outline"
               nativeButton={false}
-              render={<Link href={deliveryId ? `/admin/entregas/${deliveryId}?aba=ativos&perguntas=1` : `${basePath}/perguntas`} />}
+              render={<Link href={deliveryId ? `/admin/entregas/${deliveryId}/ativos/perguntas` : `${basePath}/perguntas`} />}
             >
               <MessageSquareText className="size-4" />
               Perguntas
@@ -195,6 +250,17 @@ export function ManagementAssetsWorkspace({
               {notice}
             </p>
           ) : null}
+          {actionError && !bulkEditOpen && deleteIds.length === 0 ? <p role="alert" className="text-sm text-destructive">{actionError}</p> : null}
+          {visibleAssets.length > 200 ? <p className="text-xs text-muted-foreground">Selecione até 200 ativos por operação. A seleção geral inclui os primeiros 200 deste filtro.</p> : null}
+          {selectedAssets.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-3" role="region" aria-label="Ações dos ativos selecionados">
+              <p className="text-sm tabular-nums">{selectedAssets.length} {selectedAssets.length === 1 ? "ativo selecionado" : "ativos selecionados"}</p>
+              <Button variant="secondary" disabled={pending || selectedAssets.some((asset) => asset.status === "arquivado")} onClick={() => { setActionError(null); setBulkEditOpen(true); }}><Pencil className="size-4" />Editar em massa</Button>
+              <Button variant="secondary" disabled={pending} onClick={() => { setActionError(null); setDeleteIds(currentSelection); }}><Trash2 className="size-4" />Excluir selecionados</Button>
+              <Button variant="ghost" disabled={pending} onClick={() => setSelectedIds([])}>Limpar seleção</Button>
+              {selectedAssets.some((asset) => asset.status === "arquivado") ? <p className="text-xs text-muted-foreground">Restaure os ativos arquivados para editar em massa.</p> : null}
+            </div>
+          ) : null}
 
           {visibleAssets.length === 0 ? (
             <div className="rounded-lg border border-dashed px-6 py-12 text-center">
@@ -209,31 +275,43 @@ export function ManagementAssetsWorkspace({
             </div>
           ) : (
             <div className="min-w-0">
-              <Table className="min-w-[1040px] table-fixed">
+              <Table variant="operational" className="min-w-[1200px] table-fixed">
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-12">
+                      <input type="checkbox" aria-label="Selecionar todos os ativos visíveis" checked={allVisibleSelected} disabled={pending || visibleAssets.length === 0}
+                        ref={(node) => { if (node) node.indeterminate = someVisibleSelected && !allVisibleSelected; }}
+                        className="size-4 cursor-pointer accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        onChange={(event) => setSelectedIds(event.target.checked ? visibleAssets.slice(0, 200).map((asset) => asset.id) : [])} />
+                    </TableHead>
                     <TableHead className="h-11 w-[300px] px-4">Ativo</TableHead>
                     <TableHead className="h-11 w-[200px] px-4">Empresa</TableHead>
                     <TableHead className="h-11 w-[150px] px-4">Status</TableHead>
                     <TableHead className="h-11 w-[100px] px-4 text-right">Versão</TableHead>
                     <TableHead className="h-11 w-[170px] px-4">Próxima versão</TableHead>
-                    <TableHead className="h-11 w-[160px] px-4">Especialista</TableHead>
+                    <TableHead className="h-11 w-[160px] px-4">Autor</TableHead>
                     <TableHead className="h-11 w-[130px] px-4">Atualizado</TableHead>
+                    <TableHead className="w-24"><span className="sr-only">Ações</span></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {visibleAssets.map((asset) => (
                     <TableRow
                       key={asset.id}
-                      className="cursor-pointer hover:bg-muted/30"
-                      onClick={() => router.push(assetHref(asset.id))}
+                      className="cursor-pointer"
+                      onClick={() => { if (!pending) router.push(assetHref(asset.id)); }}
                     >
+                      <TableCell onClick={(event) => event.stopPropagation()}>
+                        <input type="checkbox" aria-label={`Selecionar ${asset.title}`} checked={selectedIds.includes(asset.id)} disabled={pending || (!selectedIds.includes(asset.id) && selectedAssets.length >= 200)}
+                          className="size-4 cursor-pointer accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          onChange={(event) => setSelectedIds((current) => event.target.checked ? [...current, asset.id] : current.filter((id) => id !== asset.id))} />
+                      </TableCell>
                       <TableCell className="px-4 py-4 whitespace-normal">
                         <div className="flex flex-col">
                           <Link
                             href={assetHref(asset.id)}
                             className="rounded-sm font-medium text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            onClick={(event) => event.stopPropagation()}
+                            onClick={(event) => { event.stopPropagation(); if (pending) event.preventDefault(); }}
                           >
                             {asset.title}
                           </Link>
@@ -265,10 +343,16 @@ export function ManagementAssetsWorkspace({
                       </TableCell>
                       <TableCell className="truncate px-4 py-4 text-sm text-muted-foreground">
                         {(asset.specialistId && specialistNames.get(asset.specialistId)) ??
-                          "Sem especialista"}
+                          "Directscal"}
                       </TableCell>
                       <TableCell className="px-4 py-4 text-sm text-muted-foreground tabular-nums">
                         {formatDate(asset.updatedAt)}
+                      </TableCell>
+                      <TableCell onClick={(event) => event.stopPropagation()}>
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="icon-sm" aria-label={`Editar ${asset.title}`} disabled={pending || asset.status === "arquivado"} onClick={() => handleEdit(asset)}><Pencil aria-hidden="true" className="size-4" /></Button>
+                          <Button variant="ghost" size="icon-sm" aria-label={`Excluir ${asset.title}`} disabled={pending} onClick={() => { setActionError(null); setDeleteIds([asset.id]); }}><Trash2 aria-hidden="true" className="size-4" /></Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -278,6 +362,24 @@ export function ManagementAssetsWorkspace({
           )}
         </div>
       </PageContent>
+
+      {editingId ? <p role="status" className="sr-only">Preparando a edição do ativo</p> : null}
+      {bulkEditOpen ? <ManagementAssetsBulkEditDialog organizationId={company.organizationId} assetIds={currentSelection} specialists={specialists} pending={pending} error={actionError}
+        onClose={() => { setBulkEditOpen(false); setActionError(null); }} onSave={(input) => mutateSelection(input.assetIds, input.changes)} /> : null}
+      <Dialog open={deleteIds.length > 0} onOpenChange={(next) => { if (!next && !pending) { setDeleteIds([]); setActionError(null); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir {deleteIds.length === 1 ? "ativo" : `${deleteIds.length} ativos`}</DialogTitle>
+            <DialogDescription>Esta ação é permanente. Os ativos, suas versões e seus índices serão removidos da biblioteca e das consultas do agente.</DialogDescription>
+          </DialogHeader>
+          <ul className="max-h-40 overflow-y-auto text-sm text-muted-foreground">{assets.filter((asset) => deleteIds.includes(asset.id)).map((asset) => <li key={asset.id}>{asset.title}</li>)}</ul>
+          {actionError ? <p role="alert" className="text-sm text-destructive">{actionError}</p> : null}
+          <DialogFooter>
+            <Button variant="secondary" disabled={pending} onClick={() => { setDeleteIds([]); setActionError(null); }}>Cancelar</Button>
+            <Button variant="destructive" disabled={pending} onClick={() => mutateSelection(deleteIds)}>{pending ? "Excluindo" : "Excluir definitivamente"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Sheet open={open} onOpenChange={(value) => !pending && setOpen(value)}>
         <SheetContent className="gap-0 overflow-hidden bg-card text-card-foreground data-[side=right]:!w-[min(100vw,56rem)] data-[side=right]:!max-w-none">

@@ -1,5 +1,7 @@
 "use client";
 
+import { useSpecialists } from "@/components/admin/use-specialists";
+
 import { ArrowRight, Building2, CalendarDays, UserRoundCheck } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -26,9 +28,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  adminSpecialists,
   getAdminCompanyOperationsPreview,
-  getAdminSpecialist,
 } from "@/lib/data/admin-operations-data-source";
 
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
@@ -38,6 +38,7 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
 });
 
 export function AdminCompanyDetail({ companyId }: { companyId: string }) {
+  const { specialists: adminSpecialists, getSpecialist: getAdminSpecialist } = useSpecialists();
   const { companies, modules } = useAdminData();
   const company = companies.find((item) => item.id === companyId);
   const preview = getAdminCompanyOperationsPreview(company?.name ?? "");
@@ -69,7 +70,7 @@ export function AdminCompanyDetail({ companyId }: { companyId: string }) {
     savedSpecialistId === "unassigned" ? null : savedSpecialistId,
   );
   const activeSpecialists = adminSpecialists.filter(
-    (specialist) => specialist.status === "ativo",
+    (specialist) => specialist.status === "ativo" && !specialist.archived,
   );
   const selectItems = [
     { label: "Sem especialista", value: "unassigned" },

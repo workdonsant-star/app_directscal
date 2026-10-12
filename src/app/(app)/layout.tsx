@@ -7,6 +7,7 @@ import { getCurrentAppAccessContext } from "@/lib/auth/authorization";
 import { getProfileSettingsData } from "@/lib/data/profile-data-source";
 import { getManagementAssetCategoryFolders } from "@/lib/data/management-asset-categories";
 import { getPublishedManagementAssets } from "@/lib/data/management-assets-data-source";
+import { getClientOnboardingForUser } from "@/lib/data/client-onboarding-data-source";
 import { isFeatureAcquisitionEnabled } from "@/lib/env";
 
 export default async function AppLayout({
@@ -18,6 +19,11 @@ export default async function AppLayout({
 
   if (!accessContext) {
     redirect("/entrar");
+  }
+
+  if (accessContext.session.user.role === "cliente") {
+    const onboarding = await getClientOnboardingForUser(accessContext.session.user.id);
+    if (onboarding && !onboarding.completed) redirect("/onboarding");
   }
 
   const isSuperadmin = accessContext.session.user.role === "superadmin";

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getClientOnboardingForUser } from "@/lib/data/client-onboarding-data-source";
 
 import { getAccessibleOrganizationIdsForUser } from "@/lib/auth/authorization";
 import { getCurrentAuthSession } from "@/lib/auth/session";
@@ -12,7 +13,9 @@ import { signSlackInstallState } from "@/lib/integrations/slack-format";
 // Somente o Superadmin da empresa (`cliente`) conecta o Slack da própria empresa.
 export async function GET() {
   const session = await getCurrentAuthSession();
-  const settingsUrl = `${getPublicAppUrl()}/configuracoes`;
+  const onboarding = session?.user.role === "cliente"
+    ? await getClientOnboardingForUser(session.user.id) : null;
+  const settingsUrl = `${getPublicAppUrl()}${onboarding && !onboarding.completed ? "/onboarding" : "/configuracoes"}`;
 
   if (!session) {
     return NextResponse.redirect(`${getPublicAppUrl()}/entrar`);

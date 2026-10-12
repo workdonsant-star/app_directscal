@@ -28,3 +28,7 @@ Esta pasta concentra o fluxo de autenticação do app. Google OAuth via Auth.js/
 - A decisão pura de acesso fica em `diagnostic-access.ts`; verificações server-side que consultam o banco ficam em `authorization.ts`.
 - Na superfície cliente, `cliente` é apresentado como Superadmin da empresa e pode administrar Configurações/Contratos; `admin` acessa as demais funcionalidades. Não confundir nenhum deles com o `superadmin` global.
 - `supabase-auth.ts` é a ponte entre Auth.js e membership real no Supabase; preserve essa fronteira ao ajustar roles.
+
+- getCurrentAuthSession hidrata nome e avatar a partir do banco em cada request. account_profiles prevalece sobre o JWT e sobre futuras atualizações Google. Autorização permanece na sessão, nunca no perfil editável.
+
+Sessões temporárias de aquisição e convite são promovidas pelo callback JWT para sessão regular assim que existe membership no banco. A promoção limpa ambos os flags antes de acessar o onboarding, evitando o ciclo `/omdx` → `/onboarding` → `/entrar` → `/omdx`; sessões ainda sem membership mantêm o intent temporário.

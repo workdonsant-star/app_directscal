@@ -3,8 +3,10 @@ import "server-only";
 import { getPublicAppUrl, getRequiredServerEnv } from "@/lib/env";
 import {
   isValidSlackSignature,
+  mapSlackMember,
   SLACK_BOT_SCOPES,
   type SlackConversationMessage,
+  type SlackWorkspaceUser,
 } from "@/lib/integrations/slack-format";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
@@ -177,7 +179,7 @@ export async function getSlackInstallationForOrganization(organizationId: string
   const { data, error } = await supabase
     .schema("app_private")
     .from("slack_installations")
-    .select("team_id,team_name,installed_at")
+    .select("team_id,team_name,installed_at,scope")
     .eq("organization_id", organizationId)
     .is("revoked_at", null)
     .order("installed_at", { ascending: false })
@@ -187,8 +189,31 @@ export async function getSlackInstallationForOrganization(organizationId: string
   if (error) throw error;
 
   return data
-    ? { teamId: data.team_id, teamName: data.team_name, installedAt: data.installed_at }
+    ? {
+        teamId: data.team_id,
+        teamName: data.team_name,
+        installedAt: data.installed_at,
+        scope: data.scope,
+      }
     : null;
+}
+
+// Token do bot da empresa, só para uso server-side.
+export async function getSlackBotTokenForOrganization(organizationId: string) {
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .schema("app_private")
+    .from("slack_installations")
+    .select("team_id,bot_token")
+    .eq("organization_id", organizationId)
+    .is("revoked_at", null)
+    .order("installed_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+
+  return data ? { teamId: data.team_id, botToken: data.bot_token } : null;
 }
 
 export async function revokeSlackInstallation(teamId: string, organizationId?: string) {
@@ -342,4 +367,55 @@ export async function fetchSlackConversation(
   const messages = payload.messages ?? [];
   // conversations.history devolve do mais recente para o mais antigo.
   return threadTs ? messages : [...messages].reverse();
+}
+
+async function readSlack<T extends SlackApiResponse>(
+  token: string,
+  method: string,
+  params: Record<string, string>,
+) {
+  const response = await fetch(
+    `https://slack.com/api/${method}?${new URLSearchParams(params)}`,
+    { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" },
+  );
+  const payload = (await response.json()) as T;
+
+  if (!response.ok || !payload.ok) {
+    throw new Error(`Slack ${method} falhou: ${payload.error ?? response.status}`);
+  }
+
+  return payload;
+}
+
+// Pessoas ativas do workspace, em ordem alfabética.
+export async function listSlackWorkspaceUsers(token: string) {
+  const users: SlackWorkspaceUser[] = [];
+  let cursor = "";
+
+  do {
+    const page = await readSlack<
+      SlackApiResponse & {
+        members?: Parameters<typeof mapSlackMember>[0][];
+        response_metadata?: { next_cursor?: string };
+      }
+    >(token, "users.list", { limit: "200", ...(cursor ? { cursor } : {}) });
+
+    for (const member of page.members ?? []) {
+      const user = mapSlackMember(member);
+      if (user) users.push(user);
+    }
+
+    cursor = page.response_metadata?.next_cursor ?? "";
+  } while (cursor);
+
+  return users.sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+}
+
+// Nome e foto vêm sempre do Slack, nunca do navegador.
+export async function getSlackWorkspaceUser(token: string, userId: string) {
+  const payload = await readSlack<
+    SlackApiResponse & { user?: Parameters<typeof mapSlackMember>[0] }
+  >(token, "users.info", { user: userId });
+
+  return payload.user ? mapSlackMember(payload.user) : null;
 }

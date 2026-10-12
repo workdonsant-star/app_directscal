@@ -11,12 +11,15 @@ Esta pasta implementa as listagens de SOPs, Playbooks, Governança e Matriz RACI
 - As listagens por categoria e os acessos legados por tipo compartilham `ManagementAssetsLibrary` e seguem o frame Figma `217:2` como padrão visual: filtros na topbar, cabeçalho livre no fluxo da página e grid responsivo de cards.
 - As categorias são páginas raiz abertas pela sidebar e não exibem breadcrumb; o breadcrumb começa no detalhe de um ativo.
 - Cada card apresenta título, resumo, autoria e data de atualização.
+- A autoria mostra a foto recebida em `author.avatarUrl`; sem imagem ou em falha de carregamento, o Avatar preserva as iniciais, sem alterar o layout do card.
 - As pastas misturam tipos conforme a categoria cadastrada. Em pastas, `showType` identifica o tipo no card; os acessos legados por tipo mantêm seu filtro.
 - Todos os tipos, incluindo Matriz RACI, apontam para leitura individual (`getManagementAssetHref`). A RACI reutiliza a leitura RichText existente, incluindo tabelas.
 - A busca e o filtro são client-side sobre dados recebidos da página server-side.
 - O filtro de categoria precede a busca na topbar; As pastas mantêm apenas a busca, pois a categoria já está definida.
 - `ManagementAssetDocumentView` renderiza a leitura com sumário por âncoras (títulos H2) e `RichTextView`, sem HTML livre.
+- `ManagementAssetDocumentView` oferece Baixar MD abaixo do sumário lateral, com 24px de intervalo e `Button variant="secondary"` (cinza). Em larguras sem sumário lateral, o botão aparece acima do artigo. O link nativo `/ativos-de-gestao/download/<tipo>/<id>` exporta em Markdown (.md, UTF-8) a versão publicada acessível à sessão, para todos os tipos.
 - `RichTextView` transforma o documento do editor (`RichTextDocument`) em elementos React com tokens do sistema. É server-compatible e também alimenta a prévia do admin.
+- Na leitura e nas prévias de SOPs, parágrafos iniciados por `Informação:` (com ou sem o símbolo introdutório) usam fundo azul sutil, enquanto `Atenção:` usa fundo amarelo sutil. Ambos têm 20px de respiro e raio de 10px; outros tipos de ativo preservam a renderização textual padrão.
 - `RichTextEditor` (client) usa Tiptap com vocabulário restrito: Título de seção (H2), Subtítulo (H3), parágrafo, negrito, itálico, link (http, https, mailto), listas, destaque e tabela simples sem mescla visual. Listas, destaques e células aceitam só parágrafos e listas; conteúdo colado fora disso é descartado. Não adicione marcas de cor, tamanho ou alinhamento.
 - O JSON do editor é validado por `richTextDocumentSchema` no servidor. `tests/unit/fixtures/tiptap-editor-output.json` guarda uma saída real do editor; atualize o fixture se mudar extensões.
 - O detalhe do ativo segue o frame `191:3421`: índice lateral de 220px, 40px de distância até o artigo de 768px, cabeçalho com categoria/data, metadados em três colunas e seções com divisórias sutis.

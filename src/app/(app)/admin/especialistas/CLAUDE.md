@@ -11,4 +11,4 @@ Lista e cadastro de profissionais internos que podem receber empresas e preparar
 - O menu contextual permite arquivar, restaurar e excluir. Exclusão exige confirmação explícita.
 - O nome do especialista e a ação `Editar perfil` abrem um drawer compacto com foto, dados profissionais e capacidade atual.
 - A foto aceita JPG, PNG ou WebP de até 5 MB, pode ser removida e aparece imediatamente no avatar da tabela após salvar.
-- Nesta primeira versão, inclusões, status, arquivamento, exclusão e fotos permanecem apenas no estado local da página.
+- Inclusões, nome, foto, status e arquivamento persistem em specialists. Exclusão é lógica, preservando autoria histórica. APIs exigem superadmin global. O foco e uma atualização a cada minuto recarregam os dados compartilhados.

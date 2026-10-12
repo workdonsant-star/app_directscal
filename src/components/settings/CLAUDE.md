@@ -24,3 +24,7 @@ Componentes da página `/configuracoes`, responsável pelos dados empresariais d
 - `SlackIntegrationSettings` mostra o estado da conexão com o Slack e oferece `Conectar Slack` (OAuth em `/api/integrations/slack/install`) ou `Desconectar`. Fica desabilitado quando o app do Slack não está configurado no ambiente.
 
 - Todas as tabelas visíveis usam o padrão das Dimensões de 06/10/2026 via `Table`: cabeçalho neutro de 44px com raio de 5px, padding horizontal de 16px, linhas de pelo menos 55px e divisórias de 0,5px entre linhas, sem borda externa nem fundo no hover. Conteúdo documental pode ampliar a altura; o editor preserva a indicação de células selecionadas.
+
+- `SlackIntegrationSettings` também mostra `Reconectar Slack` quando a instalação não tem as permissões `users:read` e `im:write` (`needsReconnect`, calculado na página). Sem elas, a página Action Points não consegue listar as pessoas do workspace.
+
+- `OrganizationStructureSettings` também atende `/onboarding` com `inlineActions`: CTA no fluxo da página, título h2 e o mesmo drawer/APIs/reenvio. Em Configurações mantém h1 e ações na topbar.

@@ -4,7 +4,7 @@ Antes de editar, releia o **AGENTS.md** da raiz e este documento.
 
 ## Propósito
 
-`src/lib` concentra a fronteira de dados do app. O core de Maturidade usa Supabase para leituras, mutações, compartilhamento e relatórios; superadmin, aquisição e estrutura organizacional também usam Supabase via Route Handlers server-side. Configurações lê dados empresariais, setores e lideranças no servidor, enquanto o perfil mantém edição pessoal mockada/local. Autenticação principal usa Auth.js/NextAuth com Google OAuth, Credentials de campanha e regra corporativa em `auth/`.
+`src/lib` concentra a fronteira de dados do app. O core de Maturidade usa Supabase para leituras, mutações, compartilhamento e relatórios; superadmin, aquisição e estrutura organizacional também usam Supabase via Route Handlers server-side. Configurações lê dados empresariais, setores e lideranças no servidor, e o perfil persiste nome e avatar no Supabase. Autenticação principal usa Auth.js/NextAuth com Google OAuth, Credentials de campanha e regra corporativa em `auth/`.
 
 ## Estrutura
 
@@ -19,7 +19,7 @@ src/lib/
 ├── supabase/               ← clients server-side Supabase
 ├── pdf/                    ← documentos PDF renderizados a partir da camada data
 ├── mock-data.ts            ← seed temporário e bruto dos dados mockados
-├── profile-storage.ts      ← overrides locais de perfil por usuário via localStorage
+├── profile-storage.ts      ← leitura dos overrides legados para migração por salvamento explícito
 ├── types.ts                ← reexports dos tipos públicos de contracts/
 └── utils.ts                ← cn() (clsx + tailwind-merge)
 ```
@@ -68,7 +68,7 @@ Contratos principais:
 - Leituras Maturidade Supabase ficam em `omdx-data-source.ts`; helpers puros compartilhados com Client Components ficam em `omdx-domain.ts`.
 - Cálculos agregados e helpers de domínio devem ficar em `data/` ou em funções puras de contrato, não em componentes.
 - Planos de ação PDF devem consumir DTOs consolidados daqui, como `getDiagnosticActionPlan()`, sem gerar regra dentro do documento PDF.
-- `profile-storage.ts` é exceção client-only para a fase mockada: persiste overrides de perfil no `localStorage` com chave escopada por `user.id`, emite evento para atualizar o shell e retorna falha quando o navegador rejeita a gravação. Deve ser substituído por backend/autenticação real no futuro.
+- `profile-storage.ts` mantém compatibilidade com dados locais antigos. Nenhuma edição nova usa localStorage; dados legados não preenchem o formulário nem são transferidos automaticamente ao banco. `person-profiles-data-source.ts` resolve account_profiles e specialists no servidor.
 - O módulo Pessoas foi removido das rotas autenticadas, componentes, contratos e catálogo de módulos. O cadastro operacional público permanece em `operational-onboarding-data-source.ts`.
 - `supabase/` concentra clients server-side; `SUPABASE_SERVICE_ROLE_KEY` nunca deve chegar ao client.
 - `auth/` concentra Auth.js/NextAuth, regra de domínio/e-mail corporativo, validação de membership pré-existente no Supabase, JWT para RLS e fallback mockado. O cookie `directscal_session` sustenta o login demo por e-mail/senha apenas em desenvolvimento.

@@ -14,6 +14,12 @@ export type Database = {
   }
   app_private: {
     Tables: {
+      client_onboarding_completions: {
+        Row: { organization_id: string; completed_by: string | null; completed_at: string }
+        Insert: { organization_id: string; completed_by?: string | null; completed_at?: string }
+        Update: { organization_id?: string; completed_by?: string | null; completed_at?: string }
+        Relationships: []
+      }
       slack_event_receipts: {
         Row: {
           event_id: string
@@ -410,6 +416,19 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_profiles: {
+        Row: { user_id: string; name: string; avatar_url: string | null; updated_at: string }
+        Insert: { user_id: string; name: string; avatar_url: string | null; updated_at?: string }
+        Update: { name?: string; avatar_url?: string | null; updated_at?: string }
+        Relationships: []
+      }
+      specialists: {
+        Row: { id: string; name: string; avatar_url: string | null; email: string; title: string; location: string; status: string; archived: boolean; deleted: boolean; created_at: string }
+        Insert: { id: string; name: string; avatar_url?: string | null; email: string; title: string; location: string; status?: string; archived?: boolean; deleted?: boolean; created_at?: string }
+        Update: { name?: string; avatar_url?: string | null; email?: string; title?: string; location?: string; status?: string; archived?: boolean; deleted?: boolean }
+        Relationships: []
+      }
+
       acquisition_campaign_fields: {
         Row: {
           campaign_id: string
@@ -660,6 +679,123 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      action_point_assignments: {
+        Row: {
+          action_point_id: string
+          assignee_avatar_url: string | null
+          assignee_name: string
+          assignee_slack_user_id: string
+          assignee_team_id: string
+          cadence: string
+          created_at: string
+          diagnostic_id: string
+          due_on: string | null
+          organization_id: string
+          progress: number
+          stage: string
+          starts_on: string | null
+          updated_at: string
+        }
+        Insert: {
+          action_point_id: string
+          assignee_avatar_url?: string | null
+          assignee_name: string
+          assignee_slack_user_id: string
+          assignee_team_id: string
+          cadence?: string
+          created_at?: string
+          diagnostic_id: string
+          due_on?: string | null
+          organization_id: string
+          progress?: number
+          stage?: string
+          starts_on?: string | null
+          updated_at?: string
+        }
+        Update: {
+          action_point_id?: string
+          assignee_avatar_url?: string | null
+          assignee_name?: string
+          assignee_slack_user_id?: string
+          assignee_team_id?: string
+          cadence?: string
+          created_at?: string
+          diagnostic_id?: string
+          due_on?: string | null
+          organization_id?: string
+          progress?: number
+          stage?: string
+          starts_on?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "action_point_assignments_diagnostic_id_fkey"
+            columns: ["diagnostic_id"]
+            isOneToOne: false
+            referencedRelation: "diagnostics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "action_point_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      action_point_events: {
+        Row: {
+          action_point_id: string
+          author_name: string
+          body: string
+          created_at: string
+          detail: string | null
+          diagnostic_id: string
+          id: string
+          kind: string
+          organization_id: string
+        }
+        Insert: {
+          action_point_id: string
+          author_name: string
+          body: string
+          created_at?: string
+          detail?: string | null
+          diagnostic_id: string
+          id?: string
+          kind: string
+          organization_id: string
+        }
+        Update: {
+          action_point_id?: string
+          author_name?: string
+          body?: string
+          created_at?: string
+          detail?: string | null
+          diagnostic_id?: string
+          id?: string
+          kind?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "action_point_events_diagnostic_id_fkey"
+            columns: ["diagnostic_id"]
+            isOneToOne: false
+            referencedRelation: "diagnostics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "action_point_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       admin_deliveries: {
         Row: {

@@ -1,6 +1,8 @@
 import { cookies } from "next/headers";
 import { cache } from "react";
 
+import { getAccountProfile } from "@/lib/data/person-profiles-data-source";
+
 import { auth } from "../../../auth";
 import { isDevPasswordLoginEnabled } from "@/lib/auth/access-control";
 import {
@@ -32,25 +34,20 @@ function toAuthSession(
 }
 
 export const getCurrentAuthSession = cache(async function getCurrentAuthSession() {
-  try {
-    const session = await auth();
+  const session = await auth().catch(() => null);
 
-    if (session) {
-      const parsedUser = authUserSchema.safeParse(session.user);
+  if (session) {
+    const parsedUser = authUserSchema.safeParse(session.user);
 
-      if (parsedUser.success) {
-        return toAuthSession(
-          parsedUser.data,
-          session.expires,
-          session.supabaseAccessToken,
-          session.acquisition,
-          session.leadershipInvitation,
-        );
-      }
+    if (parsedUser.success) {
+      return toAuthSession(
+        { ...parsedUser.data, ...(await getAccountProfile(parsedUser.data.id)) },
+        session.expires,
+        session.supabaseAccessToken,
+        session.acquisition,
+        session.leadershipInvitation,
+      );
     }
-  } catch {
-    // Google OAuth may be unconfigured in local demos. The mock cookie is only
-    // honored when the explicit development password fallback is enabled.
   }
 
   if (!isDevPasswordLoginEnabled()) return null;

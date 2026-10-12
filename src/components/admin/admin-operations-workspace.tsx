@@ -1,5 +1,7 @@
 "use client";
 
+import { useSpecialists } from "@/components/admin/use-specialists";
+
 import { ArrowRight, FileText, UserRoundCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -33,7 +35,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { AdminDelivery } from "@/lib/contracts/admin-operations";
-import { adminSpecialists, getAdminSpecialist } from "@/lib/data/admin-operations-data-source";
+
 
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   day: "2-digit",
@@ -45,6 +47,7 @@ export function AdminOperationsWorkspace({
 }: {
   deliveries: AdminDelivery[];
 }) {
+  const { specialists: adminSpecialists, getSpecialist: getAdminSpecialist } = useSpecialists();
   const router = useRouter();
   const companyOptions = Array.from(
     new Map(
@@ -76,7 +79,7 @@ export function AdminOperationsWorkspace({
     (delivery) => delivery.status === "pronta_para_publicar",
   ).length;
   const activeSpecialists = adminSpecialists.filter(
-    (specialist) => specialist.status === "ativo",
+    (specialist) => specialist.status === "ativo" && !specialist.archived,
   ).length;
 
   return (

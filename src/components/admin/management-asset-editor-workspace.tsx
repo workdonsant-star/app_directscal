@@ -241,7 +241,7 @@ export function ManagementAssetEditorWorkspace({
       return { action: "restaurar" as const, label: "Restaurar ativo", icon: ArchiveRestore };
     }
     if (!draft) {
-      return { action: "abrir_rascunho" as const, label: "Abrir nova versão", icon: FilePen };
+      return { action: "abrir_rascunho" as const, label: "Editar como nova versão", icon: FilePen };
     }
     if (draft.status === "rascunho") {
       return { action: "enviar_para_revisao" as const, label: "Enviar para revisão", icon: Send };
@@ -280,7 +280,7 @@ export function ManagementAssetEditorWorkspace({
                 disabled={!dirty || pending !== null}
               >
                 <Save className="size-4" />
-                {pending === "salvar" ? "Salvando" : "Salvar"}
+                {pending === "salvar" ? "Salvando" : contentDirty && draft ? `Salvar versão ${draft.versionNumber}` : "Salvar alterações"}
               </Button>
             ) : null}
             {canReturnToDraft ? (
@@ -384,13 +384,16 @@ export function ManagementAssetEditorWorkspace({
 
             {view === "previa" && content ? (
               <div className="rounded-lg border bg-card px-6 py-8 sm:px-10">
-                <RichTextView content={content} />
+                <RichTextView content={content} callouts={asset.type === "sop"} />
               </div>
             ) : null}
 
             {view === "publicada" && asset.published ? (
               <div className="rounded-lg border bg-card px-6 py-8 sm:px-10">
-                <RichTextView content={asset.published.content} />
+                <RichTextView
+                  content={asset.published.content}
+                  callouts={asset.type === "sop"}
+                />
               </div>
             ) : null}
 
@@ -616,7 +619,7 @@ export function ManagementAssetEditorWorkspace({
             ) : null}
 
             <Link
-              href={deliveryId ? `/admin/entregas/${deliveryId}?aba=ativos&perguntas=1` : `${assetsPath}/perguntas`}
+              href={deliveryId ? `/admin/entregas/${deliveryId}/ativos/perguntas` : `${assetsPath}/perguntas`}
               className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
             >
               Ver perguntas feitas ao agente

@@ -30,7 +30,7 @@ src/components/
 ├── nav-main.tsx           ← navegação principal da sidebar
 ├── nav-modules.tsx        ← navegação expansível legada, fora da sidebar atual
 ├── nav-projects.tsx       ← navegação secundária legada, fora da sidebar atual
-├── nav-user.tsx           ← link de perfil do cliente e menu administrativo na sidebar
+├── nav-user.tsx           ← menu de perfil, tema e saída na sidebar
 ├── app-switcher.tsx       ← selector de apps legado, fora da sidebar principal
 ├── kpi-card.tsx           ← card compartilhado de KPI
 ├── theme-provider.tsx     ← wrapper de next-themes
@@ -56,16 +56,16 @@ Cada subpasta de domínio tem seu próprio `CLAUDE.md`. Crie um quando adicionar
 - O grupo `Análises e relatórios` e o item `Contratos` foram removidos da navegação; `Diagnósticos`, no grupo principal, aponta para `/relatorios`, que renderiza o diagnóstico como conteúdo nativo do app, sem `iframe` ou simulação de folha A4. A antiga seção `Recursos` e o item `Documentação` não aparecem; `/docs` continua disponível por acesso direto.
 - `Configurações` fica isolado no extremo inferior da sidebar do Superadmin da empresa (`cliente`), dentro de `SidebarFooter`, e aponta para `/configuracoes`. Não aparece para `admin` da empresa nem para o `superadmin` global.
 - `Ativos de gestão` usa a nova biblioteca publicada por empresa e não reativa o editor legado, os seeds de `sops-data-source.ts` nem `module_management_assets`.
-- `Action Points` aparece como item independente no mesmo nível de `Analytics` e aponta para `/gantt`; não transforme a funcionalidade em módulo próprio sem nova decisão explícita.
+- `Action Points` aparece como item independente no mesmo nível de `Analytics` e aponta para `/action-points`; não transforme a funcionalidade em módulo próprio sem nova decisão explícita.
 - `Pessoas` foi removido da navegação, do catálogo de módulos e dos componentes autenticados. Não reintroduza `module_people` sem nova decisão explícita.
 - Não reintroduza `Empresas` na navegação principal do cliente sem nova decisão. `Diagnósticos` pertence ao grupo principal e aponta para `/relatorios`.
 - Em `/admin`, a sidebar troca para `Administração` (`Operação`, `Especialistas`, `Empresas`, `Leads`, `Campanhas`).
 - Componentes em `auth/` conversam com `/api/auth/*`; não leem nem escrevem cookies diretamente.
-- O header da sidebar mostra o usuário (`NavUser`) com nome e nome fantasia da empresa resolvido pelo perfil empresarial. Para cliente e admin da empresa, o bloco inteiro é um link direto para `/perfil`, sem setas ou dropdown. Quando o CNPJ não possui nome fantasia, use o nome oficial como fallback. O e-mail não ocupa o resumo visível do cliente. O switcher de módulos (`AppSwitcher`) não fica visível na sidebar principal.
+- O header da sidebar mostra o usuário (`NavUser`) com nome e nome fantasia da empresa resolvido pelo perfil empresarial. Para cliente e admin da empresa, o bloco abre um dropdown com Meu perfil (`/perfil`), alternância de tema e Sair. Quando o CNPJ não possui nome fantasia, use o nome oficial como fallback. O e-mail não ocupa o resumo visível do cliente. O switcher de módulos (`AppSwitcher`) não fica visível na sidebar principal.
 - O logout encerra as sessões, mas preserva os overrides locais de perfil escopados por `user.id`; não limpe foto e nome persistidos no navegador ao sair.
 - Para `superadmin`, `NavUser` não exibe o atalho de Perfil, porque a conta administrativa fica restrita à superfície `/admin`.
 - O menu principal mantém `gap-1` (4 px) entre itens e começa abaixo do header de 72px (8px no topo, switcher de 48px e 16px na base), com 8px de padding no grupo. O switcher usa avatar de 32px, nome de 14px e empresa de 10px, conforme o frame `252:545`.
-- O dropdown de `NavUser`, com tema e saída, permanece apenas para o superadmin global; o bloco de perfil do cliente não abre menu. O padrão global de tema continua `system`.
+- O dropdown de `NavUser` atende todos os papéis: Meu perfil aparece somente para cliente/admin; tema e saída também estão disponíveis para superadmin global. O padrão global de tema continua `system`.
 - A topbar do app autenticado deve ser contínua com a sidebar (`bg-shell`), com `h-14` e o mesmo recuo horizontal de `AppPage` (`px-6 lg:px-10`): título simples nas raízes do menu principal; trigger móvel/compacto; breadcrumb em detalhes, além de ações contextuais. Páginas raiz abertas pela sidebar não exibem breadcrumb nem o separador associado. Filtros globais de página devem ficar na topbar via `actions`. Analytics é uma exceção: o filtro de diagnóstico fica somente no cabeçalho de Resultado de coletas, sem duplicação na topbar. Não adicionar busca/notificações sem decisão explícita.
 - CTAs de salvamento que representam a página inteira ficam na topbar, imediatamente antes do sino. Quando a lógica pertence a um Client Component abaixo da página, use `AppTopbarActionsPortal`; não duplique o handler nem mantenha outro CTA no rodapé do card.
 - `AppTopbarActionsPortal` resolve o container no efeito de montagem, depois que a topbar renderizada pelo servidor existe no DOM. A exceção local de lint é deliberada para essa sincronização de portal; não consulte o target durante o primeiro render, pois isso quebra hidratação ou navegações limpas.
@@ -121,3 +121,5 @@ Não use spinners centrais. Skeletons localizados são mais informativos.
 - A produção de ativos de gestão pertence a `Operação / Criação dos ativos`, com seleção da empresa em Operação e produção dentro de `/admin/empresas/[id]/criacao-dos-ativos`, sem item independente na sidebar.
 
 - O shell preserva largura de 256px, topbar de 56px, superfície compartilhada e raio de conteúdo de 20px do frame `242:267`. O frame `252:545` atualiza switcher e alinhamento da topbar ao conteúdo. Avatar do perfil circular. Iniciativas fica fora da sidebar; as pastas por categoria reutilizam dados publicados existentes, sem migração.
+
+- NavUser usa nome e avatar resolvidos pelo servidor, atualiza ao recuperar foco e a cada minuto enquanto visível. Overrides locais não substituem o banco no shell.

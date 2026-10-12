@@ -1,6 +1,6 @@
 # `src/lib/data` — Fonte de dados e regras
 
-Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no servidor; superadmin e aquisição também usam Supabase via Route Handlers server-side. Perfil e Configurações compartilham a leitura server-side de identidade, organização e aquisição; as edições pessoais do Perfil ainda preservam persistência local.
+Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no servidor; superadmin e aquisição também usam Supabase via Route Handlers server-side. Perfil e Configurações compartilham a leitura server-side de identidade, organização e aquisição; as edições de nome e avatar do Perfil persistem em account_profiles.
 
 ## Regras
 
@@ -12,12 +12,15 @@ Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no
 - Cálculos agregados e helpers de domínio ficam aqui ou em contratos/mappers, não nos componentes.
 - Relatórios PDF devem consumir DTOs consolidados daqui, como `getDiagnosticReport()` e `getDiagnosticActionPlan()`, sem acessar mocks ou recalcular dados dentro do documento.
 - `omdx-native-report-charts.ts` transforma um `DiagnosticReport` consolidado nos datasets dos seis gráficos da leitura nativa; componentes aplicam somente apresentação e tokens visuais.
-- `action-plan-gantt.ts` converte `DiagnosticActionPlan` em tarefas de cronograma (`GanttTask`) para a rota histórica `/gantt`, preservando os metadados do action point usados no calendário e no modal de detalhes. O calendário achata os subitens da frente raiz e usa a data de início como dia do evento. É um motor determinístico baseado apenas nos dados quantitativos consolidados, sem API de IA e sem persistência de tarefas.
+- `action-plan-gantt.ts` converte a seleção publicada da entrega (`AdminDeliveryPublication` + catálogo `adminActionPointTemplates`) em tarefas (`GanttTask`) para a página `/action-points`. Texto, responsável, prazo, impacto e indicador vêm do catálogo; nota e gap vêm do `DiagnosticActionPlan`; o motivo prioriza a leitura do especialista (`dimensionReadings`). Janelas de datas iniciais ancoradas em `publishedAt` (o Superadmin da empresa pode sobrescrevê-las em `action_point_assignments`) (Alta na publicação, Média +7 dias, Baixa +14 dias, duração pelo prazo do catálogo). Ids fora do catálogo são ignorados. Determinístico, sem API de IA.
+- `published-action-points.ts` (server-only) escolhe, entre os diagnósticos autorizados da sessão, a entrega publicada mais recente com ações selecionadas e monta a lista do cliente. Não há fallback para as ações geradas automaticamente do plano (que continuam alimentando o PDF de plano de ação).
 - `omdx-data-source.ts` pode usar `cache()` do React apenas para memoização por request de sessão, autorização, modelo Maturidade e bundles derivados. Não use `unstable_cache`, `use cache`, CDN cache ou cache global/persistente para sessão, organizações, diagnósticos, respostas, tokens, cookies, JWT ou resultados obtidos com service role.
 - Helpers memoizados que dependem de usuário devem receber `userId` explicitamente. Não dependa de variável global mutável para decidir escopo de organização ou acesso.
 - `admin-data-source.ts` concentra helpers puros, seeds estáticos de módulos e derivação de empresas/módulos.
-- `admin-operations-data-source.ts` fornece o mock tipado da primeira versão frontend de especialistas, entregas e catálogo de action points. Ele não grava no Supabase e deve ser substituído por APIs e políticas próprias na etapa funcional.
+- `admin-delivery-workspace-data.ts` carrega, com `cache` do React, o contexto compartilhado do layout e das etapas de `/admin/entregas/[id]` (relatório real, publicação, análise, empresa e especialistas).
+- `admin-operations-data-source.ts` conserva seeds legados e helpers de análise/action points. Especialistas em uso são lidos e escritos por person-profiles-data-source.ts no Supabase; os seeds não governam o cadastro compartilhado.
 - `management-assets-data-source.ts` (server-only) lê bibliotecas e leitura individual no Supabase, filtrando pelas organizações da sessão de cliente, por `status = publicado`, `archived_at` nulo e pela versão vigente.
+- A autoria publicada inclui `avatarUrl` do especialista associado. Don Santos usa a foto local já disponível nos relatórios; os demais preservam iniciais enquanto não tiverem imagem no cadastro estático. Nome e foto dos especialistas vêm de specialists e são compartilhados com os ativos publicados.
 - `management-assets-admin-data-source.ts` (server-only, superadmin) cria ativos a partir de modelos, salva metadados e rascunho, aplica as transições editoriais e publica via `app_private.publish_management_asset_version`. Uma versão publicada é imutável; editar abre uma nova versão em rascunho, e só existe um rascunho aberto por ativo.
 - `management-asset-templates.ts` guarda os modelos de partida (estruturas vazias por tipo e SOPs de referência). Modelos viram rascunho; nada é publicado automaticamente.
 - `management-asset-routes.ts` é puro e resolve os caminhos das bibliotecas e da leitura individual por tipo.
@@ -90,3 +93,26 @@ Faixas de classificação:
 ## Pastas dos ativos de gestão
 
 `management-asset-categories.ts` normaliza categorias, resolve pastas e conta ativos sem inferir área a partir do tipo. Conserva categorias adicionais e Sem categoria. `getPublishedManagementAssets()` lê todos os tipos publicados das organizações da sessão; a memoização React é somente por request e recebe userId explicitamente. O layout e a página compartilham essa leitura. Os links por tipo permanecem para leitura e compatibilidade.
+
+## Exportação Markdown dos ativos
+
+`management-asset-markdown.ts` converte o DTO publicado em Markdown UTF-8 com metadados, títulos, marcas, links, listas aninhadas, destaques e tabelas GFM. É puro, não consulta serviços nem altera dados. Usado pelo download autenticado dos quatro tipos.
+
+## Ações administrativas em massa
+
+`updateManagementAssetsInBulk` e `deleteManagementAssets` validam a seleção completa na empresa antes de escrever. Cada mutação filtra novamente organização e IDs e devolve apenas IDs efetivamente afetados. Edição recusa arquivados e altera apenas metadados enviados, sem tocar versões. Exclusão usa uma única instrução; FKs existentes removem versões, escopos e chunks em cascata. Referências históricas na auditoria do agente permanecem. Não há migração nova.
+
+## Identidade compartilhada
+
+person-profiles-data-source.ts lê account_profiles (prioritário) ou next_auth.users (inicial), persiste dados pessoais e resolve specialists. Fotos são raster base64 limitado a 1 milhão de caracteres ou referências HTTPS/caminhos locais. Não existe cache entre requests. Exclusão de especialista é lógica, conserva autorias e bloqueia novas atribuições; contagens usam admin_deliveries real.
+
+## Execução dos action points
+
+- `action-points-list.ts` (puro) junta a seleção publicada (`GanttTask[]`) às atribuições, marca atraso (prazo vencido e não concluído), define a cadência padrão por prioridade (Alta semanal; as demais quinzenal), traz o progresso e a última interação de cada ação (e a média e a mais recente por grupo) e agrupa por dimensão, responsável ou mês do prazo. Exporta também os rótulos de etapa e cadência e a formatação de datas sem deslocamento de fuso.
+- `action-point-execution.ts` (puro): `planActionPointUpdate()` decide o que gravar e que registros de histórico gerar, sempre como frase de ação iniciada por verbo (atribuição, etapa, prazo, andamento, nota com detalhe); concluir fecha o progresso em 100% quando não há outro valor informado;, valida que o prazo não é anterior ao início e exige responsável antes de etapa, prazo ou cadência.
+- `action-point-execution-data-source.ts` (server-only) lê e grava `action_point_assignments` e `action_point_events`, sempre filtrando pela empresa mesmo com service role.
+- `published-action-points.ts` devolve a lista publicada e a empresa da entrega; é a fonte tanto da página quanto da validação do `PATCH`.
+
+## Configuração inicial do cliente
+
+`client-onboarding-data-source.ts` resolve a organização principal da sessão, lê conclusão privada e revalida Slack com escopos e todos os setores ativos (inclusive a contagem bruta para detectar setores sem liderança). `client-onboarding.ts` concentra o critério puro: ao menos um setor ativo, liderança e convite enviado ou aceito em todos, Slack válido. Conclusão é idempotente e durável por empresa; falhas não são tratadas como conclusão. O onboarding operacional público permanece independente.

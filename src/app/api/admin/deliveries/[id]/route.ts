@@ -1,10 +1,10 @@
+import { canAssignSpecialist } from "@/lib/data/person-profiles-data-source";
 import { NextResponse } from "next/server";
 
 import { getCurrentAuthSession } from "@/lib/auth/session";
 import { adminDeliveryMutationSchema } from "@/lib/contracts/admin-operations";
 import {
   adminActionPointTemplates,
-  getAdminSpecialist,
 } from "@/lib/data/admin-operations-data-source";
 import { saveAdminDeliveryPublication } from "@/lib/data/admin-delivery-data-source";
 
@@ -54,7 +54,7 @@ export async function PATCH(
 
   if (
     (parsed.data.specialistId &&
-      !getAdminSpecialist(parsed.data.specialistId)) ||
+      !(await canAssignSpecialist(parsed.data.specialistId))) ||
     parsed.data.selectedActionPointIds.some((id) => !actionPointIds.has(id))
   ) {
     return NextResponse.json(

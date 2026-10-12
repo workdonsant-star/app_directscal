@@ -14,6 +14,10 @@ import {
   getSlackInstallationForOrganization,
   isSlackOAuthConfigured,
 } from "@/lib/integrations/slack";
+import {
+  hasSlackScopes,
+  SLACK_ACTION_POINT_SCOPES,
+} from "@/lib/integrations/slack-format";
 
 export const metadata: Metadata = {
   title: "Configurações — Directscal",
@@ -55,6 +59,10 @@ export default async function SettingsPage({
           <SlackIntegrationSettings
             available={isSlackOAuthConfigured()}
             connection={slackConnection}
+            needsReconnect={
+              slackConnection !== null &&
+              !hasSlackScopes(slackConnection.scope, SLACK_ACTION_POINT_SCOPES)
+            }
             result={slack ?? null}
           />
         </div>

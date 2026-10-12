@@ -14,6 +14,7 @@ Esta pasta define os contratos de dados preparados para a futura integração co
 - Contratos do cronograma ficam em `gantt.ts`: status, tarefas recursivas, metadados opcionais de action point para detalhe de execução e payload de workspace usado para transformar action points em frentes no Gantt.
 - Contratos do superadmin ficam em `admin.ts`: módulos, campanhas, campos configuráveis, leads, empresas e input de submissão pública.
 - Contratos da operação especializada ficam em `admin-operations.ts`: especialistas, entregas, estados e catálogo de action points da primeira versão frontend.
+- Especialistas e autores dos ativos aceitam `avatarUrl` opcional, como URL absoluta ou caminho local iniciado por uma única `/`. Ausência de foto mantém as iniciais na biblioteca.
 - Contratos dos ativos de gestão ficam em `management-assets.ts` (biblioteca, leitura, fluxo editorial do admin, perguntas ao agente com histórico opcional, citações e auditoria) e `rich-text.ts` (documento restrito do editor). O formato legado em blocos por seção continua aceito como `legacySop*` para modelos e versões antigas.
 - Contratos de setores, lideranças e convites ficam em `organization-structure.ts`. `accessLevel` usa `owner | admin` na UI e mapeia para `cliente | admin` no banco; o `superadmin` global nunca é uma opção. Nome e foto permanecem nulos até o aceite Google.
 - `Diagnostic` carrega criador, setores e permissões derivadas. `DiagnosticShareLink` possui identidade própria e setor opcional; a coleção de links é variável porque existe um link de Time por setor.
@@ -21,3 +22,9 @@ Esta pasta define os contratos de dados preparados para a futura integração co
 ## Mappers
 
 `mappers.ts` centraliza a conversão de `Db*` para domínio/UI. Não duplique conversões dentro de páginas ou componentes.
+
+As ações em massa usam schemas estritos em `management-assets.ts`: empresa UUID, 1–200 IDs UUID únicos e apenas os metadados explicitamente solicitados. Autor e categoria aceitam null para limpar o vínculo/valor; conteúdo e status não são editáveis por esse contrato.
+
+- personalProfileInputSchema é estrito e não aceita userId. Nome tem 1–160 caracteres; avatar aceita null para remoção, raster base64 limitado a 1 milhão de caracteres, HTTPS ou caminho local. Blob e SVG são recusados.
+
+- Contratos da execução dos action points ficam em `action-point-execution.ts`: etapas (`atribuido`, `em_implementacao`, `bloqueado`, `concluido`; a ausência de atribuição é "Sem responsável" na interface), cadências, responsável do Slack, atribuição, evento de histórico e o input do `PATCH` (`assigneeUserId: null` remove o responsável).

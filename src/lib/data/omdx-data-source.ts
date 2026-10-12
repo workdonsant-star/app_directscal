@@ -1,3 +1,4 @@
+import { getAccountProfile } from "@/lib/data/person-profiles-data-source";
 import { cache } from "react";
 
 import { getAccessibleOrganizationIdsForUser } from "@/lib/auth/authorization";
@@ -33,11 +34,9 @@ import {
   type DimensionId,
   type DimensionInsightSummary,
   type DimensionQuestionResult,
-  type GanttWorkspaceData,
   type RespondentGroup,
   type ResponsesByGroup,
 } from "@/lib/contracts";
-import { buildGanttWorkspaceDataFromActionPlan } from "@/lib/data/action-plan-gantt";
 import {
   canGenerateDiagnosticActionPlan,
   canGenerateDiagnosticReport,
@@ -464,7 +463,10 @@ async function loadDiagnosticAccessMetadata(
     sectorsResult.data.map((sector) => [sector.id, sector]),
   );
   const creatorsById = new Map(
-    creatorUsersResult.data.map((creator) => [creator.id, creator]),
+    await Promise.all(creatorUsersResult.data.map(async (creator) => {
+      const profile = await getAccountProfile(creator.id);
+      return [creator.id, profile ? { ...creator, name: profile.name, image: profile.avatarUrl } : creator] as const;
+    })),
   );
   const creatorRoleByOrganizationAndUser = new Map(
     creatorMembershipsResult.data.map((membership) => [
@@ -1850,38 +1852,6 @@ export const getLatestReportableDiagnostic = cache(
       )[0];
   },
 );
-
-export async function getLatestActionPlanGanttWorkspace(
-  generatedAt = new Date().toISOString(),
-): Promise<GanttWorkspaceData> {
-  const reports = await getReportsForFilter("todos");
-  const latestReport = [...reports].sort(
-    (a, b) =>
-      new Date(b.diagnostic.updatedAt).getTime() -
-      new Date(a.diagnostic.updatedAt).getTime(),
-  )[0];
-
-  if (!latestReport) {
-    return {
-      source: null,
-      tasks: [],
-    };
-  }
-
-  const plan = await getDiagnosticActionPlan(
-    latestReport.diagnostic.id,
-    generatedAt,
-  );
-
-  if (!plan) {
-    return {
-      source: null,
-      tasks: [],
-    };
-  }
-
-  return buildGanttWorkspaceDataFromActionPlan(plan, generatedAt.slice(0, 10));
-}
 
 const getReportsForFilter = cache(
   async function getReportsForFilter(filter: "todos" | string = "todos") {

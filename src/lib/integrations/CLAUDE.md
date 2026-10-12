@@ -18,3 +18,10 @@ Esta pasta contém integrações server-only que traduzem eventos externos para 
 - A organização vem da instalação do workspace (`team_id`). `SLACK_BOT_TOKEN` + `SLACK_ORGANIZATION_ID` continuam como fallback para um workspace único de teste.
 - Escopos do bot: `app_mentions:read`, `chat:write`, `im:history`, `channels:history` e `groups:history` (os dois últimos leem a thread para continuar a conversa). Pessoas do Slack não precisam de conta no app; a auditoria registra `team_id:user_id` em `external_user_id`.
 - O token do bot fica em schema privado e só é lido pela service role. Desconectar revoga o token no Slack e marca `revoked_at`.
+
+## Slack — pessoas e conversa privada
+
+- Escopos novos do bot: `users:read` (listar e consultar pessoas do workspace, usado para escolher o responsável de um action point) e `im:write` (abrir conversa privada, reservado para o acompanhamento ativo). Instalações anteriores continuam funcionando para perguntas, mas precisam ser reautorizadas; `hasSlackScopes()` compara o `scope` gravado e a interface mostra `Reconectar`.
+- `listSlackWorkspaceUsers()` pagina `users.list` (200 por página) e `getSlackWorkspaceUser()` usa `users.info`. `mapSlackMember()` (puro e testado) descarta bots, desativados, convidados e o Slackbot, prefere o nome de exibição e só aceita foto em HTTPS.
+- `getSlackBotTokenForOrganization()` devolve o token da instalação ativa da empresa, somente para handlers server-side. O fallback por variável de ambiente (`SLACK_BOT_TOKEN`) não cobre essa consulta.
+- A identidade de quem executa é `team_id:user_id` do Slack, a mesma usada na auditoria do agente. Não copiamos o diretório do workspace.

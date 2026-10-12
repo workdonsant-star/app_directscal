@@ -54,7 +54,7 @@ const data = {
   omdxItems: [
     { title: "Pesquisas", url: "/omdx/diagnosticos", icon: SquarePlus },
     { title: "Diagnósticos", url: "/relatorios", icon: ChartNoAxesColumn },
-    { title: "Action Points", url: "/gantt", icon: SquarePlus },
+    { title: "Action Points", url: "/action-points", icon: SquarePlus },
   ],
   admin: [
     {
@@ -127,6 +127,7 @@ export function AppSidebar({
     id: string;
     initials?: string;
     name: string;
+    avatarUrl?: string | null;
     role?: "superadmin" | "admin" | "cliente";
   };
 }) {
@@ -140,6 +141,7 @@ export function AppSidebar({
   };
   const sidebarUser = {
     ...user,
+    avatar: user.avatarUrl ?? undefined,
     initials: user.initials ?? (getInitials(user.name) || "DS"),
   };
   const isAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
@@ -154,8 +156,8 @@ export function AppSidebar({
       isActive:
         pathname === "/omdx" ||
         pathname.startsWith("/omdx/") ||
-        pathname === "/gantt" ||
-        pathname.startsWith("/gantt/") ||
+        pathname === "/action-points" ||
+        pathname.startsWith("/action-points/") ||
         pathname === "/insights" ||
         pathname.startsWith("/insights/"),
     }));

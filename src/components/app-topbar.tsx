@@ -33,7 +33,7 @@ export function AppTopbar({ breadcrumb = [], actions }: AppTopbarProps) {
           ? "Diagnósticos"
         : pathname === "/assistente"
           ? "Agente"
-          : pathname === "/gantt"
+          : pathname === "/action-points"
             ? "Action Points"
             : pathname === "/iniciativas"
               ? "Iniciativas"

@@ -17,7 +17,7 @@ export const userProfileSchema = z.object({
   organizationId: idSchema,
   name: z.string().min(1),
   email: z.string().email(),
-  avatarUrl: z.string().url().nullable(),
+  avatarUrl: z.union([z.string().url(), z.string().regex(/^\/(?!\/)/)]).nullable(),
   company: z.string().min(1),
   employeeCount: z.number().int().min(1),
   createdAt: isoDateTimeSchema,
@@ -48,6 +48,7 @@ export const companyProfileDetailsSchema = z.object({
 
 export const profileSettingsDataSchema = userProfileSchema.extend({
   companyDetails: companyProfileDetailsSchema,
+  profilePersisted: z.boolean().optional(),
 });
 
 export const profilePositionOptions = [
@@ -115,3 +116,14 @@ export type UpdateProfileCommercialInput = z.infer<
 export type UpdateProfileInput = z.infer<typeof updateProfileInputSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordInputSchema>;
 export type UpdateOrganizationInput = z.infer<typeof updateOrganizationInputSchema>;
+
+// Fotos recortadas são armazenadas no banco; não aceitar blob URLs locais.
+export const persistedAvatarSchema = z.string().max(1_000_000).refine(
+  (value) => /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(value)
+    || /^https:\/\//.test(value) || /^\/(?!\/)/.test(value),
+  "Selecione uma foto válida.",
+).nullable();
+export const personalProfileInputSchema = z.object({
+  name: z.string().trim().min(1).max(160),
+  avatarUrl: persistedAvatarSchema,
+}).strict();

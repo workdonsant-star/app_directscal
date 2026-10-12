@@ -9,8 +9,9 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { type ChangeEvent, type FormEvent, useRef, useState } from "react";
+import { type ChangeEvent, type FormEvent, useRef, useState, useEffect } from "react";
 
+import { AvatarCropDialog } from "@/components/profile/avatar-crop-dialog";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { AppTopbarActionsPortal } from "@/components/app-topbar-actions-portal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -51,7 +52,6 @@ import {
 } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import type { AdminSpecialist } from "@/lib/contracts/admin-operations";
-import { adminSpecialists } from "@/lib/data/admin-operations-data-source";
 
 const acceptedProfilePhotoTypes = new Set([
   "image/jpeg",
@@ -68,18 +68,18 @@ function getInitials(name: string) {
     .join("");
 }
 
-export function AdminSpecialistsWorkspace() {
-  const [specialists, setSpecialists] = useState(adminSpecialists);
+export function AdminSpecialistsWorkspace({ initialSpecialists }: { initialSpecialists: (AdminSpecialist & { archived: boolean })[] }) {
+  const [specialists, setSpecialists] = useState(initialSpecialists);
+  const [saving, setSaving] = useState(false);
+  const [cropSource, setCropSource] = useState<string | null>(null);
+  const [profileName, setProfileName] = useState("");
   const [open, setOpen] = useState(false);
   const [profileSpecialist, setProfileSpecialist] =
     useState<AdminSpecialist | null>(null);
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [profilePhotoError, setProfilePhotoError] = useState<string | null>(null);
-  const [specialistPhotos, setSpecialistPhotos] = useState<Record<string, string>>(
-    {},
-  );
   const [feedback, setFeedback] = useState<string | null>(null);
-  const [archivedIds, setArchivedIds] = useState(() => new Set<string>());
+  const [archivedIds, setArchivedIds] = useState(() => new Set(initialSpecialists.filter((item) => item.archived).map((item) => item.id)));
   const [showArchived, setShowArchived] = useState(false);
   const [specialistPendingDeletion, setSpecialistPendingDeletion] =
     useState<AdminSpecialist | null>(null);
@@ -91,51 +91,46 @@ export function AdminSpecialistsWorkspace() {
       : !archivedIds.has(specialist.id),
   );
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function reload() {
+    const response = await fetch("/api/admin/specialists", { cache: "no-store" });
+    if (!response.ok) throw new Error("Não foi possível carregar os especialistas.");
+    const result = await response.json();
+    setSpecialists(result.specialists);
+    setArchivedIds(new Set(result.specialists.filter((item: { archived: boolean }) => item.archived).map((item: { id: string }) => item.id)));
+  }
+  useEffect(() => {
+    function refresh() { void reload().catch(() => setFeedback("Não foi possível atualizar os especialistas.")); }
+    window.addEventListener("focus", refresh);
+    const timer = window.setInterval(refresh, 60_000);
+    return () => { window.removeEventListener("focus", refresh); window.clearInterval(timer); };
+  }, []);
+  async function persist(payload: object, creating = false) {
+    if (saving) return false;
+    setSaving(true);
+    try {
+      const response = await fetch("/api/admin/specialists", { method: creating ? "POST" : "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      if (!response.ok) throw new Error((await response.json()).message);
+      await reload();
+      setFeedback("Alterações salvas.");
+      return true;
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Não foi possível salvar.");
+      return false;
+    } finally { setSaving(false); }
+  }
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const name = String(form.get("name") ?? "").trim();
-    const email = String(form.get("email") ?? "").trim();
-    const title = String(form.get("title") ?? "").trim();
-    const location = String(form.get("location") ?? "").trim();
-
-    if (!name || !email || !title || !location) return;
-
-    const specialist: AdminSpecialist = {
-      id: `specialist_local_${Date.now()}`,
-      name,
-      email,
-      title,
-      location,
-      status: "ativo",
-      companyCount: 0,
-      activeDeliveryCount: 0,
-      createdAt: new Date().toISOString(),
-    };
-
-    setSpecialists((current) => [specialist, ...current]);
-    setFeedback(`${name} foi adicionado à equipe nesta prévia.`);
-    setOpen(false);
+    if (await persist(Object.fromEntries(["name", "email", "title", "location"].map((key) => [key, String(form.get(key) ?? "").trim()])), true)) setOpen(false);
   }
-
-  function toggleSpecialistStatus(specialist: AdminSpecialist) {
-    const nextStatus = specialist.status === "ativo" ? "inativo" : "ativo";
-
-    setSpecialists((current) =>
-      current.map((item) =>
-        item.id === specialist.id ? { ...item, status: nextStatus } : item,
-      ),
-    );
-    setFeedback(
-      nextStatus === "ativo"
-        ? `Status de ${specialist.name} alterado para ativo. Novas atribuições estão liberadas nesta prévia.`
-        : `Status de ${specialist.name} alterado para inativo. As atribuições atuais foram preservadas nesta prévia.`,
-    );
+  async function toggleSpecialistStatus(specialist: AdminSpecialist) {
+    await persist({ id: specialist.id, status: specialist.status === "ativo" ? "inativo" : "ativo" });
   }
 
   function openSpecialistProfile(specialist: AdminSpecialist) {
     setProfileSpecialist(specialist);
-    setProfilePhoto(specialistPhotos[specialist.id] ?? null);
+    setProfilePhoto(specialist.avatarUrl ?? null);
+    setProfileName(specialist.name);
     setProfilePhotoError(null);
   }
 
@@ -158,7 +153,7 @@ export function AdminSpecialistsWorkspace() {
     const reader = new FileReader();
     reader.addEventListener("load", () => {
       if (typeof reader.result !== "string") return;
-      setProfilePhoto(reader.result);
+      setCropSource(reader.result);
       setProfilePhotoError(null);
     });
     reader.addEventListener("error", () => {
@@ -167,54 +162,24 @@ export function AdminSpecialistsWorkspace() {
     reader.readAsDataURL(file);
   }
 
-  function saveSpecialistProfile() {
+  async function saveSpecialistProfile() {
     if (!profileSpecialist) return;
-
-    setSpecialistPhotos((current) => {
-      const next = { ...current };
-      if (profilePhoto) next[profileSpecialist.id] = profilePhoto;
-      else delete next[profileSpecialist.id];
-      return next;
-    });
-    setFeedback(`Foto de ${profileSpecialist.name} atualizada nesta prévia.`);
-    setProfileSpecialist(null);
+    if (await persist({ id: profileSpecialist.id, name: profileName, avatarUrl: profilePhoto })) {
+      setProfileSpecialist(null);
+    } else {
+      setProfilePhotoError("Não foi possível salvar. Revise o nome e tente novamente.");
+    }
   }
-
-  function archiveSpecialist(specialist: AdminSpecialist) {
-    setArchivedIds((current) => new Set(current).add(specialist.id));
-    setFeedback(
-      `${specialist.name} saiu da equipe ativa; o registro foi arquivado nesta prévia.`,
-    );
-  }
-
-  function restoreSpecialist(specialist: AdminSpecialist) {
-    setArchivedIds((current) => {
-      const next = new Set(current);
-      next.delete(specialist.id);
-      return next;
-    });
-    setFeedback(`${specialist.name} voltou para a equipe de análise nesta prévia.`);
-  }
-
-  function deleteSpecialist() {
+  async function archiveSpecialist(specialist: AdminSpecialist) { await persist({ id: specialist.id, archived: true }); }
+  async function restoreSpecialist(specialist: AdminSpecialist) { await persist({ id: specialist.id, archived: false }); }
+  async function deleteSpecialist() {
     if (!specialistPendingDeletion) return;
-
-    const specialistName = specialistPendingDeletion.name;
-    const specialistId = specialistPendingDeletion.id;
-    setSpecialists((current) =>
-      current.filter((specialist) => specialist.id !== specialistId),
-    );
-    setArchivedIds((current) => {
-      const next = new Set(current);
-      next.delete(specialistId);
-      return next;
-    });
-    setSpecialistPendingDeletion(null);
-    setFeedback(`${specialistName} foi excluído da equipe nesta prévia.`);
+    if (await persist({ id: specialistPendingDeletion.id, deleted: true })) setSpecialistPendingDeletion(null);
   }
 
   return (
     <div className="flex w-full flex-col gap-6">
+      {cropSource ? <AvatarCropDialog source={cropSource} onCancel={() => setCropSource(null)} onError={() => setProfilePhotoError("Não foi possível recortar a foto.")} onApply={(avatarUrl) => { setProfilePhoto(avatarUrl); setCropSource(null); }} /> : null}
       <AppTopbarActionsPortal>
         <Button type="button" onClick={() => setOpen(true)}>
           <Plus aria-hidden="true" />
@@ -285,9 +250,9 @@ export function AdminSpecialistsWorkspace() {
                   <TableCell>
                     <div className="flex min-w-0 items-center gap-3">
                       <Avatar size="sm">
-                        {specialistPhotos[specialist.id] ? (
+                        {specialist.avatarUrl ? (
                           <AvatarImage
-                            src={specialistPhotos[specialist.id]}
+                            src={specialist.avatarUrl}
                             alt={`Foto de ${specialist.name}`}
                           />
                         ) : null}
@@ -437,7 +402,7 @@ export function AdminSpecialistsWorkspace() {
                 />
               </div>
               <div className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
-                O acesso por convite e a persistência serão conectados na etapa funcional.
+                O cadastro do especialista não concede acesso administrativo.
               </div>
             </div>
 
@@ -445,7 +410,7 @@ export function AdminSpecialistsWorkspace() {
               <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
                 Cancelar
               </Button>
-              <Button type="submit">Adicionar especialista</Button>
+              <Button type="submit" disabled={saving}>Adicionar especialista</Button>
             </SheetFooter>
           </form>
         </SheetContent>
@@ -536,9 +501,7 @@ export function AdminSpecialistsWorkspace() {
                   <dl className="mt-4 grid gap-4 sm:grid-cols-2">
                     <div className="space-y-1 sm:col-span-2">
                       <dt className="text-xs text-muted-foreground">Nome</dt>
-                      <dd className="font-medium text-foreground">
-                        {profileSpecialist.name}
-                      </dd>
+                      <dd><Input aria-label="Nome do especialista" value={profileName} onChange={(event) => setProfileName(event.target.value)} /></dd>
                     </div>
                     <div className="space-y-1 sm:col-span-2">
                       <dt className="text-xs text-muted-foreground">E-mail corporativo</dt>
@@ -584,8 +547,8 @@ export function AdminSpecialistsWorkspace() {
                 >
                   Cancelar
                 </Button>
-                <Button type="button" onClick={saveSpecialistProfile}>
-                  Salvar foto
+                <Button type="button" disabled={saving} onClick={saveSpecialistProfile}>
+                  Salvar alterações
                 </Button>
               </SheetFooter>
             </div>
@@ -604,7 +567,7 @@ export function AdminSpecialistsWorkspace() {
             <DialogTitle>Excluir especialista</DialogTitle>
             <DialogDescription>
               {specialistPendingDeletion
-                ? `${specialistPendingDeletion.name} será removido da equipe. Esta ação não pode ser desfeita nesta prévia.`
+                ? `${specialistPendingDeletion.name} será removido da equipe. Confirme para remover o especialista da equipe.`
                 : "O especialista será removido da equipe."}
             </DialogDescription>
           </DialogHeader>
@@ -612,7 +575,7 @@ export function AdminSpecialistsWorkspace() {
             <DialogClose render={<Button type="button" variant="ghost" />}>
               Cancelar
             </DialogClose>
-            <Button type="button" variant="destructive" onClick={deleteSpecialist}>
+            <Button type="button" variant="destructive" disabled={saving} onClick={deleteSpecialist}>
               Excluir especialista
             </Button>
           </DialogFooter>

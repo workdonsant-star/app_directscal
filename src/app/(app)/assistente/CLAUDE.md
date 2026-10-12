@@ -13,3 +13,5 @@ Tela autenticada de conversa com o agente de consulta: o time pergunta sobre SOP
 - A tela usa altura restante do shell e mantém rolagem da conversa dentro do workspace.
 - Como raiz aberta pela sidebar, a rota não exibe breadcrumb; a conversa começa diretamente abaixo da topbar, sem cabeçalho interno.
 - O node Figma `226:7` é o contrato visual desta versão.
+
+- Nome e avatar enviados ao chat vêm do perfil compartilhado resolvido no servidor.

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getClientOnboardingForUser } from "@/lib/data/client-onboarding-data-source";
 
 import { getCurrentAuthSession } from "@/lib/auth/session";
 import { getPublicAppUrl, getRequiredServerEnv } from "@/lib/env";
@@ -10,8 +11,10 @@ import { verifySlackInstallState } from "@/lib/integrations/slack-format";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const settingsUrl = `${getPublicAppUrl()}/configuracoes`;
   const session = await getCurrentAuthSession();
+  const onboarding = session?.user.role === "cliente"
+    ? await getClientOnboardingForUser(session.user.id) : null;
+  const settingsUrl = `${getPublicAppUrl()}${onboarding && !onboarding.completed ? "/onboarding" : "/configuracoes"}`;
   const state = verifySlackInstallState(
     getRequiredServerEnv("AUTH_SECRET"),
     url.searchParams.get("state"),

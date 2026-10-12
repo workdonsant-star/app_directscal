@@ -11,7 +11,65 @@ export const SLACK_BOT_SCOPES = [
   "channels:history",
   "groups:history",
   "reactions:write",
+  // Escolha de responsáveis dos action points e conversa privada com eles.
+  "users:read",
+  "im:write",
 ];
+export const SLACK_ACTION_POINT_SCOPES = ["users:read", "im:write"];
+
+export type SlackWorkspaceUser = {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+};
+
+// Instalações anteriores às novas permissões precisam ser reautorizadas.
+export function hasSlackScopes(granted: string | null, required: string[]) {
+  const scopes = new Set((granted ?? "").split(",").map((scope) => scope.trim()));
+
+  return required.every((scope) => scopes.has(scope));
+}
+
+type SlackMember = {
+  id?: string;
+  name?: string;
+  real_name?: string;
+  deleted?: boolean;
+  is_bot?: boolean;
+  is_restricted?: boolean;
+  is_ultra_restricted?: boolean;
+  profile?: { display_name?: string; real_name?: string; image_72?: string };
+};
+
+// Só pessoas ativas do quadro: sem bots, desativados nem convidados.
+export function mapSlackMember(member: SlackMember): SlackWorkspaceUser | null {
+  if (
+    !member.id ||
+    member.id === "USLACKBOT" ||
+    member.deleted ||
+    member.is_bot ||
+    member.is_restricted ||
+    member.is_ultra_restricted
+  ) {
+    return null;
+  }
+
+  const name =
+    member.profile?.display_name?.trim() ||
+    member.real_name?.trim() ||
+    member.profile?.real_name?.trim() ||
+    member.name?.trim();
+
+  if (!name) return null;
+
+  const avatarUrl = member.profile?.image_72;
+
+  return {
+    userId: member.id,
+    name,
+    avatarUrl: avatarUrl?.startsWith("https://") ? avatarUrl : null,
+  };
+}
 export const SLACK_FEEDBACK_ACTIONS = {
   util: "asset_feedback_util",
   nao_util: "asset_feedback_nao_util",

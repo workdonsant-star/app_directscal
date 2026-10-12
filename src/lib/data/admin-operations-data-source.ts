@@ -23,6 +23,7 @@ export const adminSpecialists: AdminSpecialist[] = [
   {
     id: "specialist_don",
     name: "Don Santos",
+    avatarUrl: "/relatorios/omdx-modelo/assets/figma/don-santos.jpg",
     email: "don.santos@directscal.com",
     title: "Especialista em estruturação",
     location: "São Paulo, SP",

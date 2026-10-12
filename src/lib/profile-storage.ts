@@ -52,7 +52,8 @@ export function getProfileOverridesSnapshot(userId: string) {
   if (!isBrowser()) return null;
 
   const storageKey = getProfileOverridesStorageKey(userId);
-  const raw = window.localStorage.getItem(storageKey);
+  let raw: string | null;
+  try { raw = window.localStorage.getItem(storageKey); } catch { return null; }
 
   if (storageKey === cachedStorageKey && raw === cachedRaw) {
     return cachedOverrides;
@@ -122,8 +123,10 @@ export function clearProfileOverrides(userId: string) {
 
   const storageKey = getProfileOverridesStorageKey(userId);
 
-  window.localStorage.removeItem(storageKey);
-  window.localStorage.removeItem(profileOverridesStorageKey);
+  try {
+    window.localStorage.removeItem(storageKey);
+    window.localStorage.removeItem(profileOverridesStorageKey);
+  } catch { /* A gravação no banco já foi confirmada. */ }
   cachedStorageKey = storageKey;
   cachedRaw = null;
   cachedOverrides = null;

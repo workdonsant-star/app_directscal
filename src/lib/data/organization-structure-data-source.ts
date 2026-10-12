@@ -1,3 +1,4 @@
+import { getAccountProfile } from "@/lib/data/person-profiles-data-source";
 import "server-only";
 
 import { createHash, randomBytes } from "node:crypto";
@@ -141,7 +142,10 @@ export async function getOrganizationStructure(
   assertNoSupabaseError(invitationsResult.error);
 
   const peopleById = new Map(
-    (peopleResult.data as PersonRow[]).map((person) => [person.id, person]),
+    await Promise.all((peopleResult.data as PersonRow[]).map(async (person) => {
+      const profile = person.auth_user_id ? await getAccountProfile(person.auth_user_id) : null;
+      return [person.id, profile ? { ...person, name: profile.name, avatar_url: profile.avatarUrl } : person] as const;
+    })),
   );
   const leadershipBySectorId = new Map(
     (membershipsResult.data as MembershipRow[]).map((membership) => [

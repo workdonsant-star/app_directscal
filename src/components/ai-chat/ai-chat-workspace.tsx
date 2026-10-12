@@ -6,7 +6,7 @@ import {
   useEffect,
   useRef,
   useState,
-  useSyncExternalStore,
+
 } from "react";
 import { FileText, SendHorizontal, ThumbsDown, ThumbsUp } from "lucide-react";
 import Link from "next/link";
@@ -14,11 +14,7 @@ import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import type { AssetQuestionAnswer, AssetQuestionCitation } from "@/lib/contracts";
-import {
-  getProfileOverridesServerSnapshot,
-  getProfileOverridesSnapshot,
-  subscribeProfileOverrides,
-} from "@/lib/profile-storage";
+
 import { cn } from "@/lib/utils";
 
 type Feedback = "util" | "nao_util";
@@ -193,13 +189,8 @@ export function AiChatWorkspace({
   const [asking, setAsking] = useState(false);
   const conversationRef = useRef<HTMLDivElement>(null);
   const previousMessageCountRef = useRef(messages.length);
-  const storedOverrides = useSyncExternalStore(
-    (callback) => subscribeProfileOverrides(user.id, callback),
-    () => getProfileOverridesSnapshot(user.id),
-    getProfileOverridesServerSnapshot,
-  );
-  const displayName = storedOverrides?.name ?? user.name;
-  const displayAvatar = storedOverrides?.avatarUrl ?? user.avatar;
+  const displayName = user.name;
+  const displayAvatar = user.avatar;
   const displayInitials = getInitials(displayName) || "DS";
 
   useEffect(() => {

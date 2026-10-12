@@ -30,7 +30,7 @@ export default async function ProfilePage() {
 
       <AppPage className="min-w-0 overflow-x-clip">
         <div className="flex min-w-0 w-full flex-col gap-6">
-          <ProfileSettings profile={profile} />
+          <ProfileSettings key={profile.id} profile={profile} />
         </div>
       </AppPage>
     </>

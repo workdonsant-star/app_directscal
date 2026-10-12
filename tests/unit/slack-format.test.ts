@@ -6,7 +6,9 @@ import {
   cleanSlackMentionText,
   computeSlackSignature,
   getSlackRepeatReaction,
+  hasSlackScopes,
   isValidSlackSignature,
+  mapSlackMember,
   replaceSlackFeedbackBlock,
   signSlackInstallState,
   verifySlackInstallState,
@@ -123,5 +125,42 @@ describe("slack repeat reaction", () => {
     expect(getSlackRepeatReaction(1)).toBe("eyes");
     expect(getSlackRepeatReaction(2)).toBe("face_with_monocle");
     expect(getSlackRepeatReaction(7)).toBe("face_with_monocle");
+  });
+});
+
+describe("slack workspace members", () => {
+  it("mantém só pessoas ativas e prefere o nome de exibição", () => {
+    expect(
+      mapSlackMember({
+        id: "U1",
+        name: "ana.souza",
+        real_name: "Ana Souza",
+        profile: { display_name: "Ana", image_72: "https://avatars.slack-edge.com/a.png" },
+      }),
+    ).toEqual({ userId: "U1", name: "Ana", avatarUrl: "https://avatars.slack-edge.com/a.png" });
+    expect(mapSlackMember({ id: "U2", real_name: "Bruno Lima", profile: { display_name: " " } })).toMatchObject({
+      name: "Bruno Lima",
+      avatarUrl: null,
+    });
+  });
+
+  it("descarta bots, desativados, convidados, o Slackbot e fotos fora de HTTPS", () => {
+    expect(mapSlackMember({ id: "U3", real_name: "Bot", is_bot: true })).toBeNull();
+    expect(mapSlackMember({ id: "U4", real_name: "Saiu", deleted: true })).toBeNull();
+    expect(mapSlackMember({ id: "U5", real_name: "Convidado", is_restricted: true })).toBeNull();
+    expect(mapSlackMember({ id: "U6", real_name: "Convidado", is_ultra_restricted: true })).toBeNull();
+    expect(mapSlackMember({ id: "USLACKBOT", real_name: "Slackbot" })).toBeNull();
+    expect(mapSlackMember({ id: "U7" })).toBeNull();
+    expect(
+      mapSlackMember({ id: "U8", real_name: "Carla", profile: { image_72: "http://x/y.png" } })?.avatarUrl,
+    ).toBeNull();
+  });
+});
+
+describe("slack scopes", () => {
+  it("identifica instalações sem as permissões novas", () => {
+    expect(hasSlackScopes("chat:write,users:read,im:write", ["users:read", "im:write"])).toBe(true);
+    expect(hasSlackScopes("chat:write,users:read", ["users:read", "im:write"])).toBe(false);
+    expect(hasSlackScopes(null, ["users:read"])).toBe(false);
   });
 });

@@ -3,7 +3,7 @@ import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
 import { ManagementAssetsWorkspace } from "@/components/admin/management-assets-workspace";
-import { adminSpecialists } from "@/lib/data/admin-operations-data-source";
+import { getSpecialists } from "@/lib/data/person-profiles-data-source";
 import {
   listAdminManagementAssets,
   getAdminManagementAssetCompany,
@@ -27,7 +27,7 @@ export default async function AdminManagementAssetsPage({ params }: { params: Pr
     <ManagementAssetsWorkspace
       assets={assets}
       company={company}
-      specialists={adminSpecialists
+      specialists={(await getSpecialists())
         .filter((specialist) => specialist.status === "ativo")
         .map((specialist) => ({ id: specialist.id, name: specialist.name }))}
       templates={managementAssetTemplates.map((template) => ({

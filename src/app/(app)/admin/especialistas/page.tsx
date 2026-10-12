@@ -1,3 +1,4 @@
+import { getSpecialists } from "@/lib/data/person-profiles-data-source";
 import type { Metadata } from "next";
 
 import { AdminSpecialistsWorkspace } from "@/components/admin/admin-specialists-workspace";
@@ -8,12 +9,13 @@ export const metadata: Metadata = {
   title: "Especialistas — Admin Directscal",
 };
 
-export default function AdminSpecialistsPage() {
+export default async function AdminSpecialistsPage() {
+  const specialists = (await getSpecialists()).filter((item) => !item.deleted);
   return (
     <>
       <AppTopbar />
       <AppPage>
-        <AdminSpecialistsWorkspace />
+        <AdminSpecialistsWorkspace initialSpecialists={specialists} />
       </AppPage>
     </>
   );

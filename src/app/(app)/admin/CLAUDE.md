@@ -17,7 +17,7 @@ Rotas autenticadas da visão de superadministrador. Usam a mesma shell do app (`
 - `/admin/leads/[id]` mostra o detalhe completo de um lead capturado.
 - `/admin/empresas` lista empresas agrupadas a partir dos leads.
 - `/admin/empresas/[id]` mostra especialista, entregas e acessos da empresa.
-- `/admin/entregas/[id]` reúne dados, relatório, action points e publicação.
+- `/admin/entregas/[id]` redireciona para `/dados` e reúne, em rotas aninhadas, dados, relatório, action points, ativos e publicação.
 - `/admin/modulos` permanece como rota legada para o catálogo, fora da navegação principal.
 
 ## Convenções

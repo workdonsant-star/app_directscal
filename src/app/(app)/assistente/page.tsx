@@ -27,7 +27,7 @@ export default async function AssistantPage() {
 
       <main className="flex h-[calc(100svh-3.5rem)] min-h-0 flex-col">
         <AiChatWorkspace
-          user={{ id: session.user.id, name: session.user.name }}
+          user={{ id: session.user.id, name: session.user.name, avatar: session.user.avatarUrl ?? undefined }}
         />
       </main>
     </>

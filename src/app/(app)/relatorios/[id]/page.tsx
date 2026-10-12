@@ -79,7 +79,7 @@ export default async function ReportPage({
               <div className="mt-5 flex flex-col items-start gap-2 border-t pt-5">
                 <Button
                   nativeButton={false}
-                  render={<Link href="/gantt" />}
+                  render={<Link href="/action-points" />}
                 >
                   <CalendarDays aria-hidden="true" />
                   Action Points

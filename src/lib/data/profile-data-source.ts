@@ -267,6 +267,8 @@ export function buildProfileSettingsData({
       organization?.employee_count ?? mockUserProfile.employeeCount,
     id: user.id,
     name: user.name,
+    avatarUrl: user.avatarUrl ?? null,
+    profilePersisted: user.profilePersisted,
     organizationId: organization?.id ?? mockUserProfile.organizationId,
     updatedAt:
       lead?.updated_at ??

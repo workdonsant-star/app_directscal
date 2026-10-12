@@ -20,10 +20,12 @@ const resultMessages: Record<string, string> = {
 export function SlackIntegrationSettings({
   available,
   connection,
+  needsReconnect,
   result,
 }: {
   available: boolean;
   connection: SlackConnection;
+  needsReconnect: boolean;
   result: string | null;
 }) {
   const router = useRouter();
@@ -95,6 +97,23 @@ export function SlackIntegrationSettings({
             </span>
           )}
         </p>
+
+        {connection && needsReconnect ? (
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="max-w-[70ch] text-sm text-muted-foreground">
+              O app precisa de novas permissões para listar as pessoas do workspace e
+              conversar com elas. Reconecte para escolher responsáveis nos action points.
+            </p>
+            <Button
+              variant="outline"
+              disabled={!available}
+              nativeButton={false}
+              render={<a href="/api/integrations/slack/install" />}
+            >
+              Reconectar Slack
+            </Button>
+          </div>
+        ) : null}
 
         {resultMessage || error ? (
           <p role="status" className="text-sm text-muted-foreground">

@@ -7,6 +7,8 @@ export const authRoleSchema = z.enum(["superadmin", "admin", "cliente"]);
 export const authUserSchema = z.object({
   id: idSchema,
   name: z.string().min(1),
+  profilePersisted: z.boolean().optional(),
+  avatarUrl: z.string().nullable().optional(),
   email: z.string().email(),
   company: z.string().min(1),
   role: authRoleSchema,
