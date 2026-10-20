@@ -70,7 +70,7 @@ function DetailSection({
 }) {
   return (
     <section className="space-y-2 border-t pt-5 first:border-t-0 first:pt-0">
-      <h2 className="text-sm font-semibold">{title}</h2>
+      <h2 className="text-sm font-medium">{title}</h2>
       <div className="text-sm leading-relaxed text-muted-foreground">
         {children}
       </div>
@@ -185,10 +185,10 @@ function ExecutionForm({
   return (
     <form
       onSubmit={save}
-      className="space-y-4 rounded-lg border p-4"
+      className="space-y-4 rounded-lg bg-card p-4"
       aria-label="Execução do action point"
     >
-      <h2 className="text-sm font-semibold">Execução</h2>
+      <h2 className="text-sm font-medium">Execução</h2>
 
       <div className="space-y-2">
         <p className="text-xs text-muted-foreground">Responsável</p>
@@ -365,7 +365,7 @@ function ExecutionForm({
           value={note}
           disabled={!shownAssignee}
           onChange={(event) => setNote(event.target.value)}
-          className="w-full rounded-md border bg-background p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+          className="w-full rounded-md border border-transparent bg-input p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
           placeholder="Registre uma decisão ou combinado"
         />
       </div>
@@ -497,7 +497,7 @@ export function ActionPointSheet({
             aria-labelledby="ap-history-title"
             className="space-y-3"
           >
-            <h2 id="ap-history-title" className="text-sm font-semibold">
+            <h2 id="ap-history-title" className="text-sm font-medium">
               Atividade
             </h2>
             <ActionPointTimeline events={history} />

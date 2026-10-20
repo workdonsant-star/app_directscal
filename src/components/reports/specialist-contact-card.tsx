@@ -1,73 +1,35 @@
-import { BadgeCheck, Clock3, MapPin, MessageCircleMore } from "lucide-react";
+import { MapPin, Mail, UserRound } from "lucide-react";
 import Image from "next/image";
 
 import { buttonVariants } from "@/components/ui/button";
+import type { PublishedSpecialistContact } from "@/lib/data/person-profiles-data-source";
 
-const specialistWhatsapp = "5511947641451";
-
-export function SpecialistContactCard() {
+export function SpecialistContactCard({ specialist }: { specialist: PublishedSpecialistContact | null }) {
+  if (!specialist) {
+    return <p className="text-xs text-muted-foreground">O contato do especialista desta entrega ainda não está disponível.</p>;
+  }
   return (
-    <section
-      aria-labelledby="specialist-contact-title"
-      className="rounded-[5px] border bg-card"
-    >
+    <section aria-labelledby="specialist-contact-title" className="rounded-[5px] bg-card">
       <div className="p-4">
-        <Image
-          src="/relatorios/omdx-modelo/assets/figma/don-santos.jpg"
-          alt="Don Santos"
-          width={64}
-          height={64}
-          loading="eager"
-          className="size-16 rounded-full border object-cover"
-        />
-
+        {specialist.avatarUrl ? (
+          <Image src={specialist.avatarUrl} alt={specialist.name} width={64} height={64} className="size-16 rounded-full border object-cover" />
+        ) : (
+          <span aria-hidden="true" className="flex size-16 items-center justify-center rounded-full bg-muted text-muted-foreground"><UserRound className="size-6" /></span>
+        )}
         <div className="mt-3 min-w-0">
-          <h2
-            id="specialist-contact-title"
-            className="flex items-center gap-1.5 font-heading text-base font-semibold leading-tight tracking-[-0.02em]"
-          >
-            <BadgeCheck
-              aria-label="Especialista Directscal verificado"
-              className="size-4 shrink-0 text-primary"
-            />
-            Don Santos
-          </h2>
+          <h2 id="specialist-contact-title" className="text-ui-title">{specialist.name}</h2>
+          <p className="mt-1 text-xs text-muted-foreground">{specialist.title}</p>
         </div>
-
         <dl className="mt-4 space-y-2.5 border-t pt-3 text-xs">
           <div className="flex gap-2.5">
-            <Clock3 aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />
-            <div>
-              <dt className="sr-only">Tempo como especialista</dt>
-              <dd>Especialista há 2 anos</dd>
-            </div>
-          </div>
-
-          <div className="flex gap-2.5">
             <MapPin aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />
-            <div>
-              <dt className="sr-only">Localização</dt>
-              <dd>São Paulo, SP</dd>
-            </div>
+            <div><dt className="sr-only">Localização</dt><dd>{specialist.location}</dd></div>
           </div>
-
-          <div>
-            <dt className="sr-only">WhatsApp</dt>
-            <dd>
-              <a
-                href={`https://wa.me/${specialistWhatsapp}`}
-                target="_blank"
-                rel="noreferrer"
-                className={buttonVariants({
-                  size: "sm",
-                  className: "w-auto",
-                })}
-              >
-                <MessageCircleMore aria-hidden="true" />
-                Contato
-              </a>
-            </dd>
-          </div>
+          <div><dt className="sr-only">E-mail</dt><dd>
+            <a href={`mailto:${specialist.email}`} className={buttonVariants({ size: "sm", className: "w-auto" })}>
+              <Mail aria-hidden="true" /> Contato
+            </a>
+          </dd></div>
         </dl>
       </div>
     </section>

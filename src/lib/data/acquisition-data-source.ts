@@ -55,7 +55,7 @@ export const acquisitionOauthIntentCookieName =
 export const acquisitionOauthIntentMaxAge = 60 * 15;
 
 const accountConflictMessage =
-  "Este e-mail já tem acesso ativo. Entre pela tela de login.";
+  "Este e-mail já possui cadastro. Entre pela tela de login ou recupere seu acesso.";
 const sessionMismatchMessage =
   "Entre novamente com Google para continuar.";
 
@@ -135,17 +135,6 @@ function isMissingModuleAccessTableError(error: { message: string } | null) {
   return (
     Boolean(error) &&
     /organization_module_access|schema cache|could not find the table/i.test(
-      error?.message ?? "",
-    )
-  );
-}
-
-function isMissingOperationalOnboardingSchemaError(
-  error: { message: string } | null,
-) {
-  return (
-    Boolean(error) &&
-    /operational_onboarding|schema cache|could not find|column .*operational_/i.test(
       error?.message ?? "",
     )
   );
@@ -518,130 +507,6 @@ function employeeCountFromCompanySize(companySize: string | null) {
   return Math.max(...numbers, 1);
 }
 
-async function findOrCreateOrganization({
-  adminEmail,
-  companyName,
-  companySize,
-  supabase,
-}: {
-  adminEmail: string;
-  companyName: string;
-  companySize: string | null;
-  supabase: Supabase;
-}) {
-  const authorizedDomain = getAcquisitionOrganizationDomain(adminEmail);
-  const employeeCount = employeeCountFromCompanySize(companySize);
-
-  if (authorizedDomain) {
-    const { data: existingByDomain, error: domainSelectError } = await supabase
-      .from("organizations")
-      .select("id,name")
-      .eq("domain", authorizedDomain)
-      .limit(1);
-
-    assertNoSupabaseError(domainSelectError);
-
-    const existingOrganization = existingByDomain?.[0] as
-      | OrganizationRow
-      | undefined;
-
-    if (existingOrganization) {
-      const { error: updateError } = await supabase
-        .from("organizations")
-        .update({ employee_count: employeeCount, name: companyName })
-        .eq("id", existingOrganization.id);
-
-      assertNoSupabaseError(updateError);
-      return existingOrganization.id;
-    }
-  }
-
-  const { data: existingOrganizations, error: organizationSelectError } =
-    await supabase
-      .from("organizations")
-      .select("id,name")
-      .eq("name", companyName)
-      .limit(1);
-
-  assertNoSupabaseError(organizationSelectError);
-
-  const existingOrganization = existingOrganizations?.[0] as
-    | OrganizationRow
-    | undefined;
-
-  if (existingOrganization) {
-    const { error: updateError } = await supabase
-      .from("organizations")
-      .update({ employee_count: employeeCount })
-      .eq("id", existingOrganization.id);
-
-    assertNoSupabaseError(updateError);
-    return existingOrganization.id;
-  }
-
-  const { data: organization, error: organizationError } = await supabase
-    .from("organizations")
-    .insert({
-      domain: authorizedDomain,
-      employee_count: employeeCount,
-      name: companyName,
-      operational_onboarding_required: true,
-    })
-    .select("id")
-    .single();
-
-  if (isMissingOperationalOnboardingSchemaError(organizationError)) {
-    const { data: fallbackOrganization, error: fallbackError } = await supabase
-      .from("organizations")
-      .insert({
-        domain: authorizedDomain,
-        employee_count: employeeCount,
-        name: companyName,
-      })
-      .select("id")
-      .single();
-
-    assertNoSupabaseError(fallbackError);
-
-    if (!fallbackOrganization) {
-      throw new Error("Não foi possível criar a empresa.");
-    }
-
-    return fallbackOrganization.id;
-  }
-
-  assertNoSupabaseError(organizationError);
-
-  if (!organization) {
-    throw new Error("Não foi possível criar a empresa.");
-  }
-
-  return organization.id;
-}
-
-async function ensureClientMembership({
-  organizationId,
-  supabase,
-  userId,
-}: {
-  organizationId: string;
-  supabase: Supabase;
-  userId: string;
-}) {
-  const { error } = await supabase.from("organization_members").upsert(
-    {
-      organization_id: organizationId,
-      role: "cliente",
-      user_id: userId,
-    },
-    {
-      onConflict: "organization_id,user_id",
-    },
-  );
-
-  assertNoSupabaseError(error);
-}
-
 async function findNextAuthUserByEmail({
   email,
   supabase,
@@ -706,77 +571,6 @@ async function updateNextAuthUserProfile({
   return updatedUser ?? { ...user, ...updates };
 }
 
-async function findOrCreateNextAuthUser({
-  email,
-  existingUser,
-  name,
-  supabase,
-}: {
-  email: string;
-  existingUser?: NextAuthUserRow | null;
-  name: string;
-  supabase: Supabase;
-}) {
-  const normalizedEmail = normalizeEmail(email);
-
-  if (existingUser) {
-    return updateNextAuthUserProfile({
-      email: normalizedEmail,
-      name,
-      supabase,
-      user: existingUser,
-    });
-  }
-
-  const { data: createdUser, error: createdUserError } = await supabase
-    .schema("next_auth")
-    .from("users")
-    .insert({
-      email: normalizedEmail,
-      name,
-    })
-    .select("id,name,email,image")
-    .single<NextAuthUserRow>();
-
-  assertNoSupabaseError(createdUserError);
-
-  if (!createdUser) {
-    throw new Error("Não foi possível criar o usuário.");
-  }
-
-  return createdUser;
-}
-
-async function userHasActiveAccess({
-  supabase,
-  userId,
-}: {
-  supabase: Supabase;
-  userId: string;
-}) {
-  const { data: member, error: memberError } = await supabase
-    .from("organization_members")
-    .select("id")
-    .eq("user_id", userId)
-    .limit(1)
-    .maybeSingle();
-
-  assertNoSupabaseError(memberError);
-  if (member?.id) return true;
-
-  const { data: lead, error: leadError } = await supabase
-    .from("acquisition_leads")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("status", "account_created")
-    .limit(1)
-    .maybeSingle();
-
-  assertNoSupabaseError(leadError);
-
-  return Boolean(lead?.id);
-}
-
 async function assertNextAuthUserMatchesEmail({
   email,
   name,
@@ -810,77 +604,21 @@ async function assertNextAuthUserMatchesEmail({
   });
 }
 
-async function setPasswordCredential({
-  password,
-  supabase,
-  userId,
-}: {
-  password: string;
-  supabase: Supabase;
-  userId: string;
-}) {
-  const { error } = await supabase
-    .schema("app_private")
-    .from("user_password_credentials")
-    .upsert(
-      {
-        password_hash: hashPasswordCredential(password),
-        user_id: userId,
-      },
-      { onConflict: "user_id" },
-    );
-
-  assertNoSupabaseError(error);
-}
-
-async function upsertLead({
-  accountProvider,
-  campaign,
-  leadData,
-  organizationId,
-  status,
-  supabase,
-  userId,
-}: {
-  accountProvider: AcquisitionAccountProvider;
-  campaign: AcquisitionCampaign;
-  leadData: ReturnType<typeof validateCampaignValues>;
-  organizationId: string;
-  status: "account_created" | "pending_company";
-  supabase: Supabase;
-  userId: string;
-}) {
-  const { data: leadRow, error: leadError } = await supabase
-    .from("acquisition_leads")
-    .upsert(
-      {
-        account_provider: accountProvider,
-        campaign_id: campaign.id,
-        company_name: leadData.companyName,
-        company_size: leadData.companySize,
-        email: leadData.email,
-        field_values: leadData.values,
-        module_id: campaign.moduleId,
-        name: leadData.name,
-        objective: leadData.objective,
-        organization_id: organizationId,
-        phone: leadData.phone,
-        role: leadData.role,
-        status,
-        user_id: userId,
-      },
-      { onConflict: "campaign_id,normalized_email" },
-    )
-    .select("*")
-    .single();
-
-  assertNoSupabaseError(leadError);
-
-  if (!leadRow) {
-    throw new Error("Não foi possível registrar o lead.");
+async function completeAcquisitionAccount(campaign: AcquisitionCampaign, leadData: ReturnType<typeof validateCampaignValues>, provider: AcquisitionAccountProvider, userId: string | null, password?: string) {
+  const result = await createSupabaseAdminClient().schema("app_private").rpc("complete_acquisition_account", {
+    p_user_id: userId, p_input: { provider, campaignId: campaign.id, email: leadData.email, name: leadData.name, companyName: leadData.companyName,
+      companySize: leadData.companySize, employeeCount: employeeCountFromCompanySize(leadData.companySize), domain: getAcquisitionOrganizationDomain(leadData.email),
+      values: leadData.values, phone: leadData.phone, role: leadData.role, objective: leadData.objective,
+      ...(password ? { passwordHash: hashPasswordCredential(password) } : {}),
+    } as Json,
+  });
+  if (result.error) {
+    if (["PT409", "23505"].includes(result.error.code)) throw new AcquisitionAccountConflictError();
+    if (result.error.code === "42501") throw new AcquisitionSessionMismatchError();
+    throw new Error("Não foi possível concluir o cadastro. Tente novamente.");
   }
-
-  return toLead(leadRow, campaign);
+  const data = z.object({ user: z.object({ id: z.uuid(), email: z.email(), name: z.string().nullable(), image: z.string().nullable() }), lead: z.custom<LeadRow>(value => Boolean(value && typeof value === "object")) }).parse(result.data);
+  return { user: data.user, lead: toLead(data.lead, campaign) };
 }
 
 export async function registerAcquisitionPasswordUser(
@@ -908,47 +646,11 @@ export async function registerAcquisitionPasswordUser(
     supabase,
   });
 
-  if (
-    existingUser &&
-    (await userHasActiveAccess({ supabase, userId: existingUser.id }))
-  ) {
+  if (existingUser) {
     throw new AcquisitionAccountConflictError();
   }
 
-  const user = await findOrCreateNextAuthUser({
-    email: leadData.email,
-    existingUser,
-    name: leadData.name,
-    supabase,
-  });
-  const organizationId = await findOrCreateOrganization({
-    adminEmail: leadData.email,
-    companyName: leadData.companyName,
-    companySize: leadData.companySize,
-    supabase,
-  });
-
-  await ensureClientMembership({
-    organizationId,
-    supabase,
-    userId: user.id,
-  });
-  await setPasswordCredential({
-    password: parsedInput.password,
-    supabase,
-    userId: user.id,
-  });
-
-  const lead = await upsertLead({
-    accountProvider: "password",
-    campaign,
-    leadData,
-    organizationId,
-    status: "account_created",
-    supabase,
-    userId: user.id,
-  });
-
+  const { user, lead } = await completeAcquisitionAccount(campaign, leadData, "password", null, parsedInput.password);
   return { campaign, lead, user };
 }
 
@@ -1038,7 +740,12 @@ export async function resolveAcquisitionAuthUser(
   assertNoSupabaseError(leadError);
 
   const lead = leadRows?.[0];
-  if (!lead) return null;
+  if (!lead?.organization_id) return null;
+  const access = await supabase.from("organization_members").select("organization_id,role").eq("user_id", resolvedUserId);
+  assertNoSupabaseError(access.error);
+  if (access.data?.some(member => member.role === "superadmin")) return null;
+  const membership = access.data?.find(member => member.organization_id === lead.organization_id && (member.role === "cliente" || member.role === "admin"));
+  if (!membership) return null;
 
   let company = lead.company_name;
 
@@ -1060,7 +767,7 @@ export async function resolveAcquisitionAuthUser(
     id: resolvedUserId,
     image: resolvedImage,
     name: resolvedName?.trim() || lead.name || getFallbackName(resolvedEmail),
-    role: "cliente",
+    role: membership.role,
   });
 
   return parsedUser.success ? parsedUser.data : null;
@@ -1175,26 +882,6 @@ export async function completeAcquisitionGoogleLead({
     nome: normalizedName,
   };
   const leadData = validateCampaignValues(campaign, completeValues);
-  const organizationId = await findOrCreateOrganization({
-    adminEmail: normalizedEmail,
-    companyName: leadData.companyName,
-    companySize: leadData.companySize,
-    supabase,
-  });
-
-  await ensureClientMembership({
-    organizationId,
-    supabase,
-    userId,
-  });
-
-  return upsertLead({
-    accountProvider: "google",
-    campaign,
-    leadData,
-    organizationId,
-    status: "account_created",
-    supabase,
-    userId,
-  });
+  const { lead } = await completeAcquisitionAccount(campaign, leadData, "google", userId);
+  return lead;
 }

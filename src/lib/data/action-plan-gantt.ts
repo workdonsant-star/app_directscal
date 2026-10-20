@@ -117,17 +117,17 @@ export function buildGanttWorkspaceDataFromDelivery({
 }): GanttWorkspaceData {
   const publishedAt = publication.publishedAt;
 
-  if (!publishedAt) {
+  if (publication.status !== "publicada" || !publishedAt || publication.diagnosticId !== plan.diagnostic.id || publication.organizationId !== plan.diagnostic.organizationId) {
     return { source: null, tasks: [] };
   }
 
   const anchorDate = publishedAt.slice(0, 10);
   const subitems: GanttTask[] = [];
 
-  for (const id of publication.selectedActionPointIds) {
+  for (const id of new Set(publication.selectedActionPointIds)) {
     const template = templates.find((item) => item.id === id);
     const dimension = template
-      ? plan.dimensions.find((item) => item.name === template.dimension)
+      ? plan.dimensions.find((item) => item.id === template.dimensionId)
       : undefined;
 
     if (!template || !dimension) continue;
@@ -170,4 +170,20 @@ export function buildGanttWorkspaceDataFromDelivery({
         ]
       : [],
   });
+}
+
+/** Mesmo recorte publicado para o PDF, sem voltar às recomendações automáticas. */
+export function buildPublishedActionPlan(
+  plan: DiagnosticActionPlan,
+  publication: AdminDeliveryPublication,
+  templates: AdminActionPointTemplate[],
+): DiagnosticActionPlan {
+  const workspace = buildGanttWorkspaceDataFromDelivery({ plan, publication, templates });
+  return {
+    ...plan,
+    generatedAt: publication.publishedAt ?? plan.generatedAt,
+    actionPoints: workspace.tasks.flatMap((group) => group.subitems ?? []).flatMap((task) =>
+      task.actionPoint ? [{ id: task.id, title: task.title, ...task.actionPoint }] : []
+    ),
+  };
 }

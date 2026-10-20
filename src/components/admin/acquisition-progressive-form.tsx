@@ -53,7 +53,7 @@ type ProgressiveSection = ProgressiveStep[];
 
 function textareaClasses(className?: string) {
   return cn(
-    "border-input bg-transparent text-foreground min-h-20 w-full resize-none rounded-lg border px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30",
+    "border-transparent bg-input text-foreground min-h-20 w-full resize-none rounded-lg border px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30",
     className,
   );
 }

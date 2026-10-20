@@ -15,3 +15,6 @@
 - Operação possui apenas a seleção de empresa; nenhuma produção acontece na listagem global.
 
 - Opções de autores vêm de specialists no Supabase; somente especialistas ativos, não arquivados e não excluídos podem receber novas atribuições.
+
+
+A17: perguntas carrega histórico completo e operações autorizadas por empresa; inclui responsável, encerramento/evidência e saúde real da fila. Sem teto silencioso de 200 perguntas.

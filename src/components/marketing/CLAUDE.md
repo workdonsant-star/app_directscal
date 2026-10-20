@@ -17,3 +17,5 @@ Componentes de landing pages e campanhas públicas da Directscal. Essas superfí
 
 - `ExecutiveClassLanding`: landing da aula executiva sobre dependência do fundador e estrutura de gestão.
 
+
+- Hovers usam cores neutras, nunca azul: texto `foreground` e superfícies `action-neutral-hover` com texto `action-neutral-foreground`. O sumário documental também mantém o item ativo em `foreground`, branco no escuro e escuro no claro.

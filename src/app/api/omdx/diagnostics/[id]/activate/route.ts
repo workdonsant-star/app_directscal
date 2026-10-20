@@ -46,6 +46,22 @@ export async function POST(_request: Request, { params }: RouteContext) {
   }
 
   const supabase = createSupabaseAdminClient();
+  const { data: diagnostic, error: diagnosticError } = await supabase
+    .from("diagnostics")
+    .select("deadline")
+    .eq("id", id)
+    .maybeSingle<{ deadline: string | null }>();
+
+  if (diagnosticError) {
+    return NextResponse.json({ message: "Não foi possível validar o prazo da pesquisa." }, { status: 500 });
+  }
+  if (!diagnostic) {
+    return NextResponse.json({ message: "Diagnóstico não encontrado." }, { status: 404 });
+  }
+  if (!diagnostic.deadline) {
+    return NextResponse.json({ message: "Informe o prazo de resposta antes de ativar a pesquisa." }, { status: 400 });
+  }
+
   const { error } = await supabase
     .schema("app_private")
     .rpc("activate_diagnostic_with_links", {

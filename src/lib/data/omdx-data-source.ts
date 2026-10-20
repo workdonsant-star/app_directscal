@@ -428,6 +428,13 @@ async function loadDiagnosticAccessMetadata(
 
   if (assignmentsResult.error) throw assignmentsResult.error;
 
+  const slackAssignmentsResult = scopeIds.length
+    ? await supabase.schema("app_private").from("diagnostic_slack_leader_assignments")
+      .select("diagnostic_sector_scope_id,slack_leader_id").in("diagnostic_sector_scope_id", scopeIds)
+      .in("organization_id", organizationIds)
+    : { data: [], error: null };
+  if (slackAssignmentsResult.error) throw slackAssignmentsResult.error;
+
   const [creatorUsersResult, creatorMembershipsResult] = await Promise.all([
     creatorIds.length > 0
       ? supabase
@@ -548,9 +555,11 @@ async function loadDiagnosticAccessMetadata(
           {
             id: sector.id,
             name: sector.name,
-            leaderIds: (assignmentsByScopeId.get(scope.id) ?? []).map(
+            leaderIds: [...(assignmentsByScopeId.get(scope.id) ?? []).map(
               (assignment) => assignment.person_id,
-            ),
+            ), ...(slackAssignmentsResult.data ?? [])
+              .filter((assignment) => assignment.diagnostic_sector_scope_id === scope.id)
+              .map((assignment) => assignment.slack_leader_id)],
           },
         ];
       }),

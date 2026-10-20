@@ -10,9 +10,9 @@ export function LikertScalePreview({ scale }: LikertScalePreviewProps) {
       {scale.map((item) => (
         <div
           key={item.value}
-          className="flex min-h-24 flex-col justify-between rounded-lg border bg-background p-3"
+          className="flex min-h-24 flex-col justify-between rounded-lg bg-card p-3"
         >
-          <span className="text-foreground text-lg font-semibold tabular-nums">
+          <span className="text-foreground text-lg font-bold tabular-nums">
             {item.value}
           </span>
           <span className="text-muted-foreground text-xs leading-snug">

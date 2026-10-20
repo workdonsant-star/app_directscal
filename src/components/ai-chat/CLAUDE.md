@@ -15,3 +15,8 @@ Esta pasta concentra a interface conversacional autenticada da Directscal, ligad
 - Cada pergunta envia até seis turnos anteriores da tela como `history`, para o agente entender continuações. A mensagem de abertura e falhas técnicas não entram.
 - Enquanto a pergunta é processada, a mensagem pendente usa `aria-busy` e o compositor fica bloqueado.
 - Preserve navegação por teclado, foco visível, `aria-live` para novas mensagens e contraste nos dois temas.
+
+- Hovers usam cores neutras, nunca azul: texto `foreground` e superfícies `action-neutral-hover` com texto `action-neutral-foreground`. O sumário documental também mantém o item ativo em `foreground`, branco no escuro e escuro no claro.
+
+
+A17: AssistantHistory abre Sheet com registros próprios do app e pagina anteriores. Não altera draft/conversa atual. Exibe fontes e versão usada; avisa que link abre publicação vigente. Falha conserva histórico já lido; sem localStorage nem dados de outras contas/Slack.

@@ -61,3 +61,16 @@ Componentes específicos da visão de superadministrador da Directscal. Eles adm
 `ManagementAssetsWorkspace` usa tabela operacional com seleção de até 200 ativos, ação individual de editar e exclusão com confirmação explícita. Editar cria a próxima versão em rascunho quando não há uma aberta e mantém o contexto da entrega. A publicação continua passando pela revisão editorial. `ManagementAssetsBulkEditDialog` altera um campo por operação: autor (especialista atribuído, ou Directscal), categoria, líder responsável ou ciclo de revisão. Metadados são comuns às versões; a edição em massa não altera conteúdo nem cria versões. Ativos arquivados precisam ser restaurados antes da edição. Exclusão definitiva individual ou em massa remove também versões, escopos e índice de busca; a seleção e os erros permanecem visíveis em caso de falha.
 
 - useSpecialists lê o cadastro compartilhado via /api/admin/specialists, no carregamento, foco e a cada minuto. Seletores da operação, empresa e entrega não consultam a lista fixa de demonstração. Edição de especialista não concede acesso ao painel.
+
+
+A11: AdminCompanyDetail recebe contexto real do servidor por ID da empresa. Salvar chama PATCH autenticado com updatedAt esperado; erro mantém seleção e não confirma sucesso. Histórico lista diagnósticos encerrados reais, inclusive os que ainda não têm base de Fundador para análise. Principal sugere especialista em entregas novas, sem reatribuir publicações ou revisões já existentes.
+
+A12: criação inclui RACI e modelo de responsabilidades. Editor envia a revisão esperada e preserva texto após conflito. Lista de ativos oferece filtro Revisão vencida, prazo calculado da versão publicada e responsável documental; publicar uma revisão reinicia o ciclo, sem arquivamento automático. Seletores seguem TabsList variant="selector". A fila administrativa ainda exige revisão visual autenticada em claro/escuro.
+
+A04: routines/ contém workspace por empresa com tabela operacional, criação/edição em Sheet, histórico de revisões, pausa/retomada e transferência de todas as rotinas da ação. Diretório é consultado ao abrir formulário; erros mantêm texto/seleção. Link Operação das rotinas no detalhe da empresa. Sem percentuais inventados ou contato automático.
+
+
+A17: AssetQuestionAuditsWorkspace usa selector/operational e saúde real. AgentGapReviewDialog mostra registro completo e histórico, exige responsável/evidência para resolver e preserva texto em erro. Lacunas exclui resolvidas; Todas conserva consultas. Sem alertas externos ou promessa de monitoramento contínuo. Revisão visual em claro/escuro pendente de navegador.
+
+
+A12: ativos vinculados a histórico de rotina não podem ser excluídos definitivamente; API orienta arquivar. A seleção e os registros são preservados.

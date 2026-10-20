@@ -55,7 +55,7 @@ const reviewCycles = ["Mensal", "Trimestral", "Semestral", "Anual", "Sob demanda
 const noSpecialist = "sem-especialista";
 
 const textareaClassName =
-  "min-h-20 w-full resize-y rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-60 dark:bg-input/30";
+  "min-h-20 w-full resize-y rounded-lg border border-transparent bg-input px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-60 dark:bg-input/30";
 
 function metaFromAsset(asset: AdminManagementAssetDetail): MetaState {
   return {
@@ -185,6 +185,7 @@ export function ManagementAssetEditorWorkspace({
       const { asset: next } = await request(`/api/admin/management-assets/${asset.id}`, {
         method: "PATCH",
         body: JSON.stringify({
+          expectedRevision: asset.revision,
           title: meta.title.trim(),
           summary: meta.summary.trim(),
           category: meta.category.trim() || null,
@@ -331,7 +332,7 @@ export function ManagementAssetEditorWorkspace({
                     <ManagementAssetStatusBadge status={draft.status} />
                   ) : null}
                 </div>
-                <h1 className="truncate font-heading text-2xl font-semibold">
+                <h1 className="text-ui-page truncate">
                   {meta.title || asset.title}
                 </h1>
               </div>
@@ -383,13 +384,13 @@ export function ManagementAssetEditorWorkspace({
             ) : null}
 
             {view === "previa" && content ? (
-              <div className="rounded-lg border bg-card px-6 py-8 sm:px-10">
+              <div className="rounded-lg bg-card px-6 py-8 sm:px-10">
                 <RichTextView content={content} callouts={asset.type === "sop"} />
               </div>
             ) : null}
 
             {view === "publicada" && asset.published ? (
-              <div className="rounded-lg border bg-card px-6 py-8 sm:px-10">
+              <div className="rounded-lg bg-card px-6 py-8 sm:px-10">
                 <RichTextView
                   content={asset.published.content}
                   callouts={asset.type === "sop"}
@@ -398,7 +399,7 @@ export function ManagementAssetEditorWorkspace({
             ) : null}
 
             {view === "publicada" && !asset.published ? (
-              <div className="rounded-lg border border-dashed px-6 py-12 text-center">
+              <div className="rounded-lg bg-card px-6 py-12 text-center">
                 <p className="font-heading text-base font-medium">Ainda não publicado</p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   O cliente verá este ativo depois da primeira publicação.
@@ -408,8 +409,8 @@ export function ManagementAssetEditorWorkspace({
           </div>
 
           <aside className="flex flex-col gap-6">
-            <section aria-labelledby="asset-meta-title" className="flex flex-col gap-4 rounded-lg border p-4">
-              <h2 id="asset-meta-title" className="text-sm font-semibold">
+            <section aria-labelledby="asset-meta-title" className="flex flex-col gap-4 rounded-lg bg-card p-4">
+              <h2 id="asset-meta-title" className="text-sm font-medium">
                 Dados do ativo
               </h2>
               <Field id="meta-title" label="Título">
@@ -516,8 +517,8 @@ export function ManagementAssetEditorWorkspace({
               </p>
             </section>
 
-            <section aria-labelledby="asset-index-title" className="flex flex-col gap-3 rounded-lg border p-4">
-              <h2 id="asset-index-title" className="text-sm font-semibold">
+            <section aria-labelledby="asset-index-title" className="flex flex-col gap-3 rounded-lg bg-card p-4">
+              <h2 id="asset-index-title" className="text-sm font-medium">
                 Publicação e agente
               </h2>
               <dl className="grid grid-cols-2 gap-3 text-sm">
@@ -558,8 +559,8 @@ export function ManagementAssetEditorWorkspace({
               ) : null}
             </section>
 
-            <section aria-labelledby="asset-history-title" className="flex flex-col gap-3 rounded-lg border p-4">
-              <h2 id="asset-history-title" className="text-sm font-semibold">
+            <section aria-labelledby="asset-history-title" className="flex flex-col gap-3 rounded-lg bg-card p-4">
+              <h2 id="asset-history-title" className="text-sm font-medium">
                 Histórico de versões
               </h2>
               <ol className="flex flex-col divide-y">

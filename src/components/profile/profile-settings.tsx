@@ -6,6 +6,7 @@ import {
   type ChangeEvent,
 } from "react";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 
 import { AppTopbarActionsPortal } from "@/components/app-topbar-actions-portal";
 import {
@@ -27,6 +28,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AvatarCropDialog } from "@/components/profile/avatar-crop-dialog";
+import { SlackIdentitySection } from "@/components/profile/slack-identity-section";
+import type { SlackIdentityStatus } from "@/lib/contracts/slack-identity";
 import {
   profilePositionOptions,
 } from "@/lib/contracts";
@@ -35,6 +38,8 @@ import type { ProfileSettingsData } from "@/lib/types";
 
 type ProfileSettingsProps = {
   profile: ProfileSettingsData;
+  slackIdentity?: SlackIdentityStatus | null;
+  passwordEnabled?: boolean;
 };
 
 type Notice = {
@@ -79,7 +84,7 @@ function getInitials(name: string) {
     .join("") || "DS";
 }
 
-export function ProfileSettings({ profile }: ProfileSettingsProps) {
+export function ProfileSettings({ profile, slackIdentity, passwordEnabled = false }: ProfileSettingsProps) {
   const router = useRouter();
   const [draft, setDraft] = useState<ProfileDraft>({});
   const [currentPassword, setCurrentPassword] = useState("");
@@ -104,7 +109,7 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
 
   function validatePassword() {
     const nextErrors: PasswordErrors = {};
-    const shouldValidatePassword = Boolean(
+    const shouldValidatePassword = passwordEnabled && Boolean(
       currentPassword || newPassword || confirmPassword,
     );
 
@@ -116,8 +121,10 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
 
     if (!newPassword) {
       nextErrors.newPassword = "Informe a nova senha.";
-    } else if (newPassword.length < 8) {
-      nextErrors.newPassword = "Use pelo menos 8 caracteres.";
+    } else if (newPassword.length < 12 || newPassword.length > 128) {
+      nextErrors.newPassword = "Use de 12 a 128 caracteres.";
+    } else if (newPassword === currentPassword) {
+      nextErrors.newPassword = "Escolha uma senha diferente da atual.";
     }
 
     if (!confirmPassword) {
@@ -203,10 +210,20 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
     }
     clearProfileOverrides(profile.id);
 
-    if (currentPassword || newPassword || confirmPassword) {
+    if (passwordEnabled && (currentPassword || newPassword || confirmPassword)) {
+      const changed = await fetch("/api/profile/password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ currentPassword, password: newPassword, confirmation: confirmPassword }) }).catch(() => null);
+      const body = await changed?.json().catch(() => null);
+      if (!changed?.ok) {
+        setIsSaving(false); setDraft({});
+        setNotice({ message: `Perfil salvo. ${body?.message ?? "Não foi possível alterar a senha. Seus campos de senha foram mantidos."}`, tone: "error" });
+        return;
+      }
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+      setIsSaving(false); setDraft({}); setNotice({ message: "Senha alterada. Entre novamente.", tone: "success" });
+      await signOut({ callbackUrl: "/entrar?senha=alterada" }).catch(() => router.push("/entrar"));
+      return;
     }
 
     setDraft({});
@@ -310,7 +327,7 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
             <div>
               <label
                 htmlFor="profile-avatar"
-                className="inline-flex h-8 cursor-pointer items-center justify-center rounded-lg border border-input bg-background px-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-within:ring-3 focus-within:ring-ring/50"
+                className="inline-flex h-8 cursor-pointer items-center justify-center rounded-[5px] bg-action-neutral px-3 text-sm font-medium transition-colors hover:bg-action-neutral-hover focus-within:ring-3 focus-within:ring-ring/50"
               >
                 Enviar foto
               </label>
@@ -386,15 +403,17 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
           </div>
         </section>
 
+        {slackIdentity && <SlackIdentitySection initial={slackIdentity} />}
+
         <section className="grid min-w-0 gap-5 border-t pt-6">
           <div className="min-w-0">
-            <h2 className="text-base font-semibold">Segurança</h2>
+            <h2 className="text-ui-title">Segurança</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Simule a alteração de senha desta conta.
+              {passwordEnabled ? "Informe a senha atual para alterar o acesso desta conta. Após salvar, entre novamente." : "Seu acesso usa Google. Gerencie a senha nas configurações da sua conta Google."}
             </p>
           </div>
 
-          <div className="grid min-w-0 gap-4 md:grid-cols-3">
+          {passwordEnabled ? <div className="grid min-w-0 gap-4 md:grid-cols-3">
             <div className="flex min-w-0 flex-col gap-2">
               <label
                 htmlFor="current-password"
@@ -405,6 +424,9 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
               <Input
                 id="current-password"
                 type="password"
+                autoComplete="current-password"
+                disabled={isSaving}
+                maxLength={1024}
                 value={currentPassword}
                 aria-invalid={Boolean(passwordErrors.currentPassword)}
                 onChange={(event) => {
@@ -429,6 +451,9 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
               <Input
                 id="new-password"
                 type="password"
+                disabled={isSaving}
+                autoComplete="new-password"
+                maxLength={128}
                 value={newPassword}
                 aria-invalid={Boolean(passwordErrors.newPassword)}
                 onChange={(event) => {
@@ -456,6 +481,9 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
               <Input
                 id="confirm-password"
                 type="password"
+                disabled={isSaving}
+                autoComplete="new-password"
+                maxLength={128}
                 value={confirmPassword}
                 aria-invalid={Boolean(passwordErrors.confirmPassword)}
                 onChange={(event) => {
@@ -472,7 +500,7 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
                 </p>
               )}
             </div>
-          </div>
+          </div> : null}
         </section>
 
         {notice ? (

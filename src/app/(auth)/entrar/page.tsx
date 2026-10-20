@@ -6,7 +6,6 @@ import { SignInForm } from "@/components/auth/sign-in-form";
 import {
   isDevPasswordLoginEnabled,
   isGoogleAuthConfigured,
-  isSuperadminPasswordLoginEnabled,
 } from "@/lib/auth/access-control";
 import { getSignedInRedirectPath } from "@/lib/auth/navigation";
 import { getCurrentAuthSession } from "@/lib/auth/session";
@@ -50,8 +49,7 @@ export default async function SignInPage({
   }
 
   const resolvedSearchParams = await searchParams;
-  const superadminPasswordLoginEnabled =
-    isSuperadminPasswordLoginEnabled() && isSupabaseConfigured();
+  const appPasswordLoginEnabled = isSupabaseConfigured();
 
   return (
     <AuthPageShell
@@ -70,10 +68,10 @@ export default async function SignInPage({
             : "Google ainda não está configurado neste ambiente."
         }
         passwordLoginEnabled={
-          superadminPasswordLoginEnabled || isDevPasswordLoginEnabled()
+          appPasswordLoginEnabled || isDevPasswordLoginEnabled()
         }
         passwordLoginMode={
-          superadminPasswordLoginEnabled ? "superadmin" : "dev"
+          appPasswordLoginEnabled ? "app" : "dev"
         }
       />
     </AuthPageShell>

@@ -44,10 +44,10 @@ export function ShareLinks({
           return (
             <article
               key={link.id}
-              className="flex min-w-0 flex-col gap-4 rounded-lg border bg-background p-4"
+              className="flex min-w-0 flex-col gap-4 rounded-lg bg-muted p-4"
             >
               <div>
-                <p className="text-base font-semibold text-foreground">
+                <p className="text-base font-bold text-foreground">
                   {link.group === "operacao" && link.sectorName
                     ? `Time · ${link.sectorName}`
                     : group?.label ?? link.group}
@@ -57,7 +57,7 @@ export function ShareLinks({
                 </p>
               </div>
 
-              <div className="rounded-lg border bg-muted/40 p-2">
+              <div className="rounded-lg bg-background p-2">
                 <p className="mb-1 text-xs font-medium text-muted-foreground">
                   Link público
                 </p>
@@ -98,7 +98,7 @@ export function ShareLinks({
                 )}
               </div>
 
-              <div className="mt-auto rounded-lg border bg-card p-3">
+              <div className="mt-auto rounded-lg bg-background p-3">
                 <p className="text-xs font-medium text-muted-foreground">
                   Mensagem sugerida
                 </p>

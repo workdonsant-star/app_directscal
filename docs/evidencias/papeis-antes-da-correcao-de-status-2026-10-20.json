@@ -1,0 +1,49 @@
+{
+  "provider": {
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite"
+  },
+  "controlledSources": true,
+  "results": [
+    {
+      "id": "amb-04",
+      "ok": false,
+      "status": "answered",
+      "answer": "Customer Success coordena o onboarding e mantém o cliente informado. O procedimento não especifica quem escreve a ata do kickoff, mas determina que o registro da ata com decisões e pendências é obrigatório.",
+      "sources": [
+        "Onboarding de novos clientes",
+        "Onboarding de novos clientes",
+        "Onboarding de novos clientes"
+      ]
+    },
+    {
+      "id": "onb-01",
+      "ok": true,
+      "status": "answered",
+      "answer": "O Customer Success coordena o onboarding e mantém o cliente informado.",
+      "sources": [
+        "Onboarding de novos clientes"
+      ]
+    },
+    {
+      "id": "fin-05",
+      "ok": true,
+      "status": "answered",
+      "answer": "O responsável financeiro revisa o fechamento antes da publicação do resumo executivo.",
+      "sources": [
+        "Fechamento financeiro mensal",
+        "Fechamento financeiro mensal"
+      ]
+    },
+    {
+      "id": "pap-05",
+      "ok": true,
+      "status": "answered",
+      "answer": "O líder da área é o responsável por revisar o documento e registrar a aprovação ou os ajustes necessários.",
+      "sources": [
+        "Geração de papéis e atribuições",
+        "Geração de papéis e atribuições"
+      ]
+    }
+  ]
+}

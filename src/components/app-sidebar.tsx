@@ -1,9 +1,9 @@
 "use client";
 
 import {
+  ArrowLeft,
+  Plug,
   Blocks,
-  FolderClosed,
-  HeartHandshake,
   Building2,
   ChartNoAxesColumn,
   ClipboardCheck,
@@ -11,18 +11,21 @@ import {
   Flag,
   Megaphone,
   MessageSquareText,
-  Scale,
   Settings,
   SquarePlus,
+  ListChecks,
   Sprout,
   UserRoundCheck,
   Users,
   Workflow,
   Zap,
 } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 import { getManagementAssetCategoryFolders, type ManagementAssetCategoryFolder } from "@/lib/data/management-asset-categories";
+import type { AssetNavigationPreferences } from "@/lib/contracts/asset-navigation";
+import { ManagementAssetNavigation } from "@/components/management-assets/management-asset-navigation";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -31,6 +34,7 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
+  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 
@@ -54,7 +58,7 @@ const data = {
   omdxItems: [
     { title: "Pesquisas", url: "/omdx/diagnosticos", icon: SquarePlus },
     { title: "Diagnósticos", url: "/relatorios", icon: ChartNoAxesColumn },
-    { title: "Action Points", url: "/action-points", icon: SquarePlus },
+    { title: "Action Points", url: "/action-points", icon: ListChecks },
   ],
   admin: [
     {
@@ -102,6 +106,26 @@ const data = {
   ],
 };
 
+function SettingsNavigation({ onNavigate }: { onNavigate: () => void }) {
+  const searchParams = useSearchParams();
+  const requested = searchParams.get("secao");
+  const section = requested === "empresa" || requested === "slack"
+    ? requested
+    : Boolean(searchParams.get("slack")) ? "slack" : "setores";
+
+  return (
+    <NavMain
+      label="Configurações"
+      onNavigate={onNavigate}
+      items={[
+        { title: "Setores e lideranças", url: "/configuracoes", icon: Users, isActive: section === "setores" },
+        { title: "Empresa", url: "/configuracoes?secao=empresa", icon: Building2, isActive: section === "empresa" },
+        { title: "Slack", url: "/configuracoes?secao=slack", icon: Plug, isActive: section === "slack" },
+      ]}
+    />
+  );
+}
+
 function getInitials(name: string) {
   return name
     .trim()
@@ -112,12 +136,15 @@ function getInitials(name: string) {
 }
 
 export function AppSidebar({
+  initiativeScope,
+  assetNavigationPreferences = { order: [], icons: {} },
   managementAssetCategories = getManagementAssetCategoryFolders([]),
   acquisitionEnabled = false,
   enabledModuleIds,
   user = data.user,
 }: {
   initiativeScope?: string;
+  assetNavigationPreferences?: AssetNavigationPreferences;
   managementAssetCategories?: ManagementAssetCategoryFolder[];
   acquisitionEnabled?: boolean;
   enabledModuleIds?: string[];
@@ -145,6 +172,7 @@ export function AppSidebar({
     initials: user.initials ?? (getInitials(user.name) || "DS"),
   };
   const isAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
+  const isSettings = pathname === "/configuracoes" || pathname.startsWith("/configuracoes/");
   const isOrganizationAdmin = user.role === "admin";
   const enabledModuleSet = enabledModuleIds ? new Set(enabledModuleIds) : null;
   const enabledAppModules = data.appModules
@@ -184,13 +212,6 @@ export function AppSidebar({
     icon: item.icon,
     isActive: pathname === item.url || pathname.startsWith(`${item.url}/`),
   }));
-  const categoryIcons = { "gestao de pessoas": Users, governanca: Scale, cultura: HeartHandshake, comunicacao: MessageSquareText };
-  const areaNavigation = managementAssetCategories.map(folder => ({
-    title: folder.title,
-    url: folder.href,
-    icon: categoryIcons[folder.key as keyof typeof categoryIcons] ?? FolderClosed,
-    isActive: pathname === folder.href || pathname.startsWith(`${folder.href}/`),
-  }));
   const settingsNavigation = isOrganizationAdmin
     ? []
     : [
@@ -216,7 +237,7 @@ export function AppSidebar({
       collapsible="icon"
       className="bg-shell [&_[data-slot=sidebar-inner]]:bg-shell [&_[data-slot=sidebar-container]]:border-r-0"
     >
-      <SidebarHeader className="h-18 pr-4 pl-0 pt-2 pb-4 group-data-[collapsible=icon]:px-2">
+      <SidebarHeader className="h-18 px-2 pt-2 pb-4">
         <NavUser user={sidebarUser} />
       </SidebarHeader>
       <SidebarContent>
@@ -226,6 +247,10 @@ export function AppSidebar({
             items={admin}
             onNavigate={closeCompactSidebar}
           />
+        ) : isSettings ? (
+          <Suspense fallback={null}>
+            <SettingsNavigation onNavigate={closeCompactSidebar} />
+          </Suspense>
         ) : (
           <>
             <NavMain
@@ -233,10 +258,11 @@ export function AppSidebar({
               items={primaryNavigation}
               onNavigate={closeCompactSidebar}
             />
-            <NavMain
-              label="Ativos de gestão"
-              labelHref="/ativos-de-gestao"
-              items={areaNavigation}
+            <ManagementAssetNavigation
+              key={`${initiativeScope ?? user.id}:${JSON.stringify(assetNavigationPreferences)}`}
+              initialPreferences={assetNavigationPreferences}
+              canManage={user.role === "cliente"}
+              folders={managementAssetCategories}
               onNavigate={closeCompactSidebar}
             />
             <NavMain
@@ -247,15 +273,18 @@ export function AppSidebar({
           </>
         )}
       </SidebarContent>
-      {!isAdmin && settingsNavigation.length > 0 ? (
-        <SidebarFooter className="p-0">
+      <SidebarFooter className="gap-0 p-0">
+        <div className="hidden px-2 pt-2 group-data-[collapsible=icon]:flex">
+          <SidebarTrigger aria-label="Expandir sidebar" className="size-8" />
+        </div>
+        {!isAdmin && settingsNavigation.length > 0 ? (
           <NavMain
             label={null}
-            items={settingsNavigation}
+            items={isSettings ? [{ title: "Voltar ao app", url: "/omdx", icon: ArrowLeft }] : settingsNavigation}
             onNavigate={closeCompactSidebar}
           />
-        </SidebarFooter>
-      ) : null}
+        ) : null}
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );

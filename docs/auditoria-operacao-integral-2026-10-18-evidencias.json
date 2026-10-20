@@ -1,0 +1,590 @@
+{
+  "date": "2026-10-18",
+  "scope": "local checkout with authorized test organization; no production homologation",
+  "unit": {
+    "files": 50,
+    "passed": 330
+  },
+  "typecheck": "passed",
+  "lint": "passed",
+  "build": "passed",
+  "e2e": {
+    "firstRun": {
+      "passed": 3,
+      "failed": 2
+    },
+    "targetedAdminRerun": "passed with 120s timeout; 34.6s test duration",
+    "remaining": "outdated Coletas navigation expectation; full suite is not green"
+  },
+  "apiCases": [
+    {
+      "source": "api",
+      "name": "anonymous /api/omdx/diagnostics",
+      "ok": true,
+      "detail": 401
+    },
+    {
+      "source": "api",
+      "name": "anonymous /api/settings/slack-users",
+      "ok": true,
+      "detail": 401
+    },
+    {
+      "source": "api",
+      "name": "anonymous /api/assistant/ask",
+      "ok": true,
+      "detail": 401
+    },
+    {
+      "source": "api",
+      "name": "anonymous /api/admin/management-assets",
+      "ok": true,
+      "detail": 401
+    },
+    {
+      "source": "api",
+      "name": "customer cannot create admin assets",
+      "ok": true,
+      "detail": 403
+    },
+    {
+      "source": "api",
+      "name": "Slack directory live",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "users": 1
+      }
+    },
+    {
+      "source": "api",
+      "name": "incomplete response rejected",
+      "ok": true,
+      "detail": 400
+    },
+    {
+      "source": "api",
+      "name": "complete response fundador",
+      "ok": true,
+      "detail": {
+        "status": 201,
+        "questions": 30
+      }
+    },
+    {
+      "source": "api",
+      "name": "same browser response blocked",
+      "ok": true,
+      "detail": 409
+    },
+    {
+      "source": "api",
+      "name": "complete response lideranca",
+      "ok": true,
+      "detail": {
+        "status": 201,
+        "questions": 30
+      }
+    },
+    {
+      "source": "api",
+      "name": "complete response operacao",
+      "ok": true,
+      "detail": {
+        "status": 201,
+        "questions": 30
+      }
+    },
+    {
+      "source": "api",
+      "name": "DB response readback",
+      "ok": true,
+      "detail": {
+        "sessions": 3,
+        "answers": 90,
+        "mean": 3
+      }
+    },
+    {
+      "source": "api",
+      "name": "close collection",
+      "ok": true,
+      "detail": 200
+    },
+    {
+      "source": "api",
+      "name": "report hidden before publication",
+      "ok": true,
+      "detail": 404
+    },
+    {
+      "source": "api",
+      "name": "action PDF should be hidden before publication",
+      "ok": false,
+      "detail": {
+        "status": 200,
+        "contentType": "application/pdf"
+      }
+    },
+    {
+      "source": "publication",
+      "name": "admin publication",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "published": "publicada"
+      }
+    },
+    {
+      "source": "publication",
+      "name": "customer reads editorial",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "editorial": true
+      }
+    },
+    {
+      "source": "publication",
+      "name": "customer PDF downloaded",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "bytes": 38084
+      }
+    },
+    {
+      "source": "publication",
+      "name": "customer CSV",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "bytes": 16459
+      }
+    },
+    {
+      "source": "publication",
+      "name": "published selection appears in action points",
+      "ok": false,
+      "detail": {
+        "status": 200,
+        "selectedAction": false,
+        "example": true
+      }
+    },
+    {
+      "source": "publication",
+      "name": "published report preserves prior approved version",
+      "ok": false,
+      "detail": {
+        "saveStatus": 200,
+        "visibleDraft": true,
+        "publicationStatus": "publicada"
+      }
+    },
+    {
+      "source": "assets",
+      "name": "create asset sop",
+      "ok": true,
+      "detail": {
+        "status": 201
+      }
+    },
+    {
+      "source": "assets",
+      "name": "draft asset hidden sop",
+      "ok": true,
+      "detail": 404
+    },
+    {
+      "source": "assets",
+      "name": "save asset sop",
+      "ok": true,
+      "detail": 200
+    },
+    {
+      "source": "assets",
+      "name": "unreviewed publication blocked sop",
+      "ok": true,
+      "detail": 409
+    },
+    {
+      "source": "assets",
+      "name": "sop enviar_para_revisao",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "notice": "Rascunho enviado para revisão."
+      }
+    },
+    {
+      "source": "assets",
+      "name": "sop aprovar_revisao",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "notice": "Revisão concluída. A versão está pronta para publicar."
+      }
+    },
+    {
+      "source": "assets",
+      "name": "sop publicar",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "notice": "Versão publicada e disponível para o cliente e para o agente."
+      }
+    },
+    {
+      "source": "assets",
+      "name": "published asset readable sop",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "content": true
+      }
+    },
+    {
+      "source": "assets",
+      "name": "published chunks indexed sop",
+      "ok": true,
+      "detail": {
+        "chunks": 1
+      }
+    },
+    {
+      "source": "assets",
+      "name": "agent answer with correct source",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "answerStatus": "answered",
+        "sources": 1,
+        "correctSource": true,
+        "answer": "Registre o código VIOLETA-731 no registro interno. O prazo da rotina é de dois dias úteis."
+      }
+    },
+    {
+      "source": "assets",
+      "name": "agent feedback persisted",
+      "ok": true,
+      "detail": 200
+    },
+    {
+      "source": "assets",
+      "name": "unknown answer refused",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "answerStatus": "insufficient_evidence",
+        "citations": 0
+      }
+    },
+    {
+      "source": "assets",
+      "name": "new asset draft opened",
+      "ok": true,
+      "detail": 200
+    },
+    {
+      "source": "assets",
+      "name": "draft revision hidden from client",
+      "ok": true,
+      "detail": {
+        "save": 200,
+        "leaked": false
+      }
+    },
+    {
+      "source": "assets",
+      "name": "create asset playbook",
+      "ok": true,
+      "detail": {
+        "status": 201
+      }
+    },
+    {
+      "source": "assets",
+      "name": "draft asset hidden playbook",
+      "ok": true,
+      "detail": 404
+    },
+    {
+      "source": "assets",
+      "name": "save asset playbook",
+      "ok": true,
+      "detail": 200
+    },
+    {
+      "source": "assets",
+      "name": "unreviewed publication blocked playbook",
+      "ok": true,
+      "detail": 409
+    },
+    {
+      "source": "assets",
+      "name": "playbook enviar_para_revisao",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "notice": "Rascunho enviado para revisão."
+      }
+    },
+    {
+      "source": "assets",
+      "name": "playbook aprovar_revisao",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "notice": "Revisão concluída. A versão está pronta para publicar."
+      }
+    },
+    {
+      "source": "assets",
+      "name": "playbook publicar",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "notice": "Versão publicada e disponível para o cliente e para o agente."
+      }
+    },
+    {
+      "source": "assets",
+      "name": "published asset readable playbook",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "content": true
+      }
+    },
+    {
+      "source": "assets",
+      "name": "published chunks indexed playbook",
+      "ok": true,
+      "detail": {
+        "chunks": 1
+      }
+    },
+    {
+      "source": "assets",
+      "name": "create asset governanca",
+      "ok": true,
+      "detail": {
+        "status": 201
+      }
+    },
+    {
+      "source": "assets",
+      "name": "draft asset hidden governanca",
+      "ok": true,
+      "detail": 404
+    },
+    {
+      "source": "assets",
+      "name": "save asset governanca",
+      "ok": true,
+      "detail": 200
+    },
+    {
+      "source": "assets",
+      "name": "unreviewed publication blocked governanca",
+      "ok": true,
+      "detail": 409
+    },
+    {
+      "source": "assets",
+      "name": "governanca enviar_para_revisao",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "notice": "Rascunho enviado para revisão."
+      }
+    },
+    {
+      "source": "assets",
+      "name": "governanca aprovar_revisao",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "notice": "Revisão concluída. A versão está pronta para publicar."
+      }
+    },
+    {
+      "source": "assets",
+      "name": "governanca publicar",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "notice": "Versão publicada e disponível para o cliente e para o agente."
+      }
+    },
+    {
+      "source": "assets",
+      "name": "published asset readable governanca",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "content": true
+      }
+    },
+    {
+      "source": "assets",
+      "name": "published chunks indexed governanca",
+      "ok": true,
+      "detail": {
+        "chunks": 1
+      }
+    },
+    {
+      "source": "assets",
+      "name": "create asset raci",
+      "ok": false,
+      "detail": {
+        "status": 400,
+        "message": "Revise os dados do ativo."
+      }
+    },
+    {
+      "source": "maintenance",
+      "name": "owner asset update",
+      "ok": true,
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "source": "slack",
+      "name": "unsigned Slack event blocked",
+      "ok": true,
+      "detail": 401
+    },
+    {
+      "source": "slack",
+      "name": "signed local Slack callback accepted",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "ackMs": 464,
+        "syntheticInbound": true
+      }
+    },
+    {
+      "source": "slack",
+      "name": "local handler Slack response delivered",
+      "ok": true,
+      "detail": {
+        "slackReadOk": true,
+        "delivered": true,
+        "auditStatus": "respondida",
+        "citations": 3,
+        "syntheticInbound": true
+      }
+    },
+    {
+      "source": "mobile",
+      "name": "mobile test diagnostic created",
+      "ok": true,
+      "detail": 201
+    },
+    {
+      "source": "mobile",
+      "name": "mobile test activation",
+      "ok": true,
+      "detail": 200
+    },
+    {
+      "source": "execution",
+      "name": "execution update of published selection",
+      "ok": false,
+      "detail": {
+        "status": 404,
+        "message": "Action point não encontrado."
+      }
+    },
+    {
+      "source": "final-check",
+      "name": "other organization asset hidden",
+      "ok": true,
+      "detail": 404
+    },
+    {
+      "source": "final-check",
+      "name": "mobile test collection closed",
+      "ok": true,
+      "detail": 200
+    },
+    {
+      "source": "maintenance",
+      "name": "stale asset version returns conflict",
+      "ok": false,
+      "detail": {
+        "expectedStatus": 409,
+        "observed": "Timeout after 65000ms on initial check and targeted retry",
+        "rootCause": "not established"
+      }
+    }
+  ],
+  "manual": {
+    "clientInventoryRequirements": 48,
+    "operationsInventoryRequirements": 45,
+    "closureWorkPackages": 18,
+    "collection": {
+      "sessions": 3,
+      "answers": 90,
+      "expectedMean": 3.0,
+      "observedLayers": [
+        4.0,
+        3.0,
+        2.0
+      ],
+      "observedDimensions": [
+        3.0,
+        3.0,
+        3.0,
+        3.0,
+        3.0,
+        3.0
+      ]
+    },
+    "mobile": {
+      "width": 375,
+      "height": 812,
+      "scrollWidth": 375,
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "questionsAnswered": 30,
+      "persistedSessions": 1,
+      "persistedAnswers": 30,
+      "thankYouPage": "confirmed"
+    },
+    "agentUI": {
+      "question": "fictitious routine Violeta",
+      "answered": true,
+      "correctSources": 3,
+      "themes": [
+        "light",
+        "dark"
+      ]
+    },
+    "slack": {
+      "inbound": "synthetic signed callback to localhost",
+      "outbound": "real bot reply read back in authorized DM",
+      "ackMs": 464
+    },
+    "pdf": {
+      "bytes": 38084,
+      "pages": 9,
+      "approvedEditorialIncluded": false,
+      "firstPageRenderedAndInspected": true
+    },
+    "fixtures": "two closed diagnostics; one published editorial delivery; three published text assets; SOP draft and Playbook v2; retained for audit"
+  },
+  "limits": [
+    "No new Google login",
+    "No production certification",
+    "No full offline 85 percent agent evaluation",
+    "No complete integration failure and recovery matrix"
+  ]
+}

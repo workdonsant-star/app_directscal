@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Esta pasta concentra o fluxo de autenticação do app. Google OAuth via Auth.js/NextAuth aplica a regra de acesso corporativo por domínio, e-mail registrado em variáveis de ambiente e cadastro ativo no Supabase quando ele está configurado. O fluxo de aquisição por campanha também pode autorizar Google por intent curto e sempre força role `cliente`. O Auth.js usa Supabase Adapter, JWT session, lê membership em `organization_members` e assina um JWT para RLS. O login manual de superadmin usa Credentials + Supabase quando habilitado; o login mockado por senha fica disponível apenas como fallback de desenvolvimento.
+Esta pasta concentra o fluxo de autenticação do app. Google OAuth via Auth.js/NextAuth aplica a regra de acesso corporativo por domínio, e-mail registrado em variáveis de ambiente e cadastro ativo no Supabase quando ele está configurado. O fluxo de aquisição por campanha também pode autorizar Google por intent curto e sempre força role `cliente`. O Auth.js usa Supabase Adapter, JWT session, lê membership em `organization_members` e assina um JWT para RLS. O login por e-mail/senha de clientes e admins usa Credentials + Supabase, hash scrypt existente e membership real, sem depender de campanha ou flag de superadmin. Contas Google sem senha cadastrada continuam pelo Google. O login manual de superadmin usa Credentials + Supabase quando habilitado; o login mockado por senha fica disponível apenas como fallback de desenvolvimento.
 
 ## Convenções
 
@@ -32,3 +32,6 @@ Esta pasta concentra o fluxo de autenticação do app. Google OAuth via Auth.js/
 - getCurrentAuthSession hidrata nome e avatar a partir do banco em cada request. account_profiles prevalece sobre o JWT e sobre futuras atualizações Google. Autorização permanece na sessão, nunca no perfil editável.
 
 Sessões temporárias de aquisição e convite são promovidas pelo callback JWT para sessão regular assim que existe membership no banco. A promoção limpa ambos os flags antes de acessar o onboarding, evitando o ciclo `/omdx` → `/onboarding` → `/entrar` → `/omdx`; sessões ainda sem membership mantêm o intent temporário.
+
+
+A14: password-recovery/crypto implementam recuperação real somente de cliente/admin com credencial existente. Token aleatório de 256 bits, hash no banco e envelope AES-GCM na outbox; 1h, uso único, invalidado por nova solicitação/versão. Google-only e superadmin não recebem recuperação pública. JWT revalida membership e versão a cada request; JWT RLS dura até cinco minutos e inclui session_version. Enforcement direto do banco está desativado até deploy compatível. Ver docs/acesso-e-recuperacao-de-conta.md.

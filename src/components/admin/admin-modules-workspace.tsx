@@ -137,7 +137,7 @@ export function AdminModulesWorkspace({
       <section className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex flex-col gap-1">
-            <h2 className="text-foreground text-base font-semibold">
+            <h2 className="text-ui-title text-foreground">
               Aplicativos disponíveis
             </h2>
             <p className="text-muted-foreground text-sm">
@@ -210,7 +210,7 @@ export function AdminModulesWorkspace({
 
       <section className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
-          <h2 className="text-foreground text-base font-semibold">
+          <h2 className="text-ui-title text-foreground">
             Acesso por cliente
           </h2>
           <p className="text-muted-foreground max-w-2xl text-sm">

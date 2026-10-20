@@ -1,3 +1,6 @@
+import { getCurrentAuthSession } from "@/lib/auth/session";
+import { canManageOrganization } from "@/lib/auth/access-control";
+import { getPublishedManagementAssetFolders } from "@/lib/data/management-assets-data-source";
 import { AppPage } from "@/components/app-page";
 import { AppTopbar } from "@/components/app-topbar";
 import { ManagementAssetsLibrary } from "@/components/management-assets/management-assets-library";
@@ -15,7 +18,7 @@ export async function ManagementAssetsPage({
   title: string;
   type: ManagementAssetType;
 }) {
-  const assets = await getManagementAssetsByType(type);
+  const [assets, folders, session] = await Promise.all([getManagementAssetsByType(type), getPublishedManagementAssetFolders(), getCurrentAuthSession()]);
 
   return (
     <>
@@ -26,7 +29,7 @@ export async function ManagementAssetsPage({
           <div className="space-y-1">
             <h1
               id="management-assets-title"
-              className="font-heading text-2xl font-semibold"
+              className="text-ui-page"
             >
               {title}
             </h1>
@@ -35,6 +38,8 @@ export async function ManagementAssetsPage({
 
           <ManagementAssetsLibrary
             assets={assets}
+            folders={folders}
+            canEdit={!!session && canManageOrganization(session.user) && !session.acquisition && !session.leadershipInvitation}
             categoryFilter={categoryFilter}
           />
         </section>

@@ -137,7 +137,7 @@ describe("slack workspace members", () => {
         real_name: "Ana Souza",
         profile: { display_name: "Ana", image_72: "https://avatars.slack-edge.com/a.png" },
       }),
-    ).toEqual({ userId: "U1", name: "Ana", avatarUrl: "https://avatars.slack-edge.com/a.png" });
+    ).toEqual({ userId: "U1", name: "Ana", avatarUrl: "https://avatars.slack-edge.com/a.png", position: null });
     expect(mapSlackMember({ id: "U2", real_name: "Bruno Lima", profile: { display_name: " " } })).toMatchObject({
       name: "Bruno Lima",
       avatarUrl: null,
@@ -154,6 +154,15 @@ describe("slack workspace members", () => {
     expect(
       mapSlackMember({ id: "U8", real_name: "Carla", profile: { image_72: "http://x/y.png" } })?.avatarUrl,
     ).toBeNull();
+  });
+});
+
+describe("perfis de liderança do Slack", () => {
+  it("traz o cargo do perfil e permite convidados ativos na seleção de lideranças", () => {
+    expect(mapSlackMember({ id: "U90", real_name: "Ana", is_restricted: true, profile: { title: "  Diretora  " } }, true)).toMatchObject({ position: "Diretora", name: "Ana" });
+    expect(mapSlackMember({ id: "U91", real_name: "João", is_ultra_restricted: true }, true)).toMatchObject({ position: null });
+    expect(mapSlackMember({ id: "U92", real_name: "Bot", is_bot: true }, true)).toBeNull();
+    expect(mapSlackMember({ id: "U93", real_name: "Saiu", deleted: true }, true)).toBeNull();
   });
 });
 

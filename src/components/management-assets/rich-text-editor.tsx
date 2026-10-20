@@ -61,14 +61,14 @@ const extensions = [
 ];
 
 const contentClassName = cn(
-  "min-h-[480px] px-6 py-6 text-[15px] leading-[25px] text-foreground outline-none sm:px-10",
+  "min-h-[480px] px-6 py-6 font-doc text-doc-body text-muted-foreground outline-none sm:px-10",
   "[&>*+*]:mt-4",
-  "[&_h2]:mt-8 [&_h2]:font-heading [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:leading-8 [&_h2]:tracking-[-0.4px] [&>h2:first-child]:mt-0",
-  "[&_h3]:mt-6 [&_h3]:font-heading [&_h3]:text-lg [&_h3]:font-semibold",
+  "[&_h2]:mt-8 [&_h2]:font-doc-heading [&_h2]:text-doc-h2 [&_h2]:text-foreground [&>h2:first-child]:mt-0",
+  "[&_h3]:mt-6 [&_h3]:font-doc-heading [&_h3]:text-doc-h3 [&_h3]:text-foreground [&_strong]:font-bold [&_strong]:text-foreground",
   "[&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:mt-1.5 [&_li>p]:m-0",
-  "[&_blockquote]:rounded-lg [&_blockquote]:border [&_blockquote]:bg-muted/40 [&_blockquote]:px-4 [&_blockquote]:py-3",
-  "[&_a]:font-medium [&_a]:underline [&_a]:underline-offset-4",
-  "[&_.tableWrapper]:overflow-x-auto [&_table]:w-full [&_table]:border-separate [&_table]:border-spacing-0 [&_table]:text-sm [&_table]:leading-5",
+  "[&_blockquote]:rounded-lg [&_blockquote]:bg-muted [&_blockquote]:text-foreground [&_blockquote]:px-4 [&_blockquote]:py-3",
+  "[&_a]:font-medium [&_a]:text-foreground [&_a]:underline [&_a]:underline-offset-4",
+  "[&_.tableWrapper]:overflow-x-auto [&_table]:w-full [&_table]:border-separate [&_table]:border-spacing-0 [&_table]:text-doc-table",
   "[&_td]:h-[55px] [&_td]:border-b-[0.5px] [&_td]:border-border [&_td]:px-4 [&_td]:py-3 [&_td]:align-top [&_th]:h-11 [&_th]:bg-muted [&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:font-medium [&_tr:last-child_td]:border-b-0 [&_th:first-child]:rounded-l-[5px] [&_th:last-child]:rounded-r-[5px]",
   "[&_.selectedCell]:bg-primary/10",
   "[&_p.is-editor-empty:first-child]:before:pointer-events-none [&_p.is-editor-empty:first-child]:before:float-left [&_p.is-editor-empty:first-child]:before:h-0 [&_p.is-editor-empty:first-child]:before:text-muted-foreground [&_p.is-editor-empty:first-child]:before:content-[attr(data-placeholder)]",
@@ -190,13 +190,13 @@ export function RichTextEditor({
     return (
       <div
         aria-busy="true"
-        className="min-h-[540px] rounded-lg border bg-card"
+        className="min-h-[540px] rounded-lg bg-card"
       />
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border bg-card">
+    <div className="overflow-hidden rounded-lg bg-card">
       {editable ? (
         <div className="sticky top-0 z-10 border-b bg-card">
           <div

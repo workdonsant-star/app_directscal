@@ -5,6 +5,7 @@ import { AppTopbar } from "@/components/app-topbar";
 import { ReportsList } from "@/components/reports/reports-list";
 import { canAccessCustomerApp } from "@/lib/auth/access-control";
 import { getCurrentAuthSession } from "@/lib/auth/session";
+import { buildAcmeReportExample } from "@/lib/data/acme-report-example";
 import { getPublishedDiagnosticIds } from "@/lib/data/admin-delivery-data-source";
 import { getOmdxOverviewDiagnosticOptions } from "@/lib/data/omdx-data-source";
 
@@ -38,7 +39,7 @@ export default async function ReportsPage() {
       <AppPage>
         <section aria-labelledby="reports-title" className="space-y-6">
           <div className="space-y-1">
-            <h1 id="reports-title" className="font-heading text-2xl font-semibold">
+            <h1 id="reports-title" className="text-ui-page">
               Relatórios
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -46,7 +47,7 @@ export default async function ReportsPage() {
             </p>
           </div>
 
-          <ReportsList diagnostics={diagnostics} />
+          <ReportsList diagnostics={[...diagnostics, buildAcmeReportExample().diagnostic]} />
         </section>
       </AppPage>
     </>

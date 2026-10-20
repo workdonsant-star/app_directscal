@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Componentes das telas `/entrar`, `/criar-conta` e `/recuperar-senha`. A tela de entrada oferece formulário de e-mail/senha quando o login real estiver habilitado para superadmin/contas de aquisição ou quando o fallback de desenvolvimento estiver ativo; Google OAuth segue como opção corporativa.
+Componentes das telas `/entrar`, `/criar-conta` e `/recuperar-senha`. A tela de entrada oferece formulário de e-mail/senha quando Supabase estiver configurado ou quando o fallback de desenvolvimento estiver ativo; Google OAuth segue como opção corporativa.
 
 ## Convenções
 
@@ -17,5 +17,10 @@ Componentes das telas `/entrar`, `/criar-conta` e `/recuperar-senha`. A tela de 
 - O formulário de recuperação segue as mesmas medidas do login: coluna de até `396px`, controles de `45px`, `text-sm` nos campos e CTA e links auxiliares em `text-xs`.
 - Fluxos públicos longos podem usar `contentAlignment="start"` para preservar o mesmo shell sem sobrepor o formulário ao logo; o padrão continua centralizado para o login e etapas curtas.
 - Assets locais `auth-figma-*` podem ser usados quando forem parte da identidade ou de provedores externos, mas não devem impor fonte, cor ou proporção fora do design system.
-- No modo real, o formulário usa Auth.js Credentials com `flow: "app"`; o servidor resolve superadmin primeiro e depois credenciais de contas de aquisição. No fallback dev, continua usando `/api/auth/login`.
+- No modo real, o formulário usa Auth.js Credentials com `flow: "app"`; o servidor resolve superadmin primeiro e depois credenciais de clientes/admins com membership real, sem exigir lead de campanha. Após sucesso, navega para `/entrar` com nova requisição; o servidor decide o destino pelo papel da sessão. O link de recuperação aparece nos modos com senha. No fallback dev, continua usando `/api/auth/login`.
 - `LeadershipInvitationGoogleAction` inicia a intenção temporária antes do OAuth, pede seleção explícita da conta e nunca decide no navegador se o e-mail pode ser aceito.
+
+- Estados de hover usam cores neutras, sem azul; ações primárias preservam azul somente no repouso.
+
+
+A14: recuperação fica disponível no login por senha real. PasswordResetForm lê #codigo uma vez, remove o fragmento do histórico e mantém o token somente em memória. Exibe formulário de nova senha/expiração, conserva erros e encerra sessão antes de voltar ao login após sucesso. Não promete envio quando a API falha.

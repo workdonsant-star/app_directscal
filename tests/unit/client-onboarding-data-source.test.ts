@@ -76,3 +76,21 @@ describe("persistência do onboarding", () => {
     expect(writes).not.toHaveBeenCalled();
   });
 });
+
+
+describe("entrada de empresas já conectadas", () => {
+  it("dispensa onboarding com Slack ativo da empresa sem conclusão anterior", async () => {
+    expect(await getClientOnboardingForUser("owner-test")).toEqual({ organizationId: "organization-test", completed: false, requiresOnboarding: false });
+    expect(getSlackInstallationForOrganization).toHaveBeenCalledWith("organization-test");
+    expect(writes).not.toHaveBeenCalled();
+  });
+  it("exige onboarding quando a própria empresa não tem conexão", async () => {
+    vi.mocked(getSlackInstallationForOrganization).mockResolvedValue(null);
+    expect(await getClientOnboardingForUser("owner-test")).toEqual({ organizationId: "organization-test", completed: false, requiresOnboarding: true });
+  });
+  it("dispensa onboarding concluído mesmo sem Slack", async () => {
+    completed = true;
+    expect(await getClientOnboardingForUser("owner-test")).toEqual({ organizationId: "organization-test", completed: true, requiresOnboarding: false });
+    expect(getSlackInstallationForOrganization).not.toHaveBeenCalled();
+  });
+});

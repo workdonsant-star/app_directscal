@@ -20,6 +20,7 @@ import {
 } from "@/lib/auth/leadership-invitation-session";
 import {
   attachSupabaseAccessTokenToSession,
+  authenticateCustomerPasswordUser,
   authenticateSuperadminPasswordUser,
   checkUserHasActiveAccess,
   ensureSupabaseAuthUserProvisioned,
@@ -34,6 +35,7 @@ import {
 } from "@/lib/data/acquisition-data-source";
 import { getLeadershipInvitationPreview } from "@/lib/data/organization-structure-data-source";
 import type { AuthRole, AuthUser } from "@/lib/contracts";
+import { getUserSessionVersion } from "@/lib/auth/password-recovery";
 
 const supabaseAdapterConfig = getSupabaseAdapterConfig();
 
@@ -144,7 +146,9 @@ function writeSessionUser({
   session,
   user,
   image,
+  securityVersion = "initial",
 }: {
+  securityVersion?: string;
   image?: string;
   session: Session;
   user: AuthUser;
@@ -165,6 +169,7 @@ function writeSessionUser({
       expires: session.expires,
       session,
       userId: user.id,
+      securityVersion,
     });
   } else {
     session.supabaseAccessToken = undefined;
@@ -216,7 +221,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
           return (
             superadminUser ??
-            authenticateAcquisitionPasswordUser({ email, password })
+            authenticateCustomerPasswordUser({ email, password })
           );
         }
 
@@ -314,16 +319,15 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     },
     async jwt({ account, profile, token, user }) {
       if (account?.provider === "credentials" && user) {
-        if (user.role === "superadmin") {
-          const superadminUser = await resolveSupabaseAuthUser(
-            user.id,
-            user.email,
-          );
+        const databaseUser = await resolveSupabaseAuthUser(user.id, user.email);
 
-          if (superadminUser?.role === "superadmin") {
-            writeTokenUser({ token, user: superadminUser });
-          }
-        } else {
+        if (databaseUser?.role === "superadmin" && user.role !== "superadmin") {
+          return null;
+        }
+
+        if (databaseUser) {
+          writeTokenUser({ token, user: databaseUser });
+        } else if (user.role !== "superadmin") {
           const acquisitionUser = await resolveAcquisitionAuthUser(
             user.id,
             user.email,
@@ -399,6 +403,16 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         }
       }
 
+      if (supabaseAdapterConfig && typeof token.userId === "string") {
+        const version = await getUserSessionVersion(token.userId);
+        if (account) token.securityVersion = version;
+        else if ((token.securityVersion ?? "initial") !== version) return null;
+        if (!account && token.acquisition !== true && token.leadershipInvitation !== true) {
+          const current = await resolveSupabaseAuthUser(token.userId, typeof token.email === "string" ? token.email : null);
+          if (!current) return null;
+          writeTokenUser({ token, user: current });
+        }
+      }
       return token;
     },
     async session({ session, token, user }) {
@@ -409,6 +423,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
       if (tokenUser) {
         return writeSessionUser({
+          securityVersion: typeof token.securityVersion === "string" ? token.securityVersion : "initial",
           image:
             typeof user?.image === "string"
               ? user.image
@@ -435,6 +450,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
       if (databaseUser) {
         return writeSessionUser({
+          securityVersion: typeof token.securityVersion === "string" ? token.securityVersion : "initial",
           image:
             typeof user?.image === "string"
               ? user.image
@@ -456,6 +472,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           token.role === "cliente")
       ) {
         writeSessionUser({
+          securityVersion: typeof token.securityVersion === "string" ? token.securityVersion : "initial",
           image: typeof token.picture === "string" ? token.picture : undefined,
           session,
           user: {

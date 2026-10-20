@@ -5,6 +5,7 @@ import { getCurrentAuthSession } from "@/lib/auth/session";
 import {
   getAdminDiagnosticReports,
 } from "@/lib/data/omdx-data-source";
+import { getAdminDeliveryDraft } from "@/lib/data/admin-delivery-data-source";
 import { OmdxReportDocument } from "@/lib/pdf/omdx-report-document";
 
 export const runtime = "nodejs";
@@ -42,8 +43,10 @@ export async function GET(
     return new Response("Entrega não encontrada.", { status: 404 });
   }
 
+  const draft = await getAdminDeliveryDraft(id);
   const document = createElement(OmdxReportDocument, {
     report,
+    editorial: draft?.report,
   }) as Parameters<typeof renderToBuffer>[0];
   const pdfBuffer = await renderToBuffer(document);
   const company = normalizeFilePart(report.diagnostic.organizationName);

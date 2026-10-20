@@ -4,7 +4,8 @@ import { AdminOperationsWorkspace } from "@/components/admin/admin-operations-wo
 import { AppPage } from "@/components/app-page";
 import { AppTopbar } from "@/components/app-topbar";
 import { mapAdminDeliveryFromReport } from "@/lib/data/admin-operations-data-source";
-import { getAdminDeliveryPublications } from "@/lib/data/admin-delivery-data-source";
+import { getOrganizationOperations } from "@/lib/data/admin-company-operations-data-source";
+import { getCurrentAuthSession } from "@/lib/auth/session";
 import { getAdminDiagnosticReports } from "@/lib/data/omdx-data-source";
 
 export const metadata: Metadata = {
@@ -13,15 +14,14 @@ export const metadata: Metadata = {
 
 export default async function AdminOperationsPage() {
   const reports = await getAdminDiagnosticReports();
-  const publications = await getAdminDeliveryPublications(
-    reports.map((report) => report.diagnostic.id),
-  );
-  const publicationsByDiagnosticId = new Map(
-    publications.map((publication) => [publication.diagnosticId, publication]),
-  );
+  const session = await getCurrentAuthSession();
+  const organizationIds = [...new Set(reports.map(report => report.diagnostic.organizationId))];
+  const operations = session?.user.role === "superadmin"
+    ? await Promise.all(organizationIds.map(id => getOrganizationOperations(id, session.user.id))) : [];
+  const states = new Map(operations.flatMap(operation => operation.deliveries.map(delivery => [delivery.id, delivery] as const)));
   const deliveries = reports.map((report) => {
     const delivery = mapAdminDeliveryFromReport(report);
-    const publication = publicationsByDiagnosticId.get(delivery.diagnosticId);
+    const publication = states.get(delivery.diagnosticId);
 
     return publication
       ? {

@@ -1,0 +1,63 @@
+begin;
+do $$
+declare v_org uuid; v_team text; v_question jsonb; v_id uuid; v_second uuid; v_job jsonb; v_lease uuid; v_time timestamptz; v_owner uuid; v_admin uuid; v_prefix text:='QA-A15-'||gen_random_uuid()::text;
+begin
+  v_org:=gen_random_uuid(); v_team:=v_prefix; v_owner:=gen_random_uuid(); v_admin:=gen_random_uuid();
+  insert into next_auth.users(id,name,email) values(v_owner,'Dono fictício',v_owner::text||'@fixture.invalid'),(v_admin,'Operador fictício',v_admin::text||'@fixture.invalid');
+  insert into public.organizations(id,name) values(v_org,'Fixture fila Slack');
+  insert into public.organization_members(organization_id,user_id,role) values(v_org,v_owner,'cliente'),(v_org,v_admin,'superadmin');
+  insert into app_private.slack_installations(team_id,organization_id,bot_token) values(v_team,v_org,'token-ficticio');
+  v_question:=jsonb_build_object('kind','direct','teamId',v_team,'userId','QA-U','channel','QA-D','ts','100.001','text','Pergunta fictícia A15');
+  v_id:=app_private.enqueue_slack_delivery(v_prefix,v_team,v_question);
+  if v_id is null or app_private.enqueue_slack_delivery(v_prefix,v_team,v_question)<>v_id then raise exception 'Reentrada duplicou'; end if;
+  begin perform app_private.enqueue_slack_delivery(v_prefix,v_team,v_question||'{"text":"Divergente"}'); raise exception 'Esperado conflito'; exception when sqlstate 'PT409' then null; end;
+  v_job:=app_private.claim_slack_delivery(v_id); v_lease:=(v_job->>'lease_id')::uuid;
+  if v_job->>'status'<>'processando' or (v_job->>'attempts')::integer<>1 then raise exception 'Reserva inválida'; end if;
+  if app_private.claim_slack_delivery(v_id) is not null then raise exception 'Reserva dupla'; end if;
+  begin perform app_private.transition_slack_delivery(v_id,gen_random_uuid(),'ignorar'); raise exception 'Lease forjado'; exception when sqlstate 'PT409' then null; end;
+  begin perform app_private.transition_slack_delivery(v_id,v_lease,'enviar'); raise exception 'Envio sem resposta'; exception when sqlstate 'PT409' then null; end;
+  perform app_private.transition_slack_delivery(v_id,v_lease,'preparar','{"text":"Resposta fictícia com fonte"}');
+  perform app_private.transition_slack_delivery(v_id,v_lease,'enviar');
+  perform app_private.transition_slack_delivery(v_id,v_lease,'falhar','{"code":"rate_limited","retryable":true,"retryAfter":120}');
+  if app_private.claim_slack_delivery(v_id) is not null then raise exception 'Ignorou Retry-After'; end if;
+  update app_private.slack_delivery_jobs set available_at=now()-interval '1 second' where id=v_id;
+  v_job:=app_private.claim_slack_delivery(v_id); v_lease:=(v_job->>'lease_id')::uuid;
+  if v_job->'reply'->>'text'<>'Resposta fictícia com fonte' or (v_job->>'attempts')::int<>2 then raise exception 'Não conservou resposta'; end if;
+  perform app_private.transition_slack_delivery(v_id,v_lease,'enviar');
+  perform app_private.transition_slack_delivery(v_id,v_lease,'concluir','{"ts":"200.001"}');
+  if app_private.claim_slack_delivery(v_id) is not null then raise exception 'Reenviou concluído'; end if;
+  if not exists(select 1 from app_private.slack_delivery_jobs where id=v_id and status='concluido' and delivered_ts='200.001') then raise exception 'Sem confirmação'; end if;
+  -- Falha do processo antes de enviar pode ser retomada; durante o envio fica incerta.
+  v_second:=app_private.enqueue_slack_delivery(v_prefix||'-2',v_team,v_question);
+  v_job:=app_private.claim_slack_delivery(v_second);
+  update app_private.slack_delivery_jobs set lease_until=now()-interval '1 second' where id=v_second;
+  v_job:=app_private.claim_slack_delivery(v_second); v_lease:=(v_job->>'lease_id')::uuid;
+  if (v_job->>'attempts')::int<>2 then raise exception 'Não recuperou lease expirado'; end if;
+  perform app_private.transition_slack_delivery(v_second,v_lease,'preparar','{"text":"Resposta"}');
+  perform app_private.transition_slack_delivery(v_second,v_lease,'enviar');
+  update app_private.slack_delivery_jobs set lease_until=now()-interval '1 second' where id=v_second;
+  if app_private.claim_slack_delivery(v_second) is not null then raise exception 'Repetiu envio sem confirmação'; end if;
+  if not exists(select 1 from app_private.slack_delivery_jobs where id=v_second and status='incerto' and not retryable and lease_id is null) then raise exception 'Perdeu envio incerto'; end if;
+  select updated_at into v_time from app_private.slack_delivery_jobs where id=v_second;
+  begin perform app_private.retry_slack_delivery(v_second,v_org,v_admin,v_time); raise exception 'Reenviou incerto'; exception when sqlstate 'PT409' then null; end;
+  -- Falha definitiva pode ser retomada explicitamente pela operação, com versão.
+  v_second:=app_private.enqueue_slack_delivery(v_prefix||'-3',v_team,v_question);
+  v_job:=app_private.claim_slack_delivery(v_second);v_lease:=(v_job->>'lease_id')::uuid;
+  perform app_private.transition_slack_delivery(v_second,v_lease,'falhar','{"code":"instalacao_indisponivel","retryable":false}');
+  select updated_at into v_time from app_private.slack_delivery_jobs where id=v_second;
+  begin perform app_private.retry_slack_delivery(v_second,v_org,v_owner,v_time); raise exception 'Dono operou fila'; exception when insufficient_privilege then null; end;
+  perform app_private.retry_slack_delivery(v_second,v_org,v_admin,v_time);
+  begin perform app_private.retry_slack_delivery(v_second,v_org,v_admin,v_time); raise exception 'Aceitou versão antiga'; exception when sqlstate 'PT409' then null; end;
+  -- Fim das tentativas abandona recuperação automática, inclusive após queda do worker.
+  v_job:=app_private.claim_slack_delivery(v_second);
+  update app_private.slack_delivery_jobs set lease_until=now()-interval '1 second',attempts=5 where id=v_second;
+  if app_private.claim_slack_delivery(v_second) is not null then raise exception 'Excedeu tentativas'; end if;
+  if not exists(select 1 from app_private.slack_delivery_jobs where id=v_second and status='falhou' and lease_id is null and not retryable) then raise exception 'Reserva morta ficou presa'; end if;
+  if has_table_privilege('authenticated','app_private.slack_delivery_jobs','select') or has_function_privilege('anon','app_private.claim_slack_delivery(uuid)','execute') then raise exception 'Privilégio público indevido'; end if;
+  perform set_config('role','service_role',true);
+  v_id:=app_private.enqueue_slack_delivery(v_prefix||'-service',v_team,v_question);
+  v_job:=app_private.claim_slack_delivery(v_id);v_lease:=(v_job->>'lease_id')::uuid;
+  perform app_private.transition_slack_delivery(v_id,v_lease,'ignorar');
+end $$;
+select 'slack_durable_delivery_ok' as result;
+rollback;

@@ -11,6 +11,9 @@ import {
   type ProcessUsageAuditInput,
   type ProcessUsageFeedbackInput,
 } from "@/lib/data/process-usage-analytics";
+import { buildUsagePopulation, readAllUsageRows } from "@/lib/data/process-usage-population";
+import { getSlackSectorLeaders } from "@/lib/data/slack-leadership-data-source";
+import { getVerifiedSlackIdentities } from "@/lib/data/slack-identity-data-source";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -33,27 +36,25 @@ function parseCitations(value: unknown): ProcessUsageAuditInput["citations"] {
   });
 }
 
-// Pessoas que podem consultar os processos: lideranças ativas da estrutura e
-// time aprovado no cadastro operacional.
-async function getTeamSize(organizationId: string) {
+// Lideranças ativas (incluindo referências Slack) e time aprovado, sem copiar diretório.
+async function getPopulation(organizationId: string) {
   const supabase = createSupabaseAdminClient();
-  const [people, operational] = await Promise.all([
-    supabase
-      .from("organization_people")
-      .select("id", { count: "exact", head: true })
-      .eq("organization_id", organizationId)
-      .eq("status", "ativo"),
-    supabase
-      .from("operational_members")
-      .select("id", { count: "exact", head: true })
-      .eq("organization_id", organizationId)
-      .eq("status", "aprovado"),
+  const [people, operational, slack, identities] = await Promise.all([
+    readAllUsageRows((start, end) => supabase.from("organization_people")
+      .select("id,auth_user_id,email").eq("organization_id", organizationId).eq("status", "ativo")
+      .order("id").range(start, end)),
+    readAllUsageRows((start, end) => supabase.from("operational_members")
+      .select("id,email").eq("organization_id", organizationId).eq("status", "aprovado")
+      .order("id").range(start, end)),
+    getSlackSectorLeaders(organizationId),
+    getVerifiedSlackIdentities(organizationId),
   ]);
-
-  if (people.error) throw people.error;
-  if (operational.error) throw operational.error;
-
-  return (people.count ?? 0) + (operational.count ?? 0);
+  return buildUsagePopulation([
+    ...people.map(person => ({key:`person:${person.id}`,appUserId:person.auth_user_id,email:person.email})),
+    ...operational.map(person => ({key:`operational:${person.id}`,email:person.email})),
+    ...slack.filter(sector => sector.active && sector.inviteStatus === "ativo" && sector.leader?.slackTeamId && sector.leader.slackUserId)
+      .map(sector => ({key:`leader:${sector.id}`,slackIdentity:`${sector.leader!.slackTeamId}:${sector.leader!.slackUserId}`})),
+  ], identities);
 }
 
 export async function getProcessUsageOverview() {
@@ -67,21 +68,16 @@ export async function getProcessUsageOverview() {
   if (!organizationId) return null;
 
   const lookbackDays = Math.max(2 * PROCESS_USAGE_PERIOD_DAYS, PROCESS_USAGE_WEEKS * 7);
-  const since = new Date(Date.now() - lookbackDays * DAY_MS).toISOString();
+  const now = new Date();
+  const since = new Date(now.getTime() - lookbackDays * DAY_MS).toISOString();
   const supabase = createSupabaseAdminClient();
-  const [{ data: audits, error }, teamSize] = await Promise.all([
-    supabase
-      .from("asset_question_audits")
+  const [audits, population] = await Promise.all([
+    readAllUsageRows((start, end) => supabase.from("asset_question_audits")
       .select("id,created_at,answer_status,user_id,external_user_id,citations")
-      .eq("organization_id", organizationId)
-      .gte("created_at", since)
-      // Mais recentes primeiro: se o limite de linhas cortar, perde-se o passado.
-      .order("created_at", { ascending: false })
-      .limit(5000),
-    getTeamSize(organizationId),
+      .eq("organization_id", organizationId).gte("created_at", since).lt("created_at", now.toISOString())
+      .order("created_at", { ascending: false }).order("id").range(start, end)),
+    getPopulation(organizationId),
   ]);
-
-  if (error) throw error;
 
   const feedback: ProcessUsageFeedbackInput[] = [];
 
@@ -105,10 +101,15 @@ export async function getProcessUsageOverview() {
       id: audit.id,
       createdAt: audit.created_at,
       status: audit.answer_status,
-      askerKey: audit.user_id ?? audit.external_user_id,
+      askerKey: population.resolveAsker(audit.user_id, audit.external_user_id),
       citations: parseCitations(audit.citations),
     })),
     feedback,
-    teamSize,
+    teamSize: population.size,
+    adoptionUnavailableReason: population.unresolved
+      ? "Identidades de app e Slack ainda não conciliadas. Sem percentual de adoção."
+      : audits.some(audit => !population.resolveAsker(audit.user_id, audit.external_user_id))
+        ? "Há consultas sem vínculo confirmado com a população elegível. Sem percentual de adoção." : undefined,
+    now,
   });
 }

@@ -1,4 +1,8 @@
 import { recordAssetAnswerFeedback } from "@/lib/agent/asset-question-service";
+import { after } from "next/server";
+import { getRoutineReplyInteraction } from "@/lib/integrations/routine-reply-interaction";
+import { enqueueSlackDelivery } from "@/lib/integrations/slack-delivery-store";
+import { processSlackDelivery } from "@/lib/integrations/slack-delivery";
 import {
   getSlackInstallation,
   respondToSlackAction,
@@ -10,6 +14,7 @@ import {
 } from "@/lib/integrations/slack-format";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 type SlackInteractionPayload = {
   type?: string;
@@ -38,8 +43,21 @@ export async function POST(request: Request) {
     payload = JSON.parse(
       new URLSearchParams(rawBody).get("payload") ?? "",
     ) as SlackInteractionPayload;
+    if (!payload || typeof payload !== "object" || Array.isArray(payload)) throw new Error("Payload inválido");
   } catch {
     return Response.json({ ok: false }, { status: 400 });
+  }
+
+  const routine = getRoutineReplyInteraction(payload);
+  if (routine) {
+    let id: string | null;
+    try { id = await enqueueSlackDelivery(routine.eventId, routine.question); }
+    catch { return Response.json({ ok: false }, { status: 503 }); }
+    if (id) after(async () => {
+      try { await processSlackDelivery(id); }
+      catch { console.error("[slack] routine confirmation unavailable"); }
+    });
+    return new Response(null, { status: 200 });
   }
 
   const action = payload.actions?.[0];

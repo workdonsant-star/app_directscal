@@ -28,6 +28,8 @@ export type QuestionResult = {
   questionTitle: string;
   dimension: string;
   score: number;
+  // Maior menos menor média entre Fundador, Liderança e Time; null com menos de duas camadas.
+  layerGap: number | null;
   criticalPercentage: number;
   positivePercentage: number;
   neutralPercentage: number;
@@ -125,8 +127,9 @@ export type OverviewComparisonResult = {
 
 type Report = DiagnosticReport;
 
-const maturityCutoff = 3.5;
-const gapCutoff = 1.2;
+// Meta de maturidade e gap a partir do qual a percepção entre camadas diverge.
+export const maturityCutoff = 3.5;
+export const gapCutoff = 1.2;
 
 const numberFormatter = new Intl.NumberFormat("pt-BR", {
   minimumFractionDigits: 1,
@@ -631,6 +634,7 @@ function buildQuestionResult(
     questionTitle: toQuestionTitle(question.text),
     dimension: dimension.name,
     score: question.score,
+    layerGap: roundOrNull(gap, 1),
     criticalPercentage,
     positivePercentage: 100 - criticalPercentage - neutralPercentage,
     neutralPercentage,

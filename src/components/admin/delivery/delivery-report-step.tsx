@@ -9,7 +9,7 @@ export function DeliveryReportStep() {
   return (
     <div className="space-y-6">
       <section className="space-y-1" aria-labelledby="report-editor-title">
-        <h2 id="report-editor-title" className="font-heading text-lg font-semibold">
+        <h2 id="report-editor-title" className="text-ui-section">
           Relatório de análise
         </h2>
         <p className="max-w-3xl text-sm text-muted-foreground">
@@ -22,7 +22,7 @@ export function DeliveryReportStep() {
           {reportFields.map((field) => (
             <section key={field.key} className="grid gap-2">
               <div>
-                <label htmlFor={`report-${field.key}`} className="font-heading text-base font-semibold">
+                <label htmlFor={`report-${field.key}`} className="font-heading text-base font-bold">
                   {field.label}
                 </label>
                 <p className="text-xs text-muted-foreground">{field.description}</p>
@@ -34,16 +34,16 @@ export function DeliveryReportStep() {
                   setReport((current) => ({ ...current, [field.key]: event.target.value }))
                 }
                 rows={5}
-                className="min-h-32 w-full resize-y rounded-lg border border-input bg-transparent px-3 py-2 text-sm leading-relaxed outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+                className="min-h-32 w-full resize-y rounded-lg border border-transparent bg-input px-3 py-2 text-sm leading-relaxed outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
               />
             </section>
           ))}
         </div>
 
         <aside className="space-y-4 xl:sticky xl:top-20 xl:self-start">
-          <div className="rounded-lg border p-4">
-            <p className="font-heading text-sm font-semibold">Progresso do relatório</p>
-            <p className="mt-2 text-3xl font-semibold tabular-nums">
+          <div className="rounded-lg bg-card p-4">
+            <p className="font-heading text-sm font-medium">Progresso do relatório</p>
+            <p className="mt-2 text-3xl font-bold tabular-nums">
               {reportFilledCount}
               <span className="text-base font-normal text-muted-foreground">/{reportFields.length}</span>
             </p>

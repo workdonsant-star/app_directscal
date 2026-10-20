@@ -56,7 +56,7 @@ export default async function OperationalMemberRegistrationPage({
           </picture>
         </Link>
 
-        <div className="rounded-lg border bg-card px-4 py-3 text-card-foreground">
+        <div className="rounded-lg bg-card px-4 py-3 text-card-foreground">
           <p className="text-sm font-medium">{workspace.organizationName}</p>
           <p className="mt-1 text-xs text-muted-foreground">
             Domínio autorizado:{" "}

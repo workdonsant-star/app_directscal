@@ -16,7 +16,12 @@ export const getClientOnboardingForUser = cache(async (userId: string) => {
     .schema("app_private").from("client_onboarding_completions")
     .select("completed_at").eq("organization_id", organizationId).maybeSingle();
   if (error) throw new Error("Não foi possível consultar a configuração inicial da empresa.");
-  return { organizationId, completed: Boolean(data) };
+  const slackConnected = data ? false : Boolean(await getSlackInstallationForOrganization(organizationId));
+  return {
+    organizationId,
+    completed: Boolean(data),
+    requiresOnboarding: !data && !slackConnected,
+  };
 });
 
 export async function getClientOnboardingWorkspace(organizationId: string) {
@@ -40,7 +45,7 @@ export async function completeClientOnboarding(session: AuthSession) {
   if (onboarding.completed) return { ok: true };
   const { progress } = await getClientOnboardingWorkspace(onboarding.organizationId);
   if (!progress.canComplete) {
-    return { ok: false, message: "Conecte o Slack e envie os convites das lideranças de todos os setores antes de continuar." };
+    return { ok: false, message: "Conecte o Slack e selecione uma liderança ativa para cada setor antes de continuar." };
   }
   const { data, error } = await createSupabaseAdminClient()
     .schema("app_private").from("client_onboarding_completions")

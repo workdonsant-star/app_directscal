@@ -11,3 +11,6 @@ Esta pasta concentra documentos e helpers de geração de PDF do app. As respons
 - Usar valores de marca Directscal como constantes locais do documento, já que PDF não consome os tokens CSS do app.
 - Evitar HTML/CSS do navegador, Tailwind, DOM APIs, `window.print()` ou dependências de browser.
 - O Route Handler decide status HTTP, nome de arquivo e headers. O documento decide apenas páginas, estrutura e conteúdo.
+
+
+OmdxReportDocument aceita editorial com as seis seções publicadas; a rota real sempre fornece publication.report. ExecutiveReading usa report-findings para não inventar gargalo em base uniforme. O PDF de Action Points recebe buildPublishedActionPlan e recusa download antes da publicação.

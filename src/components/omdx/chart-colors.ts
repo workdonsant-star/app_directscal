@@ -5,16 +5,27 @@ export const overviewChartBarBorderRadius = 5;
 export const chartHistoricalMarkerSymbol =
   "path://M0 0H6V3H0ZM11 0H17V3H11ZM22 0H28V3H22Z";
 
+// Camadas usam a mesma rampa ordinal teal em todos os charts (SVG e ECharts).
 export const layerColorTokenByGroup: Record<RespondentGroup, string> = {
-  fundador: "--omdx-layer-diretoria-70",
-  lideranca: "--omdx-layer-lideranca-60",
-  operacao: "--omdx-layer-time-50",
+  fundador: "--overview-chart-founder",
+  lideranca: "--overview-chart-leadership",
+  operacao: "--overview-chart-tactical",
 };
 
+export const layerLabelTokenByGroup: Record<RespondentGroup, string> = {
+  fundador: "--overview-chart-founder-label",
+  lideranca: "--overview-chart-leadership-label",
+  operacao: "--overview-chart-tactical-label",
+};
+
+// Fallbacks do tema claro, usados só antes da leitura das variáveis CSS.
 export const layerColorFallbacks: Record<string, string> = {
-  "--omdx-layer-diretoria-70": "#0043CE",
-  "--omdx-layer-lideranca-60": "#0072C3",
-  "--omdx-layer-time-50": "#009D9A",
+  "--overview-chart-founder": "#0A5F4F",
+  "--overview-chart-leadership": "#347A6D",
+  "--overview-chart-tactical": "#71A299",
+  "--overview-chart-founder-label": "#F7F7F8",
+  "--overview-chart-leadership-label": "#F7F7F8",
+  "--overview-chart-tactical-label": "#151515",
 };
 
 const layerScaleByGroup: Record<RespondentGroup, Record<number, string>> = {
@@ -70,5 +81,5 @@ export function getLayerScoreColor(group: RespondentGroup, score: number) {
 }
 
 export function getNeutralScoreColor() {
-  return "var(--omdx-layer-lideranca-70)";
+  return "var(--overview-chart-dimensions)";
 }

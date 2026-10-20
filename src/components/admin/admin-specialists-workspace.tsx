@@ -188,7 +188,7 @@ export function AdminSpecialistsWorkspace({ initialSpecialists }: { initialSpeci
       </AppTopbarActionsPortal>
 
       <section aria-labelledby="specialists-title" className="space-y-1">
-        <h1 id="specialists-title" className="font-heading text-2xl font-semibold">
+        <h1 id="specialists-title" className="text-ui-page">
           Especialistas
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -208,7 +208,7 @@ export function AdminSpecialistsWorkspace({ initialSpecialists }: { initialSpeci
       <section className="flex flex-col gap-4" aria-labelledby="specialist-list-title">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-1">
-            <h2 id="specialist-list-title" className="font-heading text-lg font-semibold">
+            <h2 id="specialist-list-title" className="text-ui-section">
               {showArchived ? "Especialistas arquivados" : "Equipe de análise"}
             </h2>
             <p className="text-sm text-muted-foreground">

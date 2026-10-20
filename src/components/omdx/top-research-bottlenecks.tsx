@@ -32,7 +32,7 @@ export function TopResearchBottlenecks({
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <h2 className="text-foreground text-xl font-semibold tracking-tight">
+        <h2 className="text-ui-section text-foreground">
           Top Gargalos da Pesquisa
         </h2>
         <p className="text-muted-foreground max-w-2xl text-sm">
@@ -43,7 +43,7 @@ export function TopResearchBottlenecks({
 
       <Card>
         <CardHeader className="border-b pb-4">
-          <CardTitle className="text-base font-semibold">
+          <CardTitle className="text-base font-bold">
             Gargalos específicos
           </CardTitle>
         </CardHeader>

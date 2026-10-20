@@ -121,7 +121,7 @@ function GroupRow({
           )}
           {group.assignee && <AssigneeAvatar assignee={group.assignee} />}
           <span className="flex flex-col">
-            <span className="font-semibold">{group.label}</span>
+            <span className="font-medium">{group.label}</span>
             <span className="text-xs font-normal text-muted-foreground tabular-nums">
               {group.hint ? `${group.hint} · ${count}` : count}
             </span>
@@ -164,7 +164,7 @@ function ChildRow({
         <button
           type="button"
           onClick={() => onOpen(row.id)}
-          className="flex cursor-pointer flex-col gap-0.5 rounded-sm text-left outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex cursor-pointer flex-col gap-0.5 rounded-sm text-left outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
         >
           <span className="line-clamp-2 font-medium">{row.title}</span>
           <span className="line-clamp-1 text-xs font-normal text-muted-foreground">
@@ -290,7 +290,7 @@ export function ActionPointsWorkspace({
   if (rows.length === 0 || !diagnosticId) {
     return (
       <div className="flex flex-1 flex-col items-start gap-1">
-        <h2 className="text-base font-semibold">
+        <h2 className="text-ui-title">
           Nenhum action point disponível
         </h2>
         <p className="max-w-[60ch] text-sm text-muted-foreground">

@@ -24,6 +24,7 @@ import {
   getChunkEmbeddingText,
 } from "@/lib/data/management-asset-indexer";
 import { getManagementAssetTemplate } from "@/lib/data/management-asset-templates";
+import { getManagementAssetReview } from "@/lib/data/management-asset-review";
 import {
   isRichTextEmpty,
   legacySopContentToRichText,
@@ -142,16 +143,17 @@ export async function listAdminManagementAssets(organizationId?: string): Promis
     publishedIds.length > 0
       ? supabase
           .from("management_asset_versions")
-          .select("id,version_number")
+          .select("id,version_number,published_at")
           .in("id", publishedIds)
       : Promise.resolve({ data: [], error: null }),
   ]);
 
   if (publishedVersions.error) throw publishedVersions.error;
 
-  const versionNumberById = new Map(
-    (publishedVersions.data ?? []).map((version) => [version.id, version.version_number]),
+  const publishedVersionById = new Map(
+    (publishedVersions.data ?? []).map((version) => [version.id, version]),
   );
+  const now = new Date();
 
   return assets.map((asset) => {
     const draft = draftByAsset.get(asset.id) ?? null;
@@ -171,9 +173,12 @@ export async function listAdminManagementAssets(organizationId?: string): Promis
       status: deriveAssetStatus(asset, draft?.review_status ?? null),
       draftStatus: draft?.review_status ?? null,
       publishedVersionNumber: asset.current_published_version_id
-        ? (versionNumberById.get(asset.current_published_version_id) ?? null)
+        ? (publishedVersionById.get(asset.current_published_version_id)?.version_number ?? null)
         : null,
       specialistId: asset.assigned_specialist_id,
+      ownerLabel: asset.owner_label,
+      reviewCycle: asset.review_cycle,
+      review: getManagementAssetReview({ publishedAt: publishedVersionById.get(asset.current_published_version_id ?? "")?.published_at ?? null, reviewCycle: asset.review_cycle, archivedAt: asset.archived_at }, now),
       updatedAt: toIso(lastChange),
     });
   });
@@ -273,6 +278,7 @@ export async function getAdminManagementAssetDetail(
     status: deriveAssetStatus(asset, draft?.review_status ?? null),
     archivedAt: toIsoOrNull(asset.archived_at),
     updatedAt: toIso(asset.updated_at),
+    revision: { assetUpdatedAt: asset.updated_at, draftId: draft?.id ?? null, draftUpdatedAt: draft?.updated_at ?? null },
     draft: draft ? mapVersionWithContent(draft) : null,
     published: published ? mapVersionWithContent(published) : null,
     versions: versions.map(mapVersion),
@@ -326,6 +332,7 @@ export async function deleteManagementAssets(input: ManagementAssetBulkSelection
   // As FKs existentes removem versões, escopos e trechos na mesma instrução.
   const { data, error } = await supabase.from("management_assets").delete()
     .eq("organization_id", input.organizationId).in("id", input.assetIds).select("id");
+  if (error?.code === "23503") throw new ManagementAssetError("Há ativos vinculados ao histórico de rotinas nesta seleção. Arquive esses ativos para preservar os registros.", 409);
   if (error) throw error;
   return data.map((asset) => asset.id);
 }
@@ -352,6 +359,9 @@ export async function createManagementAsset(
 
   if (input.templateId && !template) {
     throw new ManagementAssetError("Modelo de partida não encontrado.");
+  }
+  if (template && template.type !== input.type) {
+    throw new ManagementAssetError("Selecione um modelo do mesmo tipo do ativo.");
   }
 
   const content = template
@@ -396,6 +406,7 @@ export async function createManagementAsset(
       content: contentToJson(content),
       summary: input.summary,
       created_by_user_id: actorUserId,
+      last_edited_by_user_id: actorUserId,
       review_status: "rascunho",
     });
 
@@ -449,6 +460,7 @@ async function createDraftFromPublished(
       content: contentToJson(baseContent),
       summary: asset.description,
       created_by_user_id: actorUserId,
+      last_edited_by_user_id: actorUserId,
       review_status: "rascunho",
     })
     .select("*")
@@ -470,54 +482,17 @@ export async function updateManagementAsset(
   assetId: string,
   input: UpdateManagementAssetInput,
 ) {
-  const asset = await getAssetRow(assetId);
-  if (input.specialistId !== asset.assigned_specialist_id) await validateSpecialist(input.specialistId);
-
-  if (asset.archived_at) {
-    throw new ManagementAssetError("Restaure o ativo antes de editar.", 409);
-  }
-
-  const supabase = createSupabaseAdminClient();
-  const { error } = await supabase
-    .from("management_assets")
-    .update({
-      title: input.title,
-      description: input.summary,
-      category: input.category,
-      owner_label: input.ownerLabel,
-      review_cycle: input.reviewCycle,
-      assigned_specialist_id: input.specialistId,
-    })
-    .eq("id", asset.id);
-
-  if (error) throw error;
-
-  const versions = await getVersionRows(asset.id);
-  let draft = versions.find((version) => version.published_at === null) ?? null;
-
-  if (input.content) {
-    if (!draft) {
-      draft = await createDraftFromPublished(actorUserId, asset, versions, input.content);
-    } else if (draft.review_status !== "rascunho") {
-      throw new ManagementAssetError(
-        "O conteúdo está em revisão. Devolva para rascunho antes de editar.",
-        409,
-      );
+  assertUuid(assetId);
+  const { error } = await createSupabaseAdminClient().schema("app_private").rpc("save_admin_management_asset", {
+    p_actor_user_id: actorUserId, p_asset_id: assetId, p_input: input as unknown as Json,
+  });
+  if (error) {
+    if (error.code === "PT404") throw new ManagementAssetError("Ativo não encontrado.", 404);
+    if (["PT409", "55P03", "40001", "23505"].includes(error.code)) {
+      throw new ManagementAssetError("O ativo mudou ou está sendo alterado em outra sessão. Seu texto permanece no editor. Atualize a página antes de tentar novamente.", 409);
     }
-  }
-
-  if (draft && draft.review_status === "rascunho") {
-    const { error: draftError } = await supabase
-      .from("management_asset_versions")
-      .update({
-        summary: input.summary,
-        change_note: input.changeNote,
-        ...(input.content ? { content: contentToJson(input.content) } : {}),
-      })
-      .eq("id", draft.id)
-      .is("published_at", null);
-
-    if (draftError) throw draftError;
+    if (error.code === "PT400") throw new ManagementAssetError("Revise os dados e o especialista do ativo.", 400);
+    throw new ManagementAssetError("Não foi possível salvar o ativo. Seu texto permanece no editor.", 500);
   }
 }
 
@@ -751,35 +726,40 @@ export async function listAdminAssetQuestionAudits(filter: {
   onlyGaps: boolean;
   organizationId?: string;
 }): Promise<AdminAssetQuestionAudit[]> {
+  const { requireAgentOperator } = await import("@/lib/data/agent-operations-data-source");
+  await requireAgentOperator();
   const supabase = createSupabaseAdminClient();
-  const auditQuery = supabase
-    .from("asset_question_audits")
-    .select(
-      "id,organization_id,channel,question,answer,answer_status,citations,provider,latency_ms,created_at",
-    )
-    .order("created_at", { ascending: false })
-    .limit(200);
-  if (filter.organizationId) {
-    assertUuid(filter.organizationId, "Empresa não encontrada.");
-    auditQuery.eq("organization_id", filter.organizationId);
+  if (!filter.organizationId) throw new ManagementAssetError("Selecione uma empresa.");
+  assertUuid(filter.organizationId, "Empresa não encontrada.");
+  const audits: Array<Pick<Database["public"]["Tables"]["asset_question_audits"]["Row"], "id" | "organization_id" | "channel" | "question" | "answer" | "answer_status" | "citations" | "provider" | "latency_ms" | "created_at">> = [];
+  let beforeAudit: { created_at: string; id: string } | undefined;
+  for (;;) {
+    const query = supabase.from("asset_question_audits")
+      .select("id,organization_id,channel,question,answer,answer_status,citations,provider,latency_ms,created_at")
+      .eq("organization_id", filter.organizationId).order("created_at", { ascending: false }).order("id", { ascending: false }).limit(500);
+    if (beforeAudit) query.or(`created_at.lt.${beforeAudit.created_at},and(created_at.eq.${beforeAudit.created_at},id.lt.${beforeAudit.id})`);
+    const { data, error } = await query;
+    if (error) throw error;
+    audits.push(...data);
+    if (data.length < 500) break;
+    beforeAudit = data.at(-1)!;
   }
-  const { data: audits, error } = await auditQuery;
-
-  if (error) throw error;
-
-  const auditIds = audits.map((audit) => audit.id);
-  const [organizationNames, feedback] = await Promise.all([
-    getOrganizationNames(audits.map((audit) => audit.organization_id)),
-    auditIds.length > 0
-      ? supabase
-          .from("asset_answer_feedback")
-          .select("question_audit_id,value,comment,created_at")
-          .in("question_audit_id", auditIds)
-          .order("created_at", { ascending: false })
-      : Promise.resolve({ data: [], error: null }),
-  ]);
-
-  if (feedback.error) throw feedback.error;
+  const organizationNames = await getOrganizationNames([filter.organizationId]);
+  const feedback: { data: Array<{question_audit_id: string; value: "util" | "nao_util"; comment: string | null}> } = { data: [] };
+  for (let start = 0; start < audits.length; start += 200) {
+    let beforeFeedback: { created_at: string; id: string } | undefined;
+    for (;;) {
+      const query = supabase.from("asset_answer_feedback").select("question_audit_id,value,comment,created_at,id")
+        .eq("organization_id", filter.organizationId).in("question_audit_id", audits.slice(start, start + 200).map(audit => audit.id))
+        .order("created_at", { ascending: false }).order("id", { ascending: false }).limit(500);
+      if (beforeFeedback) query.or(`created_at.lt.${beforeFeedback.created_at},and(created_at.eq.${beforeFeedback.created_at},id.lt.${beforeFeedback.id})`);
+      const { data, error } = await query;
+      if (error) throw error;
+      feedback.data.push(...data);
+      if (data.length < 500) break;
+      beforeFeedback = data.at(-1)!;
+    }
+  }
 
   const feedbackByAudit = new Map<string, { value: "util" | "nao_util"; comment: string | null }>();
 

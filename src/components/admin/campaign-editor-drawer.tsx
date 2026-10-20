@@ -62,7 +62,7 @@ const fieldTypeOptions: { value: AcquisitionFormFieldType; label: string }[] = [
 
 function textareaClasses(className?: string) {
   return cn(
-    "border-input bg-transparent text-foreground min-h-20 w-full rounded-lg border px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 dark:bg-input/30",
+    "border-transparent bg-input text-foreground min-h-20 w-full rounded-lg border px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 dark:bg-input/30",
     className,
   );
 }
@@ -211,7 +211,7 @@ export function CampaignEditorDrawer({
 
         {draft && (
           <div className="flex flex-col gap-6 p-4">
-            <section className="grid gap-4 rounded-lg border bg-card p-4 lg:grid-cols-[1fr_14rem_12rem]">
+            <section className="grid gap-4 rounded-lg bg-card p-4 lg:grid-cols-[1fr_14rem_12rem]">
               <div className="flex flex-col gap-2">
                 <label
                   htmlFor="campaign-name"
@@ -307,7 +307,7 @@ export function CampaignEditorDrawer({
                 >
                   Slug de aquisição
                 </label>
-                <div className="flex min-w-0 items-center rounded-lg border border-input bg-background focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 dark:bg-input/30">
+                <div className="flex min-w-0 items-center rounded-lg border border-transparent bg-input focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 dark:bg-input/30">
                   <span className="shrink-0 border-r px-2.5 text-sm text-muted-foreground">
                     /a/
                   </span>
@@ -327,7 +327,7 @@ export function CampaignEditorDrawer({
             <section className="flex flex-col gap-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-base font-semibold text-foreground">
+                  <h3 className="text-ui-title text-foreground">
                     Campos do formulário
                   </h3>
                   <p className="max-w-2xl text-sm text-muted-foreground">
@@ -349,7 +349,7 @@ export function CampaignEditorDrawer({
                   return (
                     <div
                       key={field.id}
-                      className="grid gap-3 rounded-lg border bg-card p-3 lg:grid-cols-[1.1fr_10rem_1fr_auto]"
+                      className="grid gap-3 rounded-lg bg-card p-3 lg:grid-cols-[1.1fr_10rem_1fr_auto]"
                     >
                       <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-2">
@@ -425,7 +425,7 @@ export function CampaignEditorDrawer({
                       </div>
 
                       <div className="flex items-end gap-2">
-                        <label className="flex h-8 items-center gap-2 rounded-lg border px-2.5 text-sm text-foreground">
+                        <label className="flex h-8 items-center gap-2 rounded-lg bg-input px-2.5 text-sm text-foreground">
                           <input
                             type="checkbox"
                             className="size-4 accent-primary"

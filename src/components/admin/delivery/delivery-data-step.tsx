@@ -27,7 +27,7 @@ export function DeliveryDataStep() {
   return (
     <div className="space-y-8">
       <section className="flex flex-col gap-4" aria-labelledby="delivery-analytics-title">
-        <h2 id="delivery-analytics-title" className="font-heading text-lg font-semibold">
+        <h2 id="delivery-analytics-title" className="text-ui-section">
           Visão analítica
         </h2>
         <LayerScoreDashboard
@@ -46,7 +46,7 @@ export function DeliveryDataStep() {
       {selectedDimension ? (
         <section className="space-y-4" aria-labelledby="dimension-analysis-title">
           <div className="space-y-1">
-            <h2 id="dimension-analysis-title" className="font-heading text-lg font-semibold">
+            <h2 id="dimension-analysis-title" className="text-ui-section">
               Análise por dimensão
             </h2>
           </div>
@@ -81,7 +81,7 @@ export function DeliveryDataStep() {
               <div className="flex flex-col gap-4 border-b pb-5 lg:flex-row lg:items-start lg:justify-between">
                 <div className="max-w-3xl">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-heading text-xl font-semibold">
+                    <h3 className="text-ui-section">
                       {selectedDimension.name}
                     </h3>
                     <Badge variant="outline">{selectedDimension.classification}</Badge>
@@ -93,11 +93,11 @@ export function DeliveryDataStep() {
 
                 <dl className="grid shrink-0 grid-cols-2 gap-x-6 gap-y-1 text-sm">
                   <dt className="text-muted-foreground">Pontuação</dt>
-                  <dd className="text-right font-semibold tabular-nums">
+                  <dd className="text-right font-medium tabular-nums">
                     {formatScore(selectedDimension.score)}/5
                   </dd>
                   <dt className="text-muted-foreground">Gap entre camadas</dt>
-                  <dd className="text-right font-semibold tabular-nums">
+                  <dd className="text-right font-medium tabular-nums">
                     {formatScore(selectedDimension.gap)}/5
                   </dd>
                 </dl>
@@ -109,7 +109,7 @@ export function DeliveryDataStep() {
                 >).map(([group, score]) => (
                   <div key={group} className="flex items-baseline gap-2">
                     <dt className="text-sm text-muted-foreground">{layerLabels[group]}</dt>
-                    <dd className="font-semibold tabular-nums">
+                    <dd className="font-medium tabular-nums">
                       {score === null ? "—" : `${formatScore(score)}/5`}
                     </dd>
                   </div>
@@ -117,7 +117,7 @@ export function DeliveryDataStep() {
               </dl>
 
               <div className="space-y-3 py-5">
-                <h4 className="font-heading text-base font-semibold">Critérios avaliados</h4>
+                <h4 className="font-heading text-base font-bold">Critérios avaliados</h4>
                 <div className="overflow-x-auto pb-px">
                   <div className="min-w-[860px]">
                     <DimensionQuestionResultsTable questions={selectedDimension.questions} />
@@ -126,7 +126,7 @@ export function DeliveryDataStep() {
               </div>
 
               <div className="grid gap-2 border-t pt-5">
-                <label htmlFor={`dimension-reading-${selectedDimension.id}`} className="font-heading text-base font-semibold">
+                <label htmlFor={`dimension-reading-${selectedDimension.id}`} className="font-heading text-base font-bold">
                   Leitura do especialista
                 </label>
                 <textarea
@@ -136,7 +136,7 @@ export function DeliveryDataStep() {
                     setDimensionReading(selectedDimension.id, event.target.value)
                   }
                   rows={5}
-                  className="mt-1 min-h-32 w-full resize-y rounded-lg border border-input bg-transparent px-3 py-2 text-sm leading-relaxed outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+                  className="mt-1 min-h-32 w-full resize-y rounded-lg border border-transparent bg-input px-3 py-2 text-sm leading-relaxed outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
                 />
               </div>
             </div>

@@ -19,3 +19,5 @@ Rotas autenticadas das bibliotecas de SOPs, Playbooks, Governança e Matriz RACI
 - Os dados vêm do Supabase: somente a versão publicada vigente de ativos não arquivados das organizações da sessão. O cliente não edita ativos.
 
 A seção Ativos de gestão é a navegação única para os ativos, com quatro categorias principais e outras categorias que existam nos dados publicados. As rotas por tipo continuam para compatibilidade e leitura; não aparecem na sidebar. Categorias adicionais usam `/categorias/[categoria]`.
+
+- Raiz, páginas de categoria e breadcrumb usam getPublishedManagementAssetFolders, que inclui categorias vazias persistidas e títulos personalizados. Chaves estáveis conservam URLs depois de renomear; filtros usam o título vigente.

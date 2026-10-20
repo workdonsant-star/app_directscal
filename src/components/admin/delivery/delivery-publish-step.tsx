@@ -12,7 +12,7 @@ export function DeliveryPublishStep() {
   return (
     <div className="space-y-6">
       <section className="space-y-1" aria-labelledby="publication-title">
-        <h2 id="publication-title" className="font-heading text-lg font-semibold">
+        <h2 id="publication-title" className="text-ui-section">
           Publicação da entrega
         </h2>
         <p className="max-w-3xl text-sm text-muted-foreground">
@@ -20,11 +20,11 @@ export function DeliveryPublishStep() {
         </p>
       </section>
 
-      <section className="rounded-lg border bg-card p-5" aria-labelledby="client-preview-title">
+      <section className="rounded-lg bg-card p-5" aria-labelledby="client-preview-title">
         <div className="flex flex-col gap-3 border-b pb-5 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-xs font-medium text-muted-foreground">Prévia do cliente</p>
-            <h3 id="client-preview-title" className="mt-1 font-heading text-xl font-semibold">
+            <h3 id="client-preview-title" className="text-ui-section mt-1">
               {delivery.diagnosticName}
             </h3>
             <p className="mt-1 text-sm text-muted-foreground">{delivery.companyName}</p>
@@ -33,13 +33,13 @@ export function DeliveryPublishStep() {
         </div>
         <div className="space-y-5 pt-5">
           <div>
-            <h4 className="font-heading text-base font-semibold">Resumo executivo</h4>
+            <h4 className="font-heading text-base font-bold">Resumo executivo</h4>
             <p className="mt-1 max-w-3xl text-sm leading-relaxed text-muted-foreground">
               {report.executiveSummary}
             </p>
           </div>
           <div>
-            <h4 className="font-heading text-base font-semibold">Plano de ação</h4>
+            <h4 className="font-heading text-base font-bold">Plano de ação</h4>
             <p className="mt-1 text-sm text-muted-foreground">
               {selectedActionPointIds.size} action points selecionados para a página Action Points do cliente.
             </p>

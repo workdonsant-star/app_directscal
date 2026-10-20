@@ -164,48 +164,21 @@ Uso recomendado:
 
 ## Tipografia
 
+Tokens completos, separados entre interface (`ui-*`) e documentos dos ativos de gestão (`doc-*`), em `docs/tokens-de-tipografia.md`.
+
 ### Famílias
 
 | Token | Fonte atual | Uso |
 | --- | --- | --- |
-| `--font-sans` | Funnel Sans | UI, body, dashboards, tabelas, botões |
-| `--font-heading` | Plus Jakarta Sans | Títulos de produto |
-| `--font-serif` | Instrument Serif | Ênfase editorial rara, preferencialmente marketing |
+| `--font-ui` / `--font-sans` | Funnel Sans | UI, body, dashboards, tabelas, botões |
+| `--font-ui-heading` / `--font-heading` | Plus Jakarta Sans | Títulos de produto |
+| `--font-doc` | Funnel Sans | Corpo dos ativos de gestão |
+| `--font-doc-heading` | Plus Jakarta Sans | Títulos dos ativos de gestão |
 | `--font-mono` | JetBrains Mono | Código, ids, valores técnicos |
-| `--font-figma-heading` | Plus Jakarta Sans | Paridade com telas de auth vindas do Figma |
-| `--font-figma-copy` | Instrument Sans | Paridade com telas de auth vindas do Figma |
-| `--font-figma-flex` | Roboto Flex | Paridade pontual de layouts importados |
-
-Recomendação para novas superfícies:
-
-- Produto/app: Plus Jakarta Sans para títulos e Funnel Sans para corpo e UI.
-- Site/marketing: Funnel Sans para corpo; Instrument Serif apenas para uma camada editorial clara.
-- Monospace: JetBrains Mono para código e metadados técnicos.
-- Não usar serif em labels, botões, tabelas ou formulários.
 
 ### Escala de texto
 
-Use escala fixa, sem fonte fluida em interfaces de produto.
-
-| Papel | Classe/valor atual | Peso | Uso |
-| --- | --- | --- | --- |
-| Micro label | `text-xs` (12px) | 500 | Badges, labels auxiliares |
-| Controle compacto | `text-[0.8rem]` (12.8px) | 500 | Botões pequenos, filtros |
-| Corpo denso | `text-sm` (14px) | 400/500 | Tabelas, labels, descrições |
-| Corpo padrão | `text-base` (16px) | 400/500 | Texto de formulário e conteúdo |
-| Título de painel | `text-base` (16px) | 600 | Dialogs, cards, seções compactas |
-| Título público compacto | `text-xl` (20px) | 600 | Formulários públicos estreitos |
-| Título de página | `text-2xl` (24px) | 600 | Workspace, páginas autenticadas |
-| KPI | `text-3xl` (30px) | 600 | Números principais |
-| Auth/marketing | `40px` | 600 | Login e superfícies públicas específicas |
-
-Regras:
-
-- Letter spacing sempre normal, não negativo.
-- Números alinháveis usam `tabular-nums`.
-- Body/prosa longa: máximo entre 65 e 75 caracteres por linha.
-- Tabelas e dashboards podem ser mais densos.
-- Pesos principais: 400, 500, 600. Peso 700 apenas quando PDF, material exportado ou hierarquia exigir.
+Use escala fixa, sem fonte fluida em interfaces de produto. Três pesos: 400 corpo, 500 rótulos e controles, 700 títulos; nada abaixo de 12px. Rótulos de métrica e metadado em JetBrains Mono (`font-label`). Interface: `text-ui-kpi`, `text-ui-page`, `text-ui-section`, `text-ui-title`, `text-sm`, `text-xs`. Documentos: `text-doc-title`, `text-doc-h2`, `text-doc-h3`, `text-doc-body`, `text-doc-table`, `text-doc-label`.
 
 ## Espaçamento e layout
 

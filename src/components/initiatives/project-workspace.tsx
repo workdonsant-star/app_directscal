@@ -126,7 +126,7 @@ function TaskTable({
           <TableRow key={task.id}>
             <TableCell>
               <button
-                className="flex cursor-pointer items-center gap-3 rounded-sm text-left font-medium outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex cursor-pointer items-center gap-3 rounded-sm text-left font-medium outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
                 onClick={() => onOpen(task.id)}
               >
                 {task.status === "done" ? (
@@ -276,7 +276,7 @@ export function ProjectWorkspace({
       <div className="space-y-3">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1.5">
-            <h1 className="font-heading text-[28px] leading-tight font-semibold tracking-tight">
+            <h1 className="text-ui-page">
               {initiative.title}
             </h1>
             <p className="max-w-[560px] text-sm leading-5 text-muted-foreground">
@@ -336,7 +336,7 @@ export function ProjectWorkspace({
         <TabsContent value="attention" className="space-y-10 pt-6">
           <div className="space-y-5">
             <div className="space-y-1">
-              <h2 className="font-heading text-xl font-semibold tracking-tight">
+              <h2 className="text-ui-section">
                 Situações que precisam de você
               </h2>
               <p className="text-sm text-muted-foreground">
@@ -360,7 +360,7 @@ export function ProjectWorkspace({
           </div>
           <div className="space-y-5">
             <div className="space-y-1">
-              <h2 className="font-heading text-xl font-semibold tracking-tight">
+              <h2 className="text-ui-section">
                 Em produção
               </h2>
               <p className="text-sm text-muted-foreground">
@@ -379,7 +379,7 @@ export function ProjectWorkspace({
         </TabsContent>
         <TabsContent value="tasks" className="space-y-5 pt-6">
           <div className="space-y-1">
-            <h2 className="text-xl font-semibold">Todas as tarefas</h2>
+            <h2 className="text-ui-section">Todas as tarefas</h2>
             <p className="text-sm text-muted-foreground">
               {tasks.length} tarefas ·{" "}
               {tasks.filter((task) => task.status === "done").length} concluídas
@@ -397,7 +397,7 @@ export function ProjectWorkspace({
         </TabsContent>
         <TabsContent value="activity" className="pt-6">
           <div className="space-y-1">
-            <h2 className="text-xl font-semibold">Atividade do projeto</h2>
+            <h2 className="text-ui-section">Atividade do projeto</h2>
             <p className="text-sm text-muted-foreground">
               Decisões, conversas e mudanças de prazo, com origem e responsável.
             </p>
@@ -415,7 +415,7 @@ export function ProjectWorkspace({
                   </time>
                 </div>
                 <button
-                  className="text-sm font-medium text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                  className="text-sm font-medium text-primary hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring"
                   onClick={() => openTask(update.taskId)}
                 >
                   {update.taskTitle}
@@ -438,7 +438,7 @@ export function ProjectWorkspace({
           )}
         </TabsContent>
         <TabsContent value="assets" className="space-y-4 pt-6">
-          <h2 className="text-xl font-semibold">Ativos relacionados</h2>
+          <h2 className="text-ui-section">Ativos relacionados</h2>
           <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
             Nenhum ativo vinculado a este projeto. SOPs e critérios de execução
             poderão orientar as tarefas e as respostas do agente.
@@ -576,7 +576,7 @@ export function ProjectWorkspace({
                 name="description"
                 rows={3}
                 maxLength={1200}
-                className="w-full rounded-md border bg-background p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full rounded-md border border-transparent bg-input p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
             </div>
             <DialogFooter>
@@ -644,7 +644,7 @@ export function ProjectWorkspace({
                 ? activity.slice(0, 4).map((update) => (
                     <div key={update.id} className="space-y-1 text-sm">
                       <button
-                        className="text-primary hover:underline"
+                        className="text-primary hover:text-foreground hover:underline"
                         onClick={() => {
                           setAgentOpen(false);
                           openTask(update.taskId);
@@ -664,7 +664,7 @@ export function ProjectWorkspace({
                   ).map((task) => (
                     <div key={task.id} className="space-y-2 border-b pb-4">
                       <button
-                        className="text-left text-sm font-medium text-primary hover:underline"
+                        className="text-left text-sm font-medium text-primary hover:text-foreground hover:underline"
                         onClick={() => {
                           setAgentOpen(false);
                           openTask(task.id);

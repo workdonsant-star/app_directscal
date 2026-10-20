@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getSignedInRedirectPath } from "@/lib/auth/navigation";
 
-type PasswordLoginMode = "dev" | "superadmin";
+type PasswordLoginMode = "dev" | "app";
 
 async function getResponseMessage(response: Response, fallback: string) {
   const data: unknown = await response.json().catch(() => null);
@@ -67,9 +67,9 @@ export function SignInForm({
     setError(null);
     setIsSubmitting(true);
 
-    if (passwordLoginMode === "superadmin") {
+    if (passwordLoginMode === "app") {
       const result = await signIn("credentials", {
-        callbackUrl: "/admin/operacao",
+        callbackUrl: "/entrar",
         email,
         flow: "app",
         password,
@@ -82,8 +82,7 @@ export function SignInForm({
         return;
       }
 
-      router.push(getSignedInRedirectPath({ role: "superadmin" }));
-      router.refresh();
+      window.location.assign("/entrar");
       return;
     }
 

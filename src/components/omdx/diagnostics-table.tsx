@@ -5,17 +5,15 @@ import {
   Copy,
   Download,
   MoreHorizontal,
+  Lock,
   Pencil,
   Trash2,
 } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { DeleteDiagnosticDialog } from "@/components/omdx/delete-diagnostic-dialog";
 import { StatusBadge } from "@/components/omdx/status-badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -35,6 +33,7 @@ import {
   canGenerateDiagnosticActionPlan,
   canGenerateDiagnosticReport,
 } from "@/lib/data/omdx-domain";
+import { getEffectiveDiagnosticStatus } from "@/lib/data/omdx-production-rules";
 import type {
   Diagnostic,
   DiagnosticShareLink,
@@ -58,23 +57,9 @@ type DiagnosticsTableProps = {
   shareLinksByDiagnosticId: Record<string, DiagnosticShareLink[]>;
   onConfigure?: (diagnostic: Diagnostic) => void;
   onDelete?: (diagnostic: Diagnostic) => void;
+  onClose?: (diagnostic: Diagnostic) => void;
+  pending?: boolean;
 };
-
-function deadlineLabel(diagnostic: Diagnostic) {
-  if (!diagnostic.deadline) return "—";
-  if (diagnostic.status === "encerrado") {
-    return formatDate(diagnostic.deadline);
-  }
-  const now = new Date();
-  const end = new Date(diagnostic.deadline);
-  const diff = Math.ceil(
-    (end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-  );
-  if (diff < 0) return "Prazo encerrado";
-  if (diff === 0) return "Encerra hoje";
-  if (diff === 1) return "1 dia restante";
-  return `${diff} dias restantes`;
-}
 
 function ResponseLinkCell({
   copiedKey,
@@ -87,7 +72,7 @@ function ResponseLinkCell({
   link?: DiagnosticShareLink;
   onCopy: (diagnostic: Diagnostic, link: DiagnosticShareLink) => void;
 }) {
-  if (diagnostic.status === "rascunho" || !link) {
+  if (getEffectiveDiagnosticStatus(diagnostic) !== "ativo" || !link) {
     return <span className="text-muted-foreground">—</span>;
   }
 
@@ -126,7 +111,7 @@ function TeamLinksCell({
   links: DiagnosticShareLink[];
   onCopy: (diagnostic: Diagnostic, link: DiagnosticShareLink) => void;
 }) {
-  if (diagnostic.status === "rascunho" || links.length === 0) {
+  if (getEffectiveDiagnosticStatus(diagnostic) !== "ativo" || links.length === 0) {
     return <span className="text-muted-foreground">—</span>;
   }
 
@@ -173,8 +158,9 @@ export function DiagnosticsTable({
   shareLinksByDiagnosticId,
   onConfigure,
   onDelete,
+  onClose,
+  pending = false,
 }: DiagnosticsTableProps) {
-  const router = useRouter();
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [diagnosticToDelete, setDiagnosticToDelete] =
     useState<Diagnostic | null>(null);
@@ -191,6 +177,7 @@ export function DiagnosticsTable({
     diagnostic: Diagnostic,
     link: DiagnosticShareLink,
   ) {
+    if (getEffectiveDiagnosticStatus(diagnostic) !== "ativo") return;
     await navigator.clipboard.writeText(link.publicUrl);
     setCopiedKey(link.id);
     window.setTimeout(() => setCopiedKey(null), 1800);
@@ -213,54 +200,36 @@ export function DiagnosticsTable({
     window.location.assign(`/omdx/${diagnostic.id}/action-points`);
   }
 
-  function handleRowClick(
-    event: React.MouseEvent<HTMLTableRowElement>,
-    diagnostic: Diagnostic,
-  ) {
-    if ((event.target as HTMLElement).closest("a, button, [role='menuitem']")) {
-      return;
-    }
-
-    router.push(`/omdx/${diagnostic.id}/compartilhar`);
-  }
-
   return (
     <div>
       <div className="min-w-0">
-        <Table className="min-w-[1180px] table-fixed">
+        <Table className="min-w-[1360px] table-fixed">
           <TableHeader>
             <TableRow>
               <TableHead className="h-11 w-[260px] px-4">Diagnóstico</TableHead>
               <TableHead className="h-11 w-[190px] px-4">Criado por</TableHead>
-              <TableHead className="h-11 w-[130px] px-4">Setores</TableHead>
-              <TableHead className="h-11 w-[85px] px-4">Status</TableHead>
+              <TableHead className="h-11 w-[105px] px-4">Fundador</TableHead>
               <TableHead className="h-11 w-[105px] px-4">Liderança</TableHead>
               <TableHead className="h-11 w-[105px] px-4">Times</TableHead>
+              <TableHead className="h-11 w-[85px] px-4">Status</TableHead>
               <TableHead className="h-11 w-[85px] px-4 text-right">
                 Respostas
               </TableHead>
+              <TableHead className="h-11 w-[120px] px-4 text-right">Resp. fundador</TableHead>
+              <TableHead className="h-11 w-[120px] px-4 text-right">Resp. liderança</TableHead>
+              <TableHead className="h-11 w-[120px] px-4 text-right">Resp. time</TableHead>
               <TableHead className="h-11 w-[60px] px-4 text-right">
                 Score
               </TableHead>
-              <TableHead className="h-11 w-[155px] px-4">Prazo</TableHead>
               <TableHead className="h-11 w-[60px] px-4"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {visible.map((d) => (
-              <TableRow
-                key={d.id}
-                className="cursor-pointer hover:bg-muted/30"
-                onClick={(event) => handleRowClick(event, d)}
-              >
+              <TableRow key={d.id}>
                 <TableCell className="px-4 py-4 font-medium whitespace-normal">
                   <div className="flex flex-col">
-                    <Link
-                      href={`/omdx/${d.id}/compartilhar`}
-                      className="text-foreground rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      {d.name}
-                    </Link>
+                    <span className="text-foreground">{d.name}</span>
                     <span className="text-muted-foreground text-xs">
                       Criado em {formatDate(d.createdAt)}
                     </span>
@@ -297,16 +266,14 @@ export function DiagnosticsTable({
                   )}
                 </TableCell>
                 <TableCell className="px-4 py-4">
-                  {d.sectors && d.sectors.length > 0 ? (
-                    <Badge variant="outline">
-                      {d.sectors.length} setor{d.sectors.length === 1 ? "" : "es"}
-                    </Badge>
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </TableCell>
-                <TableCell className="px-4 py-4">
-                  <StatusBadge status={d.status} />
+                  <ResponseLinkCell
+                    copiedKey={copiedKey}
+                    diagnostic={d}
+                    link={shareLinksByDiagnosticId[d.id]?.find(
+                      (link) => link.group === "fundador",
+                    )}
+                    onCopy={handleCopyResponseLink}
+                  />
                 </TableCell>
                 <TableCell className="px-4 py-4">
                   <ResponseLinkCell
@@ -328,6 +295,9 @@ export function DiagnosticsTable({
                     onCopy={handleCopyResponseLink}
                   />
                 </TableCell>
+                <TableCell className="px-4 py-4">
+                  <StatusBadge status={d.status} />
+                </TableCell>
                 <TableCell className="px-4 py-4 text-right tabular-nums">
                   {d.responses.total > 0 ? (
                     <span className="text-foreground">{d.responses.total}</span>
@@ -335,6 +305,9 @@ export function DiagnosticsTable({
                     <span className="text-muted-foreground">—</span>
                   )}
                 </TableCell>
+                <TableCell className="px-4 py-4 text-right tabular-nums">{d.responses.fundador}</TableCell>
+                <TableCell className="px-4 py-4 text-right tabular-nums">{d.responses.lideranca}</TableCell>
+                <TableCell className="px-4 py-4 text-right tabular-nums">{d.responses.operacao}</TableCell>
                 <TableCell className="px-4 py-4 text-right tabular-nums">
                   {d.generalScore !== null ? (
                     <span className="text-foreground font-medium">
@@ -343,9 +316,6 @@ export function DiagnosticsTable({
                   ) : (
                     <span className="text-muted-foreground">—</span>
                   )}
-                </TableCell>
-                <TableCell className="px-4 py-4 text-sm text-muted-foreground">
-                  {deadlineLabel(d)}
                 </TableCell>
                 <TableCell className="px-4 py-4">
                   <DropdownMenu>
@@ -356,12 +326,19 @@ export function DiagnosticsTable({
                           size="icon"
                           className="size-7"
                           aria-label="Ações"
+                          disabled={pending}
                         />
                       }
                     >
                       <MoreHorizontal className="size-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      {d.status === "ativo" && d.permissions?.canManage && onClose && (
+                        <DropdownMenuItem onClick={() => onClose(d)}>
+                          <Lock className="size-4" />
+                          Encerrar
+                        </DropdownMenuItem>
+                      )}
                       {d.status === "rascunho" && d.permissions?.canManage && (
                         <DropdownMenuItem
                           onClick={() => onConfigure?.(d)}
@@ -411,7 +388,7 @@ export function DiagnosticsTable({
             {visible.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={10}
+                  colSpan={12}
                   className="px-4 py-12 text-center text-sm text-muted-foreground"
                 >
                   Nenhum diagnóstico nesta categoria.

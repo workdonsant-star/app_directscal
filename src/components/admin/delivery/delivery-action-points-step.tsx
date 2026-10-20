@@ -11,7 +11,7 @@ export function DeliveryActionPointsStep() {
   return (
     <div className="space-y-6">
       <section className="space-y-1" aria-labelledby="action-point-catalog-title">
-        <h2 id="action-point-catalog-title" className="font-heading text-lg font-semibold">
+        <h2 id="action-point-catalog-title" className="text-ui-section">
           Catálogo de action points
         </h2>
         <p className="max-w-3xl text-sm text-muted-foreground">

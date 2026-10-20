@@ -36,7 +36,7 @@ export function InitiativeNavigation({
   const pathname = usePathname();
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="justify-between text-[10px] font-normal text-muted-foreground">
+      <SidebarGroupLabel className="justify-between text-xs font-normal text-muted-foreground">
         <Link
           href="/iniciativas"
           onClick={onNavigate}

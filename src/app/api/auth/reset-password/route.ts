@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { after } from "next/server";
+import { processPasswordResetDelivery, requestCustomerPasswordReset } from "@/lib/auth/password-recovery";
 
 import { resetPasswordInputSchema } from "@/lib/contracts";
 
@@ -23,11 +25,15 @@ export async function POST(request: Request) {
     );
   }
 
+  let id: string | null;
+  try { id = await requestCustomerPasswordReset(parsed.data.email); }
+  catch { return NextResponse.json({ message: "A recuperação está indisponível. Tente novamente mais tarde." }, { status: 503, headers: { "Cache-Control": "no-store" } }); }
+  if (id) after(async () => { try { await processPasswordResetDelivery(id); } catch { console.error("[auth] password recovery delivery unavailable"); } });
   return NextResponse.json(
     {
       message:
-        "Se o e-mail existir no ambiente, enviaremos instruções de recuperação.",
+        "Solicitação recebida. Se houver uma conta com senha cadastrada e acesso ativo, você receberá as instruções. Confira sua caixa de entrada e spam. Para acesso com Google, use Entrar com Google.",
     },
-    { status: 200 },
+    { status: 200, headers: { "Cache-Control": "no-store" } },
   );
 }

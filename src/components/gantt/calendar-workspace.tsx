@@ -104,7 +104,7 @@ const statusMeta: Record<GanttTaskStatus, StatusStyle> = {
   andamento: {
     label: "Em andamento",
     event:
-      "border-primary/35 bg-[color-mix(in_oklab,var(--primary)_10%,var(--background))] hover:bg-[color-mix(in_oklab,var(--primary)_15%,var(--background))]",
+      "border-primary/35 bg-[color-mix(in_oklab,var(--primary)_10%,var(--background))] hover:bg-muted",
     marker: "bg-primary",
   },
   atencao: {
@@ -346,7 +346,7 @@ export function CalendarWorkspace({
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <CalendarDays className="size-4 text-muted-foreground" />
-            <h1 className="text-base font-semibold">Agenda de action points</h1>
+            <h1 className="text-base font-bold">Agenda de action points</h1>
           </div>
           <p className="mt-1 max-w-[70ch] truncate text-sm text-muted-foreground">
             {sourceLabel ?? "Plano semanal de estruturação da operação"}
@@ -357,7 +357,7 @@ export function CalendarWorkspace({
           <Button variant="outline" onClick={() => setWeekStart(startOfWeek(today))}>
             Hoje
           </Button>
-          <div className="flex items-center rounded-lg border bg-background p-0.5">
+          <div className="flex items-center rounded-lg bg-muted p-0.5">
             <Button
               variant="ghost"
               size="icon-sm"
@@ -428,7 +428,7 @@ export function CalendarWorkspace({
                   <span className="text-xs font-medium text-muted-foreground">{WEEKDAYS_PT[index]}</span>
                   <span
                     className={cn(
-                      "flex size-8 items-center justify-center rounded-full font-semibold tabular-nums",
+                      "flex size-8 items-center justify-center rounded-full font-medium tabular-nums",
                       isToday && "bg-primary text-primary-foreground",
                     )}
                   >
@@ -491,14 +491,14 @@ export function CalendarWorkspace({
                         style={{ top: top + 5, height: height - 10 }}
                         onClick={() => setSelectedEvent(event)}
                       >
-                        <span className="block text-[11px] font-medium text-muted-foreground tabular-nums">
+                        <span className="block text-xs font-medium text-muted-foreground tabular-nums">
                           {formatTime(event.startMinutes)}–{formatTime(event.startMinutes + event.durationMinutes)}
                         </span>
-                        <span className="mt-1 line-clamp-2 block text-xs font-semibold leading-snug text-foreground">
+                        <span className="mt-1 line-clamp-2 block text-xs font-medium leading-snug text-foreground">
                           {event.title}
                         </span>
                         {height >= 72 ? (
-                          <span className="mt-1 block truncate text-[11px] text-muted-foreground">{event.owner}</span>
+                          <span className="mt-1 block truncate text-xs text-muted-foreground">{event.owner}</span>
                         ) : null}
                       </button>
                     );
@@ -521,7 +521,7 @@ export function CalendarWorkspace({
 
           {visibleEvents.length === 0 ? (
             <div className="pointer-events-none absolute inset-x-20 top-32 z-10 flex justify-center">
-              <div className="rounded-lg border bg-background px-4 py-3 text-center">
+              <div className="rounded-lg bg-card px-4 py-3 text-center">
                 <p className="text-sm font-medium">Nenhum action point nesta semana</p>
                 <p className="mt-1 text-xs text-muted-foreground">Navegue para outro período ou ajuste o filtro.</p>
               </div>

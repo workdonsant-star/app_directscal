@@ -1,0 +1,2 @@
+create index if not exists organization_specialist_assignments_updated_by_idx
+  on app_private.organization_specialist_assignments(updated_by);

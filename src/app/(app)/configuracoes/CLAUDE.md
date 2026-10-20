@@ -14,9 +14,11 @@ Página autenticada que concentra os dados empresariais da conta cliente.
 
 - A página é Server Component e delega apenas o formulário interativo ao Client Component.
 - Usuários sem sessão redirecionam para `/entrar`; o `superadmin` global redireciona para `/admin/operacao` e o `admin` da empresa redireciona para `/omdx`. Somente `cliente`, apresentado como Superadmin da empresa, acessa esta página.
-- Usar breadcrumb `Configurações` e `AppPage` em largura total.
+- Usar `AppPage` em largura total, sem breadcrumb nas seções abertas pela sidebar.
 - Escritas continuam em `PATCH /api/profile`, com validação de sessão e acesso ao Supabase somente no servidor.
 - Cadastro e reenvio de convites passam por `/api/settings/sectors`; a organização nunca vem do navegador.
 - Cada convite define `Superadmin` (`cliente`) ou `Admin` (`admin`). O primeiro possui acesso completo da empresa; o segundo não acessa Configurações nem Contratos.
 - `Posição na empresa` continua em `/perfil`, por ser informação ligada à pessoa autenticada.
 - O CTA `Salvar alterações` fica na topbar, imediatamente antes do sino; mensagens de retorno permanecem no formulário.
+
+- Navegação contextual: `/configuracoes` abre Setores e lideranças, `?secao=empresa` abre os dados oficiais/comerciais e `?secao=slack` abre a conexão. Valores desconhecidos abrem setores; retornos OAuth `?slack=...` abrem Slack. Cada seção renderiza apenas seus controles e ações. Raízes não usam breadcrumb; Empresa e Slack possuem h1 próprio. Novas opções devem ser adicionadas à navegação contextual e à seleção explícita da página.

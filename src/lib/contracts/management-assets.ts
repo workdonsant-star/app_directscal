@@ -3,8 +3,7 @@ import { z } from "zod";
 import { idSchema, isoDateTimeSchema } from "./omdx";
 import { richTextDocumentSchema } from "./rich-text";
 
-// Tipos com biblioteca própria no app do cliente. A matriz RACI terá um
-// componente tabular dedicado; por ora só os ativos textuais são editáveis.
+// Os quatro tipos compartilham o fluxo editorial e o documento estruturado.
 export const managementAssetTypeValues = [
   "sop",
   "playbook",
@@ -16,6 +15,7 @@ export const editableManagementAssetTypeValues = [
   "sop",
   "playbook",
   "governanca",
+  "raci",
 ] as const;
 
 export const managementAssetTypeSchema = z.enum(managementAssetTypeValues);
@@ -76,6 +76,7 @@ export const managementAssetSchema = z.object({
 export const managementAssetDocumentSchema = managementAssetSchema.extend({
   versionId: idSchema,
   operationalOwner: z.string().min(1),
+  lastEditedBy: z.string().min(1).nullable().default(null),
   reviewCycle: z.string().min(1),
   content: richTextDocumentSchema,
 });
@@ -124,6 +125,12 @@ export const adminManagementAssetListItemSchema = z.object({
   draftStatus: managementAssetVersionStatusSchema.nullable(),
   publishedVersionNumber: z.string().nullable(),
   specialistId: z.string().nullable(),
+  ownerLabel: z.string().nullable(),
+  reviewCycle: z.string().nullable(),
+  review: z.object({
+    status: z.enum(["sem_publicacao", "sem_periodicidade", "sob_demanda", "em_dia", "vencida", "arquivado"]),
+    nextReviewDate: z.iso.date().nullable(),
+  }),
   updatedAt: isoDateTimeSchema,
 });
 
@@ -140,6 +147,12 @@ export const adminManagementAssetVersionSchema = z.object({
   indexError: z.string().nullable(),
 });
 
+export const managementAssetRevisionSchema = z.object({
+  assetUpdatedAt: isoDateTimeSchema,
+  draftId: z.uuid().nullable(),
+  draftUpdatedAt: isoDateTimeSchema.nullable(),
+});
+
 export const adminManagementAssetDetailSchema = z.object({
   id: idSchema,
   organizationId: idSchema,
@@ -154,6 +167,7 @@ export const adminManagementAssetDetailSchema = z.object({
   status: managementAssetStatusSchema,
   archivedAt: isoDateTimeSchema.nullable(),
   updatedAt: isoDateTimeSchema,
+  revision: managementAssetRevisionSchema,
   draft: adminManagementAssetVersionSchema
     .extend({ content: richTextDocumentSchema })
     .nullable(),
@@ -181,6 +195,7 @@ export const createManagementAssetInputSchema = z.object({
 });
 
 export const updateManagementAssetInputSchema = z.object({
+  expectedRevision: managementAssetRevisionSchema,
   title: trimmedText(3, 240),
   summary: trimmedText(10, 600),
   category: trimmedText(2, 80).nullable(),

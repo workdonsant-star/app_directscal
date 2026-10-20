@@ -367,6 +367,7 @@ export const diagnosticActionPlanDimensionSchema = z.object({
 
 export const diagnosticActionPointSchema = z.object({
   id: idSchema,
+  title: z.string().min(1).optional(),
   dimensionId: dimensionIdSchema,
   dimensionName: z.string().min(1),
   problem: z.string().min(1),
@@ -408,7 +409,7 @@ export const createDiagnosticInputSchema = z.object({
   templateId: diagnosticTemplateIdSchema,
   name: z.string().min(1),
   description: z.string().trim().optional().nullable(),
-  deadline: isoDateSchema.optional().nullable(),
+  deadline: isoDateSchema,
   leaderIds: z.array(idSchema),
 });
 
@@ -431,6 +432,7 @@ export const deleteDiagnosticInputSchema = z.object({
 });
 
 export const submitLikertResponseInputSchema = z.object({
+  submissionId: z.uuid(),
   token: z.string().min(1),
   answers: z.array(likertAnswerSchema).min(1),
 }).strict();

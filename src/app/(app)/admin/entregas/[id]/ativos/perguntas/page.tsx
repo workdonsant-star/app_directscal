@@ -1,3 +1,4 @@
+import { getAgentOperations } from "@/lib/data/agent-operations-data-source";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -20,6 +21,8 @@ export default async function AdminDeliveryAssetQuestionsPage({
     organizationId: context.company.organizationId,
   });
 
+  const operations = await getAgentOperations(context.company.id, audits.map(audit => audit.id));
+
   return (
     <div className="space-y-6">
       <Link
@@ -29,7 +32,7 @@ export default async function AdminDeliveryAssetQuestionsPage({
         Voltar aos ativos da empresa
       </Link>
       <AssetQuestionAuditsWorkspace
-        audits={audits}
+        audits={audits} operations={operations}
         company={context.company}
         embedded
       />

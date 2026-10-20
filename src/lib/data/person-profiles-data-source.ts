@@ -65,3 +65,15 @@ export async function canAssignSpecialist(id: string) {
   const specialist = await getPersistedSpecialist(id);
   return Boolean(specialist && specialist.status === "ativo" && !specialist.archived && !specialist.deleted);
 }
+
+/** Somente após autorizar a leitura do relatório e resolver a atribuição publicada. */
+export async function getPublishedSpecialistContact(specialistId: string | null) {
+  if (!specialistId) return null;
+  const { data, error } = await createSupabaseAdminClient().from("specialists")
+    .select("name,email,title,location,avatar_url").eq("id", specialistId)
+    .eq("status", "ativo").eq("archived", false).eq("deleted", false).maybeSingle();
+  if (error) throw new Error("Não foi possível consultar o contato da entrega.");
+  return data ? { name: data.name, email: data.email, title: data.title, location: data.location, avatarUrl: data.avatar_url } : null;
+}
+
+export type PublishedSpecialistContact = NonNullable<Awaited<ReturnType<typeof getPublishedSpecialistContact>>>;

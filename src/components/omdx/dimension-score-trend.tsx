@@ -33,7 +33,7 @@ export function DimensionScoreTrend({ points }: DimensionScoreTrendProps) {
                 {point.company} / {point.responses} respostas
               </span>
             </div>
-            <span className="row-span-2 self-center text-base font-semibold tabular-nums text-foreground">
+            <span className="row-span-2 self-center text-base font-bold tabular-nums text-foreground">
               {point.score.toFixed(1)}
             </span>
             <div className="relative h-2 overflow-hidden bg-muted">

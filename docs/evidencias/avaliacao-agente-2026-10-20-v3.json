@@ -1,0 +1,436 @@
+{
+  "complete": true,
+  "benchmark": "2026-10-20-v3",
+  "provider": {
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite"
+  },
+  "embeddings": "gemini:gemini-embedding-001",
+  "accuracy": 0.86,
+  "total": 50,
+  "passed": 43,
+  "results": [
+    {
+      "id": "fin-01",
+      "ok": true,
+      "status": "answered",
+      "answer": "O fechamento precisa ser concluído até o quinto dia útil do mês seguinte, salvo calendário aprovado pela liderança financeira.",
+      "sources": [
+        "Fechamento financeiro mensal"
+      ]
+    },
+    {
+      "id": "fin-02",
+      "ok": false,
+      "status": "error",
+      "answer": "Não consegui consultar os ativos publicados agora. Tente novamente em alguns instantes.",
+      "sources": []
+    },
+    {
+      "id": "fin-03",
+      "ok": true,
+      "status": "answered",
+      "answer": "As validações obrigatórias incluem conciliar os saldos bancários com os extratos, reconhecer as receitas no período correto, tratar despesas sem documento como pendência explícita e acompanhar desvios relevantes com justificativa e responsável.",
+      "sources": [
+        "Fechamento financeiro mensal"
+      ]
+    },
+    {
+      "id": "fin-05",
+      "ok": true,
+      "status": "answered",
+      "answer": "O responsável financeiro revisa o fechamento antes da publicação do resumo executivo.",
+      "sources": [
+        "Fechamento financeiro mensal",
+        "Fechamento financeiro mensal"
+      ]
+    },
+    {
+      "id": "fin-04",
+      "ok": true,
+      "status": "answered",
+      "answer": "Trate a despesa sem documento como uma pendência explícita.",
+      "sources": [
+        "Fechamento financeiro mensal"
+      ]
+    },
+    {
+      "id": "fin-06",
+      "ok": true,
+      "status": "answered",
+      "answer": "Desvios relevantes acompanhados de justificativa e responsável, além de registros com as justificativas para esses desvios.",
+      "sources": [
+        "Fechamento financeiro mensal",
+        "Fechamento financeiro mensal"
+      ]
+    },
+    {
+      "id": "fin-07",
+      "ok": true,
+      "status": "answered",
+      "answer": "No fechamento financeiro mensal, você deve conciliar as contas bancárias, os recebíveis e os meios de pagamento.",
+      "sources": [
+        "Fechamento financeiro mensal"
+      ]
+    },
+    {
+      "id": "cmp-01",
+      "ok": true,
+      "status": "answered",
+      "answer": "Não, você não pode publicar a campanha com a conversão sem teste. A publicação exige que todos os itens estejam aprovados e sem pendências desse tipo.",
+      "sources": [
+        "Aprovação de campanhas"
+      ]
+    },
+    {
+      "id": "fin-08",
+      "ok": false,
+      "status": "error",
+      "answer": "Não consegui consultar os ativos publicados agora. Tente novamente em alguns instantes.",
+      "sources": []
+    },
+    {
+      "id": "cmp-02",
+      "ok": true,
+      "status": "answered",
+      "answer": "Você não pode publicar a campanha se houver peça pendente, página indisponível, conversão sem teste, orçamento sem aprovação ou ausência de responsável pelo acompanhamento inicial.",
+      "sources": [
+        "Aprovação de campanhas"
+      ]
+    },
+    {
+      "id": "cmp-03",
+      "ok": true,
+      "status": "answered",
+      "answer": "Primeiro, reúna o briefing e o objetivo da campanha. Depois, confirme a oferta, o público e os canais definidos. No fim, junte as peças finais e as páginas de destino revisadas, além do orçamento, do período e dos indicadores de acompanhamento.",
+      "sources": [
+        "Aprovação de campanhas"
+      ]
+    },
+    {
+      "id": "cmp-04",
+      "ok": true,
+      "status": "answered",
+      "answer": "O briefing precisa conter o objetivo da campanha, além de oferta, público e meta mensurável.",
+      "sources": [
+        "Aprovação de campanhas",
+        "Aprovação de campanhas"
+      ]
+    },
+    {
+      "id": "cmp-05",
+      "ok": false,
+      "status": "insufficient_evidence",
+      "answer": "Não encontrei nenhuma informação na base de ativos da empresa. Consulte seu líder direto ou o responsável pela área.",
+      "sources": []
+    },
+    {
+      "id": "cmp-06",
+      "ok": true,
+      "status": "answered",
+      "answer": "Sim, você deve revisar os links, os eventos de conversão e os parâmetros de rastreamento antes de liberar a ativação da campanha.",
+      "sources": [
+        "Aprovação de campanhas"
+      ]
+    },
+    {
+      "id": "cmp-07",
+      "ok": true,
+      "status": "answered",
+      "answer": "Não, a campanha não deve ser publicada sem a presença de um responsável pelo acompanhamento inicial.",
+      "sources": [
+        "Aprovação de campanhas"
+      ]
+    },
+    {
+      "id": "onb-01",
+      "ok": true,
+      "status": "answered",
+      "answer": "O Customer Success coordena o onboarding e mantém o cliente informado.",
+      "sources": [
+        "Onboarding de novos clientes"
+      ]
+    },
+    {
+      "id": "onb-02",
+      "ok": true,
+      "status": "answered",
+      "answer": "Não, você só pode agendar o kickoff depois de validar o recebimento dos acessos enviados pelo cliente.",
+      "sources": [
+        "Onboarding de novos clientes"
+      ]
+    },
+    {
+      "id": "onb-03",
+      "ok": true,
+      "status": "answered",
+      "answer": "Os registros obrigatórios no onboarding são o resumo da passagem comercial, o checklist de acessos atualizado, a ata do kickoff com decisões e pendências, e o plano inicial da operação com responsáveis e prazos.",
+      "sources": [
+        "Onboarding de novos clientes"
+      ]
+    },
+    {
+      "id": "onb-04",
+      "ok": true,
+      "status": "answered",
+      "answer": "Você deve executar este procedimento após a confirmação comercial e antes do kickoff operacional. O processo também deve ser retomado se houver mudança relevante de escopo ou de responsável principal no cliente.",
+      "sources": [
+        "Onboarding de novos clientes"
+      ]
+    },
+    {
+      "id": "onb-05",
+      "ok": true,
+      "status": "answered",
+      "answer": "O comercial transfere escopo, expectativas, restrições e acordos registrados, além de riscos, promessas e o contexto relevante.",
+      "sources": [
+        "Onboarding de novos clientes",
+        "Onboarding de novos clientes"
+      ]
+    },
+    {
+      "id": "onb-07",
+      "ok": true,
+      "status": "answered",
+      "answer": "O onboarding está concluído quando o escopo está confirmado, os responsáveis foram registrados, os acessos críticos estão válidos e o plano inicial possui próximos passos com responsáveis e prazos.",
+      "sources": [
+        "Onboarding de novos clientes"
+      ]
+    },
+    {
+      "id": "onb-06",
+      "ok": true,
+      "status": "answered",
+      "answer": "Quando houver mudança relevante de responsável principal no cliente, você deve retomar o procedimento de onboarding.",
+      "sources": [
+        "Onboarding de novos clientes"
+      ]
+    },
+    {
+      "id": "pap-02",
+      "ok": true,
+      "status": "answered",
+      "answer": "Você deve publicar o documento na estrutura definida para o cliente, usando o ClickUp ou o Notion.",
+      "sources": [
+        "Geração de papéis e atribuições",
+        "Geração de papéis e atribuições"
+      ]
+    },
+    {
+      "id": "pap-01",
+      "ok": false,
+      "status": "error",
+      "answer": "Não consegui consultar os ativos publicados agora. Tente novamente em alguns instantes.",
+      "sources": []
+    },
+    {
+      "id": "pap-03",
+      "ok": true,
+      "status": "answered",
+      "answer": "O documento descreve os níveis Júnior, Pleno e Sênior.",
+      "sources": [
+        "Geração de papéis e atribuições",
+        "Geração de papéis e atribuições",
+        "Geração de papéis e atribuições",
+        "Geração de papéis e atribuições"
+      ]
+    },
+    {
+      "id": "pap-04",
+      "ok": true,
+      "status": "answered",
+      "answer": "A gravação da call é a evidência de origem do documento.",
+      "sources": [
+        "Geração de papéis e atribuições"
+      ]
+    },
+    {
+      "id": "pap-05",
+      "ok": true,
+      "status": "answered",
+      "answer": "O líder da área é quem responde como accountable por validar o conteúdo e solicitar ajustes.",
+      "sources": [
+        "Geração de papéis e atribuições"
+      ]
+    },
+    {
+      "id": "pap-06",
+      "ok": true,
+      "status": "answered",
+      "answer": "Informações não confirmadas devem ser marcadas como pendência ou encaminhadas para validação, nunca apresentadas como fato.",
+      "sources": [
+        "Geração de papéis e atribuições"
+      ]
+    },
+    {
+      "id": "pap-08",
+      "ok": true,
+      "status": "answered",
+      "answer": "O registro operacional deve conter o link do papel aprovado, a data da apresentação, os participantes, as dúvidas relevantes, as decisões tomadas e as pendências encaminhadas.",
+      "sources": [
+        "Geração de papéis e atribuições"
+      ]
+    },
+    {
+      "id": "pap-07",
+      "ok": true,
+      "status": "answered",
+      "answer": "Não, comentário ambíguo não conta como aprovação. O documento não pode avançar com silêncio ou comentário ambíguo, e o status permanece em validação até que o líder registre uma aprovação explícita.",
+      "sources": [
+        "Geração de papéis e atribuições",
+        "Geração de papéis e atribuições"
+      ]
+    },
+    {
+      "id": "pap-09",
+      "ok": true,
+      "status": "answered",
+      "answer": "Não, o SOP define apenas critérios de entrega, qualidade, registro e passagem de etapa, sem estabelecer jornada, horário de trabalho, exclusividade ou controle de presença.",
+      "sources": [
+        "Geração de papéis e atribuições"
+      ]
+    },
+    {
+      "id": "amb-01",
+      "ok": true,
+      "status": "insufficient_evidence",
+      "answer": "Sobre qual processo ou atividade você quer saber? Informe o contexto para eu consultar a regra certa.",
+      "sources": []
+    },
+    {
+      "id": "amb-02",
+      "ok": true,
+      "status": "insufficient_evidence",
+      "answer": "Sobre qual processo ou atividade você quer saber? Informe o contexto para eu consultar a regra certa.",
+      "sources": []
+    },
+    {
+      "id": "pap-10",
+      "ok": true,
+      "status": "answered",
+      "answer": "Antes da call, o registro operacional precisa conter o objetivo do levantamento, o nome do líder consultado, os participantes previstos e o link do card, tarefa ou página que concentrará as evidências.",
+      "sources": [
+        "Geração de papéis e atribuições"
+      ]
+    },
+    {
+      "id": "amb-03",
+      "ok": false,
+      "status": "insufficient_evidence",
+      "answer": "Não encontrei nenhuma informação na base de ativos da empresa. Consulte seu líder direto ou o responsável pela área.",
+      "sources": []
+    },
+    {
+      "id": "amb-04",
+      "ok": false,
+      "status": "answered",
+      "answer": "O Customer Success coordena o onboarding. O documento não especifica nominalmente quem produz a ata, mas indica que a ata do kickoff com decisões e pendências é um registro obrigatório.",
+      "sources": [
+        "Onboarding de novos clientes",
+        "Onboarding de novos clientes",
+        "Onboarding de novos clientes"
+      ]
+    },
+    {
+      "id": "sem-01",
+      "ok": true,
+      "status": "insufficient_evidence",
+      "answer": "Não encontrei nenhuma informação na base de ativos da empresa. Consulte seu líder direto ou o responsável pela área.",
+      "sources": []
+    },
+    {
+      "id": "sem-02",
+      "ok": true,
+      "status": "insufficient_evidence",
+      "answer": "Não encontrei nenhuma informação na base de ativos da empresa. Consulte seu líder direto ou o responsável pela área.",
+      "sources": []
+    },
+    {
+      "id": "sem-03",
+      "ok": true,
+      "status": "insufficient_evidence",
+      "answer": "Não encontrei nenhuma informação na base de ativos da empresa. Consulte seu líder direto ou o responsável pela área.",
+      "sources": []
+    },
+    {
+      "id": "sem-05",
+      "ok": true,
+      "status": "insufficient_evidence",
+      "answer": "Não encontrei nenhuma informação na base de ativos da empresa. Consulte seu líder direto ou o responsável pela área.",
+      "sources": []
+    },
+    {
+      "id": "sem-04",
+      "ok": true,
+      "status": "insufficient_evidence",
+      "answer": "Não encontrei nenhuma informação na base de ativos da empresa. Consulte seu líder direto ou o responsável pela área.",
+      "sources": []
+    },
+    {
+      "id": "sem-07",
+      "ok": true,
+      "status": "insufficient_evidence",
+      "answer": "Não encontrei nenhuma informação na base de ativos da empresa. Consulte seu líder direto ou o responsável pela área.",
+      "sources": []
+    },
+    {
+      "id": "sem-08",
+      "ok": true,
+      "status": "insufficient_evidence",
+      "answer": "Não encontrei nenhuma informação na base de ativos da empresa. Consulte seu líder direto ou o responsável pela área.",
+      "sources": []
+    },
+    {
+      "id": "sem-06",
+      "ok": false,
+      "status": "error",
+      "answer": "Não consegui consultar os ativos publicados agora. Tente novamente em alguns instantes.",
+      "sources": []
+    },
+    {
+      "id": "sem-10",
+      "ok": true,
+      "status": "insufficient_evidence",
+      "answer": "Não encontrei nenhuma informação na base de ativos da empresa. Consulte seu líder direto ou o responsável pela área.",
+      "sources": []
+    },
+    {
+      "id": "sem-11",
+      "ok": true,
+      "status": "insufficient_evidence",
+      "answer": "Não encontrei nenhuma informação na base de ativos da empresa. Consulte seu líder direto ou o responsável pela área.",
+      "sources": []
+    },
+    {
+      "id": "sem-09",
+      "ok": true,
+      "status": "insufficient_evidence",
+      "answer": "Não encontrei nenhuma informação na base de ativos da empresa. Consulte seu líder direto ou o responsável pela área.",
+      "sources": []
+    },
+    {
+      "id": "man-02",
+      "ok": true,
+      "status": "insufficient_evidence",
+      "answer": "Não encontrei nenhuma informação na base de ativos da empresa. Consulte seu líder direto ou o responsável pela área.",
+      "sources": []
+    },
+    {
+      "id": "man-01",
+      "ok": true,
+      "status": "insufficient_evidence",
+      "answer": "Não encontrei nenhuma informação na base de ativos da empresa. Consulte seu líder direto ou o responsável pela área.",
+      "sources": []
+    },
+    {
+      "id": "man-03",
+      "ok": true,
+      "status": "answered",
+      "answer": "Não. A campanha não deve ser publicada com orçamento sem aprovação.",
+      "sources": [
+        "Aprovação de campanhas"
+      ]
+    }
+  ],
+  "isolated": true
+}

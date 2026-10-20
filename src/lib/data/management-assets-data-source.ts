@@ -1,5 +1,7 @@
 import "server-only";
 import { cache } from "react";
+import { getAssetNavigationPreferences } from "@/lib/data/asset-navigation-data-source";
+import { getManagementAssetCategoryFolders } from "@/lib/data/management-asset-categories";
 
 import { getAccessibleOrganizationIdsForUser } from "@/lib/auth/authorization";
 import { canAccessCustomerApp } from "@/lib/auth/access-control";
@@ -11,7 +13,7 @@ import {
   type ManagementAssetDocument,
   type ManagementAssetType,
 } from "@/lib/contracts";
-import { getPersistedSpecialist } from "@/lib/data/person-profiles-data-source";
+import { getAccountProfile, getPersistedSpecialist } from "@/lib/data/person-profiles-data-source";
 import { parseStoredAssetContent } from "@/lib/data/rich-text";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
@@ -32,7 +34,7 @@ type AssetRow = Pick<
 
 type VersionRow = Pick<
   Database["public"]["Tables"]["management_asset_versions"]["Row"],
-  "id" | "version_number" | "summary" | "content" | "published_at" | "updated_at"
+  "id" | "version_number" | "summary" | "content" | "published_at" | "updated_at" | "last_edited_by_user_id"
 >;
 
 type AssetWithVersionRow = AssetRow & {
@@ -101,7 +103,7 @@ async function selectPublishedAssets(
   let query = supabase
     .from("management_assets")
     .select(
-      `${assetColumns},current_version:management_asset_versions!management_assets_current_version_fkey(id,version_number,summary,content,published_at,updated_at)`,
+      `${assetColumns},current_version:management_asset_versions!management_assets_current_version_fkey(id,version_number,summary,content,published_at,updated_at,last_edited_by_user_id)`,
     )
     .in("organization_id", organizationIds)
     .eq("status", "publicado")
@@ -159,8 +161,22 @@ export async function getManagementAssetDocument(
   return managementAssetDocumentSchema.parse({
     ...asset,
     versionId: row.current_version.id,
+    lastEditedBy: row.current_version.last_edited_by_user_id
+      ? (await getAccountProfile(row.current_version.last_edited_by_user_id))?.name ?? null
+      : null,
     operationalOwner: row.owner_label ?? asset.author.name,
     reviewCycle: row.review_cycle ?? "Sob demanda",
     content,
   });
+}
+
+export async function getPublishedManagementAssetFolders() {
+  const session = await getCurrentAuthSession();
+  if (!session || !canAccessCustomerApp(session.user)) return getManagementAssetCategoryFolders([]);
+  const access = await getAccessibleOrganizationIdsForUser(session.user.id);
+  const [assets, preferences] = await Promise.all([
+    getPublishedManagementAssets(),
+    access.primaryOrganizationId ? getAssetNavigationPreferences(access.primaryOrganizationId) : null,
+  ]);
+  return getManagementAssetCategoryFolders(assets, preferences?.categories);
 }

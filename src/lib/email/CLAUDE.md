@@ -10,3 +10,6 @@ Integrações server-side para mensagens transacionais do produto.
 - O remetente vem de `RESEND_FROM_EMAIL`; para destinatários reais, o domínio precisa estar verificado no Resend.
 - Templates usam HTML inline compatível com clientes de e-mail e sempre incluem alternativa em texto puro.
 
+
+
+A14: password-recovery-email exige remetente/provedor, URL pública canônica HTTPS e segredo >=32 caracteres. Não derive URL de Host do request. Link usa fragmento para não enviar código no GET/referrer; HTML inline + texto, timeout de 15s, idempotência por solicitação e classificação de Retry-After. Aceite do provedor não comprova entrega na caixa de entrada.

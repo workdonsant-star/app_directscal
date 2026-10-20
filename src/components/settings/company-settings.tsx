@@ -189,12 +189,12 @@ export function CompanySettings({ profile }: CompanySettingsProps) {
         </Button>
       </AppTopbarActionsPortal>
 
-      <Card className="min-w-0 bg-surface-sidebar ring-0">
+      <Card className="min-w-0 bg-card ring-0">
         <CardContent className="grid min-w-0 gap-8 px-5">
           <section className="grid min-w-0 gap-5">
             <div className="min-w-0">
-              <h2 className="font-heading text-[17px] leading-6 font-semibold">
-                Empresa
+              <h2 className="text-ui-section">
+                Dados empresariais
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 Dados oficiais do CNPJ e informações fornecidas no onboarding.
@@ -283,7 +283,7 @@ export function CompanySettings({ profile }: CompanySettingsProps) {
 
           <section className="grid min-w-0 gap-5 border-t pt-6">
             <div className="min-w-0">
-              <h2 className="font-heading text-[17px] leading-6 font-semibold">
+              <h2 className="text-ui-section">
                 Informações comerciais
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">

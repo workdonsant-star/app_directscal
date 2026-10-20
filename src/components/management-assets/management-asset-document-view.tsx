@@ -39,7 +39,7 @@ export function ManagementAssetDocumentView({
   return (
     <div className="grid w-full max-w-[1028px] grid-cols-1 lg:grid-cols-[220px_minmax(0,768px)] lg:gap-10">
       <aside className="hidden lg:block">
-        <div className="sticky top-20 px-4 pt-3">
+        <div className="sticky top-8 px-4">
           {tableOfContents.length > 0 ? (
             <DocumentTableOfContents
               ariaLabel={`Navegação do ${typeLabel}`}
@@ -63,28 +63,25 @@ export function ManagementAssetDocumentView({
                 {asset.category}
               </Badge>
             ) : null}
-            <p className="text-sm leading-5 text-muted-foreground">
-              Atualizado em {dateFormatter.format(new Date(asset.updatedAt))}
-            </p>
           </div>
 
-          <h1 className="mt-4 font-heading text-4xl font-semibold leading-10 tracking-tight">
+          <h1 className="mt-4 font-doc-heading text-doc-title">
             {asset.title}
           </h1>
-          <p className="mt-[10px] max-w-2xl text-base leading-7 text-muted-foreground">
+          <p className="mt-[10px] max-w-2xl font-doc text-base leading-7 text-muted-foreground">
             {asset.summary}
           </p>
         </header>
 
-        <dl className="grid grid-cols-3 gap-4 border-b py-5">
+        <dl className="grid grid-cols-2 gap-4 border-b py-5 sm:grid-cols-3 xl:grid-cols-[1fr_0.4fr_0.9fr_1.2fr_1fr]">
           <div className="min-w-0">
-            <dt className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
+            <dt className="font-label text-doc-label text-muted-foreground">
               Líder responsável
             </dt>
             <dd className="mt-2 text-sm font-medium">{asset.operationalOwner}</dd>
           </div>
           <div className="min-w-0">
-            <dt className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
+            <dt className="font-label text-doc-label text-muted-foreground">
               Versão
             </dt>
             <dd className="mt-2 text-sm font-medium tabular-nums">
@@ -92,11 +89,29 @@ export function ManagementAssetDocumentView({
             </dd>
           </div>
           <div className="min-w-0">
-            <dt className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
+            <dt className="flex items-center gap-2 font-label text-doc-label text-muted-foreground">
               <RefreshCcw aria-hidden="true" className="size-3.5" />
               Revisão
             </dt>
             <dd className="mt-2 text-sm font-medium">{asset.reviewCycle}</dd>
+          </div>
+          <div className="min-w-0">
+            <dt className="font-label text-doc-label text-muted-foreground">
+              Atualizado em
+            </dt>
+            <dd className="mt-2 text-sm font-medium tabular-nums">
+              <time dateTime={asset.updatedAt}>
+                {dateFormatter.format(new Date(asset.updatedAt))}
+              </time>
+            </dd>
+          </div>
+          <div className="min-w-0">
+            <dt className="font-label text-doc-label text-muted-foreground">
+              Editado por
+            </dt>
+            <dd className="mt-2 break-words text-sm font-medium">
+              {asset.lastEditedBy ?? "Não registrado"}
+            </dd>
           </div>
         </dl>
 

@@ -43,7 +43,7 @@ export function SlackIntegrationSettings({
 
       if (!response.ok) throw new Error();
 
-      router.replace("/configuracoes");
+      router.replace("/configuracoes?secao=slack");
       router.refresh();
     } catch {
       setError("Não foi possível desconectar o Slack.");
@@ -53,11 +53,11 @@ export function SlackIntegrationSettings({
   }
 
   return (
-    <Card className="min-w-0 bg-surface-sidebar ring-0">
+    <Card className="min-w-0 bg-card ring-0">
       <CardContent className="grid min-w-0 gap-5 px-5">
         <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <h2 className="font-heading text-[17px] leading-6 font-semibold">Slack</h2>
+            <h2 className="text-ui-section">Conexão com Slack</h2>
             <p className="mt-1 max-w-[70ch] text-sm text-muted-foreground">
               O time pergunta ao agente da Directscal direto no Slack. As respostas usam
               apenas os ativos publicados para a empresa e sempre citam a fonte.

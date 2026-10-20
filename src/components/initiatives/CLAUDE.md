@@ -31,3 +31,5 @@ Adiar exige prazo posterior ao atual, preserva o prazo original e retira a confi
 Critérios não substituem acesso à evidência da entrega, que dependerá da integração. Decisão registrada e mensagem preparada não significam aceite do executor, desbloqueio ou sincronização. Ver seção 17 do documento funcional.
 
 - Todas as tabelas visíveis usam o padrão das Dimensões de 06/10/2026 via `Table`: cabeçalho neutro de 44px com raio de 5px, padding horizontal de 16px, linhas de pelo menos 55px e divisórias de 0,5px entre linhas, sem borda externa nem fundo no hover. Conteúdo documental pode ampliar a altura; o editor preserva a indicação de células selecionadas.
+
+- Hovers usam cores neutras, nunca azul: texto `foreground` e superfícies `action-neutral-hover` com texto `action-neutral-foreground`. O sumário documental também mantém o item ativo em `foreground`, branco no escuro e escuro no claro.

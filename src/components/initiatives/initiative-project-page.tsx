@@ -61,7 +61,7 @@ export function InitiativeProjectPage({
           />
         ) : (
           <section className="space-y-3">
-            <h1 className="text-2xl font-semibold">
+            <h1 className="text-ui-page">
               Iniciativa não encontrada
             </h1>
             <Link

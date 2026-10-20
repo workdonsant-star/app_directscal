@@ -14,10 +14,71 @@ export type Database = {
   }
   app_private: {
     Tables: {
+      slack_identity_challenges: {
+        Row: { id: string; organization_id: string; user_id: string; code_hash: string; created_at: string; expires_at: string; revoked_at: string | null; consumed_at: string | null; proof_job_id: string | null; slack_team_id: string | null; slack_user_id: string | null }
+        Insert: never
+        Update: never
+        Relationships: []
+      }
+      slack_identity_links: {
+        Row: { organization_id: string; user_id: string; slack_team_id: string; slack_user_id: string; challenge_id: string; verified_at: string }
+        Insert: never
+        Update: never
+        Relationships: []
+      }
+
+      asset_adherence_routine_events: {
+        Row: { id: string; sequence: number; organization_id: string; routine_id: string; action: string; reason: string; actor_user_id: string; recorded_at: string }
+        Insert: { id: string; organization_id: string; routine_id: string; action: string; reason: string; actor_user_id: string; recorded_at?: string }
+        Update: never
+        Relationships: []
+      }
+      asset_adherence_rules: {
+        Row: { id: string; routine_id: string; revision: number; organization_id: string; diagnostic_id: string; action_point_id: string; asset_id: string; asset_version_id: string; question_id: string; sector_id: string; assignee_team_id: string; assignee_user_id: string; schedule: Json; expectation: string; created_by: string; created_at: string; title: string | null; success_indicator: string | null; change_reason: string | null; write_payload: Json | null }
+        Insert: { id?: string; routine_id: string; revision: number; organization_id: string; diagnostic_id: string; action_point_id: string; asset_id: string; asset_version_id: string; question_id: string; sector_id: string; assignee_team_id: string; assignee_user_id: string; schedule: Json; expectation: string; created_by: string; created_at?: string }
+        Update: never
+        Relationships: []
+      }
+      asset_adherence_cycles: {
+        Row: { id: string; organization_id: string; rule_id: string; routine_id: string; opportunity_key: string; opens_at: string; due_at: string; created_at: string }
+        Insert: { id?: string; organization_id: string; rule_id: string; routine_id: string; opportunity_key: string; opens_at: string; due_at: string; created_at?: string }
+        Update: never
+        Relationships: []
+      }
+      asset_adherence_facts: {
+        Row: { id: string; sequence: number; organization_id: string; cycle_id: string; actor_user_id: string | null; payload: Json; recorded_at: string; origin: "manual" | "slack"; slack_team_id: string | null; slack_user_id: string | null; slack_event_job_id: string | null }
+        Insert: { id: string; organization_id: string; cycle_id: string; actor_user_id: string | null; payload: Json; recorded_at?: string; origin?: "manual" | "slack"; slack_team_id?: string | null; slack_user_id?: string | null; slack_event_job_id?: string | null }
+        Update: never
+        Relationships: []
+      }
+      organization_specialist_assignments: {
+        Row: { organization_id: string; specialist_id: string | null; updated_by: string; updated_at: string }
+        Insert: { organization_id: string; specialist_id?: string | null; updated_by: string; updated_at?: string }
+        Update: { specialist_id?: string | null; updated_by?: string; updated_at?: string }
+        Relationships: []
+      }
+      organization_sector_slack_leaders: {
+        Row: { id: string; organization_id: string; sector_id: string; slack_team_id: string; slack_user_id: string; position_override: string | null; created_by: string | null; created_at: string }
+        Insert: { id?: string; organization_id: string; sector_id: string; slack_team_id: string; slack_user_id: string; position_override?: string | null; created_by?: string | null; created_at?: string }
+        Update: { position_override?: string | null }
+        Relationships: []
+      }
+      diagnostic_slack_leader_assignments: {
+        Row: { organization_id: string; diagnostic_sector_scope_id: string; slack_leader_id: string }
+        Insert: { organization_id: string; diagnostic_sector_scope_id: string; slack_leader_id: string }
+        Update: { slack_leader_id?: string }
+        Relationships: []
+      }
       client_onboarding_completions: {
         Row: { organization_id: string; completed_by: string | null; completed_at: string }
         Insert: { organization_id: string; completed_by?: string | null; completed_at?: string }
         Update: { organization_id?: string; completed_by?: string | null; completed_at?: string }
+        Relationships: []
+      }
+      slack_delivery_jobs: {
+        Row: { id: string; event_id: string; organization_id: string; team_id: string; question: Json; status: string; attempts: number; retryable: boolean; available_at: string; lease_id: string | null; lease_until: string | null; reply: Json | null; send_started_at: string | null; delivered_ts: string | null; error_code: string | null; received_at: string; updated_at: string }
+        Insert: never
+        Update: never
         Relationships: []
       }
       slack_event_receipts: {
@@ -187,6 +248,90 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      open_routine_event_contact: { Args: { p_organization_id: string; p_actor_user_id: string; p_input: Json }; Returns: Json }
+      save_routine_contact_policy: { Args: { p_organization_id: string; p_actor_user_id: string; p_input: Json }; Returns: number }
+      get_routine_contact_policy: { Args: { p_organization_id: string; p_actor_user_id: string }; Returns: Json }
+      get_routine_contact_schedule: { Args: Record<string, never>; Returns: Json }
+      enqueue_routine_contact: { Args: { p_organization_id: string; p_policy_id: string; p_rule_id: string; p_opportunity_key: string; p_opens_at: string; p_due_at: string }; Returns: string | null }
+      get_routine_contact_context: { Args: { p_job_id: string; p_lease_id: string; p_reserve?: boolean }; Returns: Json }
+      defer_slack_delivery: { Args: { p_id: string; p_lease_id: string; p_available_at: string }; Returns: undefined }
+      touch_routine_contact_schedule: { Args: { p_rule_id: string; p_error: boolean }; Returns: undefined }
+
+      start_slack_identity: { Args: { p_organization_id: string; p_user_id: string; p_code_hash: string }; Returns: string }
+      complete_slack_identity: { Args: { p_job_id: string; p_lease_id: string }; Returns: boolean }
+      get_routine_reply_contexts: { Args: { p_job_id: string; p_lease_id: string; p_cycle_id?: string }; Returns: Json }
+      propose_routine_reply: { Args: { p_job_id: string; p_lease_id: string; p_cycle_id: string; p_actor_name: string; p_operation: Json }; Returns: Json }
+      resolve_routine_reply: { Args: { p_job_id: string; p_lease_id: string; p_proposal_id: string; p_confirm: boolean }; Returns: Json }
+      get_customer_routine_records: { Args: { p_organization_id: string; p_actor_user_id: string; p_diagnostic_id: string; p_before_at?: string; p_before_id?: string }; Returns: Json }
+      get_admin_routine_cycles: { Args: { p_organization_id: string; p_actor_user_id: string; p_before_at?: string; p_before_id?: string }; Returns: Json }
+      capture_routine_result_baseline: { Args: { p_organization_id: string; p_actor_user_id: string; p_rule_id: string }; Returns: string }
+      get_routine_result_baselines: { Args: { p_organization_id: string; p_actor_user_id: string }; Returns: Json }
+      save_agent_gap_review: { Args: { p_organization_id: string; p_actor_user_id: string; p_input: Json }; Returns: string }
+      get_agent_operations: { Args: { p_organization_id: string; p_actor_user_id: string; p_audit_ids?: string[] }; Returns: Json }
+      save_routine_supervision: { Args: { p_organization_id: string; p_actor_user_id: string; p_input: Json }; Returns: string }
+      enqueue_routine_reminders: { Args: Record<string, never>; Returns: Json }
+      get_user_session_version: { Args: { p_user_id: string }; Returns: string }
+      start_customer_password_reset: { Args: { p_id: string; p_email: string; p_token_hash: string; p_sealed_token: Json }; Returns: string | null }
+      claim_password_reset_delivery: { Args: { p_id?: string }; Returns: Json }
+      finish_password_reset_delivery: { Args: { p_id: string; p_lease_id: string; p_message_id: string | null; p_retryable?: boolean; p_retry_after?: number }; Returns: undefined }
+      get_customer_password_context: { Args: { p_user_id: string }; Returns: Json }
+      get_customer_password_reset_context: { Args: { p_token_hash: string }; Returns: Json }
+      start_customer_password_change: { Args: { p_user_id: string }; Returns: boolean }
+      change_customer_password: { Args: { p_user_id: string; p_expected_hash: string; p_new_hash: string }; Returns: undefined }
+      complete_customer_password_reset: { Args: { p_token_hash: string; p_expected_hash: string; p_new_hash: string }; Returns: boolean }
+      complete_acquisition_account: { Args: { p_user_id: string | null; p_input: Json }; Returns: Json }
+      unlink_slack_identity: { Args: { p_organization_id: string; p_user_id: string }; Returns: undefined }
+      get_verified_slack_identities: { Args: { p_organization_id: string }; Returns: Json }
+
+      enqueue_slack_delivery: { Args: { p_event_id: string; p_team_id: string; p_question: Json }; Returns: string | null }
+      claim_slack_delivery: { Args: { p_job_id?: string | null }; Returns: Json }
+      transition_slack_delivery: { Args: { p_id: string; p_lease_id: string; p_operation: string; p_value?: Json }; Returns: undefined }
+      retry_slack_delivery: { Args: { p_id: string; p_organization_id: string; p_actor_user_id: string; p_expected_updated_at: string }; Returns: undefined }
+
+      get_customer_adherence_agreements: { Args: { p_organization_id: string; p_actor_user_id: string; p_diagnostic_id: string }; Returns: Json }
+      get_admin_adherence_workspace: { Args: { p_organization_id: string; p_actor_user_id: string }; Returns: Json }
+      save_admin_adherence_routine: { Args: { p_organization_id: string; p_actor_user_id: string; p_id: string; p_routine_id: string; p_expected_rule_id: string | null; p_expected_assignment_at: string | null; p_input: Json }; Returns: string }
+      transfer_admin_action_routines: { Args: { p_organization_id: string; p_actor_user_id: string; p_id: string; p_input: Json }; Returns: Json }
+      transition_asset_adherence_routine: {
+        Args: { p_organization_id: string; p_routine_id: string; p_actor_user_id: string; p_id: string; p_expected_event_id: string | null; p_action: string; p_reason: string }
+        Returns: Json
+      }
+      record_asset_adherence_fact: {
+        Args: { p_organization_id: string; p_cycle_id: string; p_actor_user_id: string; p_id: string; p_payload: Json }
+        Returns: Json
+      }
+      save_admin_management_asset: {
+        Args: { p_actor_user_id: string; p_asset_id: string; p_input: Json }
+        Returns: undefined
+      }
+      assign_organization_specialist: {
+        Args: { p_organization_id: string; p_actor_user_id: string; p_specialist_id: string | null; p_expected_updated_at: string | null }
+        Returns: Json
+      }
+      get_organization_operations: {
+        Args: { p_organization_id: string; p_actor_user_id: string }
+        Returns: Json
+      }
+      submit_anonymous_likert_response: {
+        Args: { p_token: string; p_submission_id: string; p_answers: Json }
+        Returns: Json
+      }
+      save_action_point_update: {
+        Args: { p_diagnostic_id: string; p_organization_id: string; p_action_point_id: string; p_actor_user_id: string; p_author_name: string; p_expected_updated_at: string | null; p_plan: Json }
+        Returns: undefined
+      }
+      get_admin_delivery_draft: {
+        Args: { p_diagnostic_id: string }
+        Returns: Json
+      }
+      save_admin_delivery_revision: {
+        Args: { p_diagnostic_id: string; p_actor_user_id: string; p_input: Json }
+        Returns: Json
+      }
+      create_slack_sector_leader: {
+        Args: { p_organization_id: string; p_created_by: string; p_sector_name: string; p_slack_team_id: string; p_slack_user_id: string; p_position_override: string | null }
+        Returns: Json
+      }
       accept_leadership_invitation: {
         Args: { p_token_hash: string; p_user_id: string }
         Returns: Json
@@ -244,6 +389,38 @@ export type Database = {
           p_chunks: Json
           p_published_at?: string
           p_version_id: string
+        }
+        Returns: Json
+      }
+      management_asset_category_document_count: {
+        Args: { p_organization_id: string; p_actor_user_id: string; p_key: string }
+        Returns: number
+      }
+      delete_management_asset_category: {
+        Args: { p_organization_id: string; p_actor_user_id: string; p_key: string; p_expected_title: string; p_destination_key: string | null; p_new_title: string | null }
+        Returns: Json
+      }
+      save_asset_navigation_preferences: {
+        Args: { p_organization_id: string; p_actor_user_id: string; p_preferences: Json }
+        Returns: Json
+      }
+      save_management_asset_category: {
+        Args: { p_organization_id: string; p_actor_user_id: string; p_key: string | null; p_title: string; p_previous_title: string | null }
+        Returns: Json
+      }
+      update_customer_assets_metadata: {
+        Args: { p_actor_user_id: string; p_asset_ids: string[]; p_changes: Json }
+        Returns: Json
+      }
+      update_customer_management_asset: {
+        Args: {
+          p_actor_user_id: string
+          p_asset_id: string
+          p_expected_version_id: string
+          p_title: string
+          p_summary: string
+          p_content: Json
+          p_chunks: Json
         }
         Returns: Json
       }
@@ -416,6 +593,13 @@ export type Database = {
   }
   public: {
     Tables: {
+      organization_asset_navigation: {
+        Row: { organization_id: string; preferences: Json; updated_by: string | null; updated_at: string }
+        Insert: { organization_id: string; preferences?: Json; updated_by?: string | null; updated_at?: string }
+        Update: { preferences?: Json; updated_by?: string | null; updated_at?: string }
+        Relationships: []
+      }
+
       account_profiles: {
         Row: { user_id: string; name: string; avatar_url: string | null; updated_at: string }
         Insert: { user_id: string; name: string; avatar_url: string | null; updated_at?: string }
@@ -1269,6 +1453,7 @@ export type Database = {
           content: Json
           content_format: Database["public"]["Enums"]["management_asset_content_format"]
           created_at: string
+          last_edited_by_user_id: string | null
           created_by_user_id: string | null
           id: string
           index_error: string | null
@@ -1289,6 +1474,7 @@ export type Database = {
           content: Json
           content_format: Database["public"]["Enums"]["management_asset_content_format"]
           created_at?: string
+          last_edited_by_user_id?: string | null
           created_by_user_id?: string | null
           id?: string
           index_error?: string | null
@@ -1309,6 +1495,7 @@ export type Database = {
           content?: Json
           content_format?: Database["public"]["Enums"]["management_asset_content_format"]
           created_at?: string
+          last_edited_by_user_id?: string | null
           created_by_user_id?: string | null
           id?: string
           index_error?: string | null

@@ -148,7 +148,7 @@ export function ShareWorkspace({ diagnostic, links }: ShareWorkspaceProps) {
       </div>
 
       {notice && (
-        <div className="rounded-lg border bg-card px-3 py-2 text-sm text-foreground">
+        <div className="rounded-lg bg-card px-3 py-2 text-sm text-foreground">
           {notice}
         </div>
       )}

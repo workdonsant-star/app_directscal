@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import { AdminCompanyDetail } from "@/components/admin/admin-company-detail";
 import { AppPage } from "@/components/app-page";
 import { AppTopbar } from "@/components/app-topbar";
+import { getAdminCompanyContext } from "@/lib/data/admin-company-operations-data-source";
 
 export const metadata: Metadata = {
   title: "Empresa — Admin Directscal",
@@ -14,6 +16,8 @@ export default async function AdminCompanyPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const context = await getAdminCompanyContext(id);
+  if (!context) notFound();
 
   return (
     <>
@@ -24,7 +28,7 @@ export default async function AdminCompanyPage({
         ]}
       />
       <AppPage>
-        <AdminCompanyDetail companyId={id} />
+        <AdminCompanyDetail key={`${id}:${context.operations.assignment.updatedAt}`} context={context} />
       </AppPage>
     </>
   );

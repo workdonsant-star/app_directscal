@@ -199,6 +199,7 @@ export const adminDeliveries: AdminDelivery[] = [
 export const adminActionPointTemplates: AdminActionPointTemplate[] = [
   {
     id: "action_processos_ritual",
+    dimensionId: "processos",
     dimension: "Processos",
     title: "Mapear os processos críticos da operação",
     description:
@@ -212,6 +213,7 @@ export const adminActionPointTemplates: AdminActionPointTemplate[] = [
   },
   {
     id: "action_comunicacao_canais",
+    dimensionId: "comunicacao",
     dimension: "Comunicação",
     title: "Definir o sistema de comunicação operacional",
     description:
@@ -225,6 +227,7 @@ export const adminActionPointTemplates: AdminActionPointTemplate[] = [
   },
   {
     id: "action_lideranca_autonomia",
+    dimensionId: "lideranca",
     dimension: "Liderança",
     title: "Formalizar limites de autonomia",
     description:
@@ -238,6 +241,7 @@ export const adminActionPointTemplates: AdminActionPointTemplate[] = [
   },
   {
     id: "action_performance_indicadores",
+    dimensionId: "performance",
     dimension: "Performance",
     title: "Consolidar indicadores de gestão",
     description:
@@ -251,6 +255,7 @@ export const adminActionPointTemplates: AdminActionPointTemplate[] = [
   },
   {
     id: "action_visao_desdobramento",
+    dimensionId: "visao",
     dimension: "Visão",
     title: "Desdobrar prioridades estratégicas",
     description:
@@ -264,6 +269,7 @@ export const adminActionPointTemplates: AdminActionPointTemplate[] = [
   },
   {
     id: "action_cultura_criterios",
+    dimensionId: "cultura",
     dimension: "Cultura",
     title: "Transformar valores em critérios de decisão",
     description:

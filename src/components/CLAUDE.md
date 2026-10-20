@@ -80,7 +80,7 @@ Cada subpasta de domínio tem seu próprio `CLAUDE.md`. Crie um quando adicionar
 - **Tabular numerals** em qualquer número alinhável (`tabular-nums`).
 - **Toda tabela nova usa `Table variant="operational"`**, conforme o componente `252:438` do Figma DirectScal App, frame `252:2`: cabeçalho de 44px com raio de 5px nos quatro cantos externos; linhas de 55px com divisória inferior de 0,5px; sem contorno externo, Card ou fundo no hover. A regra anterior do wrapper com borda foi substituída. Preserve títulos e ações no fluxo da página e números alinháveis com `tabular-nums`.
 - **Novos seletores de abas usam `TabsList variant="selector"`**, conforme o componente `252:79` do mesmo frame: controles de 32px, intervalo de 32px, fundo neutro apenas na opção ativa e nenhum sublinhado. Dropdowns continuam usando `Select`. Implementação e critérios de aceite em `docs/padroes-de-tabelas-e-seletores.md`.
-- **Tipografia da marca:** Plus Jakarta Sans para títulos, Funnel Sans para corpo e UI, Instrument Serif (itálico) para ênfase rara e JetBrains Mono para código/labels técnicos. Não use serif para body.
+- **Tipografia da marca:** Plus Jakarta Sans para títulos, Funnel Sans para corpo e UI e JetBrains Mono para código/labels técnicos. Tamanhos via tokens `ui-*` (interface) e `doc-*` (ativos de gestão), descritos em `docs/tokens-de-tipografia.md`; sem tamanhos arbitrários. Pesos: 400 corpo, 500 rótulos e controles, 700 títulos; mínimo de 12px. Rótulos de métrica e metadado usam `font-label text-ui-label` (JetBrains Mono), nunca o valor.
 
 ## Hierarquia de decisão
 
@@ -123,3 +123,20 @@ Não use spinners centrais. Skeletons localizados são mais informativos.
 - O shell preserva largura de 256px, topbar de 56px, superfície compartilhada e raio de conteúdo de 20px do frame `242:267`. O frame `252:545` atualiza switcher e alinhamento da topbar ao conteúdo. Avatar do perfil circular. Iniciativas fica fora da sidebar; as pastas por categoria reutilizam dados publicados existentes, sem migração.
 
 - NavUser usa nome e avatar resolvidos pelo servidor, atualiza ao recuperar foco e a cada minuto enquanto visível. Overrides locais não substituem o banco no shell.
+
+Quando a sidebar desktop estiver colapsada, o botão de expandir fica no SidebarFooter, imediatamente acima de Configurações. Papéis sem Configurações mantêm o botão no rodapé. A topbar conserva o trigger no mobile e no desktop compacto expandido; não duplica o controle quando colapsado.
+
+- Hovers usam cores neutras, nunca azul: texto `foreground` e superfícies `action-neutral-hover` com texto `action-neutral-foreground`. O sumário documental também mantém o item ativo em `foreground`, branco no escuro e escuro no claro.
+
+- Âncoras documentais rolam somente o main/app-content interno, respeitando scroll-margin-top e movimento reduzido. SidebarInset usa overflow: clip para impedir que links com hash desloquem o shell em 56px; o item ativo acompanha a posição das seções nessa mesma área interna.
+
+- SidebarHeader usa padding horizontal de 8px nos dois lados, igual aos grupos de navegação. O hover e a seleção do perfil respeitam esse recuo, sem encostar na borda esquerda; largura e comportamento colapsado permanecem iguais.
+
+
+- ManagementAssetNavigation oferece três pontos nas categorias ao dono cliente: catálogo Lucide, mover acima/abaixo e restaurar ícone. Preferências compartilhadas por empresa no banco; admin lê a mesma ordem/ícones sem editar. Layout resolve organização e preferências, PUT revalida dono e organização. Falhas mantêm o estado anterior e exibem erro. LocalStorage não governa essa navegação. Edição de categorias permanece fora desta etapa.
+
+- Categorias são reordenadas por arraste no handle GripVertical, com Pointer Events (mouse/touch), limiar de 5px, prévia neutra, captura do ponteiro e salvamento compartilhado ao soltar. Cancelamento não salva. Handle aceita setas para reordenar pelo teclado. Menu não mostra mais Mover para cima/baixo. Falha restaura a ordem persistida.
+
+- Action Points usa ListChecks na sidebar para diferenciar ações executáveis do SquarePlus de Pesquisas.
+
+- Em `/configuracoes`, a sidebar substitui a navegação do app por Setores e lideranças, Empresa e Slack; o rodapé oferece Voltar ao app. A seleção acompanha `secao` na URL com Suspense localizado, sem mudar o shell ou permissões.

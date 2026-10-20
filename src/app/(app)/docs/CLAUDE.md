@@ -17,3 +17,13 @@ Página autenticada de recurso para orientar o cliente administrador no uso do s
 - O sumário lateral pode usar `DocumentTableOfContents` como client component para rolagem suave e item ativo.
 - Não criar rotas filhas nesta fase.
 - Links finais podem apontar para `/omdx`, `/omdx/diagnosticos` e páginas de insights.
+
+- Sumário lateral alinhado ao topo da coluna documental, sem padding superior; sticky usa `top-8` (32px), acompanhando o recuo do conteúdo no scroll interno do shell.
+
+- Criação em tela única (informações e lideranças), sem revisão ou salvamento de rascunho. A ativação retorna à lista de pesquisas com os links disponíveis.
+
+- A criação/configuração de pesquisa abre modal centralizada, com conteúdo responsivo em tela única.
+
+- Compartilhamento é feito pela cópia dos links na tabela de Pesquisas; encerramento no menu de ações. A antiga central não existe mais.
+
+- Prazo de resposta é obrigatório na criação e configuração da pesquisa.

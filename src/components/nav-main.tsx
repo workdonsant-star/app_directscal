@@ -41,7 +41,7 @@ export function NavMain({
   return (
     <SidebarGroup>
       {label ? (
-        <SidebarGroupLabel className="text-[10px] font-normal text-muted-foreground">
+        <SidebarGroupLabel className="text-xs font-normal text-muted-foreground">
           {labelHref ? <Link href={labelHref} onClick={onNavigate} className="rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">{label}</Link> : label}
         </SidebarGroupLabel>
       ) : null}

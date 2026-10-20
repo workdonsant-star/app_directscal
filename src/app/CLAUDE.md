@@ -14,7 +14,7 @@ src/app/
 \                ← telas públicas de autenticação
 │   ├── entrar/page.tsx      ← login com Google OAuth + fallback mockado opcional
 │   ├── criar-conta/page.tsx ← cadastro de sessão mockada quando fallback estiver ativo
-│   └── recuperar-senha/page.tsx ← recuperação mockada de senha
+│   └── recuperar-senha/page.tsx ← recuperação real de credencial existente
 ├── (app)/                    ← route group autenticado (cliente administrador)
 │   ├── layout.tsx            ← gate de sessão + shell autenticado com sidebar
 │   ├── admin/                ← visão de superadmin
@@ -23,7 +23,7 @@ src/app/
 │       ├── camadas/          ← redirect legado para /omdx
 │       ├── diagnosticos/     ← área operacional (lista + drawer)
 │       └── [id]/
-│           ├── compartilhar/page.tsx ← central de coleta com links Supabase
+│           ├── compartilhar/page.tsx ← redirect legado para Pesquisas
 │           ├── action-points/route.ts ← download direto de PDF RACI
 │           └── relatorio/route.ts ← download direto de relatório PDF ou CSV consolidado
 │   └── insights/
@@ -82,7 +82,7 @@ src/app/
 - **Redirects no servidor** com `redirect()` de `next/navigation` (vide `src/app/page.tsx`).
 - **Metadata** vem de `export const metadata` em `layout.tsx` e `page.tsx`.
 - O favicon atual é `public/favicon.png`, registrado no metadata global.
-- **Fontes** declaradas no root `layout.tsx` via `next/font/google` e expostas como variáveis CSS (`--font-funnel-sans`, `--font-plus-jakarta-sans`, `--font-instrument-serif`, `--font-jetbrains-mono`). Títulos semânticos usam Plus Jakarta Sans; corpo e UI usam Funnel Sans.
+- **Fontes** declaradas no root `layout.tsx` via `next/font/google` e expostas como variáveis CSS (`--font-funnel-sans`, `--font-plus-jakarta-sans`, `--font-jetbrains-mono`). Títulos semânticos usam Plus Jakarta Sans; corpo e UI usam Funnel Sans. Tamanhos usam os tokens `ui-*` e `doc-*` de `docs/tokens-de-tipografia.md`.
 - **Dark mode** controlado por `next-themes` (atributo `class` em `<html>`). Default: `system`, com `enableSystem`; o usuário pode alternar manualmente claro/escuro pelo dropdown do usuário.
 
 ## globals.css — regras
@@ -113,7 +113,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/omdx/diagnosticos` | `(app)/omdx/diagnosticos/` | Área operacional acessada pela sidebar, com lista, filtros, criação e configuração em drawer lateral. |
 | `/action-points` | `(app)/action-points/` | Action Points em lista gerencial agrupada por dimensão, responsável ou prazo, com painel de detalhes. Item independente da sidebar. |
 | `/assistente` | `(app)/assistente/` | Interface frontend-only do WorkFlow, com conversa demonstrativa e foto do perfil autenticado nas mensagens da pessoa. |
-| `/omdx/[id]/compartilhar` | `(app)/omdx/[id]/compartilhar/` | Central de coleta persistida com links por grupo, copy sugerida e resumo compacto. |
+| `/omdx/[id]/compartilhar` | `(app)/omdx/[id]/compartilhar/` | Redirect legado para `/omdx/diagnosticos`; compartilhamento e encerramento ficam na tabela. |
 | `/omdx/[id]/action-points` | `(app)/omdx/[id]/action-points/` | Route Handler Node autenticado para download direto do plano de ação RACI. |
 | `/omdx/[id]/relatorio` | `(app)/omdx/[id]/relatorio/` | Route Handler Node autenticado para download direto do relatório consolidado em PDF ou CSV. |
 | `/omdx/[id]/acompanhamento` | `(app)/omdx/[id]/acompanhamento/` | Coleta em andamento |
@@ -169,7 +169,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - O breadcrumb começa apenas em uma página aberta a partir da raiz e parte da raiz imediata, sem repetir a seção superior da sidebar.
 - `/omdx/camadas` redireciona para `/omdx` e não renderiza breadcrumb próprio.
 - `/omdx`, `/omdx/diagnosticos`, `/action-points`, `/assistente`, `/insights/[dimensao]`, `/docs`, `/relatorios`, `/perfil`, `/configuracoes` e as categorias de Ativos de gestão são raízes sem breadcrumb.
-- `/omdx/[id]/compartilhar` usa `Pesquisas / Compartilhar`.
+- `/omdx/[id]/compartilhar` somente redireciona para Pesquisas; não renderiza tela ou breadcrumb.
 - `/omdx/[id]/action-points` não renderiza página nem breadcrumb; retorna PDF como attachment.
 - `/omdx/[id]/relatorio` não renderiza página nem breadcrumb; retorna PDF como attachment por padrão e CSV consolidado quando recebe `?formato=csv`.
 - `/configuracoes` mantém apenas as ações da página na topbar.
@@ -235,4 +235,30 @@ A sidebar concentra os ativos em Ativos de gestão, sem Bibliotecas por tipo. `/
 
 ## Configuração inicial do cliente
 
-`/onboarding` é uma rota autenticada fora do shell `(app)`. Donos com empresa sem registro de conclusão passam por Slack, setores/lideranças e revisão dos convites antes da navegação normal. `/api/settings/onboarding` revalida dados reais e grava conclusão idempotente por empresa. OAuth Slack volta ao onboarding enquanto pendente, e a Configurações depois de concluído. O cadastro anterior do Herbert será capturado sem alterar sua conta.
+`/onboarding` é uma rota autenticada fora do shell `(app)`. Donos cuja empresa não possui conclusão inicial nem instalação Slack ativa passam pela preparação antes da navegação normal. `/api/settings/onboarding` revalida dados reais e grava conclusão idempotente por empresa. OAuth Slack volta ao onboarding enquanto pendente, e a Configurações depois de concluído. O cadastro anterior do Herbert será capturado sem alterar sua conta.
+
+Na configuração inicial, novas lideranças vêm da listagem ao vivo do Slack. `/api/settings/slack-users` é exclusivo do dono; `/api/settings/sectors` recebe setor, ID Slack e cargo opcional. Não envia convites nem concede acesso ao painel. A conexão OAuth continua separada e depende da Redirect URL cadastrada no Slack.
+
+A decisão de entrada usa `requiresOnboarding`, derivada no servidor: conclusão persistida ou instalação Slack ativa da própria empresa dispensam o onboarding inteiro. Sem ambos, a preparação é obrigatória. Conexão de outra empresa não libera acesso. A conclusão explícita continua revalidando setores e lideranças; dispensar a tela não grava conclusão nem transfere workspace.
+
+Superfícies seguem uma escala única nos dois temas, documentada em `docs/tokens-de-cor.md`: shell, canvas, card, control e popover opacos; field e selected translúcidos. O escuro mantém o frame Figma `272:2` (canvas `#0B0B0B`, cards `#181818`, shell `#161616`). Cards usam apenas `bg-card`, sem `dark:` e sem borda.
+
+`/exemplos/analytics` é uma visualização autenticada para capturas com dados fictícios de aderência, sem habilitar módulos nem acessar métricas reais. Reutiliza componentes e temas do produto e fica fora da sidebar.
+
+A superfície autenticada rola internamente abaixo da topbar: app-shell tem altura de 100svh, SidebarInset recorta overflow e o main usa min-height: 0 e overflow-y: auto. Assim os cantos de 20px permanecem visíveis durante a rolagem em ambos os temas.
+
+- Estados de hover usam cores neutras, sem azul; ações primárias preservam azul somente no repouso.
+
+- Âncoras documentais rolam somente o main/app-content interno, respeitando scroll-margin-top e movimento reduzido. SidebarInset usa overflow: clip para impedir que links com hash desloquem o shell em 56px; o item ativo acompanha a posição das seções nessa mesma área interna.
+
+- Callouts documentais usam tokens `document-info` e `document-attention`, com foreground próprio. No escuro, azul profundo e âmbar profundo substituem fundos pastel; negrito e links herdam a cor do callout para preservar contraste.
+
+
+- PATCH /api/management-assets/[id] permite atualização versionada de ativos publicados pelo dono da empresa, com validação Tiptap, isolamento por membership e controle de conflito. A leitura mantém sua URL e oferece edição inline.
+
+- Action Points usa a mesma régua de status da Maturidade (`--omdx-status-*`, ver `src/components/omdx/CHART_COLOR_SYSTEM.md`) em bolinhas, barras, ícones e anéis. Percentuais e textos de status ficam em texto neutro, no mesmo tamanho do rótulo. Os tokens `ap-positive`, `ap-attention` e `ap-negative` continuam definidos, mas a tela de aderência não os usa mais.
+
+
+Fechamento de 19/10/2026: Action Points liga a seleção publicada real à visão por pessoa (inclusive v2), com filtro ?diagnostico e estado vazio. Downloads de ações recusam rascunhos e usam a mesma seleção; PDF de relatório inclui editorial aprovado. Revisões são privadas até publicar.
+
+A15: POST /api/internal/slack-deliveries é consumidor limitado a uma entrega, com segredo dedicado obrigatório (mínimo 32 caracteres), sem sessão/browser ou empresa enviada no payload. Não existe scheduler externo configurado pela implementação; o acionamento periódico deve ser homologado na implantação.

@@ -9,3 +9,5 @@ Rotas públicas para revisar convites emitidos por uma empresa cliente.
 - A revisão do convite mostra setor, cargo e nível de acesso, mas o membership só é criado depois da confirmação Google.
 - A confirmação usa uma intenção OAuth curta em cookie `httpOnly`, aceita somente o e-mail exato do convite e captura nome/foto do perfil Google persistido pelo Auth.js.
 - A sessão temporária não acessa o painel. O aceite transacional cria `organization_member` como `cliente` ou `admin`, limpa apenas o intent e reaproveita a sessão Google na entrada imediata em `/omdx`.
+
+- Estados de hover usam cores neutras, sem azul; ações primárias preservam azul somente no repouso.

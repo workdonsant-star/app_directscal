@@ -74,7 +74,7 @@ export function ActionPointTimeline({ events }: { events: ActionPointEvent[] }) 
             </span>
             <div className="min-w-0 flex-1 space-y-1.5 pt-1">
               <p className="text-sm leading-snug text-foreground">
-                <span className="font-semibold">{event.authorName}</span>{" "}
+                <span className="font-medium">{event.authorName}</span>{" "}
                 {event.body}
               </p>
               {event.detail && (

@@ -43,7 +43,7 @@ export function TaskDecisionPanel({
   return (
     <section className="space-y-5" aria-label="Conversa de decisão">
       <div className="space-y-2 rounded-lg border border-destructive/25 bg-destructive/5 p-4">
-        <h2 className="flex items-center gap-2 text-sm font-semibold text-destructive">
+        <h2 className="flex items-center gap-2 text-sm font-medium text-destructive">
           <TriangleAlert className="size-4" />
           {task.attention === "blocker"
             ? "Impedimento informado"
@@ -90,7 +90,7 @@ export function TaskDecisionPanel({
           <div className="flex items-start gap-3">
             <MessageCircle className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
             <p className="text-sm leading-relaxed">
-              <span className="font-semibold">Agente</span>
+              <span className="font-medium">Agente</span>
               <br />
               Qual decisão você quer registrar? Vou preparar o comentário no
               card e a mensagem para {task.assignee}.
@@ -159,7 +159,7 @@ export function TaskDecisionPanel({
               value={instruction}
               onChange={(event) => setInstruction(event.target.value)}
               placeholder="Explique o que deve acontecer e por quê. Ex.: vamos fazer uma call para destravar o acesso."
-              className="w-full rounded-md border bg-background p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full rounded-md border border-transparent bg-input p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
           <Button type="submit" variant="outline">
@@ -178,7 +178,7 @@ export function TaskDecisionPanel({
             </p>
           </div>
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold">
+            <h3 className="text-sm font-medium">
               Agente · Revise antes de confirmar
             </h3>
             <p className="text-sm leading-relaxed">{plan.effect}</p>

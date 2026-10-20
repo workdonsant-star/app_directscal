@@ -9,7 +9,7 @@ Componentes da página `/perfil`, usados para configurar os dados pessoais da co
 - Permitir edição compartilhada do nome e da foto de perfil.
 - Exibir o e-mail em estado desabilitado, sem texto auxiliar abaixo do campo.
 - Permitir edição de `Posição na empresa` junto de nome e e-mail, embora sua persistência continue no lead de aquisição.
-- Simular troca de senha sem persistência real.
+- Trocar senha existente pela API autenticada, quando habilitada pelo servidor.
 - Usar um único botão `Salvar alterações` na topbar, antes do sino, via `AppTopbarActionsPortal`: nome e avatar são enviados ao banco, enquanto a posição alterada é enviada por `PATCH /api/profile`.
 - Manter todas as informações do perfil dentro de um único box; seções internas usam divisórias, não cards separados.
 - Não exibir um cabeçalho interno `Informações de perfil` nem o título `Dados pessoais`; o card começa diretamente pelo bloco da foto.
@@ -28,3 +28,8 @@ Componentes da página `/perfil`, usados para configurar os dados pessoais da co
 - Logout preserva nome e avatar no banco. Um novo login Google não substitui as escolhas do perfil.
 - Campos de senha são opcionais. Só valide senha quando algum campo de senha estiver preenchido.
 - Durante o salvamento, bloquear o CTA da topbar e exibir `Salvando`; erros da API permanecem visíveis no final do formulário.
+
+A09: SlackIdentitySection é seção interna do box do perfil. Dados iniciais vêm do servidor; geração de código, consulta de confirmação e desvinculação própria usam API sem campos de empresa/pessoa. Código fica apenas em memória da tela, com instrução de envio em DM pelo próprio usuário, validade de dez minutos e limite de geração. Desvinculação tem confirmação explícita e preserva conversas. Sem envio automático, localStorage ou token do bot no cliente.
+
+
+A14: troca de senha é real somente quando passwordEnabled vem do servidor. Google-only não vê campos simulados. Senha atual obrigatória; novo valor/confirmacão 12–128. Perfil salvo e falha de senha são explicitamente separados; sucesso de senha encerra sessão. Nenhuma senha em armazenamento local.

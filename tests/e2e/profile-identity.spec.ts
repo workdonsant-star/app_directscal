@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+test.skip(process.env.DIRECTSCAL_E2E_DEMO !== "true", "Exige ambiente demo isolado; identidade persistida real é validada separadamente.");
+
 for (const theme of ["light", "dark"] as const) {
   test(`perfil ignora identidade local antiga antes da primeira gravação (${theme})`, async ({ page }) => {
     const login = await page.request.post("/api/auth/login", {

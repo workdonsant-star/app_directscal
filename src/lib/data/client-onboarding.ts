@@ -10,8 +10,10 @@ export function getClientOnboardingProgress(
   const activeSectors = sectors.filter((sector) => sector.active);
   const sectorsReady = activeSectorCount > 0;
   const leadersReady = sectorsReady && activeSectors.length === activeSectorCount && activeSectors.every((sector) =>
-    Boolean(sector.leader.email && sector.leader.position) &&
-    (sector.inviteStatus === "ativo" || sector.inviteStatus === "convite_enviado"),
+    sector.leader.slackUserId
+      ? Boolean(sector.leader.slackTeamId) && sector.inviteStatus === "ativo"
+      : Boolean(sector.leader.email && sector.leader.position) &&
+        (sector.inviteStatus === "ativo" || sector.inviteStatus === "convite_enviado"),
   );
   return { slackReady, sectorsReady, leadersReady, canComplete: slackReady && leadersReady };
 }

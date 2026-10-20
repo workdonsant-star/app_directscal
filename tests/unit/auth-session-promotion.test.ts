@@ -3,14 +3,16 @@ import type { NextAuthConfig } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 
 const captured = vi.hoisted(() => ({ config: undefined as NextAuthConfig | undefined }));
+vi.mock("@/lib/auth/password-recovery", () => ({ getUserSessionVersion: vi.fn() }));
 vi.mock("next-auth", () => ({ default: (config: NextAuthConfig) => { captured.config = config; return {}; } }));
 vi.mock("next/headers", () => ({ cookies: vi.fn() }));
 vi.mock("@auth/supabase-adapter", () => ({ SupabaseAdapter: vi.fn() }));
 vi.mock("@/lib/auth/supabase-auth", () => ({
-  getSupabaseAdapterConfig: () => null,
+  getSupabaseAdapterConfig: () => ({ url: "https://fixture.invalid", secret: "fixture" }),
   resolveSupabaseAuthUser: vi.fn(),
   attachSupabaseAccessTokenToSession: vi.fn(),
   authenticateSuperadminPasswordUser: vi.fn(),
+  authenticateCustomerPasswordUser: vi.fn(),
   checkUserHasActiveAccess: vi.fn(),
   ensureSupabaseAuthUserProvisioned: vi.fn(),
 }));
@@ -24,6 +26,7 @@ vi.mock("@/lib/data/organization-structure-data-source", () => ({ getLeadershipI
 
 import "../../auth";
 import { resolveSupabaseAuthUser } from "@/lib/auth/supabase-auth";
+import { getUserSessionVersion } from "@/lib/auth/password-recovery";
 
 const user = { id: "user-test", email: "owner@example.com", name: "Dono", company: "Empresa", role: "cliente" as const };
 
@@ -36,6 +39,34 @@ async function refresh(token: JWT) {
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(resolveSupabaseAuthUser).mockResolvedValue(user);
+  vi.mocked(getUserSessionVersion).mockResolvedValue("initial");
+});
+
+describe("sessão de e-mail e senha", () => {
+  it("não promove credencial de aquisição para superadmin global", async () => {
+    vi.mocked(resolveSupabaseAuthUser).mockResolvedValue({ ...user, role: "superadmin" });
+    const callback = captured.config?.callbacks?.jwt;
+    if (!callback) throw new Error("Callback JWT não registrado.");
+    await expect(callback({
+      account: { provider: "credentials" },
+      user,
+      token: {},
+    } as Parameters<typeof callback>[0])).resolves.toBeNull();
+  });
+  it.each(["cliente", "admin", "superadmin"] as const)("preserva o papel %s do membership e entra sem intent temporário", async (role) => {
+    const databaseUser = { ...user, role };
+    vi.mocked(resolveSupabaseAuthUser).mockResolvedValue(databaseUser);
+    const callback = captured.config?.callbacks?.jwt;
+    if (!callback) throw new Error("Callback JWT não registrado.");
+    const result = await callback({
+      account: { provider: "credentials" },
+      user: databaseUser,
+      token: { acquisition: true },
+    } as Parameters<typeof callback>[0]);
+    expect(result).toMatchObject({ userId: user.id, role });
+    expect(result?.acquisition).toBeUndefined();
+    expect(result?.leadershipInvitation).toBeUndefined();
+  });
 });
 
 describe("promoção da sessão temporária", () => {
@@ -51,8 +82,14 @@ describe("promoção da sessão temporária", () => {
     vi.mocked(resolveSupabaseAuthUser).mockResolvedValue(null);
     expect(await refresh({ userId: user.id, email: user.email, acquisition: true })).toMatchObject({ acquisition: true });
   });
-  it("não consulta membership novamente para uma sessão já regular", async () => {
+  it("revalida membership de uma sessão regular e recusa acesso removido", async () => {
     await refresh({ userId: user.id, email: user.email, role: "cliente" });
-    expect(resolveSupabaseAuthUser).not.toHaveBeenCalled();
+    expect(resolveSupabaseAuthUser).toHaveBeenCalledWith(user.id, user.email);
+    vi.mocked(resolveSupabaseAuthUser).mockResolvedValue(null);
+    expect(await refresh({ userId: user.id, email: user.email, role: "cliente" })).toBeNull();
+  });
+  it("recusa token anterior à troca de senha ou remoção de acesso", async () => {
+    vi.mocked(getUserSessionVersion).mockResolvedValue("00000000-0000-4000-8000-000000000001");
+    expect(await refresh({ userId: user.id, email: user.email, role: "cliente", securityVersion: "initial" })).toBeNull();
   });
 });

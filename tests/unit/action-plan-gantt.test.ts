@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { AdminDeliveryPublication } from "@/lib/contracts";
-import { buildGanttWorkspaceDataFromDelivery } from "@/lib/data/action-plan-gantt";
+import { buildGanttWorkspaceDataFromDelivery, buildPublishedActionPlan } from "@/lib/data/action-plan-gantt";
 import { adminActionPointTemplates } from "@/lib/data/admin-operations-data-source";
 import type { DiagnosticActionPlan } from "@/lib/types";
 
@@ -200,4 +200,24 @@ describe("buildGanttWorkspaceDataFromDelivery", () => {
       }),
     ).toEqual({ source: null, tasks: [] });
   });
+  it("concilia nomes completos por ID e deduplica seleção no painel e PDF", () => {
+    const plan = buildActionPlan();
+    plan.dimensions[0].name = "Processos e Execução Operacional";
+    const published = publication({ selectedActionPointIds: ["action_processos_ritual", "action_processos_ritual"] });
+    const workspace = buildGanttWorkspaceDataFromDelivery({ plan, publication: published, templates: adminActionPointTemplates });
+    const pdfPlan = buildPublishedActionPlan(plan, published, adminActionPointTemplates);
+    expect(workspace.tasks[0].subitems).toHaveLength(1);
+    expect(pdfPlan.actionPoints.map(item => item.id)).toEqual(["action_processos_ritual"]);
+    expect(pdfPlan.actionPoints[0].dimensionName).toBe("Processos e Execução Operacional");
+    expect(pdfPlan.actionPoints[0].recommendedAction).toBe(workspace.tasks[0].subitems?.[0].actionPoint?.recommendedAction);
+  });
+
+  it("recusa rascunho mesmo com timestamp e publicação de outra coleta ou empresa", () => {
+    for (const overrides of [{ status: "em_analise" as const }, { diagnosticId: "outra" }, { organizationId: "outra" }]) {
+      expect(buildGanttWorkspaceDataFromDelivery({ plan: buildActionPlan(), templates: adminActionPointTemplates,
+        publication: publication({selectedActionPointIds: ["action_processos_ritual"], ...overrides})
+      })).toEqual({source:null,tasks:[]});
+    }
+  });
+
 });

@@ -82,7 +82,7 @@ function CtaLink({
   return (
     <Link
       href={registrationUrl}
-      className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-[var(--action-button-shadow)] outline-none transition-[background-color,transform] duration-180 hover:bg-brand-600 active:translate-y-px focus-visible:ring-3 focus-visible:ring-ring/50 ${className}`}
+      className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-[var(--action-button-shadow)] outline-none transition-[background-color,transform] duration-180 hover:bg-action-neutral-hover hover:text-action-neutral-foreground active:translate-y-px focus-visible:ring-3 focus-visible:ring-ring/50 ${className}`}
       {...(isExternal ? { target: "_blank", rel: "noreferrer" } : {})}
     >
       {children}

@@ -21,6 +21,7 @@ export type SlackWorkspaceUser = {
   userId: string;
   name: string;
   avatarUrl: string | null;
+  position?: string | null;
 };
 
 // Instalações anteriores às novas permissões precisam ser reautorizadas.
@@ -38,18 +39,17 @@ type SlackMember = {
   is_bot?: boolean;
   is_restricted?: boolean;
   is_ultra_restricted?: boolean;
-  profile?: { display_name?: string; real_name?: string; image_72?: string };
+  profile?: { display_name?: string; real_name?: string; image_72?: string; title?: string | null };
 };
 
 // Só pessoas ativas do quadro: sem bots, desativados nem convidados.
-export function mapSlackMember(member: SlackMember): SlackWorkspaceUser | null {
+export function mapSlackMember(member: SlackMember, includeGuests = false): SlackWorkspaceUser | null {
   if (
     !member.id ||
     member.id === "USLACKBOT" ||
     member.deleted ||
     member.is_bot ||
-    member.is_restricted ||
-    member.is_ultra_restricted
+    (!includeGuests && (member.is_restricted || member.is_ultra_restricted))
   ) {
     return null;
   }
@@ -68,6 +68,7 @@ export function mapSlackMember(member: SlackMember): SlackWorkspaceUser | null {
     userId: member.id,
     name,
     avatarUrl: avatarUrl?.startsWith("https://") ? avatarUrl : null,
+    position: member.profile?.title?.trim() || null,
   };
 }
 export const SLACK_FEEDBACK_ACTIONS = {

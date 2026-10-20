@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import type { AssetQuestionAnswer, AssetQuestionCitation } from "@/lib/contracts";
 
+import { AssistantHistory } from "./assistant-history";
 import { cn } from "@/lib/utils";
 
 type Feedback = "util" | "nao_util";
@@ -147,7 +148,7 @@ function ChatBubble({
         className={cn(
           "max-w-[82%] rounded-xl px-4 py-3 text-sm leading-6",
           isUser
-            ? "bg-sidebar text-foreground dark:bg-sidebar-accent sm:max-w-[72%]"
+            ? "bg-card text-foreground sm:max-w-[72%]"
             : "text-foreground sm:max-w-[560px]",
         )}
       >
@@ -319,6 +320,7 @@ export function AiChatWorkspace({
 
   return (
     <section className="flex min-h-0 flex-1 flex-col bg-background">
+      <div className="flex justify-end px-6 py-2"><AssistantHistory /></div>
       <div
         ref={conversationRef}
         className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
@@ -345,7 +347,7 @@ export function AiChatWorkspace({
 
       <footer className="bg-background px-6 py-4">
         <form className="mx-auto w-full max-w-3xl" onSubmit={handleSubmit}>
-          <div className="flex items-center gap-2 rounded-lg border bg-background p-2 transition-colors focus-within:border-foreground/40">
+          <div className="flex items-center gap-2 rounded-lg border border-transparent bg-input p-2 transition-colors focus-within:border-foreground/40">
             <label className="sr-only" htmlFor="assistant-message">
               Mensagem para o assistente
             </label>
@@ -364,12 +366,12 @@ export function AiChatWorkspace({
               size="icon"
               disabled={!draft.trim() || asking}
               aria-label="Enviar mensagem"
-              className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+              className="rounded-full bg-primary text-primary-foreground hover:bg-action-neutral-hover hover:text-action-neutral-foreground"
             >
               <SendHorizontal />
             </Button>
           </div>
-          <p className="mt-2 text-center text-[10px] leading-[13px] text-muted-foreground">
+          <p className="mt-2 text-center text-xs text-muted-foreground">
             As respostas usam apenas ativos publicados. Valide decisões críticas com o responsável.
           </p>
         </form>

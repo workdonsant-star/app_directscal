@@ -82,6 +82,7 @@ export async function GET(request: Request, { params }: ReportRouteContext) {
 
   const document = createElement(OmdxReportDocument, {
     report,
+    editorial: publication.report,
   }) as Parameters<typeof renderToBuffer>[0];
   const pdfBuffer = await renderToBuffer(document);
   const filename = `relatorio-omdx-${company}-${report.diagnostic.id}.pdf`;

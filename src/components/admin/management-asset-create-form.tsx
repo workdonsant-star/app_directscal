@@ -69,7 +69,7 @@ const blankTemplate = "em-branco";
 const noSpecialist = "sem-especialista";
 
 const textareaClassName =
-  "min-h-24 w-full resize-y rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive dark:bg-input/30";
+  "min-h-24 w-full resize-y rounded-lg border border-transparent bg-input px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive dark:bg-input/30";
 
 function Field({
   id,
@@ -239,7 +239,7 @@ export function ManagementAssetCreateForm({
               >
                 <span
                   className={cn(
-                    "flex size-5 shrink-0 items-center justify-center rounded-full border text-[11px] tabular-nums",
+                    "flex size-5 shrink-0 items-center justify-center rounded-full border text-xs tabular-nums",
                     step > item.id && "border-primary bg-primary text-primary-foreground",
                   )}
                 >
@@ -259,7 +259,7 @@ export function ManagementAssetCreateForm({
             className="flex flex-col gap-6 p-4 sm:p-6"
           >
             <div className="flex flex-col gap-1">
-              <h3 id="asset-details-title" className="text-base font-semibold text-foreground">
+              <h3 id="asset-details-title" className="text-ui-title text-foreground">
                 Informações do ativo
               </h3>
               <p className="max-w-[65ch] text-sm text-muted-foreground">
@@ -382,7 +382,7 @@ export function ManagementAssetCreateForm({
             className="flex flex-col gap-6 p-4 sm:p-6"
           >
             <div className="flex flex-col gap-1">
-              <h3 id="asset-ownership-title" className="text-base font-semibold text-foreground">
+              <h3 id="asset-ownership-title" className="text-ui-title text-foreground">
                 Responsáveis e ponto de partida
               </h3>
               <p className="max-w-[65ch] text-sm text-muted-foreground">
@@ -508,7 +508,7 @@ export function ManagementAssetCreateForm({
           >
             <div className="flex flex-col gap-5 p-4 sm:p-6">
               <div>
-                <h3 id="asset-review-title" className="text-base font-semibold text-foreground">
+                <h3 id="asset-review-title" className="text-ui-title text-foreground">
                   Revisão
                 </h3>
                 <p className="mt-1 text-sm text-muted-foreground">
@@ -517,7 +517,7 @@ export function ManagementAssetCreateForm({
               </div>
 
               <dl className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-lg border p-4">
+                <div className="rounded-lg bg-card p-4">
                   <dt className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                     <FileText className="size-4" /> {managementAssetTypeLabels[form.type]}
                   </dt>
@@ -528,7 +528,7 @@ export function ManagementAssetCreateForm({
                     {form.category.trim() || "Sem categoria"}
                   </dd>
                 </div>
-                <div className="rounded-lg border p-4">
+                <div className="rounded-lg bg-card p-4">
                   <dt className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                     <Building2 className="size-4" /> Empresa
                   </dt>
@@ -537,7 +537,7 @@ export function ManagementAssetCreateForm({
                     Revisão {form.reviewCycle.toLocaleLowerCase("pt-BR")}
                   </dd>
                 </div>
-                <div className="rounded-lg border p-4">
+                <div className="rounded-lg bg-card p-4">
                   <dt className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                     <UserRound className="size-4" /> Responsáveis
                   </dt>
@@ -546,7 +546,7 @@ export function ManagementAssetCreateForm({
                   </dd>
                   <dd className="mt-1 text-xs text-muted-foreground">{specialistName}</dd>
                 </div>
-                <div className="rounded-lg border p-4">
+                <div className="rounded-lg bg-card p-4">
                   <dt className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                     <FilePlus2 className="size-4" /> Ponto de partida
                   </dt>
@@ -575,7 +575,7 @@ export function ManagementAssetCreateForm({
         )}
       </div>
 
-      <footer className="shrink-0 border-t bg-card p-4 sm:px-6">
+      <footer className="shrink-0 border-t bg-popover p-4 sm:px-6">
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
           <Button type="button" variant="ghost" onClick={onCancel} disabled={pending}>
             Cancelar

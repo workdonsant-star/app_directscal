@@ -13,7 +13,7 @@ function LoadingPanel({
   return (
     <Card
       aria-label={label}
-      className={`rounded-[5px] border-0 bg-sidebar p-5 shadow-none ring-0 ${className}`}
+      className={`rounded-[5px] border-0 bg-card p-5 shadow-none ring-0 ${className}`}
     >
       <Skeleton className="size-full rounded-[3px]" />
     </Card>

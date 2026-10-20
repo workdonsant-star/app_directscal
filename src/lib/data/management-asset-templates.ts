@@ -513,6 +513,30 @@ function emptySections(titles: string[]): LegacySopDocumentContent {
 
 export const managementAssetTemplates: ManagementAssetTemplate[] = [
   {
+    id: "estrutura-raci",
+    type: "raci",
+    label: "Estrutura de matriz RACI",
+    description: "Atividades, execução, aprovação, consulta e informação por papel.",
+    title: null,
+    summary: null,
+    category: null,
+    ownerLabel: null,
+    reviewCycle: "Semestral",
+    content: {
+      sections: [
+        { id: "escopo", title: "Escopo", blocks: [{ type: "paragraph", text: "Defina o processo, as atividades e as decisões cobertas por esta matriz." }] },
+        { id: "legenda", title: "Papéis na matriz", blocks: [{ type: "list", ordered: false, items: [
+          "R — Responsável por executar a atividade.",
+          "A — Responsável por aprovar a entrega ou decisão.",
+          "C — Pessoa ou papel consultado antes da decisão.",
+          "I — Pessoa ou papel informado sobre o resultado.",
+        ] }] },
+        { id: "matriz", title: "Matriz de responsabilidades", blocks: [{ type: "table", columns: ["Atividade ou decisão", "Execução (R)", "Aprovação (A)", "Consulta (C)", "Informação (I)"], rows: [["Defina a atividade", "Defina o papel", "Defina o papel", "Defina os consultados", "Defina os informados"]] }] },
+        { id: "validacao", title: "Validação e manutenção", blocks: [{ type: "paragraph", text: "Revise os papéis com as pessoas envolvidas antes de publicar. Registre o responsável pela manutenção e quando a matriz deve ser revisada, incluindo mudanças no processo ou na equipe." }] },
+      ],
+    },
+  },
+  {
     id: "estrutura-sop",
     type: "sop",
     label: "Estrutura padrão de SOP",

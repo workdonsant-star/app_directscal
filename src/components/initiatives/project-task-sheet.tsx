@@ -166,7 +166,7 @@ export function ProjectTaskSheet({
                   className="space-y-2 rounded-lg border border-destructive/25 bg-destructive/5 p-4"
                   aria-label="Decisão pendente"
                 >
-                  <h2 className="flex items-center gap-2 text-sm font-semibold text-destructive">
+                  <h2 className="flex items-center gap-2 text-sm font-medium text-destructive">
                     <TriangleAlert className="size-4" />
                     Tomada de decisão necessária
                   </h2>
@@ -185,7 +185,7 @@ export function ProjectTaskSheet({
                 </section>
               )}
               <section className="space-y-5" aria-label="Progresso da tarefa">
-                <h2 className="text-base font-semibold">Progresso da tarefa</h2>
+                <h2 className="text-ui-title">Progresso da tarefa</h2>
                 <TaskProgressTimeline updates={task.updates} />
               </section>
               <section className="border-t pt-5">
@@ -218,7 +218,7 @@ export function ProjectTaskSheet({
                     required
                     maxLength={2000}
                     rows={3}
-                    className="w-full rounded-md border bg-background p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-full rounded-md border border-transparent bg-input p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     placeholder="Informe o progresso desta tarefa"
                   />
                   <Button variant="outline" type="submit">
@@ -266,7 +266,7 @@ export function ProjectTaskSheet({
                     className="space-y-3 border-t pt-5"
                     aria-label="Critérios de entrega"
                   >
-                    <h2 className="text-sm font-semibold">
+                    <h2 className="text-sm font-medium">
                       Critérios de entrega
                     </h2>
                     <p className="text-xs text-muted-foreground">
@@ -300,7 +300,7 @@ export function ProjectTaskSheet({
                 task.status !== "done" &&
                 task.status !== "paused" && (
                   <section className="space-y-3 border-t pt-5">
-                    <h2 className="text-sm font-semibold">
+                    <h2 className="text-sm font-medium">
                       Aprovação da entrega
                     </h2>
                     <p className="text-sm text-muted-foreground">
@@ -336,7 +336,7 @@ export function ProjectTaskSheet({
                 task.status !== "done" &&
                 task.status !== "paused" && (
                   <section className="space-y-3 border-t pt-5">
-                    <h2 className="text-sm font-semibold">Resolver bloqueio</h2>
+                    <h2 className="text-sm font-medium">Resolver bloqueio</h2>
                     <p className="text-sm text-muted-foreground">
                       Registre como o acesso ou a dependência foi resolvido. A
                       tarefa volta ao acompanhamento e continua em andamento.
@@ -378,7 +378,7 @@ export function ProjectTaskSheet({
                         maxLength={1200}
                         rows={3}
                         placeholder="Como o bloqueio foi resolvido?"
-                        className="w-full rounded-md border bg-background p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="w-full rounded-md border border-transparent bg-input p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       />
                       <Button type="submit" variant="outline" disabled={dirty}>
                         Registrar resolução
@@ -395,7 +395,7 @@ export function ProjectTaskSheet({
             <TabsContent value="details" className="space-y-6">
               {task.criteria.length > 0 && (
                 <section className="space-y-3" aria-label="Resultado esperado">
-                  <h2 className="text-sm font-semibold">
+                  <h2 className="text-sm font-medium">
                     Critérios de entrega
                   </h2>
                   <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">

@@ -1,3 +1,4 @@
+import { getAgentOperations } from "@/lib/data/agent-operations-data-source";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
@@ -18,5 +19,7 @@ export default async function AdminAssetQuestionsPage({ params }: { params: Prom
   if (!company) notFound();
   const audits = await listAdminAssetQuestionAudits({ onlyGaps: false, organizationId: company.organizationId });
 
-  return <AssetQuestionAuditsWorkspace audits={audits} company={company} />;
+  const operations = await getAgentOperations(company.id, audits.map(audit => audit.id));
+
+  return <AssetQuestionAuditsWorkspace audits={audits} operations={operations} company={company} />;
 }

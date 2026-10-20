@@ -17,7 +17,7 @@ export default async function AssetCompanySelectionPage() {
         <div className="flex w-full flex-col gap-5">
           <AdminOperationsNavigation section="assets" />
           <div className="space-y-1">
-            <h1 className="font-heading text-2xl font-semibold">Criação dos ativos</h1>
+            <h1 className="text-ui-page">Criação dos ativos</h1>
             <p className="text-sm text-muted-foreground">Abra uma empresa para produzir e acompanhar seus ativos de gestão.</p>
           </div>
           <div className="min-w-0">

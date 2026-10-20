@@ -31,7 +31,7 @@ Esta pasta contém os **primitives do shadcn/ui** — botões, cards, tabelas, s
 | Componente | Arquivo | Notas |
 | --- | --- | --- |
 | Button | `button.tsx` | `default` é CTA azul `#124BD1` com texto `#EFEFEE`; `outline` e `secondary` são neutros sem borda. Todos usam raio de 5px e mantêm as dimensões compactas atuais. |
-| Card | `card.tsx` | 1px border, sem shadow por padrão (decisão da marca) |
+| Card | `card.tsx` | sem borda, ring ou sombra: delimita pelo fundo `bg-card` contra o canvas (ver `docs/tokens-de-cor.md`) |
 | Badge | `badge.tsx` | use para status discretos; status complexos têm wrapper em `omdx/status-badge.tsx` |
 | Breadcrumb | `breadcrumb.tsx` | usado na topbar limpa do shell autenticado |
 | Table | `table.tsx` | `variant="operational"` obrigatório em tabelas novas: cabeçalho de 44px, raio de 5px, linhas de 55px com divisórias finas, sem contorno externo ou fundo no hover; a variante operacional é o padrão de todos os consumidores; `default` é apenas uma opção explícita |
@@ -94,3 +94,17 @@ Quase nunca. Se o componente não atender:
 - Sidebar encaminha a classe do consumidor ao SheetContent móvel para que a superfície do shell seja igual no drawer e no desktop.
 
 O padrão das Dimensões é aplicado por omissão em `Table`, incluindo documentos. A última linha não tem divisória inferior. Cabeçalhos semibold antigos passam a medium.
+
+- Hovers usam cores neutras, nunca azul: texto `foreground` e superfícies `action-neutral-hover` com texto `action-neutral-foreground`. O sumário documental também mantém o item ativo em `foreground`, branco no escuro e escuro no claro.
+
+- Seletor Lucide usa Popover Base UI não modal, com 320px, ancorado nos três pontos da categoria. Sem backdrop/blur ou bloqueio da página; busca e grade de oito colunas com rolagem interna. Posicionamento considera os limites da viewport, Escape e clique fora fecham.
+
+- DropdownMenuContent e submenus têm superfície minimalista com borda discreta de 0,5px usando border-border, igual às divisórias da tabela, sem ring decorativo e sem sombra. Mantêm tokens de popover, arredondamento, estados de foco e navegação Base UI. A mudança no primitive é deliberada para uniformizar todos os menus suspensos ao padrão solicitado.
+
+- Menus suspensos, submenus e o popup do Select usam bg-muted e text-foreground para compartilhar o fundo do cabeçalho da tabela nos dois temas, mantendo borda discreta e sem sombra.
+
+- Superfícies seguem `docs/tokens-de-cor.md`. Input é preenchido (`bg-input`, borda transparente em repouso); aba ativa do seletor e hover do botão ghost usam `bg-accent`, translúcido, igual nos dois temas e sem overrides `dark:`.
+
+- Painéis Sheet laterais (esquerda/direita) compartilham o acabamento do shell: raio rounded-2xl (20px), recuo de 8px em relação à janela e altura automática entre os recuos. Overflow fica recortado pela superfície para preservar cantos durante rolagem; cada consumidor mantém sua área interna rolável. Largura máxima de viewport menos 16px, inclusive em consumidores com largura própria. Mudança global deliberada para uniformizar os painéis laterais. Sheets de cima/baixo preservam geometria existente.
+
+- `CardTitle`, `DialogTitle` e `SheetTitle` usam `font-heading text-ui-title` (16/24, 700). Tipografia em `docs/tokens-de-tipografia.md`.

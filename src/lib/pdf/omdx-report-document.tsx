@@ -7,6 +7,9 @@ import {
   View,
 } from "@react-pdf/renderer";
 
+import { buildReportFindings } from "@/lib/data/report-findings";
+import type { AdminDeliveryReportDraft } from "@/lib/contracts/admin-operations";
+
 import type {
   DiagnosticReport,
   DiagnosticReportDimension,
@@ -198,9 +201,7 @@ function LayerScoreRows({
 }
 
 function ExecutiveReading({ report }: { report: DiagnosticReport }) {
-  const misalignmentCopy = report.highestMisalignment
-    ? `enquanto o maior desalinhamento de percepção aparece em ${report.highestMisalignment.dimensionName}.`
-    : "enquanto a comparação entre camadas ainda está sem base suficiente.";
+  const findings = buildReportFindings(report);
 
   return (
     <View style={styles.readingBox}>
@@ -208,12 +209,10 @@ function ExecutiveReading({ report }: { report: DiagnosticReport }) {
       <Text style={styles.readingText}>
         {report.diagnostic.company} apresenta score geral de{" "}
         {formatScore(report.generalScore)}, classificado como{" "}
-        {report.classification}. O principal gargalo está em{" "}
-        {report.weakestDimension.shortName}, {misalignmentCopy}
+        {report.classification}. {findings.distribution}
       </Text>
       <Text style={styles.readingText}>
-        A recomendação inicial é priorizar a dimensão mais frágil antes de
-        ampliar cadência, cobrança ou alavancas de escala.
+        As prioridades e as causas consideradas pela operação estão na análise editorial publicada.
       </Text>
     </View>
   );
@@ -499,7 +498,10 @@ function DimensionPage({
   );
 }
 
-export function OmdxReportDocument({ report }: { report: DiagnosticReport }) {
+export function OmdxReportDocument({ report, editorial }: {
+  report: DiagnosticReport;
+  editorial?: AdminDeliveryReportDraft;
+}) {
   return (
     <Document
       title={`Relatório de Maturidade — ${report.diagnostic.company}`}
@@ -507,6 +509,25 @@ export function OmdxReportDocument({ report }: { report: DiagnosticReport }) {
       subject="Diagnóstico de Maturidade Operacional"
     >
       <CoverPage report={report} />
+      {editorial && (
+        <Page size="A4" style={styles.page} wrap>
+          <ReportHeader report={report} section="Análise publicada" />
+          {Object.entries({
+            "Resumo executivo": editorial.executiveSummary,
+            "Leitura geral": editorial.generalReading,
+            "Vulnerabilidades": editorial.vulnerabilities,
+            "Causas estruturais": editorial.structuralCauses,
+            "Recomendações": editorial.recommendations,
+            "Conclusão": editorial.conclusion,
+          }).map(([title, text]) => (
+            <View key={title} style={{ marginBottom: 16 }}>
+              <Text style={styles.subsectionTitle}>{title}</Text>
+              <Text>{text}</Text>
+            </View>
+          ))}
+          <ReportFooter report={report} />
+        </Page>
+      )}
       <OverviewPage report={report} />
       <MatrixPage report={report} />
       {report.dimensions.flatMap((dimension) => {

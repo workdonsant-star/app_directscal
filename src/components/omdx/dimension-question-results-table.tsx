@@ -16,19 +16,19 @@ const scoreFormatter = new Intl.NumberFormat("pt-BR", {
 const statusStyles: Record<string, { dot: string; text: string }> = {
   Consistente: {
     dot: "bg-[var(--omdx-status-consistente)]",
-    text: "text-[var(--omdx-status-consistente)]",
+    text: "text-foreground",
   },
   Inconsistente: {
     dot: "bg-[var(--omdx-status-inconsistente)]",
-    text: "text-[var(--omdx-status-inconsistente)]",
+    text: "text-foreground",
   },
   Atenção: {
     dot: "bg-[var(--omdx-status-atencao)]",
-    text: "text-[var(--omdx-status-atencao)]",
+    text: "text-foreground",
   },
   Crítico: {
     dot: "bg-[var(--omdx-status-critico)]",
-    text: "text-[var(--omdx-status-critico)]",
+    text: "text-foreground",
   },
 };
 

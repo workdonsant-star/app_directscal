@@ -7,8 +7,9 @@ import {
   getAdminDeliveryAnalysisFromReport,
   mapAdminDeliveryFromReport,
 } from "@/lib/data/admin-operations-data-source";
-import { getAdminDeliveryPublication } from "@/lib/data/admin-delivery-data-source";
+import { getAdminDeliveryDraft } from "@/lib/data/admin-delivery-data-source";
 import { getAdminDiagnosticReports } from "@/lib/data/omdx-data-source";
+import { getOrganizationSpecialistAssignment } from "@/lib/data/admin-company-operations-data-source";
 
 /**
  * Contexto compartilhado pelo layout e pelas etapas de `/admin/entregas/[id]`.
@@ -20,7 +21,10 @@ export const loadAdminDeliveryContext = cache(async (id: string) => {
 
   if (!report) return null;
 
-  const publication = await getAdminDeliveryPublication(id);
+  const publication = await getAdminDeliveryDraft(id);
+  const specialists = await getSpecialists();
+  const principal = publication ? null : await getOrganizationSpecialistAssignment(report.diagnostic.organizationId);
+  const defaultSpecialistId = specialists.find(item => item.id === principal?.specialistId && item.status === "ativo" && !item.archived && !item.deleted)?.id ?? null;
   const mappedDelivery = mapAdminDeliveryFromReport(report);
   const delivery = publication
     ? {
@@ -28,7 +32,7 @@ export const loadAdminDeliveryContext = cache(async (id: string) => {
         specialistId: publication.specialistId,
         status: publication.status,
       }
-    : mappedDelivery;
+    : { ...mappedDelivery, specialistId: defaultSpecialistId, status: defaultSpecialistId ? "aguardando_analise" as const : mappedDelivery.status };
   const deliveryOptions = reports
     .filter(
       (item) =>
@@ -52,7 +56,7 @@ export const loadAdminDeliveryContext = cache(async (id: string) => {
     delivery,
     deliveryOptions,
     publication,
-    specialists: (await getSpecialists())
+    specialists: specialists
       .filter((item) => item.status === "ativo" && !item.archived && !item.deleted)
       .map((item) => ({ id: item.id, name: item.name })),
   };

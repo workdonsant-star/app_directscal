@@ -13,11 +13,11 @@ export function StatusBadge({ status }: { status: DiagnosticStatus }) {
       className={cn(
         "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium",
         status === "rascunho" &&
-          "border-border text-muted-foreground bg-muted",
+          "border-document-attention-foreground/20 bg-document-attention text-document-attention-foreground",
         status === "ativo" &&
-          "border-primary/20 bg-primary/10 text-primary",
+          "border-chart-positive/20 bg-chart-positive/10 text-chart-positive",
         status === "encerrado" &&
-          "border-border text-foreground bg-secondary",
+          "border-chart-negative/20 bg-chart-negative/10 text-chart-negative",
       )}
     >
       {labels[status]}

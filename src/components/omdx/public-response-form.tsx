@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { getResponseSubmissionId } from "@/lib/data/response-submission";
 import { getResponseStorageKey } from "@/lib/data/omdx-production-rules";
 import { cn } from "@/lib/utils";
 import type {
@@ -45,6 +46,10 @@ const alreadySubmittedMessage =
 
 function subscribeToBrowserStorage() {
   return () => {};
+}
+
+function hasStoredResponse(key: string) {
+  try { return Boolean(window.localStorage.getItem(key)); } catch { return false; }
 }
 
 async function readMutationResponse(response: Response) {
@@ -98,6 +103,7 @@ export function PublicResponseForm({
   workspace,
 }: PublicResponseFormProps) {
   const router = useRouter();
+  const submissionIdRef = useRef<string | null>(null);
   const questionElementsRef = useRef(new Map<string, HTMLFieldSetElement>());
   const questions: PublicQuestion[] = workspace.dimensions.flatMap((dimension) =>
     dimension.questions.map((question) => ({
@@ -114,7 +120,7 @@ export function PublicResponseForm({
     subscribeToBrowserStorage,
     () =>
       typeof window !== "undefined" &&
-      Boolean(window.localStorage.getItem(responseStorageKey)),
+      hasStoredResponse(responseStorageKey),
     () => false,
   );
   const [answers, setAnswers] = useState<Record<string, LikertValue>>({});
@@ -205,7 +211,7 @@ export function PublicResponseForm({
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (window.localStorage.getItem(responseStorageKey)) {
+    if (hasStoredResponse(responseStorageKey)) {
       setSubmissionState("submitted");
       setMessage(alreadySubmittedMessage);
       router.replace(`/r/${workspace.token}/obrigado`);
@@ -232,9 +238,15 @@ export function PublicResponseForm({
       setSubmissionState("submitting");
       setMessage(null);
 
+      if (!submissionIdRef.current) {
+        let storage: Storage | null = null;
+        try { storage = window.localStorage; } catch { /* A aba mantém a tentativa. */ }
+        submissionIdRef.current = getResponseSubmissionId(workspace.token, storage);
+      }
       const response = await fetch("/api/omdx/responses", {
         body: JSON.stringify({
           token: workspace.token,
+          submissionId: submissionIdRef.current,
           answers: questions.map((question) => ({
             questionId: question.id,
             value: answers[question.id],
@@ -249,10 +261,9 @@ export function PublicResponseForm({
         throw new Error(data.message ?? "Não foi possível registrar a resposta.");
       }
 
-      window.localStorage.setItem(
-        responseStorageKey,
-        new Date().toISOString(),
-      );
+      try {
+        window.localStorage.setItem(responseStorageKey, new Date().toISOString());
+      } catch { /* O cookie do servidor confirma a gravação mesmo sem armazenamento local. */ }
       setSubmissionState("submitted");
       router.replace(`/r/${workspace.token}/obrigado`);
     } catch (error) {
@@ -340,7 +351,7 @@ export function PublicResponseForm({
             >
               <legend
                 className={cn(
-                  "w-full text-sm font-semibold leading-relaxed text-foreground sm:text-base",
+                  "w-full text-sm font-medium leading-relaxed text-foreground sm:text-base",
                   isInvalid && "text-destructive",
                 )}
               >
@@ -410,7 +421,7 @@ export function PublicResponseForm({
                           />
                           <span
                             className={cn(
-                              "max-w-full px-1 text-[0.68rem] leading-snug text-muted-foreground transition-colors peer-checked:text-foreground sm:text-xs",
+                              "max-w-full px-1 text-xs leading-snug text-muted-foreground transition-colors peer-checked:text-foreground sm:text-xs",
                               isInvalid && "text-destructive",
                               (isSubmitting || isSubmitted) && "opacity-60",
                             )}

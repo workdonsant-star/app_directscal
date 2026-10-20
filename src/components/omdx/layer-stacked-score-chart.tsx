@@ -9,6 +9,7 @@ import {
   chartBarBorderRadius,
   layerColorFallbacks,
   layerColorTokenByGroup,
+  layerLabelTokenByGroup,
 } from "@/components/omdx/chart-colors";
 import { useChartThemeColors } from "@/components/omdx/use-chart-theme-colors";
 import type { DimensionResult } from "@/lib/data/omdx-overview-analytics";
@@ -65,19 +66,19 @@ const layerDefinitions: LayerDefinition[] = [
     key: "diretoria",
     name: "Fundador",
     colorToken: layerColorTokenByGroup.fundador,
-    labelColorToken: "--primary-foreground",
+    labelColorToken: layerLabelTokenByGroup.fundador,
   },
   {
     key: "lideranca",
     name: "Liderança",
     colorToken: layerColorTokenByGroup.lideranca,
-    labelColorToken: "--primary-foreground",
+    labelColorToken: layerLabelTokenByGroup.lideranca,
   },
   {
     key: "time",
     name: "Operação",
     colorToken: layerColorTokenByGroup.operacao,
-    labelColorToken: "--foreground",
+    labelColorToken: layerLabelTokenByGroup.operacao,
   },
 ];
 const scoreFormatter = new Intl.NumberFormat("pt-BR", {

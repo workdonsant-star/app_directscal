@@ -86,65 +86,25 @@ export async function getActionPointExecution({
 }
 
 export async function saveActionPointUpdate({
-  diagnosticId,
-  organizationId,
-  actionPointId,
-  authorName,
-  plan,
+  diagnosticId, organizationId, actionPointId, actorUserId, authorName, expectedUpdatedAt, plan,
 }: {
   diagnosticId: string;
   organizationId: string;
   actionPointId: string;
+  actorUserId: string;
   authorName: string;
+  expectedUpdatedAt: string | null;
   plan: Extract<ActionPointUpdatePlan, { ok: true }>;
 }) {
   const supabase = createSupabaseAdminClient();
-
-  if (plan.remove) {
-    const { error } = await supabase
-      .from("action_point_assignments")
-      .delete()
-      .eq("diagnostic_id", diagnosticId)
-      .eq("action_point_id", actionPointId)
-      .eq("organization_id", organizationId);
-
-    if (error) throw error;
-  } else {
-    const { values } = plan;
-    const { error } = await supabase.from("action_point_assignments").upsert(
-      {
-        diagnostic_id: diagnosticId,
-        action_point_id: actionPointId,
-        organization_id: organizationId,
-        assignee_team_id: values.assignee.teamId,
-        assignee_slack_user_id: values.assignee.userId,
-        assignee_name: values.assignee.name,
-        assignee_avatar_url: values.assignee.avatarUrl,
-        stage: values.stage,
-        starts_on: values.startsOn,
-        due_on: values.dueOn,
-        cadence: values.cadence,
-        progress: values.progress,
-      },
-      { onConflict: "diagnostic_id,action_point_id" },
-    );
-
-    if (error) throw error;
-  }
-
-  if (plan.events.length === 0) return;
-
-  const { error } = await supabase.from("action_point_events").insert(
-    plan.events.map((event) => ({
-      diagnostic_id: diagnosticId,
-      action_point_id: actionPointId,
-      organization_id: organizationId,
-      kind: event.kind,
-      author_name: authorName,
-      body: event.body,
-      detail: event.detail ?? null,
-    })),
-  );
-
+  const { error } = await supabase.schema("app_private").rpc("save_action_point_update", {
+    p_diagnostic_id: diagnosticId,
+    p_organization_id: organizationId,
+    p_action_point_id: actionPointId,
+    p_actor_user_id: actorUserId,
+    p_author_name: authorName,
+    p_expected_updated_at: expectedUpdatedAt,
+    p_plan: plan,
+  });
   if (error) throw error;
 }

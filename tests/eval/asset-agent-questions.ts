@@ -63,11 +63,12 @@ export const assetAgentQuestions: EvalQuestion[] = [
   { id: "pap-09", kind: "respondivel", question: "O SOP de papéis define jornada de trabalho ou controle de presença?", expect: answer(papeis) },
   { id: "pap-10", kind: "respondivel", question: "Antes da call com o líder, o que o registro operacional precisa conter?", expect: answer(papeis) },
 
-  // Ambíguas: a resposta correta cita o ativo, sem inventar o que falta
+  // Ambíguas: recusar quando faltar contexto ou atribuição explícita.
+  // amb-04: o SOP atribui coordenação a CS, mas não atribui kickoff/ata.
   { id: "amb-01", kind: "ambigua", question: "Quem aprova?", expect: refuse },
   { id: "amb-02", kind: "ambigua", question: "Qual é o prazo?", expect: refuse },
   { id: "amb-03", kind: "ambigua", question: "O que fazer quando a revisão encontrar problema na campanha?", expect: answer(campanhas) },
-  { id: "amb-04", kind: "ambigua", question: "Quem é responsável pelo kickoff e pela ata?", expect: answer(onboarding) },
+  { id: "amb-04", kind: "ambigua", question: "Quem é responsável pelo kickoff e pela ata?", expect: refuse },
 
   // Sem resposta publicada
   { id: "sem-01", kind: "sem_resposta", question: "Quem pode aprovar um desconto acima de 15%?", expect: refuse },

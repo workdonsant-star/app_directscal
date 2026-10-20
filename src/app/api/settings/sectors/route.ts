@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 
 import { canManageOrganization } from "@/lib/auth/access-control";
 import { getCurrentAuthSession } from "@/lib/auth/session";
-import { createOrganizationSectorInputSchema } from "@/lib/contracts";
-import { createOrganizationSectorAndInvite } from "@/lib/data/organization-structure-data-source";
+import { createSlackSectorLeaderInputSchema } from "@/lib/contracts";
+import { createSlackSectorLeader } from "@/lib/data/slack-leadership-data-source";
 import { getProfileSettingsData } from "@/lib/data/profile-data-source";
 
 export async function POST(request: Request) {
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!canManageOrganization(session.user)) {
+  if (!canManageOrganization(session.user) || session.acquisition || session.leadershipInvitation) {
     return NextResponse.json(
       { message: "Apenas o Superadmin da empresa pode alterar configurações." },
       { status: 403 },
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   }
 
   const body: unknown = await request.json().catch(() => null);
-  const parsed = createOrganizationSectorInputSchema.safeParse(body);
+  const parsed = createSlackSectorLeaderInputSchema.safeParse(body);
 
   if (!parsed.success) {
     return NextResponse.json(
@@ -35,26 +35,14 @@ export async function POST(request: Request) {
 
   try {
     const profile = await getProfileSettingsData(session.user);
-    const result = await createOrganizationSectorAndInvite({
-      companyName: profile.company,
+    await createSlackSectorLeader({
       createdBy: session.user.id,
       input: parsed.data,
       organizationId: profile.organizationId,
     });
 
-    if (result.deliveryStatus === "falhou") {
-      return NextResponse.json(
-        {
-          message: result.deliveryError,
-          ok: false,
-          persisted: true,
-        },
-        { status: 502 },
-      );
-    }
-
     return NextResponse.json(
-      { message: "Setor cadastrado e convite enviado.", ok: true },
+      { message: "Setor e liderança salvos.", ok: true },
       { status: 201 },
     );
   } catch (error) {

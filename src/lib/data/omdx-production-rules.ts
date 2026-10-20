@@ -1,4 +1,4 @@
-import type { ResponsesByGroup } from "@/lib/contracts";
+import type { Diagnostic, DiagnosticStatus, ResponsesByGroup } from "@/lib/contracts";
 
 export const minimumResponsesForAnalysis = 1;
 
@@ -42,4 +42,29 @@ export function hasCompleteLikertAnswerSet(
   }
 
   return seen.size === expected.size;
+}
+
+export function hasDiagnosticDeadlinePassed(
+  deadline: string | null | undefined,
+  now = new Date(),
+) {
+  if (!deadline) return false;
+
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+
+  return today > deadline;
+}
+
+export function getEffectiveDiagnosticStatus(
+  diagnostic: Pick<Diagnostic, "status" | "deadline" | "closedAt">,
+  now = new Date(),
+): DiagnosticStatus {
+  if (diagnostic.status === "encerrado" || diagnostic.closedAt) return "encerrado";
+  if (diagnostic.status === "ativo" && hasDiagnosticDeadlinePassed(diagnostic.deadline, now)) return "encerrado";
+  return diagnostic.status;
 }

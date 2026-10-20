@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { submitLikertResponseInputSchema } from "@/lib/contracts";
 import {
   getResponseCookieName,
+  hasDiagnosticDeadlinePassed,
   hasCompleteLikertAnswerSet,
 } from "@/lib/data/omdx-production-rules";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
@@ -16,6 +17,7 @@ type ShareLinkRow = {
 };
 
 type DiagnosticStatusRow = {
+  deadline: string | null;
   closed_at: string | null;
   status: "rascunho" | "ativo" | "encerrado";
   template_id: string;
@@ -102,7 +104,7 @@ export async function POST(request: Request) {
 
   const { data: diagnostic, error: diagnosticError } = await supabase
     .from("diagnostics")
-    .select("status,closed_at,template_id")
+    .select("status,closed_at,template_id,deadline")
     .eq("id", shareLink.diagnostic_id)
     .maybeSingle<DiagnosticStatusRow>();
 
@@ -119,6 +121,13 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { message: "Esta coleta não está disponível para resposta." },
       { status: 409 },
+    );
+  }
+
+  if (hasDiagnosticDeadlinePassed(diagnostic.deadline)) {
+    return NextResponse.json(
+      { message: "O prazo desta pesquisa terminou. Não são aceitas novas respostas." },
+      { status: 410 },
     );
   }
 
@@ -149,43 +158,22 @@ export async function POST(request: Request) {
     );
   }
 
-  const submittedAt = new Date().toISOString();
-  const { data: responseSession, error: sessionError } = await supabase
-    .from("response_sessions")
-    .insert({
-      diagnostic_id: shareLink.diagnostic_id,
-      group_id: shareLink.group_id,
-      share_link_id: shareLink.id,
-      status: "concluido",
-      submitted_at: submittedAt,
-    })
-    .select("id")
-    .single<{ id: string }>();
-
-  if (sessionError) {
-    logSupabaseError("response session insert failed", sessionError);
-
-    return NextResponse.json(
-      { message: "Não foi possível registrar a sessão de resposta." },
-      { status: 500 },
-    );
-  }
-
-  const { error: answersError } = await supabase.from("likert_answers").insert(
-    parsed.data.answers.map((answer) => ({
-      question_id: answer.questionId,
-      response_session_id: responseSession.id,
-      value: answer.value,
-    })),
-  );
-
-  if (answersError) {
-    logSupabaseError("likert answers insert failed", answersError);
-
-    return NextResponse.json(
-      { message: "Não foi possível registrar as respostas." },
-      { status: 500 },
-    );
+  const { error: submissionError } = await supabase.schema("app_private").rpc("submit_anonymous_likert_response", {
+    p_token: parsed.data.token,
+    p_submission_id: parsed.data.submissionId,
+    p_answers: parsed.data.answers,
+  });
+  if (submissionError) {
+    const errors: Record<string, { status: number; message: string }> = {
+      PT400: { status: 400, message: "Revise as respostas da coleta." },
+      PT404: { status: 404, message: "Link inválido." },
+      PT409: { status: 409, message: "A coleta não está disponível ou esta tentativa já registrou outras respostas." },
+      PT410: { status: 410, message: "O prazo desta pesquisa ou link terminou." },
+    };
+    const known = errors[submissionError.code];
+    if (known) return NextResponse.json({ message: known.message }, { status: known.status });
+    logSupabaseError("atomic submission failed", submissionError);
+    return NextResponse.json({ message: "Não foi possível registrar as respostas. Tente novamente." }, { status: 500 });
   }
 
   const response = NextResponse.json({ ok: true }, { status: 201 });

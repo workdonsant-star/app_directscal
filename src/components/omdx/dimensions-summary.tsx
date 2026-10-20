@@ -10,7 +10,7 @@ export function DimensionsSummary({ dimensions }: DimensionsSummaryProps) {
       {dimensions.map((dimension) => (
         <article
           key={dimension.id}
-          className="rounded-lg border bg-background p-3"
+          className="rounded-lg bg-card p-3"
         >
           <div className="flex items-start gap-3">
             <span className="text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-md border bg-muted text-xs font-medium tabular-nums">

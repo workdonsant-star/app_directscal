@@ -1,13 +1,11 @@
 # `/api/settings` — Estrutura da empresa
 
-Route Handlers autenticados usados pela página `/configuracoes` para setores, lideranças e convites.
+Handlers autenticados. A organização é derivada da sessão e de `getProfileSettingsData`, nunca do navegador. Somente `cliente` com sessão regular pode consultar diretório e configurar liderança.
 
-## Regras
+`slack-users` lista o diretório ativo ao vivo, sem persistir pessoas e sem cache. `sectors` recebe contrato estrito `createSlackSectorLeaderInputSchema`: nome do setor, user ID Slack e cargo opcional. Revalida pessoa no token da empresa e grava vínculo transacional via service role, sem convite ou acesso ao painel. Dados de perfil nunca são aceitos do navegador. Não exige e-mail nem cargo. RPC checa novamente dono e workspace.
 
-- A organização sempre é derivada da sessão e de `getProfileSettingsData()`; nunca aceitar `organizationId` do navegador.
-- Somente o papel técnico `cliente`, exibido como Superadmin da empresa, pode criar ou reenviar convites.
-- Validar payloads com os contratos Zod de `organization-structure.ts`.
-- Escritas usam service role somente no servidor.
-- A criação de setor, pessoa, vínculo de liderança e convite é transacional no banco.
-- Falha no provedor de e-mail mantém o cadastro e o convite como `falhou`, permitindo reenvio sem duplicar o setor.
-- O convite persiste `cliente` ou `admin`; o `superadmin` global é inválido neste fluxo. O membership do painel é criado apenas no aceite Google transacional.
+Handlers antigos de reenvio/aceite Google permanecem para registros anteriores; não participam do novo onboarding. O papel superadmin global continua proibido e selecionar alguém no Slack não concede membership.
+
+- `organization_asset_navigation` persiste ordem e ícones por empresa com RLS e grants somente service_role. `asset-navigation` define payload estrito e catálogo fechado; layout lê pela empresa da sessão, PUT /api/settings/asset-navigation exige dono cliente e ignora qualquer tentativa de escolher organização no payload. Sem localStorage nem modificação de documentos/categorias.
+
+- asset-categories cria e renomeia pastas por POST/PATCH para o dono definitivo. Organização/ator resolvidos no servidor. Registro e renomeação dos ativos são atômicos; a API de navegação preserva categorias ao salvar ordem/ícones.

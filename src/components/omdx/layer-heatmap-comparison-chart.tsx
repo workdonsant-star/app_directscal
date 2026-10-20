@@ -26,9 +26,9 @@ const fallbackColors: Record<string, string> = {
   "--muted-foreground": "#4A4A52",
   "--popover": "#FFFFFF",
   "--popover-foreground": "#111114",
-  "--omdx-layer-diretoria-30": "#A6C8FF",
-  "--omdx-layer-lideranca-50": "#1192E8",
-  "--omdx-layer-time-70": "#005D5D",
+  "--overview-scale-score-low": "#F2E8FF",
+  "--overview-scale-score-mid": "#CAA1FF",
+  "--overview-scale-score-high": "#B47AFF",
 };
 
 const chartFontFamily = "var(--font-funnel-sans)";
@@ -223,9 +223,9 @@ export function LayerHeatmapComparisonChart({
         inRange: {
           color: [
             colors["--muted"],
-            colors["--omdx-layer-diretoria-30"],
-            colors["--omdx-layer-lideranca-50"],
-            colors["--omdx-layer-time-70"],
+            colors["--overview-scale-score-low"],
+            colors["--overview-scale-score-mid"],
+            colors["--overview-scale-score-high"],
           ],
         },
       },

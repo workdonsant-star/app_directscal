@@ -3,11 +3,8 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import {
   Funnel_Sans,
-  Instrument_Sans,
-  Instrument_Serif,
   JetBrains_Mono,
   Plus_Jakarta_Sans,
-  Roboto_Flex,
 } from "next/font/google";
 
 import { ThemeProvider } from "@/components/theme-provider";
@@ -25,28 +22,8 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   display: "swap",
 });
 
-const instrumentSans = Instrument_Sans({
-  variable: "--font-instrument-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-instrument-serif",
-  subsets: ["latin"],
-  weight: "400",
-  style: ["normal", "italic"],
-  display: "swap",
-});
-
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const robotoFlex = Roboto_Flex({
-  variable: "--font-roboto-flex",
   subsets: ["latin"],
   display: "swap",
 });
@@ -70,7 +47,7 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       suppressHydrationWarning
-      className={`${funnelSans.variable} ${plusJakartaSans.variable} ${instrumentSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} ${robotoFlex.variable} h-full antialiased`}
+      className={`${funnelSans.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-background text-foreground">
         <ThemeProvider

@@ -16,6 +16,9 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { AdminAssetQuestionAudit } from "@/lib/contracts";
+import { AgentGapReviewDialog } from "./agent-gap-review-dialog";
+import type { AgentOperations } from "@/lib/contracts/agent-operations";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 type Filter = "lacunas" | "todas";
@@ -41,22 +44,24 @@ function formatDateTime(iso: string) {
 
 export function AssetQuestionAuditsWorkspace({
   audits,
+  operations,
   embedded = false,
   company,
 }: {
   audits: AdminAssetQuestionAudit[];
+  operations: AgentOperations;
   embedded?: boolean;
   company: { id: string; name: string };
 }) {
   const [filter, setFilter] = useState<Filter>("lacunas");
-  const gaps = useMemo(() => audits.filter(isGap), [audits]);
+  const gaps = useMemo(() => audits.filter(audit => isGap(audit) && operations.reviews.filter(item => item.auditId === audit.id).sort((a, b) => a.sequence - b.sequence).at(-1)?.status !== "resolvida"), [audits, operations.reviews]);
   const visible = filter === "lacunas" ? gaps : audits;
 
   const PageContent = embedded ? "div" : AppPage;
   const Heading = embedded ? "h2" : "h1";
   const actions = (
           <Tabs value={filter} onValueChange={(value) => setFilter(value as Filter)}>
-            <TabsList>
+            <TabsList variant="selector">
               <TabsTrigger value="lacunas" className="gap-2">
                 Lacunas
                 <span className="rounded-full border bg-background px-1.5 text-xs font-medium tabular-nums text-muted-foreground">
@@ -90,16 +95,22 @@ export function AssetQuestionAuditsWorkspace({
       <PageContent>
         <div className="flex w-full flex-col gap-5">
           <div className="space-y-1">
-            <Heading className="font-heading text-2xl font-semibold">Perguntas ao agente</Heading>
+            <Heading className="font-heading text-2xl font-bold">Perguntas ao agente</Heading>
             <p className="max-w-[75ch] text-sm text-muted-foreground">
               Lacunas reúnem perguntas sem evidência publicada, falhas técnicas e
               respostas avaliadas como não úteis. Cada uma é candidata a um ativo
-              novo ou a uma revisão. Mostra as 200 perguntas mais recentes.
+              novo ou a uma revisão. O histórico conserva as consultas da empresa; resolução exige responsável e evidência.
             </p>
           </div>
 
+          <section aria-label="Saúde operacional da empresa" className="space-y-2 border-y py-4 text-sm">
+            <p className="font-medium">Saúde operacional · consulta em {formatDateTime(operations.health.capturedAt)}</p>
+            <p className="tabular-nums text-muted-foreground">Últimos 30 dias: {operations.health.queries30Days} consultas, {operations.health.queryErrors30Days} erros. Fila atual do Slack: {operations.health.slackFailures} falhas, {operations.health.slackUncertain} envios incertos e {operations.health.slackOverdue} reservas ou entregas em atraso.</p>
+            <p className="text-xs text-muted-foreground">Alertas são atualizados ao abrir ou recarregar a página. Não representam monitoramento contínuo ou aviso externo.</p>
+            <Link href={`/admin/empresas/${company.id}/rotinas`} className="inline-block underline underline-offset-4">Abrir supervisão e recuperação das rotinas</Link>
+          </section>
           {visible.length === 0 ? (
-            <div className="rounded-lg border border-dashed px-6 py-12 text-center">
+            <div className="rounded-lg bg-card px-6 py-12 text-center">
               <p className="font-heading text-base font-medium">
                 {filter === "lacunas" ? "Nenhuma lacuna registrada" : "Nenhuma pergunta registrada"}
               </p>
@@ -109,7 +120,7 @@ export function AssetQuestionAuditsWorkspace({
             </div>
           ) : (
             <div className="min-w-0">
-              <Table className="min-w-[1100px] table-fixed">
+              <Table variant="operational" className="min-w-[1100px] table-fixed">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="h-11 w-[300px] px-4">Pergunta</TableHead>
@@ -118,6 +129,7 @@ export function AssetQuestionAuditsWorkspace({
                     <TableHead className="h-11 w-[120px] px-4">Resultado</TableHead>
                     <TableHead className="h-11 w-[110px] px-4">Avaliação</TableHead>
                     <TableHead className="h-11 w-[120px] px-4">Quando</TableHead>
+                    <TableHead>Acompanhamento</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -180,6 +192,7 @@ export function AssetQuestionAuditsWorkspace({
                       <TableCell className="px-4 py-4 align-top text-sm text-muted-foreground tabular-nums">
                         {formatDateTime(audit.createdAt)}
                       </TableCell>
+                      <TableCell className="align-top"><AgentGapReviewDialog key={operations.reviews.filter(item => item.auditId === audit.id).at(-1)?.id ?? audit.id} audit={audit} operations={operations} companyId={company.id} /></TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

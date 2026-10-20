@@ -80,7 +80,7 @@ export default async function LeadershipInvitationPage({
           Convite válido
         </Badge>
 
-        <dl className="grid gap-4 rounded-lg border p-4 text-sm">
+        <dl className="grid gap-4 rounded-lg bg-card p-4 text-sm">
           <div>
             <dt className="text-xs text-muted-foreground">Setor</dt>
             <dd className="mt-1 font-medium">{invitation.sectorName}</dd>

@@ -1,9 +1,8 @@
 "use client";
 
-import { Check, Plus } from "lucide-react";
-import Link from "next/link";
+import { Check, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { AppTopbar } from "@/components/app-topbar";
 import { AppPage } from "@/components/app-page";
@@ -17,13 +16,15 @@ import {
 } from "@/components/omdx/diagnostics-table";
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getEffectiveDiagnosticStatus } from "@/lib/data/omdx-production-rules";
 import type {
   AuthRole,
   Diagnostic,
@@ -32,7 +33,7 @@ import type {
   OrganizationSector,
 } from "@/lib/types";
 
-type DrawerMode = "create" | "edit" | "links";
+type ModalMode = "create" | "edit";
 
 type DiagnosticsWorkspaceProps = {
   currentUserEmail: string;
@@ -43,12 +44,6 @@ type DiagnosticsWorkspaceProps = {
   sectors: OrganizationSector[];
   shareLinksByDiagnosticId: Record<string, DiagnosticShareLink[]>;
   template: DiagnosticTemplate;
-};
-
-type GeneratedDiagnostic = {
-  id: string;
-  company: string;
-  name: string;
 };
 
 type DiagnosticMutationResponse = {
@@ -90,23 +85,39 @@ export function DiagnosticsWorkspace({
   currentUserEmail,
   currentUserId,
   currentUserRole,
-  diagnostics,
-  organizationName,
+  diagnostics: storedDiagnostics,
   sectors,
   shareLinksByDiagnosticId,
   template,
 }: DiagnosticsWorkspaceProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<DrawerMode>("create");
+  const [mode, setMode] = useState<ModalMode>("create");
   const [selectedDiagnostic, setSelectedDiagnostic] =
     useState<Diagnostic | null>(null);
-  const [generatedDiagnostic, setGeneratedDiagnostic] =
-    useState<GeneratedDiagnostic | null>(null);
-  const [generatedLinks, setGeneratedLinks] = useState<DiagnosticShareLink[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [filter, setFilter] = useState<DiagnosticsFilter>("todos");
+
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const updateTime = () => setNow(new Date());
+    const interval = window.setInterval(updateTime, 60_000);
+    window.addEventListener("focus", updateTime);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", updateTime);
+    };
+  }, []);
+
+  const diagnostics = useMemo(
+    () => storedDiagnostics.map((diagnostic) => ({
+      ...diagnostic,
+      status: getEffectiveDiagnosticStatus(diagnostic, now),
+    })),
+    [storedDiagnostics, now],
+  );
 
   const counts = useMemo(
     () => ({
@@ -126,8 +137,6 @@ export function DiagnosticsWorkspace({
   function openCreate() {
     setMode("create");
     setSelectedDiagnostic(null);
-    setGeneratedDiagnostic(null);
-    setGeneratedLinks([]);
     setNotice(null);
     setOpen(true);
   }
@@ -135,13 +144,11 @@ export function DiagnosticsWorkspace({
   function openEdit(diagnostic: Diagnostic) {
     setMode("edit");
     setSelectedDiagnostic(diagnostic);
-    setGeneratedDiagnostic(null);
-    setGeneratedLinks([]);
     setNotice(null);
     setOpen(true);
   }
 
-  function closeDrawer() {
+  function closeModal() {
     setOpen(false);
   }
 
@@ -169,24 +176,6 @@ export function DiagnosticsWorkspace({
       diagnosticId: data.diagnosticId ?? selectedDiagnostic?.id,
       links: data.links ?? [],
     };
-  }
-
-  async function handleSaveDraft(form: DiagnosticFormState) {
-    try {
-      setPending(true);
-      await saveDiagnostic(form);
-      setNotice("Rascunho salvo no banco.");
-      setOpen(false);
-      router.refresh();
-    } catch (error) {
-      setNotice(
-        error instanceof Error
-          ? error.message
-          : "Não foi possível salvar o diagnóstico.",
-      );
-    } finally {
-      setPending(false);
-    }
   }
 
   async function handleActivate(form: DiagnosticFormState) {
@@ -217,20 +206,9 @@ export function DiagnosticsWorkspace({
         );
       }
 
-      setGeneratedDiagnostic({
-        id: saved.diagnosticId,
-        company: selectedDiagnostic?.company ?? organizationName,
-        name: form.name,
-      });
-      setGeneratedLinks(
-        activateData.links && activateData.links.length > 0
-          ? activateData.links
-          : saved.links.length > 0
-          ? saved.links
-          : shareLinksByDiagnosticId[saved.diagnosticId] ?? [],
-      );
-      setMode("links");
-      setNotice("Diagnóstico ativado no banco.");
+      setOpen(false);
+      setFilter("todos");
+      setNotice(null);
       router.refresh();
     } catch (error) {
       setNotice(
@@ -238,6 +216,22 @@ export function DiagnosticsWorkspace({
           ? error.message
           : "Não foi possível ativar o diagnóstico.",
       );
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function handleCloseCollection(diagnostic: Diagnostic) {
+    if (pending) return;
+    try {
+      setPending(true);
+      setNotice(null);
+      const response = await fetch(`/api/omdx/diagnostics/${diagnostic.id}/close`, { method: "POST" });
+      const data = await readMutationResponse(response);
+      if (!response.ok) throw new Error(data.message ?? "Não foi possível encerrar a coleta.");
+      router.refresh();
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Não foi possível encerrar a coleta.");
     } finally {
       setPending(false);
     }
@@ -284,15 +278,21 @@ export function DiagnosticsWorkspace({
                 setFilter(value as DiagnosticsFilter)
               }
             >
-              <TabsList>
+              {/* Selector compacto na topbar: mesmo padrão de Action Points,
+                  com intervalo menor que o de 32px usado no corpo da página. */}
+              <TabsList
+                variant="selector"
+                className="gap-1"
+                aria-label="Filtrar pesquisas por status"
+              >
                 {filters.map((item) => (
                   <TabsTrigger
                     key={item.value}
                     value={item.value}
-                    className="gap-2"
+                    className="px-2.5"
                   >
                     {item.label}
-                    <span className="rounded-full border bg-background px-1.5 text-xs font-medium tabular-nums text-muted-foreground">
+                    <span className="font-normal text-muted-foreground tabular-nums">
                       {counts[item.value]}
                     </span>
                   </TabsTrigger>
@@ -311,7 +311,7 @@ export function DiagnosticsWorkspace({
       <AppPage>
         <div className="flex w-full flex-col gap-5">
           {notice && (
-            <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm text-foreground">
+            <div className="flex items-center gap-2 rounded-lg bg-card px-3 py-2 text-sm text-foreground">
               <Check className="size-4 text-primary" />
               {notice}
             </div>
@@ -324,109 +324,42 @@ export function DiagnosticsWorkspace({
             shareLinksByDiagnosticId={shareLinksByDiagnosticId}
             onConfigure={openEdit}
             onDelete={handleDelete}
+            onClose={handleCloseCollection}
+            pending={pending}
           />
         </div>
       </AppPage>
 
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent className="gap-0 overflow-hidden bg-card text-card-foreground data-[side=right]:!w-[min(100vw,56rem)] data-[side=right]:!max-w-none">
-          {mode === "links" && generatedDiagnostic ? (
-            <GeneratedLinks
-              diagnostic={generatedDiagnostic}
-              links={generatedLinks}
-              onBack={() => {
-                setMode(selectedDiagnostic?.status === "rascunho" ? "edit" : "create");
-              }}
-            />
-          ) : (
-            <>
-              <SheetHeader className="shrink-0 border-b px-4 py-4 sm:px-6">
-                <SheetTitle>
-                  {mode === "edit" ? "Configurar rascunho" : "Criar diagnóstico"}
-                </SheetTitle>
-                <SheetDescription>
-                  Defina o contexto e o prazo da coleta antes de gerar os links
-                  por grupo.
-                </SheetDescription>
-              </SheetHeader>
-              <DiagnosticForm
-                currentUserEmail={currentUserEmail}
-                currentUserRole={currentUserRole}
-                mode={mode === "edit" ? "edit" : "create"}
-                diagnostic={selectedDiagnostic ?? undefined}
-                organizationName={organizationName}
-                sectors={sectors}
-                template={template}
-                onSaveDraft={handleSaveDraft}
-                onActivate={handleActivate}
-                onCancel={closeDrawer}
-              />
-            </>
-          )}
-        </SheetContent>
-      </Sheet>
-    </>
-  );
-}
-
-function GeneratedLinks({
-  diagnostic,
-  links,
-  onBack,
-}: {
-  diagnostic: GeneratedDiagnostic;
-  links: DiagnosticShareLink[];
-  onBack: () => void;
-}) {
-  return (
-    <>
-      <SheetHeader className="border-b">
-        <SheetTitle>Links gerados</SheetTitle>
-        <SheetDescription>
-          Compartilhe um link por grupo para preservar a leitura por camada da
-          empresa.
-        </SheetDescription>
-      </SheetHeader>
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
-        <div className="rounded-lg border bg-card p-4">
-          <p className="text-foreground text-sm font-medium">
-            {diagnostic.name}
-          </p>
-          <p className="text-muted-foreground mt-1 text-xs">
-            {diagnostic.company}
-          </p>
-        </div>
-
-        {links.map((link) => (
-          <div
-            key={link.id}
-            className="flex flex-col gap-2 rounded-lg border bg-card p-3"
+      <Dialog open={open} onOpenChange={(nextOpen) => { if (!pending) setOpen(nextOpen); }}>
+        <DialogContent className="flex max-h-[calc(100svh-2rem)] max-w-lg flex-col gap-0 overflow-hidden p-0 text-card-foreground">
+          <DialogClose
+            disabled={pending}
+            aria-label="Fechar"
+            render={<Button type="button" variant="ghost" size="icon-sm" className="absolute top-4 right-4" />}
           >
-            <span className="text-foreground text-sm font-medium">
-              {link.group === "fundador"
-                ? "Fundador"
-                : link.group === "lideranca"
-                  ? "Liderança"
-                  : link.sectorName ?? "Time"}
-            </span>
-            <code className="text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap rounded-md bg-muted px-2 py-1 text-xs">
-              {link.publicUrl}
-            </code>
-          </div>
-        ))}
-
-        <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:justify-end">
-          <Button variant="outline" onClick={onBack}>
-            Voltar para configuração
-          </Button>
-          <Button
-            nativeButton={false}
-            render={<Link href={`/omdx/${diagnostic.id}/compartilhar`} />}
-          >
-            Abrir compartilhamento
-          </Button>
-        </div>
-      </div>
+            <X className="size-4" />
+          </DialogClose>
+          <DialogHeader className="shrink-0 px-6 pt-6 pb-5 pr-12 sm:px-8 sm:pr-12">
+            <DialogTitle>
+              {mode === "edit" ? "Configurar rascunho" : "Criar diagnóstico"}
+            </DialogTitle>
+            <DialogDescription>
+              Defina a coleta e selecione as lideranças participantes.
+            </DialogDescription>
+          </DialogHeader>
+          <DiagnosticForm
+            currentUserEmail={currentUserEmail}
+            currentUserRole={currentUserRole}
+            mode={mode === "edit" ? "edit" : "create"}
+            diagnostic={selectedDiagnostic ?? undefined}
+            sectors={sectors}
+            pending={pending}
+            error={notice}
+            onActivate={handleActivate}
+            onCancel={closeModal}
+          />
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

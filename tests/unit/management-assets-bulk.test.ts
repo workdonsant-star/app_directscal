@@ -9,7 +9,7 @@ vi.mock("@/lib/data/person-profiles-data-source", () => ({ canAssignSpecialist: 
 import { DELETE, PATCH } from "@/app/api/admin/management-assets/bulk/route";
 import { getCurrentAuthSession } from "@/lib/auth/session";
 import { managementAssetBulkSelectionSchema, managementAssetBulkUpdateSchema } from "@/lib/contracts";
-import { deleteManagementAssets, transitionManagementAsset, updateManagementAsset, updateManagementAssetsInBulk } from "@/lib/data/management-assets-admin-data-source";
+import { createManagementAsset, deleteManagementAssets, transitionManagementAsset, updateManagementAsset, updateManagementAssetsInBulk } from "@/lib/data/management-assets-admin-data-source";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 const organizationId = "10000000-0000-4000-8000-000000000001";
@@ -38,6 +38,10 @@ beforeEach(() => {
 });
 
 describe("contrato de seleção e edição em massa", () => {
+  it("recusa modelo de outro tipo antes de escrever", async () => {
+    await expect(createManagementAsset("actor", { organizationId, type: "raci", title: "Matriz de teste", summary: "Resumo da matriz", category: null, ownerLabel: "Operações", reviewCycle: "Semestral", specialistId: null, templateId: "estrutura-sop" })).rejects.toMatchObject({ status: 400 });
+    expect(createSupabaseAdminClient).not.toHaveBeenCalled();
+  });
   it("recusa seleção vazia, duplicada, inválida ou acima de 200", () => {
     for (const ids of [[], [assetIds[0], assetIds[0]], ["inválido"], Array.from({ length: 201 }, (_, index) => `20000000-0000-4000-8000-${String(index).padStart(12, "0")}`)]) {
       expect(managementAssetBulkSelectionSchema.safeParse({ organizationId, assetIds: ids }).success).toBe(false);
@@ -52,6 +56,14 @@ describe("contrato de seleção e edição em massa", () => {
 });
 
 describe("mutações isoladas por empresa", () => {
+  it("orienta arquivar sem apagar histórico quando o ativo tem vínculo de rotina", async () => {
+    results[1] = { data: null, error: { code: "23503", message: "detalhe privado do banco" } };
+    const response = await DELETE(request("DELETE", selection));
+    expect(response.status).toBe(409);
+    const body = await response.text();
+    expect(body).toContain("Arquive"); expect(body).not.toContain("detalhe privado");
+    expect(chains[1].delete).toHaveBeenCalledOnce();
+  });
   it("altera só metadados solicitados e devolve apenas os IDs realmente alterados", async () => {
     results[1].data = [{ id: assetIds[0] }];
     expect(await updateManagementAssetsInBulk({ ...selection, changes: { specialistId: "specialist-test" } })).toEqual([assetIds[0]]);
@@ -125,17 +137,16 @@ describe("edição como nova versão", () => {
 });
 
 
-it("salva o conteúdo apenas no rascunho v2 com proteção de publicação", async () => {
+it("envia a revisão esperada e o ator para gravação atômica sem escrita paralela", async () => {
   const content = { type: "doc" as const, content: [{ type: "paragraph" as const, content: [{ type: "text" as const, text: "Nova edição" }] }] };
-  results = [
-    { data: { id: assetIds[0], archived_at: null }, error: null },
-    { data: null, error: null },
-    { data: [{ id: "draft-v2", published_at: null, review_status: "rascunho" }, { id: "published-v1", published_at: "2026-10-09T12:00:00Z" }], error: null },
-    { data: null, error: null },
-  ];
-  await updateManagementAsset("actor", assetIds[0], { title: "Ativo de teste", summary: "Resumo do ativo", category: null, ownerLabel: "Liderança", reviewCycle: "Mensal", specialistId: null, changeNote: "Revisão", content });
-  expect(tables).toEqual(["management_assets", "management_assets", "management_asset_versions", "management_asset_versions"]);
-  expect(chains[3].update).toHaveBeenCalledWith({ summary: "Resumo do ativo", change_note: "Revisão", content });
-  expect(chains[3].eq).toHaveBeenCalledWith("id", "draft-v2");
-  expect(chains[3].is).toHaveBeenCalledWith("published_at", null);
+  const input = { expectedRevision: { assetUpdatedAt: "2026-10-19T12:00:00.123456Z", draftId: assetIds[1], draftUpdatedAt: "2026-10-19T12:00:00.234567Z" }, title: "Ativo de teste", summary: "Resumo do ativo", category: null, ownerLabel: "Liderança", reviewCycle: "Mensal", specialistId: null, changeNote: "Revisão", content };
+  const rpc = vi.fn().mockResolvedValue({ error: null });
+  vi.mocked(createSupabaseAdminClient).mockReturnValue({ schema: () => ({ rpc }) } as unknown as ReturnType<typeof createSupabaseAdminClient>);
+  await updateManagementAsset("actor", assetIds[0], input);
+  expect(rpc).toHaveBeenCalledWith("save_admin_management_asset", { p_actor_user_id: "actor", p_asset_id: assetIds[0], p_input: input });
+  expect(tables).toEqual([]);
+  for (const code of ["PT409", "55P03", "40001"]) {
+    rpc.mockResolvedValue({ error: { code } });
+    await expect(updateManagementAsset("actor", assetIds[0], input)).rejects.toMatchObject({ status: 409 });
+  }
 });

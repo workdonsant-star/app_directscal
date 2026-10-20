@@ -90,7 +90,7 @@ export function AdminOperationsWorkspace({
         className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"
       >
         <div className="space-y-1">
-          <h1 id="operation-title" className="font-heading text-2xl font-semibold">
+          <h1 id="operation-title" className="text-ui-page">
             Operação
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -140,7 +140,7 @@ export function AdminOperationsWorkspace({
       <section className="flex flex-col gap-4" aria-labelledby="delivery-queue-title">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-1">
-            <h2 id="delivery-queue-title" className="font-heading text-lg font-semibold">
+            <h2 id="delivery-queue-title" className="text-ui-section">
               Fila de entregas
             </h2>
             <p className="text-sm text-muted-foreground">

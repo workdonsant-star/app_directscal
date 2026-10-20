@@ -5,6 +5,7 @@ import {
   buildRetrievalQuery,
   type ConversationTurn,
   INSUFFICIENT_EVIDENCE_ANSWER,
+  needsQuestionContext,
   resolveGroundedAnswer,
   selectEvidence,
   type ResolvedAnswer,
@@ -139,14 +140,17 @@ export async function answerAssetQuestion(input: {
   const history = input.history ?? [];
 
   try {
-    const evidence = selectEvidence(
+    const missingContext = needsQuestionContext(question, history);
+    const evidence = missingContext ? [] : selectEvidence(
       await searchPublishedAssetChunks(
         input.organizationId,
         buildRetrievalQuery(question, history),
       ),
     );
 
-    if (evidence.length === 0) {
+    if (missingContext) {
+      resolved = { status: "insufficient_evidence", answer: "Sobre qual processo ou atividade você quer saber? Informe o contexto para eu consultar a regra certa.", confidence: "insuficiente", citations: [], refusalReason: "Pergunta sem processo ou atividade definidos." };
+    } else if (evidence.length === 0) {
       resolved = {
         status: "insufficient_evidence",
         answer: INSUFFICIENT_EVIDENCE_ANSWER,
@@ -160,6 +164,7 @@ export async function answerAssetQuestion(input: {
       resolved = resolveGroundedAnswer(
         await generateGroundedAnswer(provider, model, question, evidence, history),
         evidence,
+        buildRetrievalQuery(question, history),
       );
     }
   } catch (error) {

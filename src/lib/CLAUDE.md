@@ -93,7 +93,7 @@ Os mocks devem continuar realistas, em pt-BR, sem dados pessoais reais e sem `Ma
 
 ## `utils.ts`
 
-`cn(...inputs)` combina clsx + tailwind-merge. Use sempre que compor classes condicionalmente.
+`cn(...inputs)` combina clsx + tailwind-merge, estendido com os tokens tipográficos de `globals.css` (`text-ui-*`, `text-doc-*`, `font-label`…) para não confundi-los com cor ou peso. Ao criar token tipográfico, registre-o em `utils.ts`.
 
 ## Anti-padrões
 
@@ -106,3 +106,7 @@ Os mocks devem continuar realistas, em pt-BR, sem dados pessoais reais e sem `Ma
 ## Iniciativas
 
 `initiatives/storage.ts` contém o contrato Zod e o hook client-only das iniciativas da interface Symbach. Persistência local versionada por usuário/empresa, sem nova API ou tabela. Ver `initiatives/CLAUDE.md`.
+
+- Seletor de ícone usa catálogo completo da versão instalada lucide-react (1.14.0, 1952 entradas), em grade sem nomes visíveis; aria-label preserva identificação. Busca por nome Lucide e carregamento incremental de 120 itens. JSONs lucide-icon-catalog/names são gerados das exportações __iconNode de dist/esm/dynamicIconImports.mjs (licença ISC do Lucide); regenerar ao atualizar a dependência. Contrato valida nomes canônicos e preserva aliases dos 15 ícones legados.
+
+- Novas seleções persistem como `lucide:<nome>` para distinguir nomes canônicos de aliases legados (ex.: book legado era book-open; lucide:book seleciona o livro fechado).

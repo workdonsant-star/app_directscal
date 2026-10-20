@@ -137,7 +137,7 @@ export async function saveSlackInstallation(input: {
 
 // Instalação via OAuth tem prioridade. As variáveis SLACK_BOT_TOKEN e
 // SLACK_ORGANIZATION_ID continuam valendo para um workspace único de teste.
-export async function getSlackInstallation(teamId: string): Promise<SlackInstallation | null> {
+export async function getSlackInstallation(teamId: string, options: { allowEnvFallback?: boolean } = {}): Promise<SlackInstallation | null> {
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .schema("app_private")
@@ -158,6 +158,7 @@ export async function getSlackInstallation(teamId: string): Promise<SlackInstall
     };
   }
 
+  if (options.allowEnvFallback === false) return null;
   const envToken = process.env.SLACK_BOT_TOKEN;
   const envOrganizationId = process.env.SLACK_ORGANIZATION_ID;
   const envTeamId = process.env.SLACK_TEAM_ID;
@@ -273,18 +274,40 @@ async function callSlack(token: string, method: string, body: Record<string, unk
   }
 }
 
+export class SlackDeliveryError extends Error {
+  constructor(public code: "rate_limited" | "missing_scope" | "invalid_auth" | "channel_not_found" | "envio_recusado" | "envio_sem_confirmacao" | "contexto_indisponivel", public retryable: boolean, public uncertain = false, public retryAfter = 60) {
+    super("Não foi possível confirmar a entrega no Slack.");
+  }
+}
+
 export async function postSlackMessage(
   token: string,
-  message: { channel: string; threadTs?: string; text: string; blocks?: unknown[] },
-) {
-  await callSlack(token, "chat.postMessage", {
-    channel: message.channel,
-    ...(message.threadTs ? { thread_ts: message.threadTs } : {}),
-    text: message.text,
-    ...(message.blocks ? { blocks: message.blocks } : {}),
-    unfurl_links: false,
-    unfurl_media: false,
-  });
+  message: { channel: string; threadTs?: string; text: string; blocks?: unknown[]; clientMsgId?: string },
+): Promise<{ ts: string; channel: string }> {
+  let response: Response;
+  try {
+    response = await fetch("https://slack.com/api/chat.postMessage", {
+      method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify({ channel: message.channel, ...(message.threadTs ? { thread_ts: message.threadTs } : {}), text: message.text,
+        ...(message.blocks ? { blocks: message.blocks } : {}), ...(message.clientMsgId ? { client_msg_id: message.clientMsgId } : {}), unfurl_links: false, unfurl_media: false }),
+      cache: "no-store", signal: AbortSignal.timeout(15000),
+    });
+  } catch {
+    throw new SlackDeliveryError("envio_sem_confirmacao", false, true);
+  }
+  if (response.status === 429) {
+    const delay = Number(response.headers.get("retry-after"));
+    throw new SlackDeliveryError("rate_limited", true, false, Number.isFinite(delay) && delay > 0 ? Math.min(delay, 3600) : 60);
+  }
+  const payload = await response.json().catch(() => null) as (SlackApiResponse & { ts?: string; channel?: string }) | null;
+  if (response.ok && payload?.ok && payload.ts && payload.channel) return { ts: payload.ts, channel: payload.channel };
+  // Erros de transporte/servidor podem acontecer depois da publicação: não repetir às cegas.
+  if (response.status >= 500 || !payload) throw new SlackDeliveryError("envio_sem_confirmacao", false, true);
+  if (["invalid_auth", "token_revoked", "account_inactive", "not_authed"].includes(payload.error ?? "")) throw new SlackDeliveryError("invalid_auth", false);
+  if (payload.error === "missing_scope") throw new SlackDeliveryError("missing_scope", false);
+  if (payload.error === "channel_not_found") throw new SlackDeliveryError("channel_not_found", false);
+  if (["is_archived", "not_in_channel", "msg_too_long", "invalid_blocks"].includes(payload.error ?? "")) throw new SlackDeliveryError("envio_recusado", false);
+  throw new SlackDeliveryError("envio_sem_confirmacao", false, true);
 }
 
 export async function addSlackReaction(
@@ -388,7 +411,7 @@ async function readSlack<T extends SlackApiResponse>(
 }
 
 // Pessoas ativas do workspace, em ordem alfabética.
-export async function listSlackWorkspaceUsers(token: string) {
+export async function listSlackWorkspaceUsers(token: string, includeGuests = false) {
   const users: SlackWorkspaceUser[] = [];
   let cursor = "";
 
@@ -401,7 +424,7 @@ export async function listSlackWorkspaceUsers(token: string) {
     >(token, "users.list", { limit: "200", ...(cursor ? { cursor } : {}) });
 
     for (const member of page.members ?? []) {
-      const user = mapSlackMember(member);
+      const user = mapSlackMember(member, includeGuests);
       if (user) users.push(user);
     }
 
@@ -412,10 +435,26 @@ export async function listSlackWorkspaceUsers(token: string) {
 }
 
 // Nome e foto vêm sempre do Slack, nunca do navegador.
-export async function getSlackWorkspaceUser(token: string, userId: string) {
+export async function getSlackWorkspaceUser(token: string, userId: string, includeGuests = false) {
   const payload = await readSlack<
     SlackApiResponse & { user?: Parameters<typeof mapSlackMember>[0] }
   >(token, "users.info", { user: userId });
 
-  return payload.user ? mapSlackMember(payload.user) : null;
+  return payload.user ? mapSlackMember(payload.user, includeGuests) : null;
+}
+
+export async function openSlackDirectConversation(token: string, userId: string) {
+  let response: Response;
+  try { response = await fetch("https://slack.com/api/conversations.open", {
+    method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json; charset=utf-8" },
+    body: JSON.stringify({ users: userId }), cache: "no-store", signal: AbortSignal.timeout(15000),
+  }); } catch { throw new SlackDeliveryError("contexto_indisponivel", true); }
+  if (response.status === 429) throw new SlackDeliveryError("rate_limited", true, false, Number(response.headers.get("retry-after")) || 60);
+  const payload = await response.json().catch(() => null) as (SlackApiResponse & { channel?: { id?: string } }) | null;
+  if (!response.ok || !payload?.ok || !payload.channel?.id?.match(/^D[A-Za-z0-9]+$/)) {
+    if (payload?.error === "missing_scope") throw new SlackDeliveryError("missing_scope", false);
+    if (["invalid_auth", "token_revoked", "account_inactive"].includes(payload?.error ?? "")) throw new SlackDeliveryError("invalid_auth", false);
+    throw new SlackDeliveryError("contexto_indisponivel", true);
+  }
+  return payload.channel.id;
 }

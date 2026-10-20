@@ -38,7 +38,7 @@ export async function PATCH(request: Request) {
   if (!parsed.success) return fail("Revise os dados informados.", 400);
 
   const input = parsed.data;
-  const { workspace, organizationId } = await getPublishedActionPointsWorkspace();
+  const { workspace, organizationId } = await getPublishedActionPointsWorkspace(input.diagnosticId);
   const task = workspace.tasks
     .flatMap((root) => root.subitems ?? [])
     .find((item) => item.id === input.actionPointId);
@@ -107,7 +107,9 @@ export async function PATCH(request: Request) {
       diagnosticId: input.diagnosticId,
       organizationId,
       actionPointId: input.actionPointId,
+      actorUserId: session.user.id,
       authorName: session.user.name,
+      expectedUpdatedAt: existing?.updatedAt ?? null,
       plan,
     });
 
@@ -120,6 +122,12 @@ export async function PATCH(request: Request) {
       );
     }
 
+    if (error && typeof error === "object" && "code" in error && ["PT409", "40001"].includes(String(error.code))) {
+      if ("message" in error && error.message === "Transfira as rotinas pela operação DirectScal para preservar os acordos.") {
+        return fail("Este action point possui acordos de rotina. Solicite a transferência à operação DirectScal para preservar o histórico.", 409);
+      }
+      return fail("A ação foi alterada em outra sessão. Recarregue e tente novamente.", 409);
+    }
     console.error("[action-points] update failed", error);
     return fail("Não foi possível salvar o action point.", 500);
   }

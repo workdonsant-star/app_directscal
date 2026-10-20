@@ -7,6 +7,9 @@ import {
   getDiagnosticActionPlan,
   getDiagnosticById,
 } from "@/lib/data/omdx-data-source";
+import { getAdminDeliveryPublication } from "@/lib/data/admin-delivery-data-source";
+import { adminActionPointTemplates } from "@/lib/data/admin-operations-data-source";
+import { buildPublishedActionPlan } from "@/lib/data/action-plan-gantt";
 import { OmdxActionPlanDocument } from "@/lib/pdf/omdx-action-plan-document";
 
 export const runtime = "nodejs";
@@ -48,7 +51,12 @@ export async function GET(
     return new Response("Diagnóstico não encontrado.", { status: 404 });
   }
 
-  const plan = await getDiagnosticActionPlan(id);
+  const publication = await getAdminDeliveryPublication(id);
+  if (publication?.status !== "publicada" || !publication.publishedAt) {
+    return new Response("Action points ainda não publicados.", { status: 404 });
+  }
+  const sourcePlan = await getDiagnosticActionPlan(id);
+  const plan = sourcePlan ? buildPublishedActionPlan(sourcePlan, publication, adminActionPointTemplates) : null;
 
   if (!plan) {
     return new Response("Action points indisponíveis para este diagnóstico.", {

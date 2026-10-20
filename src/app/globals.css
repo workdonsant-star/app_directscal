@@ -17,6 +17,10 @@
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
+  --color-document-info: var(--document-info);
+  --color-document-info-foreground: var(--document-info-foreground);
+  --color-document-attention: var(--document-attention);
+  --color-document-attention-foreground: var(--document-attention-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
@@ -48,6 +52,9 @@
   --color-surface-canvas: var(--surface-canvas);
   --color-surface-card: var(--surface-card);
   --color-surface-control: var(--surface-control);
+  --color-surface-field: var(--surface-field);
+  --color-surface-selected: var(--surface-selected);
+  --color-surface-popover: var(--surface-popover);
   --color-surface-disabled: var(--surface-disabled);
   --color-surface-sidebar: var(--surface-sidebar);
   --color-surface-sidebar-selected: var(--surface-sidebar-selected);
@@ -81,6 +88,17 @@
   --color-chart-5: var(--chart-5);
   --color-chart-positive: var(--chart-positive);
   --color-chart-negative: var(--chart-negative);
+  /* Action points: accent por categoria + estado de atenção (declarados nos dois temas) */
+  --color-ap-comunicacao: var(--ap-comunicacao);
+  --color-ap-pessoas: var(--ap-pessoas);
+  --color-ap-processos: var(--ap-processos);
+  --color-ap-governanca: var(--ap-governanca);
+  --color-ap-attention: var(--ap-attention);
+  --color-ap-positive: var(--ap-positive);
+  --color-ap-negative: var(--ap-negative);
+  --color-ap-positive-foreground: var(--ap-positive-foreground);
+  --color-ap-attention-foreground: var(--ap-attention-foreground);
+  --color-ap-negative-foreground: var(--ap-negative-foreground);
   --color-omdx-layer-diretoria-30: var(--omdx-layer-diretoria-30);
   --color-omdx-layer-diretoria-40: var(--omdx-layer-diretoria-40);
   --color-omdx-layer-diretoria-50: var(--omdx-layer-diretoria-50);
@@ -161,14 +179,63 @@
   --color-auth-gradient-violet: var(--auth-gradient-violet);
   --color-auth-gradient-lapis: var(--auth-gradient-lapis);
 
-  /* Type */
+  /* Tipografia — ver docs/tokens-de-tipografia.md.
+     Interface (ui) e documentos (doc) têm famílias e escalas próprias,
+     para que os ativos de gestão evoluam sem mexer na interface. */
   --font-sans: var(--font-funnel-sans);
-  --font-serif: var(--font-instrument-serif);
-  --font-mono: var(--font-jetbrains-mono);
   --font-heading: var(--font-plus-jakarta-sans);
-  --font-figma-heading: var(--font-plus-jakarta-sans);
-  --font-figma-copy: var(--font-instrument-sans);
-  --font-figma-flex: var(--font-roboto-flex);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-ui: var(--font-funnel-sans);
+  --font-ui-heading: var(--font-plus-jakarta-sans);
+  --font-doc: var(--font-funnel-sans);
+  --font-doc-heading: var(--font-plus-jakarta-sans);
+  /* Rótulo técnico: nome de métrica e de metadado. Use sempre com text-ui-label ou text-doc-label. */
+  --font-label: var(--font-jetbrains-mono);
+
+  /* Pesos: 400 corpo, 500 rótulos e controles, 700 títulos. Nada abaixo de 12px.
+     Escala alinhada ao Tailwind (12/14/16/20/24) e ao Tailwind Typography nos documentos. */
+
+  /* Escala da interface. Corpo e legenda seguem text-sm (14/20) e text-xs (12/16). */
+  --text-ui-label: 0.75rem;           /* 12px — rótulo de KPI e de métrica, em font-label */
+  --text-ui-label--line-height: 1rem;
+  --text-ui-label--letter-spacing: -0.01em;
+  --text-ui-label--font-weight: 400;
+  --text-ui-title: 1rem;              /* 16px — título de card, painel e diálogo */
+  --text-ui-title--line-height: 1.5rem;
+  --text-ui-title--font-weight: 700;
+  --text-ui-section: 1.25rem;         /* 20px — título de seção dentro da página */
+  --text-ui-section--line-height: 1.75rem;
+  --text-ui-section--letter-spacing: -0.01em;
+  --text-ui-section--font-weight: 700;
+  --text-ui-page: 1.5rem;             /* 24px — título da página (h1) */
+  --text-ui-page--line-height: 2rem;
+  --text-ui-page--letter-spacing: -0.02em;
+  --text-ui-page--font-weight: 700;
+  --text-ui-kpi: 2.5rem;              /* 40px — número principal de KPI (exceção leve do Figma) */
+  --text-ui-kpi--line-height: 1;
+  --text-ui-kpi--letter-spacing: -0.02em;
+  --text-ui-kpi--font-weight: 300;
+
+  /* Escala dos documentos (ativos de gestão): leitor e editor usam a mesma. */
+  --text-doc-label: 0.75rem;          /* 12px — rótulos de metadados, em font-label */
+  --text-doc-label--line-height: 1rem;
+  --text-doc-label--letter-spacing: -0.01em;
+  --text-doc-label--font-weight: 400;
+  --text-doc-table: 0.875rem;         /* 14px — tabelas do documento */
+  --text-doc-table--line-height: 1.5rem;
+  --text-doc-body: 1rem;              /* 16px — parágrafos e listas */
+  --text-doc-body--line-height: 1.75rem;
+  --text-doc-h3: 1.25rem;             /* 20px */
+  --text-doc-h3--line-height: 1.75rem;
+  --text-doc-h3--font-weight: 700;
+  --text-doc-h2: 1.5rem;              /* 24px */
+  --text-doc-h2--line-height: 2rem;
+  --text-doc-h2--letter-spacing: -0.02em;
+  --text-doc-h2--font-weight: 700;
+  --text-doc-title: 2.25rem;          /* 36px — título do ativo */
+  --text-doc-title--line-height: 2.5rem;
+  --text-doc-title--letter-spacing: -0.025em;
+  --text-doc-title--font-weight: 700;
 
   /* Radius (Directscal: 6/10/14/20) */
   --radius-sm: calc(var(--radius) * 0.6);
@@ -180,6 +247,10 @@
 
 /* ===== LIGHT THEME ===== */
 :root {
+  --document-info: #E6EDFF;
+  --document-info-foreground: #193B80;
+  --document-attention: #FDEFC9;
+  --document-attention-foreground: #634812;
   --radius: 0.625rem; /* 10px — matches Directscal --radius-lg (cards) */
 
   /* Gray scale — shared primitives used by light and dark surfaces */
@@ -194,16 +265,24 @@
   --gray-90: #262626;
   --gray-100: #161616;
 
-  /* Semantic colors mirrored from the Directscal Figma variables */
+  /* Superfícies — escala de profundidade (ver docs/tokens-de-cor.md).
+     Opacas: shell (moldura), canvas (conteúdo), card (bloco sobre o canvas),
+     control (fundo estático neutro), popover (flutuante).
+     Translúcidas: field (campos e botões neutros) e selected (hover/ativo),
+     que funcionam sobre qualquer superfície opaca. */
+  --surface-shell: #F4F4F4;
   --surface-canvas: #FFFFFF;
-  --surface-card: #FFFFFF;
-  --surface-control: #F4F4F4;
+  --surface-card: #F4F4F4;
+  --surface-control: #EBEBEB;
+  --surface-popover: #FFFFFF;
+  --surface-field: rgb(0 0 0 / 5%);
+  --surface-selected: rgb(0 0 0 / 8%);
   --surface-disabled: rgb(224 224 224 / 50%);
-  --surface-shell: #F7F7F7;
-  --surface-sidebar: #FAFAFA;
-  --surface-sidebar-selected: #EEEEF0;
-  --surface-subtle: #FAFAFA;
-  --surface-table-header: rgb(244 244 244 / 30%);
+  /* Aliases legados — resolvem para a escala acima */
+  --surface-sidebar: var(--surface-shell);
+  --surface-sidebar-selected: var(--surface-selected);
+  --surface-subtle: var(--surface-card);
+  --surface-table-header: var(--surface-control);
   --content-primary: #161616;
   --content-secondary: #6F6F6F;
   --content-tertiary: rgb(22 22 22 / 70%);
@@ -217,7 +296,7 @@
   --foreground: var(--content-primary);
   --card: var(--surface-card);
   --card-foreground: var(--content-primary);
-  --popover: #FFFFFF;
+  --popover: var(--surface-popover);
   --popover-foreground: var(--content-primary);
 
   /* Primary = brand blue */
@@ -225,7 +304,7 @@
   --primary-foreground: var(--content-on-action);
 
   /* Secondary = subtle neutral surface */
-  --secondary: var(--surface-subtle);
+  --secondary: var(--surface-control);
   --secondary-foreground: var(--content-primary);
 
   /* Muted = even more subtle */
@@ -233,7 +312,7 @@
   --muted-foreground: var(--content-secondary);
 
   /* Accent surface (hover, focus rest) */
-  --accent: var(--surface-sidebar-selected);
+  --accent: var(--surface-selected);
   --accent-foreground: var(--content-primary);
 
   /* Destructive */
@@ -241,19 +320,19 @@
 
   /* Borders */
   --border: var(--border-default);
-  --input: var(--border-default);
+  --input: var(--surface-field);
   --ring: var(--brand-default);
   --action-primary: #124BD1;
   --action-primary-foreground: #EFEFEE;
-  --action-primary-hover: #2C80FD;
+  --action-primary-hover: var(--action-neutral-hover);
   --action-primary-active: #0F5FD8;
   --action-primary-border: #146EF5;
   --action-primary-highlight: #146EF5;
   --action-primary-shadow: #146EF5;
-  --action-neutral: var(--surface-sidebar-selected);
+  --action-neutral: var(--surface-field);
   --action-neutral-foreground: var(--foreground);
-  --action-neutral-hover: var(--gray-20);
-  --action-neutral-active: var(--gray-20);
+  --action-neutral-hover: var(--surface-selected);
+  --action-neutral-active: var(--surface-selected);
   --action-button-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 -0.5px 1px rgba(0, 0, 0, 0.1), 0 1.5px 1px rgba(255, 255, 255, 0.35), 0 1px 1px rgba(0, 0, 0, 0.04), 0 0.5px 1px rgba(0, 0, 0, 0.05);
   --action-button-active-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.16);
   --control-foreground: #FFFFFF;
@@ -273,36 +352,135 @@
   --auth-quote-foreground: #F7F7F8;
   --auth-quote-muted: #D5D5DB;
 
-  /* Charts */
-  --chart-1: #0F62FE;
-  --chart-2: #0072C3;
-  --chart-3: #007D79;
-  --chart-4: #697077;
-  --chart-5: #726E6E;
-  --chart-positive: #117A4D;
-  --chart-negative: #B42318;
-  /* Overview charts: one semantic token per role, resolved by theme */
-  --overview-chart-founder: #9CCE15;
-  --overview-chart-leadership: #98D389;
-  --overview-chart-tactical: #0A5F4F;
-  --overview-chart-dimensions: #CAA1FF;
-  --overview-chart-usage-resolved: #4A3AA7;
-  --overview-chart-usage-gap: #EB6834;
+  /* Paleta de dados Directscal — Figma DirectScal App, nó 285:2. Primitivos
+     invariantes por tema; componentes nunca usam estes nomes diretamente,
+     só os tokens semânticos abaixo. Ver src/components/omdx/CHART_COLOR_SYSTEM.md. */
+  --palette-purple-50: #F2E8FF;
+  --palette-purple-75: #CAA1FF;
+  --palette-purple-100: #B47AFF;
+  --palette-purple-200: #9441FF;
+  --palette-purple-300: #7E1AFF;
+  --palette-purple-400: #5812B3;
+  --palette-purple-500: #4D109C;
+  --palette-teal-50: #E7EFED;
+  --palette-teal-75: #9BBDB7;
+  --palette-teal-100: #71A299;
+  --palette-teal-200: #347A6D;
+  --palette-teal-300: #0A5F4F;
+  --palette-teal-400: #074337;
+  --palette-teal-500: #063A30;
+  --palette-lime-50: #F7FCE8;
+  --palette-lime-75: #DDF4A0;
+  --palette-lime-100: #CFF078;
+  --palette-lime-200: #BBE93E;
+  --palette-lime-300: #ADE517;
+  --palette-lime-400: #79A010;
+  --palette-lime-500: #6A8C0E;
+  --palette-mint-50: #F6FDF5;
+  --palette-mint-75: #DCF6D5;
+  --palette-mint-100: #CDF3C3;
+  --palette-mint-200: #B8EEAA;
+  --palette-mint-300: #A9EA98;
+  --palette-mint-400: #76A46A;
+  --palette-mint-500: #678F5D;
+  --palette-blue-50: #E8EDFD;
+  --palette-blue-75: #A0B3F8;
+  --palette-blue-100: #7994F6;
+  --palette-blue-200: #3F65F2;
+  --palette-blue-300: #1846EF;
+  --palette-blue-400: #1131A7;
+  --palette-blue-500: #0F2B92;
+  --palette-grey-50: #E8E8E8;
+  --palette-grey-75: #9F9F9F;
+  --palette-grey-100: #777777;
+  --palette-grey-200: #3D3D3D;
+  --palette-grey-300: #151515;
+  --palette-grey-400: #0F0F0F;
+  --palette-grey-500: #0D0D0D;
+  --palette-white-50: #FEFEFE;
+  --palette-white-75: #FCFCFC;
+  --palette-white-100: #FBFBFB;
+  --palette-white-200: #F9F9F9;
+  --palette-white-300: #F8F8F8;
+  --palette-white-400: #AEAEAE;
+  --palette-white-500: #979797;
+  --palette-red-50: #FBE6E6;
+  --palette-red-75: #ED9798;
+  --palette-red-100: #E56C6D;
+  --palette-red-200: #DA2C2F;
+  --palette-red-300: #D30104;
+  --palette-red-400: #940103;
+  --palette-red-500: #810102;
+  --palette-orange-50: #FCF3E6;
+  --palette-orange-75: #F2CC96;
+  --palette-orange-100: #ECB76B;
+  --palette-orange-200: #E4972B;
+  --palette-orange-300: #DF8200;
+  --palette-orange-400: #9C5B00;
+  --palette-orange-500: #884F00;
+
+  /* Charts — slots categóricos genéricos, em ordem fixa (nunca ciclar) */
+  --chart-1: var(--palette-purple-100);
+  --chart-2: var(--palette-lime-500);
+  --chart-3: var(--palette-blue-100);
+  --chart-4: var(--palette-orange-400);
+  --chart-5: var(--palette-red-100);
+  --chart-positive: var(--palette-teal-300);
+  --chart-negative: var(--palette-red-400);
+  /* Action points — accent por categoria e estado de atenção (light) */
+  --ap-comunicacao: var(--palette-blue-100);
+  --ap-pessoas: var(--palette-purple-100);
+  --ap-processos: var(--palette-teal-200);
+  --ap-governanca: var(--palette-orange-200);
+  --ap-attention: var(--palette-orange-200);
+  --ap-positive: var(--palette-lime-500);
+  --ap-negative: var(--palette-red-200);
+  --ap-positive-foreground: var(--ap-positive);
+  --ap-attention-foreground: var(--ap-attention);
+  --ap-negative-foreground: var(--ap-negative);
+  /* Dados: uma família por significado; o mesmo dado tem a mesma cor em
+     qualquer chart e dados diferentes nunca compartilham a mesma cor.
+     Camadas: rampa ordinal teal (Fundador mais denso). */
+  --overview-chart-founder: var(--palette-teal-300);
+  --overview-chart-leadership: var(--palette-teal-200);
+  --overview-chart-tactical: var(--palette-teal-100);
+  --overview-chart-founder-label: var(--overview-chart-label);
+  --overview-chart-leadership-label: var(--overview-chart-label);
+  --overview-chart-tactical-label: var(--palette-grey-300);
+  /* Maturidade (nota da pesquisa, dimensões): roxo. */
+  --overview-chart-dimensions: var(--palette-purple-100);
+  /* Agente: quatro medidas, quatro cores — nenhuma repete outra medida. */
+  --overview-chart-usage-resolved: var(--palette-blue-100);
+  --overview-chart-usage-gap: var(--palette-orange-400);
+  --overview-chart-usage-queries: var(--palette-mint-500);
+  --overview-chart-usage-not-useful: var(--palette-red-75);
+  /* Estimativa do agente: família da maturidade, lida por forma vazada e traço. */
+  --overview-chart-estimate: var(--palette-purple-75);
+  /* Progresso pelas ações: lima, separado da nota da pesquisa. */
+  --overview-chart-progress: var(--palette-lime-500);
   --overview-chart-label: #F7F7F8;
-  --overview-matrix-leverage-low: #DDF4A0;
-  --overview-matrix-leverage-soft: #CFF078;
-  --overview-matrix-leverage-mid: #BBE93E;
-  --overview-matrix-leverage-high: #9CCE15;
-  --overview-matrix-leverage-text: #577700;
-  --overview-matrix-vulnerability-low: #4D109C;
-  --overview-matrix-vulnerability-mid: #7E1AFF;
-  --overview-matrix-vulnerability-soft: #B47AFF;
-  --overview-matrix-vulnerability-high: #CAA1FF;
-  --omdx-chart-lime: #A8E017;
-  --omdx-chart-lime-deep: #6E9C11;
-  --omdx-chart-lime-soft: #D0F768;
-  --omdx-chart-purple: #7E21FF;
-  --omdx-chart-purple-soft: #C6A1F4;
+  --overview-matrix-leverage-low: var(--palette-lime-50);
+  --overview-matrix-leverage-soft: var(--palette-lime-75);
+  --overview-matrix-leverage-mid: var(--palette-lime-100);
+  --overview-matrix-leverage-high: var(--palette-lime-200);
+  --overview-matrix-leverage-text: var(--palette-grey-300);
+  --overview-matrix-vulnerability-low: var(--palette-purple-500);
+  --overview-matrix-vulnerability-mid: var(--palette-purple-100);
+  --overview-matrix-vulnerability-soft: var(--palette-purple-75);
+  --overview-matrix-vulnerability-high: var(--palette-purple-50);
+  --overview-matrix-vulnerability-low-label: var(--overview-chart-label);
+  --overview-matrix-vulnerability-mid-label: var(--palette-grey-300);
+  --overview-matrix-vulnerability-soft-label: var(--palette-grey-300);
+  --overview-matrix-vulnerability-high-label: var(--palette-grey-300);
+  --omdx-chart-lime: var(--palette-lime-100);
+  --omdx-chart-lime-deep: var(--palette-lime-500);
+  --omdx-chart-lime-soft: var(--palette-lime-75);
+  --omdx-chart-purple: var(--palette-purple-100);
+  --omdx-chart-purple-soft: var(--palette-purple-75);
+  /* Escala sequencial de nota (1 → 5) para heatmaps: uma família, claro → denso. */
+  --overview-scale-score-low: var(--palette-purple-50);
+  --overview-scale-score-mid: var(--palette-purple-75);
+  --overview-scale-score-high: var(--palette-purple-100);
   --omdx-layer-diretoria-30: #A6C8FF;
   --omdx-layer-diretoria-40: #78A9FF;
   --omdx-layer-diretoria-50: #4589FF;
@@ -353,10 +531,11 @@
   --omdx-dimension-warm-gray-70: #565151;
   --omdx-dimension-warm-gray-80: #3C3838;
   --omdx-dimension-warm-gray-90: #272525;
-  --omdx-status-consistente: #0F62FE;
-  --omdx-status-inconsistente: #A56EFF;
-  --omdx-status-atencao: #EE5396;
-  --omdx-status-critico: #FA4D56;
+  /* Status reservado (bom → crítico); sempre com rótulo, nunca cor sozinha. */
+  --omdx-status-consistente: var(--palette-blue-100);
+  --omdx-status-inconsistente: var(--palette-red-100);
+  --omdx-status-atencao: var(--palette-orange-100);
+  --omdx-status-critico: var(--palette-red-500);
   --omdx-score-text-on-light: #161616;
   --omdx-score-text-on-dark: #FFFFFF;
 
@@ -365,7 +544,7 @@
   --sidebar-foreground: var(--content-primary);
   --sidebar-primary: var(--brand-default);
   --sidebar-primary-foreground: var(--content-on-action);
-  --sidebar-accent: var(--surface-sidebar-selected);
+  --sidebar-accent: var(--surface-selected);
   --sidebar-accent-foreground: var(--content-primary);
   --sidebar-border: var(--border-default);
   --sidebar-ring: var(--brand-default);
@@ -373,6 +552,10 @@
 
 /* ===== DARK THEME ===== */
 .dark {
+  --document-info: #10234A;
+  --document-info-foreground: #C4D6FF;
+  --document-attention: #362C12;
+  --document-attention-foreground: #F5D784;
   /* Keep the primitive scale explicit in both themes for predictable token use */
   --gray-10: #F4F4F4;
   --gray-20: #E0E0E0;
@@ -385,16 +568,19 @@
   --gray-90: #262626;
   --gray-100: #161616;
 
-  /* Semantic colors mirrored from the Directscal Figma variables */
+  /* Mesma escala do claro; o frame Figma 272:2 fixa canvas, card e shell. */
+  --surface-shell: #161616;
   --surface-canvas: #0B0B0B;
   --surface-card: #181818;
   --surface-control: #262626;
+  --surface-popover: #1F1F1F;
+  --surface-field: rgb(255 255 255 / 6%);
+  --surface-selected: rgb(255 255 255 / 9%);
   --surface-disabled: rgb(57 57 57 / 50%);
-  --surface-shell: #161616;
-  --surface-sidebar: #0B0B0B;
-  --surface-sidebar-selected: #1C1C20;
-  --surface-subtle: #1C1C20;
-  --surface-table-header: rgb(57 57 57 / 30%);
+  --surface-sidebar: var(--surface-shell);
+  --surface-sidebar-selected: var(--surface-selected);
+  --surface-subtle: var(--surface-card);
+  --surface-table-header: var(--surface-control);
   --content-primary: #FAFAFA;
   --content-secondary: #9C9CA3;
   --content-tertiary: rgb(250 250 250 / 70%);
@@ -408,7 +594,7 @@
   --foreground: var(--content-primary);
   --card: var(--surface-card);
   --card-foreground: var(--content-primary);
-  --popover: var(--gray-80);
+  --popover: var(--surface-popover);
   --popover-foreground: var(--content-primary);
 
   /* Primary stays brand */
@@ -416,7 +602,7 @@
   --primary-foreground: var(--content-on-action);
 
   /* Secondary surface */
-  --secondary: var(--surface-subtle);
+  --secondary: var(--surface-control);
   --secondary-foreground: var(--content-primary);
 
   /* Muted surface */
@@ -424,7 +610,7 @@
   --muted-foreground: var(--content-secondary);
 
   /* Accent */
-  --accent: var(--surface-sidebar-selected);
+  --accent: var(--surface-selected);
   --accent-foreground: var(--content-primary);
 
   /* Destructive (slightly desaturated for dark) */
@@ -432,19 +618,19 @@
 
   /* Borders and controls use the next visible layer, not pure black */
   --border: var(--border-default);
-  --input: var(--border-default);
+  --input: var(--surface-field);
   --ring: var(--brand-default);
   --action-primary: #124BD1;
   --action-primary-foreground: #EFEFEE;
-  --action-primary-hover: #1450DB;
+  --action-primary-hover: var(--action-neutral-hover);
   --action-primary-active: #0F3FAE;
   --action-primary-border: #1450DB;
   --action-primary-highlight: #4A82FF;
   --action-primary-shadow: #0F3FAE;
-  --action-neutral: var(--surface-sidebar-selected);
+  --action-neutral: var(--surface-field);
   --action-neutral-foreground: var(--foreground);
-  --action-neutral-hover: var(--gray-80);
-  --action-neutral-active: var(--gray-80);
+  --action-neutral-hover: var(--surface-selected);
+  --action-neutral-active: var(--surface-selected);
   --action-button-shadow: 0 1px 1px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   --action-button-active-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.22);
   --control-foreground: #F7F7F7;
@@ -465,30 +651,56 @@
   --auth-quote-muted: #D5D5DB;
 
   /* Charts */
-  --chart-1: #0F62FE;
-  --chart-2: #0072C3;
-  --chart-3: #007D79;
-  --chart-4: #697077;
-  --chart-5: #726E6E;
-  --chart-positive: #2BB673;
-  --chart-negative: #E5564C;
-  /* Same public tokens as light mode; only their resolved values change */
-  --overview-chart-founder: #56770A;
-  --overview-chart-leadership: #2F6A28;
-  --overview-chart-tactical: #075447;
-  --overview-chart-dimensions: #BE95FF;
-  --overview-chart-usage-resolved: #9085E9;
-  --overview-chart-usage-gap: #D95926;
+  --chart-1: var(--palette-purple-100);
+  --chart-2: var(--palette-lime-400);
+  --chart-3: var(--palette-blue-100);
+  --chart-4: var(--palette-orange-400);
+  --chart-5: var(--palette-red-100);
+  --chart-positive: var(--palette-lime-400);
+  --chart-negative: var(--palette-red-100);
+  /* Action points — accent por categoria e estado de atenção (dark) */
+  --ap-comunicacao: var(--palette-blue-100);
+  --ap-pessoas: var(--palette-purple-100);
+  --ap-processos: var(--palette-teal-100);
+  --ap-governanca: var(--palette-orange-200);
+  --ap-attention: var(--palette-orange-200);
+  --ap-positive: var(--palette-lime-400);
+  --ap-negative: var(--palette-red-100);
+  --ap-positive-foreground: var(--ap-positive);
+  --ap-attention-foreground: var(--ap-attention);
+  --ap-negative-foreground: var(--ap-negative);
+  /* Same public tokens as light mode; only their resolved values change.
+     No escuro a rampa das camadas inverte a âncora: Fundador é o tom mais claro. */
+  --overview-chart-founder: var(--palette-teal-75);
+  --overview-chart-leadership: var(--palette-teal-100);
+  --overview-chart-tactical: var(--palette-teal-200);
+  --overview-chart-founder-label: var(--palette-grey-300);
+  --overview-chart-leadership-label: var(--palette-grey-300);
+  --overview-chart-tactical-label: var(--overview-chart-label);
+  --overview-chart-dimensions: var(--palette-purple-100);
+  --overview-chart-usage-resolved: var(--palette-blue-100);
+  --overview-chart-usage-gap: var(--palette-orange-400);
+  --overview-chart-usage-queries: var(--palette-mint-400);
+  --overview-chart-usage-not-useful: var(--palette-red-75);
+  --overview-chart-estimate: var(--palette-purple-75);
+  --overview-chart-progress: var(--palette-lime-400);
+  --overview-scale-score-low: var(--palette-purple-500);
+  --overview-scale-score-mid: var(--palette-purple-400);
+  --overview-scale-score-high: var(--palette-purple-200);
   --overview-chart-label: #F7F7F8;
-  --overview-matrix-leverage-low: #263409;
-  --overview-matrix-leverage-soft: #35490C;
-  --overview-matrix-leverage-mid: #46610E;
-  --overview-matrix-leverage-high: #577A11;
-  --overview-matrix-leverage-text: #F7F7F8;
-  --overview-matrix-vulnerability-low: #2D0A5E;
-  --overview-matrix-vulnerability-mid: #4D109C;
-  --overview-matrix-vulnerability-soft: #6414C4;
-  --overview-matrix-vulnerability-high: #7E1AFF;
+  --overview-matrix-leverage-low: var(--palette-lime-500);
+  --overview-matrix-leverage-soft: var(--palette-lime-400);
+  --overview-matrix-leverage-mid: var(--palette-lime-100);
+  --overview-matrix-leverage-high: var(--palette-lime-75);
+  --overview-matrix-leverage-text: var(--palette-grey-300);
+  --overview-matrix-vulnerability-low: var(--palette-purple-500);
+  --overview-matrix-vulnerability-mid: var(--palette-purple-400);
+  --overview-matrix-vulnerability-soft: var(--palette-purple-200);
+  --overview-matrix-vulnerability-high: var(--palette-purple-100);
+  --overview-matrix-vulnerability-low-label: var(--overview-chart-label);
+  --overview-matrix-vulnerability-mid-label: var(--overview-chart-label);
+  --overview-matrix-vulnerability-soft-label: var(--overview-chart-label);
+  --overview-matrix-vulnerability-high-label: var(--palette-grey-300);
   --omdx-layer-diretoria-30: #A6C8FF;
   --omdx-layer-diretoria-40: #78A9FF;
   --omdx-layer-diretoria-50: #4589FF;
@@ -539,19 +751,19 @@
   --omdx-dimension-warm-gray-70: #565151;
   --omdx-dimension-warm-gray-80: #3C3838;
   --omdx-dimension-warm-gray-90: #272525;
-  --omdx-status-consistente: #78A9FF;
-  --omdx-status-inconsistente: #A56EFF;
-  --omdx-status-atencao: #EE5396;
-  --omdx-status-critico: #FA4D56;
+  --omdx-status-consistente: var(--palette-blue-100);
+  --omdx-status-inconsistente: var(--palette-red-100);
+  --omdx-status-atencao: var(--palette-orange-100);
+  --omdx-status-critico: var(--palette-red-200);
   --omdx-score-text-on-light: #161616;
   --omdx-score-text-on-dark: #FFFFFF;
 
-  /* Sidebar follows the main app canvas in dark mode */
+  /* Sidebar follows the shell; content cards use surface-card (Figma 272:2). */
   --sidebar: var(--surface-sidebar);
   --sidebar-foreground: var(--content-primary);
   --sidebar-primary: var(--brand-default);
   --sidebar-primary-foreground: var(--content-on-action);
-  --sidebar-accent: var(--surface-sidebar-selected);
+  --sidebar-accent: var(--surface-selected);
   --sidebar-accent-foreground: var(--content-primary);
   --sidebar-border: var(--border-default);
   --sidebar-ring: var(--brand-default);
@@ -641,11 +853,24 @@
     background: var(--surface-shell);
   }
 
+  .app-shell {
+    height: 100svh;
+    overflow: hidden;
+  }
+
+  .app-shell [data-slot="sidebar-inset"] {
+    min-height: 0;
+    overflow: clip;
+  }
+
   .app-shell [data-slot="sidebar-inset"] > main,
   .app-shell [data-slot="sidebar-inset"] > [data-slot="app-content"] {
-    min-height: calc(100svh - 3.5rem);
+    flex: 1;
+    min-height: 0;
     border-radius: 20px;
-    overflow: clip;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: none;
     background: var(--background);
   }
 

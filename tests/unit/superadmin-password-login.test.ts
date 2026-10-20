@@ -197,10 +197,12 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 import {
+  authenticateCustomerPasswordUser,
   authenticateSuperadminPasswordUser,
   checkUserHasActiveAccess,
   resolveSupabaseAuthUser,
 } from "@/lib/auth/supabase-auth";
+import { hashPasswordCredential } from "@/lib/auth/password-credentials";
 
 const originalEnv = { ...process.env };
 
@@ -371,5 +373,52 @@ describe("checkUserHasActiveAccess", () => {
     await expect(
       checkUserHasActiveAccess("diretorio@fahtomediagroup.com"),
     ).resolves.toBe(true);
+  });
+});
+
+
+describe("authenticateCustomerPasswordUser", () => {
+  function seed(role = "cliente") {
+    supabaseMock.state.users.push({ id: "customer_1", email: "owner@example.com", name: "Dono", image: null });
+    supabaseMock.state.credentials.push({ user_id: "customer_1", password_hash: hashPasswordCredential("senha-de-teste") });
+    supabaseMock.state.organizations.push({ id: "org_1", name: "Empresa", employee_count: 5 });
+    supabaseMock.state.members.push({ user_id: "customer_1", organization_id: "org_1", role });
+  }
+
+  it.each(["cliente", "admin"])("autentica %s sem campanha nem flag de superadmin", async (role) => {
+    seed(role);
+    process.env.AUTH_ENABLE_SUPERADMIN_PASSWORD_LOGIN = "false";
+    await expect(authenticateCustomerPasswordUser({ email: " OWNER@EXAMPLE.COM ", password: "senha-de-teste" })).resolves.toMatchObject({ id: "customer_1", company: "Empresa", role });
+    expect(supabaseMock.state.leads).toHaveLength(0);
+    expect(supabaseMock.state.members).toHaveLength(1);
+  });
+
+  it("rejeita senha incorreta", async () => {
+    seed();
+    await expect(authenticateCustomerPasswordUser({ email: "owner@example.com", password: "incorreta" })).resolves.toBeNull();
+  });
+
+  it("rejeita conta sem credencial de senha", async () => {
+    seed();
+    supabaseMock.state.credentials = [];
+    await expect(authenticateCustomerPasswordUser({ email: "owner@example.com", password: "senha-de-teste" })).resolves.toBeNull();
+  });
+
+  it("rejeita conta sem membership", async () => {
+    seed();
+    supabaseMock.state.members = [];
+    await expect(authenticateCustomerPasswordUser({ email: "owner@example.com", password: "senha-de-teste" })).resolves.toBeNull();
+  });
+
+  it("não permite contornar a restrição de superadmin pelo login de cliente", async () => {
+    seed("superadmin");
+    process.env.AUTH_ENABLE_SUPERADMIN_PASSWORD_LOGIN = "false";
+    await expect(authenticateCustomerPasswordUser({ email: "owner@example.com", password: "senha-de-teste" })).resolves.toBeNull();
+  });
+
+  it("rejeita conta inexistente sem criar usuário ou credencial", async () => {
+    await expect(authenticateCustomerPasswordUser({ email: "unknown@example.com", password: "senha-de-teste" })).resolves.toBeNull();
+    expect(supabaseMock.state.users).toHaveLength(0);
+    expect(supabaseMock.state.credentials).toHaveLength(0);
   });
 });

@@ -21,21 +21,25 @@ const layers: Array<{
   color: string;
   key: LayerKey;
   label: string;
+  labelColor: string;
 }> = [
   {
     color: "var(--overview-chart-leadership)",
     key: "lideranca",
     label: "Liderança",
+    labelColor: "var(--overview-chart-leadership-label)",
   },
   {
     color: "var(--overview-chart-tactical)",
     key: "time",
     label: "Tático",
+    labelColor: "var(--overview-chart-tactical-label)",
   },
   {
     color: "var(--overview-chart-founder)",
     key: "diretoria",
     label: "Fundador",
+    labelColor: "var(--overview-chart-founder-label)",
   },
 ];
 const scoreFormatter = new Intl.NumberFormat("pt-BR", {
@@ -163,7 +167,7 @@ export function LayerDimensionStackedChart({
                   {height >= 18 ? (
                     <text
                       dominantBaseline="middle"
-                      fill="var(--overview-chart-label)"
+                      fill={layer.labelColor}
                       fontSize="10"
                       textAnchor="middle"
                       x={center}

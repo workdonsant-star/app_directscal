@@ -39,7 +39,7 @@ export function KpiCard({
   return (
     <Card className="gap-2">
       <CardHeader className="pb-0">
-        <CardTitle className="text-muted-foreground flex items-center justify-between text-sm font-normal">
+        <CardTitle className="text-muted-foreground flex items-center justify-between font-label text-ui-label">
           <span>{label}</span>
           {trend && trendValue && Icon && (
             <span
@@ -55,7 +55,7 @@ export function KpiCard({
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-1">
-        <p className="text-foreground text-3xl font-semibold tracking-tight tabular-nums">
+        <p className="text-foreground text-3xl font-bold tracking-tight tabular-nums">
           {value}
         </p>
         {caption && (

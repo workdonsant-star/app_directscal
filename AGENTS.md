@@ -52,9 +52,9 @@ Princípios do produto:
 - **lucide-react** para ícones.
 - **Tiptap 3** para o editor de texto dos ativos de gestão (vocabulário restrito, JSON validado por Zod).
 - **@anthropic-ai/sdk** para o provedor Anthropic do agente de consulta; Gemini e Ollama via REST. O provedor é escolhido por variável de ambiente (`src/lib/agent/CLAUDE.md`).
-- Fontes Google: **Funnel Sans** (corpo e UI), **Plus Jakarta Sans** (títulos), **Instrument Serif** (display itálico) e **JetBrains Mono** (mono — substitui IBM Plex Mono do design system original).
+- Fontes Google: **Funnel Sans** (corpo e UI), **Plus Jakarta Sans** (títulos) e **JetBrains Mono** (mono). Tokens separados para interface (`ui-*`) e documentos dos ativos de gestão (`doc-*`) em `docs/tokens-de-tipografia.md`.
 
-Estado atual: **scaffold inicial + dashboard Maturidade + Google OAuth com allowlist corporativa, fallback mockado de autenticação para desenvolvimento, diagnóstico com criador e lideranças por setor, compartilhamento setorial, relatórios PDF, insights, documentação, perfil, configurações empresariais com setores e convites de liderança, superadmin e aquisição por campanha em Supabase, ativos de gestão com fluxo editorial e agente de consulta no app e no Slack**. O core de Maturidade, a aquisição, os dados empresariais e a estrutura organizacional usam Supabase via camada server-side; nome e foto de uma liderança ainda dependem da futura confirmação Google. Nome e avatar do perfil autenticado persistem em account_profiles no Supabase; senha continua simulada. O cookie mockado fica restrito ao fallback de desenvolvimento. Ativos de gestão são escritos e publicados pela operação Directscal em `/admin/ativos`; o agente responde só com versões publicadas da empresa, com fonte ou recusa explícita, em `/assistente` e no Slack.
+Estado atual: **scaffold inicial + dashboard Maturidade + Google OAuth com allowlist corporativa, fallback mockado de autenticação para desenvolvimento, diagnóstico com criador e lideranças por setor, compartilhamento setorial, relatórios PDF, insights, documentação, perfil, configurações empresariais com setores e convites de liderança, superadmin e aquisição por campanha em Supabase, ativos de gestão com fluxo editorial e agente de consulta no app e no Slack**. O core de Maturidade, a aquisição, os dados empresariais e a estrutura organizacional usam Supabase via camada server-side; nome e foto de uma liderança ainda dependem da futura confirmação Google. Nome e avatar do perfil autenticado persistem em account_profiles no Supabase; senha de cliente/admin com credencial existente usa recuperação durável e troca autenticada; contas Google-only permanecem no Google. O cookie mockado fica restrito ao fallback de desenvolvimento. Ativos de gestão são escritos e publicados pela operação Directscal em `/admin/ativos`; o agente responde só com versões publicadas da empresa, com fonte ou recusa explícita, em `/assistente` e no Slack.
 
 ## Fontes de verdade
 
@@ -62,7 +62,7 @@ Estado atual: **scaffold inicial + dashboard Maturidade + Google OAuth com allow
 | --- | --- |
 | Regras globais para agentes | `AGENTS.md` (este arquivo) |
 | Design system da marca | `Directscal Design System/README.md` e `Directscal Design System/colors_and_type.css` |
-| Tokens portados para o app | `src/app/globals.css` |
+| Tokens portados para o app | `src/app/globals.css` (superfícies em `docs/tokens-de-cor.md`, tipografia em `docs/tokens-de-tipografia.md`) |
 | Rotas, layouts, App Router | `src/app/CLAUDE.md` |
 | Padrões de componentes | `src/components/CLAUDE.md` |
 | Primitives shadcn/ui | `src/components/ui/CLAUDE.md` |
@@ -160,7 +160,7 @@ Rotas atuais:
 - `/` → redireciona para `/omdx`.
 - `/entrar` → tela pública de login com Google OAuth e fallback mockado opcional.
 - `/criar-conta` → cadastro mockado com criação de sessão, apenas quando `AUTH_ENABLE_DEV_PASSWORD_LOGIN=true`.
-- `/recuperar-senha` → recuperação mockada de senha.
+- `/recuperar-senha` → recuperação real de credencial existente de cliente/admin, com link de uso único; contas somente Google permanecem no Google.
 - `/configuracoes` → dados empresariais e estrutura de setores/lideranças, exclusiva do Superadmin da empresa (`cliente`).
 - `/convites/lideranca/[token]` → revisão pública do convite e entrada Google com o nível de acesso escolhido.
 - `/omdx` → dashboard executivo de Maturidade.
@@ -297,3 +297,19 @@ Atualize este arquivo quando mudar stack, comandos, arquitetura, fluxo de dados,
 ## Interface Symbach
 
 Na branch `symbach`, a referência visual portada de `Symbach Os` governa o shell e a navegação: sidebar expandida em >=1280px, topbar de 56px, fundo contínuo e conteúdo com raio de 20px. Os itens Analytics, Pesquisas e Agente preservam `/omdx`, `/omdx/diagnosticos` e `/assistente`. Iniciativas usa armazenamento local por usuário/empresa; ativos por categoria reutilizam leituras publicadas existentes. Bibliotecas por tipo sai da sidebar; cada pasta reúne todos os tipos pela categoria cadastrada. Ver `docs/shell-e-iniciativas.md`.
+
+## Lideranças pelo Slack
+
+Novas lideranças são selecionadas do diretório ativo do workspace conectado. Cargo é opcional e preenchido do perfil Slack; setor é obrigatório. Persistem somente referências setor/team ID/user ID e ajustes de cargo, sem copiar diretório, criar contas do painel ou enviar convites. Essas lideranças atuam somente pelo Slack. Convites Google anteriores seguem compatíveis para preservar acessos existentes. Ver `src/lib/data/CLAUDE.md` e `src/components/settings/CLAUDE.md`.
+
+## Categorias dos ativos
+
+O dono cria pastas vazias pelo + no hover de Ativos de gestão e renomeia pelo menu da pasta. Categorias persistem em organization_asset_navigation.preferences.categories com chave estável; renomear atualiza ativos atomicamente e preserva URL, ordem e ícone. Sidebar, páginas, breadcrumb e edição em lote usam o mesmo registro. POST/PATCH /api/settings/asset-categories exige sessão definitiva de dono; ordem/ícones fazem merge sem sobrescrever categorias.
+
+Excluir categoria exige redistribuir todos os documentos existentes para outra categoria ou uma nova, na mesma transação. Inclui rascunhos e arquivados; nenhum documento é apagado. Categorias padrão excluídas têm supressão persistida para não reaparecer vazias.
+
+## Operação de rotinas e entrega Slack
+
+Acordos versionados em /admin/empresas/[id]/rotinas; políticas de contato por empresa começam desativadas, com público/janela/fuso/cotas explícitos. Agenda e consumidor internos exigem segredo dedicado e não são configurados automaticamente em produção. Eventos precisam de ocorrência atestada; envio Incerto nunca recebe retry cego. Identidade app/Slack exige prova de posse no perfil, sem conceder acesso. Ver docs/agente-proativo-rotinas.md, docs/entrega-duravel-slack.md e docs/identidade-app-slack.md.
+
+A14: cadastro público cria organização isolada atomicamente; nome/domínio não concedem acesso a empresa existente. Sessões revalidam membership/versão; enforcement de versão no RLS depende de ativação após deploy compatível. Ver `docs/acesso-e-recuperacao-de-conta.md`.

@@ -150,7 +150,7 @@ export function DeliveryShell({ children }: { children: ReactNode }) {
       <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0 space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="font-heading text-2xl font-semibold">{delivery.companyName}</h1>
+            <h1 className="text-ui-page">{delivery.companyName}</h1>
             <AdminDeliveryStatusBadge status={draft.status} />
           </div>
           <p className="text-sm text-muted-foreground">
@@ -205,7 +205,7 @@ export function DeliveryShell({ children }: { children: ReactNode }) {
           <nav aria-label="Etapas da entrega" className="flex flex-col gap-5">
             {stepGroups.map((group) => (
               <div key={group.label} className="flex flex-col gap-1">
-                <p className="px-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <p className="px-2 font-label text-ui-label text-muted-foreground">
                   {group.label}
                 </p>
                 <ul className="flex flex-col gap-0.5">
@@ -237,7 +237,7 @@ export function DeliveryShell({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="grid gap-1.5">
-            <label htmlFor="delivery-specialist" className="px-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <label htmlFor="delivery-specialist" className="px-2 font-label text-ui-label text-muted-foreground">
               Especialista
             </label>
             <Select
@@ -261,7 +261,7 @@ export function DeliveryShell({ children }: { children: ReactNode }) {
           </div>
 
           <section aria-labelledby="delivery-readiness-title" className="space-y-3 border-t pt-4">
-            <h2 id="delivery-readiness-title" className="px-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <h2 id="delivery-readiness-title" className="px-2 font-label text-ui-label text-muted-foreground">
               Para publicar
             </h2>
             <ul className="space-y-2.5 px-2">

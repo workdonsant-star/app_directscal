@@ -18,19 +18,19 @@ const scoreFormatter = new Intl.NumberFormat("pt-BR", {
 const statusStyles: Record<string, { dot: string; text: string }> = {
   Consistente: {
     dot: "bg-[var(--omdx-status-consistente)]",
-    text: "text-[var(--omdx-status-consistente)]",
+    text: "text-foreground",
   },
   Inconsistente: {
     dot: "bg-[var(--omdx-status-inconsistente)]",
-    text: "text-[var(--omdx-status-inconsistente)]",
+    text: "text-foreground",
   },
   Atenção: {
     dot: "bg-[var(--omdx-status-atencao)]",
-    text: "text-[var(--omdx-status-atencao)]",
+    text: "text-foreground",
   },
   Crítico: {
     dot: "bg-[var(--omdx-status-critico)]",
-    text: "text-[var(--omdx-status-critico)]",
+    text: "text-foreground",
   },
 };
 
@@ -69,7 +69,7 @@ export function OverviewDimensionResultsTable({
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <h2 className="text-foreground text-xl font-semibold tracking-tight">
+        <h2 className="text-ui-section text-foreground">
           Resultado por dimensão
         </h2>
         <p className="text-muted-foreground max-w-2xl text-sm">
@@ -123,7 +123,7 @@ export function OverviewDimensionResultsTable({
                       </p>
                     </td>
                     <td className="px-4 py-4 text-right align-middle">
-                      <span className="text-foreground text-base font-semibold tabular-nums">
+                      <span className="text-foreground text-base font-bold tabular-nums">
                         {scoreFormatter.format(dimension.maturity)}
                       </span>
                     </td>

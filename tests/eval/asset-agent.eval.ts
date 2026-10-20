@@ -4,6 +4,7 @@ import { answerAssetQuestion } from "@/lib/agent/asset-question-service";
 import { getAnswerProviderConfig, getEmbeddingModelKey } from "@/lib/agent/config";
 import type { AssetQuestionAnswer } from "@/lib/contracts";
 
+import { gradeAssetAnswer } from "./asset-agent-grader";
 import { assetAgentQuestions, type EvalQuestion } from "./asset-agent-questions";
 
 // Mede respostas corretas ou corretamente recusadas contra a meta do piloto
@@ -12,22 +13,6 @@ const organizationId = process.env.ASSET_EVAL_ORGANIZATION_ID;
 const otherOrganizationId = process.env.ASSET_EVAL_OTHER_ORGANIZATION_ID;
 const TARGET = 0.85;
 
-function grade(question: EvalQuestion, answer: AssetQuestionAnswer) {
-  const citedTitles = new Set(answer.citations.map((citation) => citation.title));
-  const citesExpected =
-    question.expect.type !== "refuse" &&
-    question.expect.assets.some((title) => citedTitles.has(title));
-  const refused = answer.status === "insufficient_evidence";
-
-  switch (question.expect.type) {
-    case "answer":
-      return answer.status === "answered" && citesExpected;
-    case "answer_or_refuse":
-      return refused || (answer.status === "answered" && citesExpected);
-    case "refuse":
-      return refused;
-  }
-}
 
 describe.runIf(Boolean(organizationId))("agente de consulta", () => {
   it(`acerta ao menos ${TARGET * 100}% do conjunto de avaliação`, async () => {
@@ -47,7 +32,7 @@ describe.runIf(Boolean(organizationId))("agente de consulta", () => {
         skipAudit: true,
       });
 
-      results.push({ question, answer, ok: grade(question, answer), ms: Date.now() - startedAt });
+      results.push({ question, answer, ok: gradeAssetAnswer(question, answer), ms: Date.now() - startedAt });
     }
 
     const accuracy = results.filter((result) => result.ok).length / results.length;

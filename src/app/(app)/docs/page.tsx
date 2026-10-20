@@ -61,8 +61,8 @@ export default async function DocumentationPage() {
       <AppPage>
         <div className="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-[220px_minmax(0,760px)]">
           <aside className="hidden lg:block">
-            <div className="sticky top-20 border-l pl-4">
-              <p className="text-muted-foreground mb-3 text-xs font-medium uppercase tracking-[0.12em]">
+            <div className="sticky top-8 border-l pl-4">
+              <p className="text-muted-foreground mb-3 font-label text-ui-label">
                 Nesta página
               </p>
               <DocumentTableOfContents
@@ -74,7 +74,7 @@ export default async function DocumentationPage() {
 
           <article className="min-w-0">
             <section id="visao-geral" className="scroll-mt-24 border-b py-10">
-              <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+              <h2 className="text-ui-page text-foreground">
                 Visão geral
               </h2>
               <div className="mt-5 space-y-4 text-sm leading-7 text-muted-foreground">
@@ -117,7 +117,7 @@ export default async function DocumentationPage() {
             </section>
 
             <section id="dashboard" className="scroll-mt-24 border-b py-10">
-              <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+              <h2 className="text-ui-page text-foreground">
                 Overview
               </h2>
               <div className="mt-5 space-y-4 text-sm leading-7 text-muted-foreground">
@@ -145,7 +145,7 @@ export default async function DocumentationPage() {
             </section>
 
             <section id="diagnosticos" className="scroll-mt-24 border-b py-10">
-              <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+              <h2 className="text-ui-page text-foreground">
                 Diagnósticos
               </h2>
               <div className="mt-5 space-y-4 text-sm leading-7 text-muted-foreground">
@@ -166,7 +166,7 @@ export default async function DocumentationPage() {
                   Ver diagnósticos em rascunho, ativos e encerrados.
                 </li>
                 <li className="text-muted-foreground text-sm leading-6">
-                  Abrir o drawer para criar ou continuar uma configuração.
+                  Abrir a modal para criar ou continuar uma configuração.
                 </li>
                 <li className="text-muted-foreground text-sm leading-6">
                   Acessar compartilhamento, progresso e resultado quando
@@ -176,18 +176,18 @@ export default async function DocumentationPage() {
             </section>
 
             <section id="criacao" className="scroll-mt-24 border-b py-10">
-              <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+              <h2 className="text-ui-page text-foreground">
                 Criação e configuração
               </h2>
               <div className="mt-5 space-y-4 text-sm leading-7 text-muted-foreground">
                 <p>
-                  A criação de diagnóstico acontece dentro de um drawer lateral
-                  na página de diagnósticos. O usuário não sai do contexto da
+                  A criação de diagnóstico acontece dentro de uma modal centralizada
+                  na página de diagnósticos, com informações e lideranças na mesma tela. O usuário não sai do contexto da
                   lista para configurar uma coleta.
                 </p>
                 <p>
                   Os campos essenciais são nome do diagnóstico e empresa da
-                  sessão. Descrição e prazo são opcionais. O template de Maturidade
+                  sessão. O prazo de resposta é obrigatório e a descrição é opcional. O template de Maturidade
                   padrão já vem selecionado.
                 </p>
               </div>
@@ -197,15 +197,15 @@ export default async function DocumentationPage() {
                     1. Criar diagnóstico
                   </p>
                   <p className="text-muted-foreground mt-1 text-sm leading-6">
-                    Abre o drawer em modo criação, com formulário vazio.
+                    Abre a modal em modo criação, com formulário vazio.
                   </p>
                 </li>
                 <li className="border-l pl-4">
                   <p className="text-foreground text-sm font-medium">
-                    2. Salvar como rascunho
+                    2. Selecionar lideranças
                   </p>
                   <p className="text-muted-foreground mt-1 text-sm leading-6">
-                    Mantém a coleta configurável e sem links ativos.
+                    Selecione ao menos uma liderança responsável pela coleta.
                   </p>
                 </li>
                 <li className="border-l pl-4">
@@ -213,7 +213,7 @@ export default async function DocumentationPage() {
                     3. Ativar diagnóstico
                   </p>
                   <p className="text-muted-foreground mt-1 text-sm leading-6">
-                    Gera os links separados por grupo no próprio drawer.
+                    Ativa a coleta, fecha a modal e disponibiliza os links por grupo na listagem de pesquisas.
                   </p>
                 </li>
               </ol>
@@ -223,15 +223,14 @@ export default async function DocumentationPage() {
               id="compartilhamento"
               className="scroll-mt-24 border-b py-10"
             >
-              <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+              <h2 className="text-ui-page text-foreground">
                 Compartilhamento
               </h2>
               <div className="mt-5 space-y-4 text-sm leading-7 text-muted-foreground">
                 <p>
-                  A central de compartilhamento fica em
-                  `/omdx/[id]/compartilhar`. Ela reúne os links públicos de
-                  resposta, mensagens sugeridas por grupo, resumo compacto de
-                  respostas e ação para encerrar a coleta.
+                  Os links públicos por grupo ficam nas colunas Fundador,
+                  Liderança e Times da lista de Pesquisas. O menu de ações
+                  permite encerrar uma coleta ativa.
                 </p>
                 <p>
                   O módulo Maturidade usa três links separados: fundador, liderança e
@@ -251,14 +250,6 @@ export default async function DocumentationPage() {
                 </div>
                 <div className="grid gap-2 py-4 sm:grid-cols-[160px_1fr]">
                   <p className="text-foreground text-sm font-medium">
-                    Abrir prévia
-                  </p>
-                  <p className="text-muted-foreground text-sm leading-7">
-                    Mostra a introdução pública em `/r/[token]`.
-                  </p>
-                </div>
-                <div className="grid gap-2 py-4 sm:grid-cols-[160px_1fr]">
-                  <p className="text-foreground text-sm font-medium">
                     Encerrar coleta
                   </p>
                   <p className="text-muted-foreground text-sm leading-7">
@@ -270,7 +261,7 @@ export default async function DocumentationPage() {
             </section>
 
             <section id="insights" className="scroll-mt-24 border-b py-10">
-              <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+              <h2 className="text-ui-page text-foreground">
                 Insights
               </h2>
               <div className="mt-5 space-y-4 text-sm leading-7 text-muted-foreground">
@@ -297,7 +288,7 @@ export default async function DocumentationPage() {
             </section>
 
             <section id="referencias" className="scroll-mt-24 py-10">
-              <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+              <h2 className="text-ui-page text-foreground">
                 Referências
               </h2>
               <div className="mt-5 space-y-4 text-sm leading-7 text-muted-foreground">

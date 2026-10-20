@@ -299,6 +299,7 @@ function ActionPointCard({ actionPoint }: { actionPoint: DiagnosticActionPoint }
       </View>
       <View style={styles.actionBlock}>
         <Text style={styles.actionLabel}>Ação recomendada</Text>
+        {actionPoint.title && <Text style={styles.actionText}>{actionPoint.title}</Text>}
         <Text style={styles.actionText}>{actionPoint.recommendedAction}</Text>
       </View>
 
@@ -336,8 +337,7 @@ function ActionPointsPage({ plan }: { plan: DiagnosticActionPlan }) {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Action points priorizados</Text>
         <Text style={styles.sectionText}>
-          As ações foram ordenadas por prioridade, score da dimensão e gap entre
-          camadas.
+          A seleção e a ordem das ações correspondem à publicação aprovada pela Directscal.
         </Text>
       </View>
       {plan.actionPoints.map((actionPoint) => (

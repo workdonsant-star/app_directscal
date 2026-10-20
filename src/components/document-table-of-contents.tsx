@@ -25,26 +25,22 @@ export function DocumentTableOfContents({
       .map((item) => document.getElementById(item.href.slice(1)))
       .filter((section): section is HTMLElement => Boolean(section));
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const activeEntry = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort(
-            (first, second) =>
-              first.boundingClientRect.top - second.boundingClientRect.top,
-          )[0];
+    const scrollContainer = sections[0]?.closest<HTMLElement>("main, [data-slot=app-content]");
+    const scrollTarget = scrollContainer ?? window;
 
-        if (activeEntry?.target.id) {
-          setActiveHref(`#${activeEntry.target.id}`);
+    function updateActiveSection() {
+      const top = scrollContainer?.getBoundingClientRect().top ?? 0;
+      let activeSection = sections[0];
+      for (const section of sections) {
+        const margin = Number.parseFloat(getComputedStyle(section).scrollMarginTop) || 32;
+        if (section.getBoundingClientRect().top <= top + margin + 1) {
+          activeSection = section;
         }
-      },
-      {
-        rootMargin: "-96px 0px -70% 0px",
-        threshold: 0.01,
-      },
-    );
+      }
+      if (activeSection) setActiveHref(`#${activeSection.id}`);
+    }
 
-    sections.forEach((section) => observer.observe(section));
+    scrollTarget.addEventListener("scroll", updateActiveSection, { passive: true });
 
     function handleHashChange() {
       const hash = window.location.hash;
@@ -57,7 +53,7 @@ export function DocumentTableOfContents({
     handleHashChange();
 
     return () => {
-      observer.disconnect();
+      scrollTarget.removeEventListener("scroll", updateActiveSection);
       window.removeEventListener("hashchange", handleHashChange);
     };
   }, [items]);
@@ -73,7 +69,21 @@ export function DocumentTableOfContents({
     event.preventDefault();
     setActiveHref(item.href);
     window.history.pushState(null, "", item.href);
-    section.scrollIntoView({ behavior: "smooth", block: "start" });
+    const scrollContainer = section.closest<HTMLElement>("main, [data-slot=app-content]");
+    const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? "instant"
+      : "smooth";
+
+    if (scrollContainer) {
+      const offset = Number.parseFloat(getComputedStyle(section).scrollMarginTop) || 32;
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollTop + section.getBoundingClientRect().top
+          - scrollContainer.getBoundingClientRect().top - offset,
+        behavior,
+      });
+    } else {
+      section.scrollIntoView({ behavior, block: "start" });
+    }
   }
 
   return (
@@ -89,7 +99,7 @@ export function DocumentTableOfContents({
             className={cn(
               "text-sm transition-colors",
               isActive
-                ? "font-medium text-primary"
+                ? "font-medium text-foreground"
                 : "text-muted-foreground hover:text-foreground",
             )}
             onClick={(event) => handleAnchorClick(event, item)}

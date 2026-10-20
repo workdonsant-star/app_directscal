@@ -2,9 +2,13 @@
 
 ## Propósito
 
-Painel de acompanhamento da execução dos action points que o gestor Directscal selecionou e publicou na entrega do cliente (`/admin/entregas/[id]/action-points`). Cada ação tem uma pessoa responsável (usuário do Slack da empresa), uma etapa e um prazo. Aparece na sidebar como `Action Points`. `/gantt` é só um redirecionamento legado. Não é uma agenda: o prazo é uma coluna da lista.
+Painel de acompanhamento dos action points que o gestor Directscal seleciona e publica na entrega do cliente. Aparece na sidebar como `Action Points`. `/gantt` é só um redirecionamento legado. Não é uma agenda: prazo/cadência são colunas, não um calendário.
 
-A direção do produto é que a execução seja conduzida pelo agente no Slack (notificar o responsável, tirar dúvidas, acompanhar o andamento em cadência). Esta página é o painel de quem acompanha; o agente ativo ainda não existe (ver `docs/experiencia-agentica-projetos-e-action-points.md`, seção 18).
+**Render anterior (substituído pela integração publicada em 19/10/2026):** a página mostra a **visão por responsável**, com foto e anel de aderência primeiro; ao expandir a pessoa, mostra iniciativas (ativos de gestão) e action points, com a aderência de cada ativo mantida pelos líderes. Componentes em `src/components/action-points/` e dados fictícios em `src/lib/data/action-points-adherence-example.ts`. A faixa representa manutenção (pode cair), não progresso rumo a concluído; `Aguardando` e `Parado` são estados próprios. Ver seção 18 de `docs/experiencia-agentica-projetos-e-action-points.md` e `src/components/action-points/CLAUDE.md`.
+
+**Caminho de dados reais (ativo desde 19/10/2026):** `getPublishedActionPointsWorkspace()`, `getActionPointExecution()` e `src/components/gantt/ActionPointsWorkspace` continuam no repositório para religar quando o backend de ativos/aderência/agente existir. A validação do `PATCH /api/action-points` ainda usa `getPublishedActionPointsWorkspace()`. Não apagar esse caminho sem nova decisão.
+
+A direção do produto é que a execução e o acompanhamento da aderência sejam conduzidos pelo agente no Slack (perguntar ao líder sobre reuniões, feedbacks e alinhamentos; atualizar a aderência a partir da resposta). O agente ativo ainda não existe.
 
 ## Convenções locais
 
@@ -18,3 +22,13 @@ A direção do produto é que a execução seja conduzida pelo agente no Slack (
 - Lista, abas, agrupamento e painel de detalhes: `src/components/gantt/CLAUDE.md`.
 - A cadência fica gravada, mas ainda não dispara nada. Não prometa acompanhamento ativo na interface antes do agendador e da mensagem privada existirem.
 - Mantenha `Action Points` como item independente da sidebar; não promova para módulo próprio sem nova decisão explícita.
+
+A visão por pessoas foi escolhida como padrão em `/action-points`. O link Versão 2 foi removido da topbar; `/action-points/v2` permanece compatível com a mesma visão. O componente anterior por ativo continua preservado no repositório. Regras e limites em `v2/CLAUDE.md`.
+
+
+Desde 19/10/2026, a rota normal usa somente a seleção publicada e suas atribuições reais, mantendo a apresentação por pessoa. ?diagnostico conserva a coleta ao vir do relatório; sem parâmetro escolhe a publicação autorizada mais recente. Sem publicação, mostra vazio. Sem medição recorrente, não inventa percentual, ciclos ou conversa. A rota v2 reexporta a mesma página. A direção proativa permanece pendente.
+
+A04: acordos publicados aparecem abaixo da lista, mediante autorização RLS do diagnóstico e RPC privada com membership. Sem acordos o bloco não renderiza. A mesma leitura atende /v2. Responsável com acordos só muda pela transferência da operação, preservando todas as rotinas e histórico.
+
+
+A06: a página lê execução/acordos/registros em paralelo após resolver a publicação autorizada. Resumo real soma oportunidades explícitas vencidas dos últimos trinta dias; não usa média de percentuais nem meta ilustrativa. Timeline existente recebe somente mensagens registradas, com contexto do ciclo; acordo mostra relato integral, evidência, confirmação e revisões. Sem ciclos mantém ausência de base. Ver docs/conversa-de-execucao-rotinas.md.

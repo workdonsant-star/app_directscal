@@ -45,7 +45,7 @@ export function AppTopbar({ breadcrumb = [], actions }: AppTopbarProps) {
     >
       <div className="flex h-full min-w-0 flex-1 items-center gap-4 px-6 lg:px-10">
         <div className="flex min-w-0 items-center gap-2">
-          <SidebarTrigger className="-ml-1 self-center xl:hidden group-has-data-[collapsible=icon]/sidebar-wrapper:inline-flex" />
+          <SidebarTrigger className="-ml-1 self-center xl:hidden md:group-has-data-[collapsible=icon]/sidebar-wrapper:hidden" />
           {breadcrumb.length > 0 ? (
             <Separator
               orientation="vertical"

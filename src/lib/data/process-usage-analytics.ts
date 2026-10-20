@@ -50,12 +50,13 @@ export type ProcessUsageProcess = {
 
 export type ProcessUsageAnalytics = {
   periodDays: number;
+  period: { start: string; end: string; previousStart: string };
   totals: {
     questions: number;
     answered: number;
     gaps: number;
     askers: number;
-    teamSize: number;
+    teamSize: number | null;
   };
   adoption: ProcessUsageMetric;
   coverage: ProcessUsageMetric;
@@ -114,7 +115,8 @@ function summarizeWindow(
 export function buildProcessUsageAnalytics(input: {
   audits: ProcessUsageAuditInput[];
   feedback: ProcessUsageFeedbackInput[];
-  teamSize: number;
+  teamSize: number | null;
+  adoptionUnavailableReason?: string;
   now?: Date;
 }): ProcessUsageAnalytics {
   const now = (input.now ?? new Date()).getTime();
@@ -130,7 +132,8 @@ export function buildProcessUsageAnalytics(input: {
   );
   const current = summarizeWindow(currentAudits, feedbackByAudit);
   const previous = summarizeWindow(previousAudits, feedbackByAudit);
-  const teamSize = Math.max(input.teamSize, 0);
+  const teamSize = input.teamSize === null ? null : Math.max(input.teamSize, 0);
+  const adoptionBase = input.adoptionUnavailableReason ? 0 : (teamSize ?? 0);
 
   const weekly = Array.from({ length: PROCESS_USAGE_WEEKS }, (_, index) => {
     const start = now - (PROCESS_USAGE_WEEKS - index) * 7 * DAY_MS;
@@ -184,6 +187,7 @@ export function buildProcessUsageAnalytics(input: {
 
   return {
     periodDays: PROCESS_USAGE_PERIOD_DAYS,
+    period: { start: new Date(now-periodMs).toISOString(), end: new Date(now).toISOString(), previousStart: new Date(now-2*periodMs).toISOString() },
     totals: {
       questions: current.questions,
       answered: current.answered,
@@ -192,11 +196,11 @@ export function buildProcessUsageAnalytics(input: {
       teamSize,
     },
     adoption: metric(
-      percent(current.askers, teamSize),
-      percent(previous.askers, teamSize),
-      teamSize > 0
+      percent(current.askers, adoptionBase),
+      percent(previous.askers, adoptionBase),
+      input.adoptionUnavailableReason ?? (teamSize !== null && teamSize > 0
         ? `${current.askers} de ${teamSize} pessoas perguntaram`
-        : "Cadastre lideranças e time para calcular",
+        : "Cadastre lideranças e time para calcular"),
     ),
     coverage: metric(
       percent(current.answered, coverageBase),

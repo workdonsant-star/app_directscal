@@ -19,6 +19,7 @@ export type ExecutiveCardMetric = Omit<
 > & {
   classification: ExecutiveMetric["classification"] | "Sem dados";
   technicalDetail?: string;
+  titleDotClassName?: string;
 };
 
 type OverviewExecutiveCardsProps = {
@@ -140,7 +141,7 @@ function GaugeChart({ metric }: { metric: ExecutiveCardMetric }) {
         )}
       </svg>
       <p className="pointer-events-none absolute inset-x-0 top-[50%] flex items-baseline justify-center gap-1 tabular-nums">
-        <span className="text-foreground text-2xl font-semibold tracking-tight">
+        <span className="text-foreground text-2xl font-bold tracking-tight">
           {metric.value}
         </span>
         {metric.suffix && (
@@ -183,8 +184,8 @@ function MetricComparison({
     direction === "neutral"
       ? "var(--muted-foreground)"
       : improved
-        ? "var(--omdx-status-consistente)"
-        : "var(--omdx-status-atencao)";
+        ? "var(--chart-positive)"
+        : "var(--chart-negative)";
   const formattedPercentage = Math.abs(comparison.percentage).toLocaleString(
     "pt-BR",
     {
@@ -213,7 +214,7 @@ function MetricComparison({
       <span
         className={cn(
           "text-muted-foreground",
-          compact && "text-[10px] leading-[13px]",
+          compact && "text-xs",
         )}
       >
         {comparison.label}
@@ -247,9 +248,9 @@ export function OverviewExecutiveCards({
             size="sm"
             className={cn(
               presentation === "number"
-                ? "h-[128px] gap-1 rounded-[5px] border-0 bg-sidebar py-2 shadow-none ring-0"
+                ? "h-[128px] gap-1 rounded-[5px] border-0 bg-card py-2 shadow-none ring-0"
                 : presentation === "overview"
-                  ? "h-[109px] gap-3 rounded-[5px] border-0 bg-sidebar px-5 py-2.5 shadow-none ring-0 data-[size=sm]:py-2.5"
+                  ? "h-[109px] gap-3 rounded-[5px] border-0 bg-card px-5 py-2.5 shadow-none ring-0 data-[size=sm]:py-2.5"
                 : "gap-2",
             )}
           >
@@ -261,13 +262,15 @@ export function OverviewExecutiveCards({
             >
               <CardTitle
                 className={cn(
-                  "text-muted-foreground font-normal",
-                  presentation === "overview"
-                    ? "text-[10px] leading-[13px] group-data-[size=sm]/card:text-[10px]"
-                    : "text-sm",
+                  "font-label text-ui-label text-muted-foreground group-data-[size=sm]/card:text-ui-label",
                 )}
               >
-                {metric.title}
+                <span className="inline-flex items-center gap-2">
+                  {metric.titleDotClassName && (
+                    <span aria-hidden="true" className={cn("size-2 shrink-0 rounded-full", metric.titleDotClassName)} />
+                  )}
+                  {metric.title}
+                </span>
               </CardTitle>
               {presentation === "gauge" ? (
                 <Tooltip>
@@ -314,8 +317,8 @@ export function OverviewExecutiveCards({
                       className={cn(
                         "text-foreground tracking-tight",
                         presentation === "overview"
-                          ? "text-[40px] leading-9 font-light tracking-[-0.75px]"
-                          : "text-3xl font-semibold",
+                          ? "text-ui-kpi"
+                          : "text-3xl font-bold",
                       )}
                     >
                       {metric.value}

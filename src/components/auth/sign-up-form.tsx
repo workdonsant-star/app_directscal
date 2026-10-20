@@ -141,7 +141,7 @@ export function SignUpForm() {
         Já tem acesso{" "}
         <Link
           href="/entrar"
-          className="rounded-sm text-primary outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+          className="rounded-sm text-primary outline-none hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           Entrar
         </Link>

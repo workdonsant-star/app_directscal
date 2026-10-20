@@ -38,7 +38,7 @@ export function AdminLeadsTable() {
     <section className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex flex-col gap-1">
-          <h2 className="text-foreground text-base font-semibold">
+          <h2 className="text-ui-title text-foreground">
             Leads capturados
           </h2>
           <p className="text-muted-foreground text-sm">

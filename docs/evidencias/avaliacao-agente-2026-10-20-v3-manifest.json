@@ -1,0 +1,19 @@
+{
+  "benchmark": "2026-10-20-v3",
+  "recordedAt": "2026-10-20T16:35:22.886Z",
+  "gitHead": "dc1fa552987dcd3bfa3addc00bf7279ad6a61417",
+  "workingTreeDirty": true,
+  "scope": "Somente fontes fictícias; não é homologação de produção",
+  "hashes": {
+    "src/lib/agent/answer-policy.ts": "069d12ddde8f5bde7e4a899ad11c98c7f6254f7521c2685f271a7129db7fe97e",
+    "src/lib/agent/asset-question-service.ts": "2a9e19e644b2ed95b630eef0156b18cd4820d11a740cec0f4f035a860a7f8c92",
+    "src/lib/agent/answer-providers.ts": "88ea9cc880d162f6a1052243f54c18aa8d2ab355a119d73e840cdd81f072b79c",
+    "src/lib/agent/embeddings.ts": "58bba3f4c6a571f5e60066519e81e8d736dedda60401dbf816a4afbd718538d0",
+    "src/lib/agent/config.ts": "8bed5da6ebe177e6954a7624eab65890860418f971eb16a6faf51ff663142fb1",
+    "src/lib/data/management-asset-templates.ts": "a9759e1acf16cb6828a536856023358e4b921c8fb9033f6044719f1224734586",
+    "src/lib/data/management-asset-indexer.ts": "34e1d861fb5f9dbfa3e7fb4a3063880d871411fe43c20b5d48a8561eadb5772c",
+    "tests/eval/asset-agent-questions.ts": "65ab9f60457b8dcc0a82168f7726640d7b259593a1587cc6c2cd2f6ab861abc0",
+    "tests/eval/asset-agent-grader.ts": "ebd94c34d0ebbfca85d149e837254499e4d5faa6553ba26607be783a89bc581d",
+    "tests/eval/isolated-asset-agent.eval.ts": "7175dd6dead04cf1f74b76e4560547877ce24cca44e8a7001b24c92b0e6d794a"
+  }
+}

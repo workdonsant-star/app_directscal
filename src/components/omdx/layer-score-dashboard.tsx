@@ -54,8 +54,8 @@ function DashboardCard({
     <Card
       className={cn(
         distilled
-          ? "gap-0 rounded-[5px] border-0 bg-sidebar p-4 shadow-none ring-0"
-          : "gap-1.5 rounded-[10px] border-0 bg-sidebar p-5 shadow-none ring-0",
+          ? "gap-0 rounded-[5px] border-0 bg-card p-4 shadow-none ring-0"
+          : "gap-1.5 rounded-[10px] border-0 bg-card p-5 shadow-none ring-0",
         className,
       )}
       data-testid={testId}
@@ -67,7 +67,7 @@ function DashboardCard({
         )}
       >
         <CardTitle
-          className="overflow-hidden text-sm leading-5 font-semibold text-card-foreground"
+          className="overflow-hidden text-sm leading-5 font-medium text-card-foreground"
           title={description}
         >
           {title ?? description}
@@ -77,7 +77,7 @@ function DashboardCard({
             "line-clamp-2 text-muted-foreground",
             distilled
               ? "text-xs leading-5"
-              : "max-w-[299px] text-[10px] leading-[13px]",
+              : "max-w-[299px] text-xs",
           )}
         >
           {description}

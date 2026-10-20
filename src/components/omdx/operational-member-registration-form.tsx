@@ -50,7 +50,7 @@ async function getResponseMessage(response: Response, fallback: string) {
 
 function textareaClasses(className?: string) {
   return cn(
-    "border-input bg-transparent text-foreground min-h-24 w-full rounded-lg border px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30",
+    "border-transparent bg-input text-foreground min-h-24 w-full rounded-lg border px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30",
     className,
   );
 }
@@ -116,8 +116,8 @@ export function OperationalMemberRegistrationForm({
 
   if (sent) {
     return (
-      <div className="rounded-lg border bg-card p-6 text-card-foreground">
-        <h1 className="text-xl font-semibold">Cadastro recebido</h1>
+      <div className="rounded-lg bg-card p-6 text-card-foreground">
+        <h1 className="text-ui-page">Cadastro recebido</h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
           Seu papel na operação foi registrado para atualizar o cadastro de
           pessoas da empresa.
@@ -129,10 +129,10 @@ export function OperationalMemberRegistrationForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-lg border bg-card p-5 text-card-foreground"
+      className="rounded-lg bg-card p-5 text-card-foreground"
     >
       <div>
-        <h1 className="text-xl font-semibold">Cadastro de pessoa</h1>
+        <h1 className="text-ui-page">Cadastro de pessoa</h1>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
           Preencha rapidamente seu papel na operação para atualizar o cadastro
           de pessoas da empresa.
@@ -217,7 +217,7 @@ export function OperationalMemberRegistrationForm({
       </div>
 
       {message && (
-        <p className="mt-4 rounded-lg border bg-background px-3 py-2 text-sm text-foreground">
+        <p className="mt-4 rounded-lg bg-card px-3 py-2 text-sm text-foreground">
           {message}
         </p>
       )}

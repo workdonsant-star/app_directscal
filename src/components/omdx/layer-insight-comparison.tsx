@@ -26,7 +26,7 @@ export function LayerInsightComparison({ scores }: LayerInsightComparisonProps) 
                   {group.description}
                 </p>
               </div>
-              <span className="text-base font-semibold tabular-nums text-foreground">
+              <span className="text-base font-bold tabular-nums text-foreground">
                 {score === null ? "—" : score.toFixed(1)}
               </span>
             </div>

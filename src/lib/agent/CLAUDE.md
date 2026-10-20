@@ -33,3 +33,12 @@ Pergunta → embedding da pergunta (opcional) → busca híbrida filtrada pela o
 - Planos gratuitos (Gemini) podem usar os dados enviados para melhorar o produto do provedor: use apenas conteúdo fictício nesses testes. Dados reais de cliente exigem plano pago com cláusula de não uso para treino.
 - Mudou prompt, limiar ou provedor: rode `npm run eval:agent` (ver `tests/eval/`) e compare com a meta de 85%.
 - `repeat-questions.ts` conta quantas vezes a mesma pessoa (`external_user_id`) já fez a mesma pergunta nos últimos 30 dias, a partir de `asset_question_audits`. Texto normalizado igual sempre conta; com `ASSET_AGENT_PROVIDER=gemini`, o Gemini julga o sentido (timeout de 8 s, cai no texto se falhar). Embeddings não são usados aqui porque não separam assuntos vizinhos.
+
+
+A17: needsQuestionContext recusa perguntas genéricas sem processo/atividade e sem histórico antes de buscar fontes ou chamar o modelo. Pergunta específica e continuação com histórico seguem o fluxo normal. Prompt proíbe inferir responsabilidade por ato específico a partir de coordenação geral. Avaliação inicial interrompida aos vinte minutos, com falhas de provedor/contexto; nova rodada v2 registra cada resposta, usa duas consultas simultâneas e permite 45 minutos. Mudança de expectativa amb-04 é correção explícita do conjunto: SOP não atribui kickoff/ata, portanto deve recusar. Não comparar percentuais entre conjuntos sem essa ressalva.
+
+
+A17: instrução de segunda pessoa aplica-se a orientação de execução, não a identificação de responsável. resolveGroundedAnswer recebe contexto da pergunta e transforma em recusa uma resposta que admite explicitamente não definir quem responde por um ato solicitado. Essa checagem estreita de consistência não é verificador semântico geral. Conjunto v3 também corrige falso negativo de pap-09: exclusão explícita de jornada é válida sem exigir literalmente a palavra não. Relatórios v2 brutos são preservados; comparação precisa declarar a diferença do avaliador.
+
+
+A17 final: hasExplicitResponsibilityGap reconhece ausência explícita de ator com advérbios; teste/reprocessamento v3 confirma mudança apenas em amb-04 dentre cinquenta respostas guardadas. Não trata isso como verificação semântica geral nem nova rodada IA. Bruto v3=43/50; replay=44/50.

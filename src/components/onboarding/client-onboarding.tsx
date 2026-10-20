@@ -55,13 +55,13 @@ export function ClientOnboarding({ connection, sectors, progress, slackAvailable
   return (
     <div className="min-h-dvh bg-background text-foreground">
       <header className="flex h-16 items-center justify-between border-b px-6 lg:px-10">
-        <span className="font-heading text-lg font-semibold">Directscal</span>
+        <span className="font-heading text-lg font-bold">Directscal</span>
         <div className="flex items-center gap-3"><ThemeToggle /><Button variant="ghost" onClick={logout}>Sair</Button></div>
       </header>
       <main className="mx-auto grid w-full max-w-6xl gap-10 px-6 py-10 lg:px-10">
         <div>
           <p className="text-sm text-muted-foreground">Configuração inicial</p>
-          <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight">Prepare sua empresa para começar</h1>
+          <h1 className="mt-2 font-heading text-3xl font-bold tracking-tight">Prepare sua empresa para começar</h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">Conecte o Slack e organize os setores e suas lideranças. Depois, você poderá acessar todas as funcionalidades disponíveis para sua empresa.</p>
         </div>
         <ol className="grid gap-4 sm:grid-cols-3" aria-label="Etapas da configuração">
@@ -73,7 +73,7 @@ export function ClientOnboarding({ connection, sectors, progress, slackAvailable
         </ol>
         {step === 0 ? (
           <section className="grid justify-items-start gap-5">
-            <div><h2 className="font-heading text-xl font-semibold">Conecte o workspace da empresa</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">O Slack conecta seu time aos ativos de gestão e permite escolher os responsáveis pelos action points. Autorize o app no workspace usado pela empresa.</p></div>
+            <div><h2 className="text-ui-section">Conecte o workspace da empresa</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">O Slack conecta seu time aos ativos de gestão e permite escolher os responsáveis pelos action points. Autorize o app no workspace usado pela empresa.</p></div>
             {connection ? <p className="text-sm">Reconecte {connection.teamName ?? "o workspace"} para conceder as permissões necessárias.</p> : null}
             <Button disabled={!slackAvailable} nativeButton={false} render={<a href="/api/integrations/slack/install" />}>
               {connection ? "Reconectar Slack" : "Conectar Slack"}<ArrowRight aria-hidden="true" />
@@ -88,9 +88,9 @@ export function ClientOnboarding({ connection, sectors, progress, slackAvailable
               <OrganizationStructureSettings sectors={sectors} inlineActions />
               <div className="flex justify-end"><Button disabled={!progress.sectorsReady} onClick={() => setReview(true)}>Revisar configuração<ArrowRight aria-hidden="true" /></Button></div>
             </> : <section className="grid gap-6">
-              <div><h2 className="font-heading text-xl font-semibold">Confira as lideranças</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">Cada setor precisa de uma liderança com convite enviado. As pessoas podem aceitar depois; você não precisa aguardar a confirmação para começar.</p></div>
+              <div><h2 className="text-ui-section">Confira as lideranças</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">Cada setor precisa de uma liderança selecionada no Slack. O cargo é opcional e as pessoas vão atuar pelo workspace conectado.</p></div>
               <OrganizationStructureSettings sectors={sectors} inlineActions />
-              {!progress.leadersReady ? <p role="status" className="text-sm text-destructive">Há convites pendentes ou com falha. Reenvie os convites pela ação de cada setor para continuar.</p> : null}
+              {!progress.leadersReady ? <p role="status" className="text-sm text-destructive">Selecione uma pessoa ativa no Slack para cada setor antes de continuar.</p> : null}
               {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
               <div className="flex justify-between gap-4"><Button variant="outline" disabled={pending} onClick={() => setReview(false)}>Voltar</Button><Button disabled={pending || !progress.canComplete} onClick={finish}>{pending ? "Concluindo" : "Concluir e acessar o app"}<ArrowRight aria-hidden="true" /></Button></div>
             </section>}

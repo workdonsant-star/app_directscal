@@ -15,3 +15,5 @@ Seção autenticada para analisar dados agregados de Maturidade por dimensão, c
 - Não adicionar recomendações profundas ou análise por item no MVP; manter dashboard compacto.
 
 - Todas as tabelas visíveis usam o padrão das Dimensões de 06/10/2026 via `Table`: cabeçalho neutro de 44px com raio de 5px, padding horizontal de 16px, linhas de pelo menos 55px e divisórias de 0,5px entre linhas, sem borda externa nem fundo no hover. Conteúdo documental pode ampliar a altura; o editor preserva a indicação de células selecionadas.
+
+Os KPIs do loading usam `bg-sidebar dark:bg-card`, com a mesma superfície dos KPIs carregados no tema escuro.

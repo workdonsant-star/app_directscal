@@ -97,7 +97,7 @@ export function NavUser({
             </Avatar>
             <div className="grid min-w-0 flex-1 grid-rows-[17.5px_16px] text-left text-sm">
               <span className="truncate font-medium leading-[17.5px]">{displayName}</span>
-              <span className="truncate text-[10px] leading-[13px] text-muted-foreground">
+              <span className="truncate text-xs text-muted-foreground">
                 {user.company}
               </span>
             </div>

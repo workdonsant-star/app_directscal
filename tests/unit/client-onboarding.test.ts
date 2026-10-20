@@ -35,3 +35,15 @@ describe("configuração inicial do cliente", () => {
     expect(getClientOnboardingProgress(connection, [sector], 2).canComplete).toBe(false);
   });
 });
+
+
+describe("lideranças externas do Slack", () => {
+  const slackSector: OrganizationSector = { ...sector, inviteStatus: "ativo", lastInviteSentAt: null, leader: { ...sector.leader, email: "", position: "", slackTeamId: "T123", slackUserId: "U123" } };
+  it("libera sem e-mail, cargo, convite ou conta Google", () => {
+    expect(getClientOnboardingProgress(connection, [slackSector]).canComplete).toBe(true);
+  });
+  it("bloqueia pessoa indisponível no workspace e referência sem time", () => {
+    expect(getClientOnboardingProgress(connection, [{ ...slackSector, inviteStatus: "inativo" }]).canComplete).toBe(false);
+    expect(getClientOnboardingProgress(connection, [{ ...slackSector, leader: { ...slackSector.leader, slackTeamId: undefined } }]).canComplete).toBe(false);
+  });
+});

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { idSchema, isoDateTimeSchema } from "./omdx";
+import { dimensionIdSchema, idSchema, isoDateTimeSchema } from "./omdx";
 
 export const adminSpecialistStatusValues = ["ativo", "inativo"] as const;
 export const adminDeliveryStatusValues = [
@@ -15,6 +15,29 @@ export const adminSpecialistStatusSchema = z.enum(
   adminSpecialistStatusValues,
 );
 export const adminDeliveryStatusSchema = z.enum(adminDeliveryStatusValues);
+
+export const companySpecialistAssignmentSchema = z.object({
+  specialistId: idSchema.nullable(),
+  updatedAt: isoDateTimeSchema.nullable(),
+});
+
+export const companySpecialistInputSchema = z.object({
+  specialistId: idSchema.nullable(),
+  expectedUpdatedAt: isoDateTimeSchema.nullable(),
+}).strict();
+
+export const companyOperationsSchema = z.object({
+  assignment: companySpecialistAssignmentSchema,
+  deliveries: z.array(z.object({
+    id: z.uuid(),
+    diagnosticName: z.string().min(1),
+    closedAt: isoDateTimeSchema,
+    specialistId: idSchema.nullable(),
+    status: adminDeliveryStatusSchema,
+    responseCount: z.number().int().nonnegative(),
+    canAnalyze: z.boolean(),
+  })),
+});
 
 export const adminSpecialistSchema = z.object({
   id: idSchema,
@@ -51,6 +74,7 @@ export const adminDeliverySchema = z.object({
 
 export const adminActionPointTemplateSchema = z.object({
   id: idSchema,
+  dimensionId: dimensionIdSchema,
   dimension: z.string().min(1),
   title: z.string().min(1),
   description: z.string().min(1),

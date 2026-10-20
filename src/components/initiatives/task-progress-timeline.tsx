@@ -67,7 +67,7 @@ export function TaskProgressTimeline({
             <div className="min-w-0 flex-1 space-y-2 pt-1">
               <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                 <p className="text-sm">
-                  <span className="font-semibold">{event.author}</span>{" "}
+                  <span className="font-medium">{event.author}</span>{" "}
                   <span className="text-muted-foreground">
                     {event.action ?? "registrou uma atualização"}
                   </span>

@@ -38,8 +38,8 @@ export const signUpInputSchema = z.object({
 });
 
 export const resetPasswordInputSchema = z.object({
-  email: z.string().email(),
-});
+  email: z.string().trim().email().max(320),
+}).strict();
 
 export type AuthRole = z.infer<typeof authRoleSchema>;
 export type AuthUser = z.infer<typeof authUserSchema>;

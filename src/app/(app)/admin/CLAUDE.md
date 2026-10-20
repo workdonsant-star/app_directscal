@@ -30,3 +30,8 @@ Rotas autenticadas da visão de superadministrador. Usam a mesma shell do app (`
 - A navegação do `superadmin` não oferece links para a aplicação do cliente. O papel administrativo não pode abrir páginas, downloads ou APIs de Maturidade; toda operação privilegiada permanece em `/admin/*` e `/api/admin/*`.
 - Páginas raiz abertas pela sidebar administrativa não exibem breadcrumb. Páginas de detalhe começam pela raiz imediata, como `Leads / Detalhe`, `Empresas / Detalhe` e `Operação / Empresa`.
 - A primeira versão de Operação usa mocks tipados e estado local; não deve simular persistência ou ampliar acesso do `superadmin` ao app do cliente.
+
+
+A11: Empresas lê atribuição principal e histórico real pela RPC privada por organização. A fila de Operação usa os mesmos estados, incluindo revisão privada e sugestão principal. O cadastro de especialistas é persistido; a orientação antiga de mocks não se aplica a esses caminhos.
+
+A04: /admin/empresas/[id]/rotinas exige sessão definitiva superadmin, usa connection() e consulta o workspace autorizado no servidor. Expõe criação/adaptação, pausa/retomada, transferência e histórico. JSX fica fora de catch; erro desconhecido não vira 404 silencioso.

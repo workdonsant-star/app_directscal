@@ -1,4 +1,5 @@
-import { CalendarDays, Download } from "lucide-react";
+import { ReportPdfDownload } from "@/components/reports/report-pdf-download";
+import { CalendarDays } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
@@ -12,6 +13,7 @@ import { canAccessCustomerApp } from "@/lib/auth/access-control";
 import { getCurrentAuthSession } from "@/lib/auth/session";
 import { getAdminDeliveryPublication } from "@/lib/data/admin-delivery-data-source";
 import { getDiagnosticReport } from "@/lib/data/omdx-data-source";
+import { getPublishedSpecialistContact } from "@/lib/data/person-profiles-data-source";
 
 const reportSections = [
   { href: "#metodologia", label: "Metodologia" },
@@ -45,9 +47,10 @@ export default async function ReportPage({
     getDiagnosticReport(id),
   ]);
 
-  if (!report || publication?.status !== "publicada") {
+  if (!report || publication?.status !== "publicada" || publication.organizationId !== report.diagnostic.organizationId) {
     notFound();
   }
+  const specialist = await getPublishedSpecialistContact(publication.specialistId);
 
   return (
     <>
@@ -59,50 +62,34 @@ export default async function ReportPage({
       />
 
       <AppPage className="min-w-0">
-        <div className="grid w-full gap-10 xl:grid-cols-[224px_minmax(0,1fr)_192px]">
+        <div className="grid w-full max-w-[1028px] grid-cols-1 lg:grid-cols-[220px_minmax(0,768px)] lg:gap-10">
           <aside
-            aria-labelledby="report-navigation-title"
-            className="hidden self-stretch xl:col-start-1 xl:row-start-1 xl:block"
+            className="hidden lg:block"
           >
-            <div className="sticky top-[5.5rem] rounded-[5px] border p-5">
-              <p
-                id="report-navigation-title"
-                className="mb-4 text-sm font-medium"
-              >
-                Neste relatório
-              </p>
+            <div className="sticky top-8 px-4">
               <DocumentTableOfContents
                 ariaLabel="Navegação do relatório"
                 items={reportSections}
               />
 
-              <div className="mt-5 flex flex-col items-start gap-2 border-t pt-5">
+              <div className="mt-6 flex flex-col items-start gap-2">
                 <Button
                   nativeButton={false}
-                  render={<Link href="/action-points" />}
+                  render={<Link href={`/action-points?diagnostico=${id}`} />}
                 >
                   <CalendarDays aria-hidden="true" />
                   Action Points
                 </Button>
-                <Button
-                  nativeButton={false}
-                  variant="outline"
-                  render={<a href={`/omdx/${id}/relatorio`} />}
-                >
-                  <Download aria-hidden="true" />
-                  Baixar PDF
-                </Button>
+                <ReportPdfDownload href={`/omdx/${id}/relatorio`} />
+              </div>
+              <div className="mt-6">
+                <SpecialistContactCard specialist={specialist} />
               </div>
             </div>
           </aside>
 
-          <aside className="xl:col-start-3 xl:row-start-1">
-            <div className="sticky top-[5.5rem]">
-              <SpecialistContactCard />
-            </div>
-          </aside>
-
-          <div className="mx-auto min-w-0 w-full xl:col-start-2 xl:row-start-1 xl:w-4/5">
+          <div className="min-w-0">
+            <div className="mb-6 space-y-4 lg:hidden"><ReportPdfDownload href={`/omdx/${id}/relatorio`} /><SpecialistContactCard specialist={specialist} /></div>
             <OmdxReportView editorial={publication.report} report={report} />
           </div>
         </div>

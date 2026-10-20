@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 export default async function SettingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ slack?: string }>;
+  searchParams: Promise<{ slack?: string; secao?: string }>;
 }) {
   const session = await getCurrentAuthSession();
 
@@ -39,7 +39,7 @@ export default async function SettingsPage({
   }
 
   const profile = await getProfileSettingsData(session.user);
-  const [sectors, slackConnection, { slack }] = await Promise.all([
+  const [sectors, slackConnection, { slack, secao }] = await Promise.all([
     getOrganizationStructure(profile.organizationId),
     getSlackInstallationForOrganization(profile.organizationId).catch((error: unknown) => {
       console.error("[slack] installation lookup failed", error);
@@ -48,23 +48,37 @@ export default async function SettingsPage({
     searchParams,
   ]);
 
+  const section = secao === "empresa" || secao === "slack"
+    ? secao
+    : slack ? "slack" : "setores";
+
   return (
     <>
       <AppTopbar />
 
       <AppPage className="min-w-0 overflow-x-clip">
         <div className="flex min-w-0 w-full flex-col gap-6">
-          <OrganizationStructureSettings sectors={sectors} />
-          <CompanySettings profile={profile} />
-          <SlackIntegrationSettings
-            available={isSlackOAuthConfigured()}
-            connection={slackConnection}
-            needsReconnect={
-              slackConnection !== null &&
-              !hasSlackScopes(slackConnection.scope, SLACK_ACTION_POINT_SCOPES)
-            }
-            result={slack ?? null}
-          />
+          {section === "setores" ? <OrganizationStructureSettings sectors={sectors} /> : null}
+          {section === "empresa" ? (
+            <>
+              <h1 className="text-ui-page">Empresa</h1>
+              <CompanySettings profile={profile} />
+            </>
+          ) : null}
+          {section === "slack" ? (
+            <>
+              <h1 className="text-ui-page">Slack</h1>
+              <SlackIntegrationSettings
+                available={isSlackOAuthConfigured()}
+                connection={slackConnection}
+                needsReconnect={
+                  slackConnection !== null &&
+                  !hasSlackScopes(slackConnection.scope, SLACK_ACTION_POINT_SCOPES)
+                }
+                result={slack ?? null}
+              />
+            </>
+          ) : null}
         </div>
       </AppPage>
     </>

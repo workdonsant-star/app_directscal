@@ -38,8 +38,9 @@ import {
   type CreateManagementAssetInput,
   type ManagementAssetBulkUpdate,
 } from "@/lib/contracts";
+import { managementAssetReviewLabels } from "@/lib/data/management-asset-review";
 
-type Filter = "todos" | "rascunho" | "em_revisao" | "publicado" | "arquivado";
+type Filter = "todos" | "rascunho" | "em_revisao" | "publicado" | "revisao_vencida" | "arquivado";
 type Option = { id: string; name: string };
 
 const filters: Array<{ value: Filter; label: string }> = [
@@ -47,6 +48,7 @@ const filters: Array<{ value: Filter; label: string }> = [
   { value: "rascunho", label: "Rascunho" },
   { value: "em_revisao", label: "Em revisão" },
   { value: "publicado", label: "Publicado" },
+  { value: "revisao_vencida", label: "Revisão vencida" },
   { value: "arquivado", label: "Arquivado" },
 ];
 
@@ -54,6 +56,7 @@ const filters: Array<{ value: Filter; label: string }> = [
 // versão de um ativo já publicado; o mesmo ativo pode aparecer em Publicado.
 function matchesFilter(asset: AdminManagementAssetListItem, filter: Filter) {
   if (filter === "todos") return true;
+  if (filter === "revisao_vencida") return asset.review.status === "vencida";
   if (filter === "publicado" || filter === "arquivado") return asset.status === filter;
   if (asset.status === "arquivado") return false;
   if (filter === "em_revisao") {
@@ -191,7 +194,7 @@ export function ManagementAssetsWorkspace({
   const actions = (
           <div className="flex min-w-0 items-center gap-2">
             <Tabs value={filter} onValueChange={(value) => { setFilter(value as Filter); setSelectedIds([]); }}>
-              <TabsList>
+              <TabsList variant="selector">
                 {filters.map((item) => (
                   <TabsTrigger key={item.value} value={item.value} className="gap-2" disabled={pending}>
                     {item.label}
@@ -237,19 +240,20 @@ export function ManagementAssetsWorkspace({
         <div className="flex w-full flex-col gap-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="space-y-1">
-              <Heading className="font-heading text-2xl font-semibold">Criação dos ativos</Heading>
+              <Heading className="font-heading text-2xl font-bold">Criação dos ativos</Heading>
               <p className="text-sm text-muted-foreground">
-                SOPs, playbooks e governança de {company.name}.
+                SOPs, playbooks, governança e matrizes RACI de {company.name}.
               </p>
             </div>
 
           </div>
 
           {notice ? (
-            <p role="status" className="rounded-lg border bg-card px-3 py-2 text-sm text-foreground">
+            <p role="status" className="rounded-lg bg-card px-3 py-2 text-sm text-foreground">
               {notice}
             </p>
           ) : null}
+          {filter === "revisao_vencida" ? <p className="text-sm text-muted-foreground">Revise o conteúdo e publique a versão aprovada para iniciar um novo ciclo. A pendência de revisão mantém a versão vigente disponível para consulta.</p> : null}
           {actionError && !bulkEditOpen && deleteIds.length === 0 ? <p role="alert" className="text-sm text-destructive">{actionError}</p> : null}
           {visibleAssets.length > 200 ? <p className="text-xs text-muted-foreground">Selecione até 200 ativos por operação. A seleção geral inclui os primeiros 200 deste filtro.</p> : null}
           {selectedAssets.length > 0 ? (
@@ -263,7 +267,7 @@ export function ManagementAssetsWorkspace({
           ) : null}
 
           {visibleAssets.length === 0 ? (
-            <div className="rounded-lg border border-dashed px-6 py-12 text-center">
+            <div className="rounded-lg bg-card px-6 py-12 text-center">
               <p className="font-heading text-base font-medium">
                 {assets.length === 0 ? "Nenhum ativo criado" : "Nenhum ativo neste filtro"}
               </p>
@@ -275,7 +279,7 @@ export function ManagementAssetsWorkspace({
             </div>
           ) : (
             <div className="min-w-0">
-              <Table variant="operational" className="min-w-[1200px] table-fixed">
+              <Table variant="operational" className="min-w-[1450px] table-fixed">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12">
@@ -290,6 +294,8 @@ export function ManagementAssetsWorkspace({
                     <TableHead className="h-11 w-[100px] px-4 text-right">Versão</TableHead>
                     <TableHead className="h-11 w-[170px] px-4">Próxima versão</TableHead>
                     <TableHead className="h-11 w-[160px] px-4">Autor</TableHead>
+                    <TableHead className="h-11 w-[180px] px-4">Revisão de validade</TableHead>
+                    <TableHead className="h-11 w-[160px] px-4">Responsável</TableHead>
                     <TableHead className="h-11 w-[130px] px-4">Atualizado</TableHead>
                     <TableHead className="w-24"><span className="sr-only">Ações</span></TableHead>
                   </TableRow>
@@ -345,6 +351,11 @@ export function ManagementAssetsWorkspace({
                         {(asset.specialistId && specialistNames.get(asset.specialistId)) ??
                           "Directscal"}
                       </TableCell>
+                      <TableCell className="px-4 py-4 text-sm">
+                        <p>{managementAssetReviewLabels[asset.review.status]}</p>
+                        <p className="text-xs text-muted-foreground tabular-nums">{asset.review.nextReviewDate ? formatDate(`${asset.review.nextReviewDate}T12:00:00-03:00`) : asset.reviewCycle ?? "Sem periodicidade"}</p>
+                      </TableCell>
+                      <TableCell className="truncate px-4 py-4 text-sm text-muted-foreground">{asset.ownerLabel ?? "Não definido"}</TableCell>
                       <TableCell className="px-4 py-4 text-sm text-muted-foreground tabular-nums">
                         {formatDate(asset.updatedAt)}
                       </TableCell>
@@ -382,7 +393,7 @@ export function ManagementAssetsWorkspace({
       </Dialog>
 
       <Sheet open={open} onOpenChange={(value) => !pending && setOpen(value)}>
-        <SheetContent className="gap-0 overflow-hidden bg-card text-card-foreground data-[side=right]:!w-[min(100vw,56rem)] data-[side=right]:!max-w-none">
+        <SheetContent className="gap-0 overflow-hidden data-[side=right]:!w-[min(100vw,56rem)] data-[side=right]:!max-w-none">
           <SheetHeader className="shrink-0 border-b px-4 py-4 sm:px-6">
             <SheetTitle>Criar ativo</SheetTitle>
             <SheetDescription>

@@ -41,31 +41,31 @@ export function ResponseCounters({
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-lg border bg-background p-3">
+          <div className="rounded-lg bg-muted p-3">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Users className="size-4" />
-              <span className="text-xs font-medium uppercase tracking-[0.08em]">
+              <span className="font-label text-ui-label">
                 Total
               </span>
             </div>
-            <p className="mt-3 text-2xl font-semibold tabular-nums text-foreground">
+            <p className="mt-3 text-2xl font-bold tabular-nums text-foreground">
               {diagnostic.responses.total}
             </p>
           </div>
 
           {respondentGroups.map((group) => (
-            <div key={group.id} className="rounded-lg border bg-background p-3">
-              <p className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
+            <div key={group.id} className="rounded-lg bg-muted p-3">
+              <p className="font-label text-ui-label text-muted-foreground">
                 {group.label}
               </p>
-              <p className="mt-3 text-2xl font-semibold tabular-nums text-foreground">
+              <p className="mt-3 text-2xl font-bold tabular-nums text-foreground">
                 {diagnostic.responses[group.id]}
               </p>
             </div>
           ))}
         </div>
 
-        <div className="rounded-lg border bg-muted/40 p-3">
+        <div className="rounded-lg bg-muted p-3">
           <div className="flex items-start gap-3">
             {isReadyForAnalysis ? (
               <CheckCircle2 className="mt-0.5 size-4 text-primary" />

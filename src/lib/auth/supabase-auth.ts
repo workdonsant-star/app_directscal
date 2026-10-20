@@ -76,7 +76,9 @@ function buildSupabaseAccessToken({
   email,
   expires,
   userId,
+  securityVersion,
 }: {
+  securityVersion: string;
   email?: string | null;
   expires: string;
   userId: string;
@@ -89,9 +91,10 @@ function buildSupabaseAccessToken({
     {
       aud: "authenticated",
       email,
-      exp: Math.floor(new Date(expires).getTime() / 1000),
+      exp: Math.min(Math.floor(new Date(expires).getTime() / 1000), Math.floor(Date.now() / 1000) + 300),
       role: "authenticated",
       sub: userId,
+      session_version: securityVersion,
     },
     signingSecret,
   );
@@ -351,6 +354,35 @@ export async function authenticateSuperadminPasswordUser({
   });
 }
 
+export async function authenticateCustomerPasswordUser({
+  email,
+  password,
+}: {
+  email: string;
+  password: string;
+}): Promise<AuthUser | null> {
+  if (!isSupabaseConfigured() || !email.trim() || !password) return null;
+
+  const supabase = createSupabaseAdminClient();
+  const user = await getNextAuthUserByEmail(supabase, email);
+  if (!user?.id || !user.email) return null;
+
+  const { data: credential, error } = await supabase
+    .schema("app_private")
+    .from("user_password_credentials")
+    .select("password_hash")
+    .eq("user_id", user.id)
+    .maybeSingle<PasswordCredentialRow>();
+
+  if (error) throw error;
+  if (!credential || !verifyPasswordCredential(password, credential.password_hash)) {
+    return null;
+  }
+
+  const authUser = await resolveSupabaseAuthUser(user.id, user.email);
+  return authUser && authUser.role !== "superadmin" ? authUser : null;
+}
+
 export async function ensureSupabaseAuthUserProvisioned(
   user: ProvisionUserInput,
 ) {
@@ -496,7 +528,9 @@ export function attachSupabaseAccessTokenToSession({
   expires,
   session,
   userId,
+  securityVersion = "initial",
 }: {
+  securityVersion?: string;
   email?: string | null;
   expires: string;
   session: { supabaseAccessToken?: string };
@@ -508,6 +542,7 @@ export function attachSupabaseAccessTokenToSession({
     email,
     expires,
     userId,
+    securityVersion,
   });
 
   return session;

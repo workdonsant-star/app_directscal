@@ -29,6 +29,22 @@ describe("pastas de ativos por categoria", () => {
     expect(getManagementAssetCategoryFolder("Operação comercial").href).toBe("/ativos-de-gestao/categorias/operacao%20comercial");
   });
 
+  it("preserva pastas vazias e a chave/URL depois de renomear", () => {
+    const registry = [{ key: "categoria-estavel", title: "Nova área" }, { key: "cultura", title: "Valores" }];
+    const assets = [asset("Nova área", "sop"), asset("Valores", "playbook")];
+    const folders = getManagementAssetCategoryFolders(assets, registry);
+    expect(folders.find(folder => folder.key === "categoria-estavel")?.count).toBe(1);
+    expect(folders.find(folder => folder.key === "cultura")).toMatchObject({ title: "Valores", href: "/ativos-de-gestao/cultura", count: 1 });
+    expect(getManagementAssetsInCategory(assets, "categoria-estavel", folders)).toEqual([assets[0]]);
+    expect(getManagementAssetCategoryFolders([], registry).find(folder => folder.key === "categoria-estavel")?.count).toBe(0);
+  });
+
+  it("não recria categorias padrão excluídas e aceita nova pasta com o mesmo nome", () => {
+    const folders = getManagementAssetCategoryFolders([], [{key:"cultura",title:"Cultura",deleted:true},{key:"nova-chave",title:"Cultura"}]);
+    expect(folders.some(folder=>folder.key==="cultura")).toBe(false);
+    expect(folders.find(folder=>folder.key==="nova-chave")?.title).toBe("Cultura");
+  });
+
   it("permite abrir a Matriz RACI dentro da pasta", () => {
     expect(getManagementAssetHref("raci", "ativo-teste")).toBe("/ativos-de-gestao/matriz-raci/ativo-teste");
   });

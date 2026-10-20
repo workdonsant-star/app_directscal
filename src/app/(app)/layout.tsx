@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { getAssetNavigationPreferences } from "@/lib/data/asset-navigation-data-source";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,7 +24,7 @@ export default async function AppLayout({
 
   if (accessContext.session.user.role === "cliente") {
     const onboarding = await getClientOnboardingForUser(accessContext.session.user.id);
-    if (onboarding && !onboarding.completed) redirect("/onboarding");
+    if (onboarding && onboarding.requiresOnboarding) redirect("/onboarding");
   }
 
   const isSuperadmin = accessContext.session.user.role === "superadmin";
@@ -31,7 +32,10 @@ export default async function AppLayout({
     isSuperadmin ? null : getProfileSettingsData(accessContext.session.user).catch(() => null),
     isSuperadmin ? [] : getPublishedManagementAssets().catch(() => []),
   ]);
-  const assetFolders = getManagementAssetCategoryFolders(publishedAssets);
+  const assetNavigationPreferences = accessContext.access?.primaryOrganizationId
+    ? await getAssetNavigationPreferences(accessContext.access.primaryOrganizationId)
+    : { order: [], icons: {} };
+  const assetFolders = getManagementAssetCategoryFolders(publishedAssets, assetNavigationPreferences.categories);
   const sidebarUser = {
     ...accessContext.session.user,
     company: companyProfile?.company ?? accessContext.session.user.company,
@@ -41,13 +45,14 @@ export default async function AppLayout({
     <TooltipProvider delay={200}>
       <SidebarProvider className="app-shell bg-shell">
         <AppSidebar
+          assetNavigationPreferences={assetNavigationPreferences}
           acquisitionEnabled={isFeatureAcquisitionEnabled()}
           enabledModuleIds={accessContext.enabledModuleIds}
           user={sidebarUser}
           managementAssetCategories={assetFolders}
           initiativeScope={`${sidebarUser.id}:${accessContext.access?.primaryOrganizationId ?? "local"}`}
         />
-        <SidebarInset className="bg-shell">{children}</SidebarInset>
+        <SidebarInset className="overflow-clip bg-shell">{children}</SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
   );

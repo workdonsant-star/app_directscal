@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   const session = await getCurrentAuthSession();
   const onboarding = session?.user.role === "cliente"
     ? await getClientOnboardingForUser(session.user.id) : null;
-  const settingsUrl = `${getPublicAppUrl()}${onboarding && !onboarding.completed ? "/onboarding" : "/configuracoes"}`;
+  const settingsUrl = `${getPublicAppUrl()}${onboarding && onboarding.requiresOnboarding ? "/onboarding" : "/configuracoes"}`;
   const state = verifySlackInstallState(
     getRequiredServerEnv("AUTH_SECRET"),
     url.searchParams.get("state"),

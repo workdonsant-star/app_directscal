@@ -1,4 +1,5 @@
 import { getAccountProfile } from "@/lib/data/person-profiles-data-source";
+import { getSlackSectorLeaders } from "@/lib/data/slack-leadership-data-source";
 import "server-only";
 
 import { createHash, randomBytes } from "node:crypto";
@@ -161,7 +162,7 @@ export async function getOrganizationStructure(
     }
   }
 
-  return (sectorsResult.data as SectorRow[]).flatMap((sector) => {
+  const legacySectors = (sectorsResult.data as SectorRow[]).flatMap((sector) => {
     const membership = leadershipBySectorId.get(sector.id);
     const person = membership ? peopleById.get(membership.person_id) : null;
     if (!person) return [];
@@ -188,6 +189,10 @@ export async function getOrganizationStructure(
       }),
     ];
   });
+  const slackSectors = await getSlackSectorLeaders(organizationId);
+  const slackSectorIds = new Set(slackSectors.map((sector) => sector.id));
+  return [...legacySectors.filter((sector) => !slackSectorIds.has(sector.id)), ...slackSectors]
+    .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
 }
 
 async function markInvitationDelivery(

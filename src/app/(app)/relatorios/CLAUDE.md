@@ -16,3 +16,5 @@ Esta rota autenticada é a entrada de `Relatórios` na seção `Documentos` da s
 - A rota de detalhe e o download também exigem a publicação, impedindo acesso antecipado por URL direta.
 - A rota de detalhe resolve um `DiagnosticReport` autorizado e conecta os seis gráficos às respostas consolidadas daquele diagnóstico.
 - Os textos editoriais vêm da entrega publicada; a foto do especialista continua como conteúdo de referência. Fontes, cores e estrutura vêm do próprio app.
+
+A listagem também oferece o relatório de exemplo da Acme, identificado como empresa fictícia, em `/relatorios/exemplo-acme`. A rota estática preserva a autorização de cliente e não participa da elegibilidade/publicação de diagnósticos reais. Não oferece download ou Action Points reais.

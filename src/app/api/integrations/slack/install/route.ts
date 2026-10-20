@@ -15,7 +15,7 @@ export async function GET() {
   const session = await getCurrentAuthSession();
   const onboarding = session?.user.role === "cliente"
     ? await getClientOnboardingForUser(session.user.id) : null;
-  const settingsUrl = `${getPublicAppUrl()}${onboarding && !onboarding.completed ? "/onboarding" : "/configuracoes"}`;
+  const settingsUrl = `${getPublicAppUrl()}${onboarding && onboarding.requiresOnboarding ? "/onboarding" : "/configuracoes"}`;
 
   if (!session) {
     return NextResponse.redirect(`${getPublicAppUrl()}/entrar`);

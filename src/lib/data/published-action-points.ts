@@ -24,10 +24,10 @@ const empty: PublishedActionPoints = {
  * entrega mais recente dos diagnósticos que a sessão pode ver. Entregas não
  * publicadas e diagnósticos fora do escopo da sessão não aparecem.
  */
-export async function getPublishedActionPointsWorkspace(): Promise<PublishedActionPoints> {
+export async function getPublishedActionPointsWorkspace(diagnosticId?: string): Promise<PublishedActionPoints> {
   const diagnostics = await getOmdxOverviewDiagnosticOptions();
   const publications = await getAdminDeliveryPublications(
-    diagnostics.map((diagnostic) => diagnostic.id),
+    diagnostics.filter((diagnostic) => !diagnosticId || diagnostic.id === diagnosticId).map((diagnostic) => diagnostic.id),
   );
   const latest = publications
     .filter(

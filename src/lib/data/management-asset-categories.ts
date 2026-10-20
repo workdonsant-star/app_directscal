@@ -29,12 +29,18 @@ export function getManagementAssetCategoryFolder(category: string | null) {
   };
 }
 
-export function getManagementAssetCategoryFolders(assets: Pick<ManagementAsset, "category">[]) {
+export function getManagementAssetCategoryFolders(assets: Pick<ManagementAsset, "category">[], categories: { key: string; title: string; deleted?: boolean }[] = []) {
   const folders = new Map<string, ManagementAssetCategoryFolder>(
     managementAssetDefaultCategories.map(folder => [folder.key, { ...folder, count: 0 }]),
   );
+  for (const category of categories) {
+    if (category.deleted) { folders.delete(category.key); continue; }
+    const predefined = managementAssetDefaultCategories.find(folder => folder.key === category.key);
+    folders.set(category.key, { ...category, href: predefined?.href ?? `/ativos-de-gestao/categorias/${encodeURIComponent(category.key)}`, count: 0 });
+  }
   for (const asset of assets) {
-    const folder = getManagementAssetCategoryFolder(asset.category);
+    const registered = categories.find(category => !category.deleted && normalizeManagementAssetCategory(category.title) === normalizeManagementAssetCategory(asset.category));
+    const folder = registered ? folders.get(registered.key)! : getManagementAssetCategoryFolder(asset.category);
     const current = folders.get(folder.key);
     if (current) current.count += 1;
     else folders.set(folder.key, { ...folder, count: 1 });
@@ -42,6 +48,7 @@ export function getManagementAssetCategoryFolders(assets: Pick<ManagementAsset, 
   return [...folders.values()];
 }
 
-export function getManagementAssetsInCategory(assets: ManagementAsset[], key: string) {
-  return assets.filter(asset => normalizeManagementAssetCategory(asset.category) === key);
+export function getManagementAssetsInCategory(assets: ManagementAsset[], key: string, folders: ManagementAssetCategoryFolder[] = []) {
+  const title = folders.find(folder => folder.key === key)?.title ?? key;
+  return assets.filter(asset => normalizeManagementAssetCategory(asset.category) === normalizeManagementAssetCategory(title));
 }

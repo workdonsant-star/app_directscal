@@ -30,6 +30,12 @@ export const MIN_VECTOR_ONLY_SIMILARITY = 0.55;
 export const INSUFFICIENT_EVIDENCE_ANSWER =
   "Não encontrei nenhuma informação na base de ativos da empresa. Consulte seu líder direto ou o responsável pela área.";
 
+export function needsQuestionContext(question: string, history: ConversationTurn[]) {
+  if (history.length) return false;
+  const normalized = question.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[?!.]/g, "").trim().replace(/\s+/g, " ");
+  return /^(quem (aprova|deve aprovar|e responsavel|e o responsavel)|qual (e )?o prazo|quando (devo|preciso) (concluir|entregar))$/.test(normalized);
+}
+
 // Trechos que só vieram da busca vetorial precisam de similaridade mínima;
 // a busca vetorial sempre devolve vizinhos, mesmo sem relação real.
 export function selectEvidence(chunks: RetrievedChunk[], max = MAX_EVIDENCE) {
@@ -69,13 +75,14 @@ export const ANSWER_SYSTEM_PROMPT = `Você é o agente de consulta da Directscal
 
 Regras:
 - Use apenas as fontes fornecidas na mensagem. Não use conhecimento externo, não complete lacunas com suposições e não invente responsáveis, prazos, valores ou alçadas.
+- Sem processo/objeto definido na pergunta ou no histórico, peça esse contexto e recuse; não escolha um processo só porque apareceu na busca. Coordenar um processo não prova responsabilidade por cada tarefa: só atribua atos específicos (por exemplo conduzir kickoff ou produzir ata) quando a fonte atribuir explicitamente esses atos.
 - Se as fontes não respondem à pergunta, ou respondem só em parte de forma que a parte faltante mude a decisão, devolva status "insufficient_evidence", confidence "insuficiente", sources vazio e explique em uma frase o que não está documentado.
 - Quando responder, devolva status "answered" e liste em "sources" os rótulos (por exemplo "S1") de todas as fontes usadas. Toda afirmação precisa estar sustentada por pelo menos uma delas.
 - Se duas fontes se contradizem, diga isso e cite ambas, com confidence "media".
 - Use confidence "alta" quando a fonte responde de forma direta e "media" quando a resposta exige combinar trechos ou interpretar o texto.
-- Tom: converse como um colega experiente explicando o processo para quem perguntou. Português do Brasil, informal e próximo, mas sem gírias. Fale direto com a pessoa usando "você" e verbos de ação: "Você conduz a reunião com o líder e grava a conversa", e não "A reunião deve ser conduzida pela frente responsável".
+- Tom: converse como um colega experiente explicando o processo para quem perguntou. Português do Brasil, informal e próximo, mas sem gírias. Em perguntas sobre como executar, fale direto com a pessoa e use verbos de ação. Em perguntas sobre quem responde por uma tarefa, informe somente o papel explicitamente atribuído a essa tarefa na fonte.
 - Traduza o jargão dos documentos para linguagem do dia a dia. Termos como "frente responsável", "registro operacional" ou "etapa está pronta para avançar" viram "você", "o card do projeto" ou "você pode seguir quando…". Quando a fonte atribui a ação a outro papel (o líder, o financeiro, a Directscal), diga quem faz pelo nome do papel.
-- Use "você" para situar a pessoa, mas não comece toda frase com ele; varie com o verbo direto ("Grave a conversa", "Depois, publique o documento").
+- Use "você" apenas para orientar execução solicitada pela pessoa. Nunca atribua uma tarefa a quem perguntou quando a pergunta busca identificar o responsável. Uma lista de passos sem responsável explícito não autoriza essa atribuição; nesse caso, recuse por falta de definição.
 - Prefira voz ativa e frases curtas. Para processos, use a ordem natural ("Primeiro…, depois…, no fim…") ou uma lista curta de passos.
 - Até 120 palavras, sem emoji, sem ponto de exclamação e sem repetir a pergunta. Comece pela resposta, sem introduções como "Com base nas fontes".
 - Não mencione os rótulos das fontes no texto da resposta; a interface mostra as fontes separadamente.
@@ -152,9 +159,17 @@ export type ResolvedAnswer = {
 
 // Uma resposta sem fonte válida vira recusa: a regra do produto é "fonte
 // rastreável ou recusa explícita".
+export function hasExplicitResponsibilityGap(question: string, answer: string) {
+  const normalizedQuestion = question.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const normalizedAnswer = answer.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  return /\b(quem|responsavel|accountable)\b/.test(normalizedQuestion) &&
+    /\bnao\s+(?:(?:esta|foi)\s+)?(?:especifica(?:do)?|defin(?:e|ido)|informa(?:do)?|detalha(?:do)?|atribui(?:do)?|indica(?:do)?|documenta(?:do)?)\s+(?:[a-z]+mente\s+)*(?:quem|o responsavel|a responsabilidade|um responsavel)\b/.test(normalizedAnswer);
+}
+
 export function resolveGroundedAnswer(
   output: GroundedAnswer,
   evidence: EvidenceSource[],
+  question = "",
 ): ResolvedAnswer {
   const byLabel = new Map(evidence.map((source) => [source.label, source]));
   const seen = new Set<string>();
@@ -169,6 +184,9 @@ export function resolveGroundedAnswer(
   }
 
   const answer = output.answer.trim();
+  if (hasExplicitResponsibilityGap(question, answer)) {
+    return { status: "insufficient_evidence", answer: INSUFFICIENT_EVIDENCE_ANSWER, confidence: "insuficiente", citations: [], refusalReason: "A resposta reconhece ausência de atribuição explícita para uma responsabilidade solicitada." };
+  }
 
   if (output.status === "answered" && citations.length > 0 && answer) {
     return {

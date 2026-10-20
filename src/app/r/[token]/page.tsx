@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getDiagnosticByResponseToken } from "@/lib/data/omdx-data-source";
-import { getResponseCookieName } from "@/lib/data/omdx-production-rules";
+import { getResponseCookieName, hasDiagnosticDeadlinePassed } from "@/lib/data/omdx-production-rules";
 
 export const metadata: Metadata = {
   title: "Responder Maturidade — Directscal",
@@ -74,16 +74,20 @@ export default async function PublicResponsePreviewPage({
     redirect(`/r/${token}/obrigado`);
   }
 
-  const isExpired = expiresAt ? new Date(expiresAt) < new Date() : false;
+  const now = new Date();
+  const deadlinePassed = hasDiagnosticDeadlinePassed(diagnostic.deadline, now);
+  const isExpired = deadlinePassed || (expiresAt ? new Date(expiresAt) <= now : false);
   const isAvailable =
     diagnostic.status === "ativo" && !diagnostic.closedAt && !isExpired;
 
   if (!isAvailable) {
     return (
       <PublicResponseState
-        title={isExpired ? "Link expirado" : "Coleta indisponível"}
+        title={deadlinePassed ? "Prazo encerrado" : isExpired ? "Link expirado" : "Coleta indisponível"}
         description={
-          isExpired
+          deadlinePassed
+            ? "O prazo desta pesquisa terminou. Não são aceitas novas respostas."
+            : isExpired
             ? "Este link expirou e não aceita novas respostas."
             : "Este diagnóstico não está ativo para novas respostas."
         }

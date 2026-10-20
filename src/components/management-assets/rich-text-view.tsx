@@ -26,7 +26,7 @@ function renderInline(nodes: RichTextInline[] | undefined, keyPrefix: string) {
 
     for (const mark of node.marks ?? []) {
       if (mark.type === "bold") {
-        element = <strong className="font-semibold text-foreground">{element}</strong>;
+        element = <strong className="font-bold text-foreground">{element}</strong>;
       } else if (mark.type === "italic") {
         element = <em>{element}</em>;
       } else {
@@ -34,7 +34,7 @@ function renderInline(nodes: RichTextInline[] | undefined, keyPrefix: string) {
         element = (
           <a
             href={mark.attrs.href}
-            className="font-medium text-foreground underline underline-offset-4 hover:text-primary focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="font-medium text-foreground underline underline-offset-4 hover:text-foreground focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
           >
             {element}
@@ -76,9 +76,9 @@ function Paragraph({
   return (
     <p
       className={cn(
-        tone && "rounded-lg border-0 p-5",
-        tone === "information" && "bg-brand-100",
-        tone === "attention" && "bg-attention-100",
+        tone && "rounded-lg border-0 p-5 [&_strong]:text-inherit [&_a]:text-inherit",
+        tone === "information" && "bg-document-info text-document-info-foreground",
+        tone === "attention" && "bg-document-attention text-document-attention-foreground",
         className,
       )}
     >
@@ -143,14 +143,14 @@ function Block({
       return block.attrs.level === 2 ? (
         <h2
           id={headingId}
-          className="scroll-mt-24 border-t pt-8 font-heading text-[28px] font-semibold leading-9 tracking-[-0.6px] text-foreground first:border-t-0 first:pt-0"
+          className="scroll-mt-24 border-t pt-8 font-doc-heading text-doc-h2 text-foreground first:border-t-0 first:pt-0"
         >
           {renderInline(block.content, id)}
         </h2>
       ) : (
         <h3
           id={headingId}
-          className="scroll-mt-24 pt-2 font-heading text-lg font-semibold leading-7 text-foreground"
+          className="scroll-mt-24 pt-2 font-doc-heading text-doc-h3 text-foreground"
         >
           {renderInline(block.content, id)}
         </h3>
@@ -162,7 +162,7 @@ function Block({
       return <List node={block} id={id} callouts={callouts} />;
     case "blockquote":
       return (
-        <div className="space-y-2 rounded-lg border bg-muted/40 px-4 py-3 text-foreground">
+        <div className="space-y-2 rounded-lg bg-muted px-4 py-3 text-foreground">
           {block.content.map((child, index) =>
             child.type === "paragraph" ? (
               <Paragraph
@@ -189,7 +189,7 @@ function Block({
 
       return (
         <div className="min-w-0">
-          <Table className="min-w-[560px] text-sm leading-6">
+          <Table className="min-w-[560px] text-doc-table">
             {hasHeader && firstRow ? (
               <thead>
                 <tr className="text-left text-foreground">
@@ -262,7 +262,7 @@ export function RichTextView({
   return (
     <div
       className={cn(
-        "space-y-5 text-[15px] leading-[25px] text-muted-foreground",
+        "space-y-5 font-doc text-doc-body text-muted-foreground",
         className,
       )}
     >

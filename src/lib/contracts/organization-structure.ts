@@ -15,10 +15,12 @@ export const organizationAccessLevelSchema = z.enum(["owner", "admin"]);
 export const organizationLeaderSchema = z.object({
   accessLevel: organizationAccessLevelSchema,
   id: idSchema,
-  email: z.string().email(),
+  email: z.union([z.string().email(), z.literal("")]),
   name: z.string().nullable(),
   avatarUrl: z.string().url().nullable(),
-  position: z.string().min(2),
+  position: z.string().max(120),
+  slackUserId: z.string().optional(),
+  slackTeamId: z.string().optional(),
 });
 
 export const organizationSectorSchema = z.object({
@@ -37,6 +39,14 @@ export const createOrganizationSectorInputSchema = z.object({
   leaderEmail: z.string().trim().toLowerCase().email().max(254),
   leaderPosition: z.string().trim().min(2).max(120),
 });
+
+export const createSlackSectorLeaderInputSchema = z.object({
+  name: z.string().trim().min(2).max(120),
+  slackUserId: z.string().regex(/^[UW][A-Z0-9]{2,}$/),
+  position: z.string().trim().max(120).optional(),
+}).strict();
+
+export type CreateSlackSectorLeaderInput = z.infer<typeof createSlackSectorLeaderInputSchema>;
 
 export type LeadershipInviteDisplayStatus = z.infer<
   typeof leadershipInviteDisplayStatusSchema

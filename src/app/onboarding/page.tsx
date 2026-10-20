@@ -13,7 +13,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
   if (!session || session.acquisition || session.leadershipInvitation) redirect("/entrar");
   if (session.user.role !== "cliente") redirect(session.user.role === "superadmin" ? "/admin/operacao" : "/omdx");
   const onboarding = await getClientOnboardingForUser(session.user.id);
-  if (!onboarding || onboarding.completed) redirect("/omdx");
+  if (!onboarding || !onboarding.requiresOnboarding) redirect("/omdx");
   const [workspace, params] = await Promise.all([
     getClientOnboardingWorkspace(onboarding.organizationId), searchParams,
   ]);

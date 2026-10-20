@@ -126,7 +126,7 @@ export function AuthPageShell({
                 />
               </div>
               <header className="mb-5">
-                <h1 className="max-w-[360px] text-2xl font-semibold leading-[1.18] tracking-normal">
+                <h1 className="text-ui-page max-w-[360px]">
                   {title}
                 </h1>
                 {description ? (
@@ -148,7 +148,7 @@ export function AuthPageShell({
               />
             </div>
             <div className="absolute left-[19.5%] top-[31.8%] z-20 w-[61%] max-w-[432px] rounded-[9px] bg-[var(--auth-quote-card)] px-[30px] py-8 text-[var(--auth-quote-foreground)]">
-              <p className="max-w-[410px] text-[19px] font-semibold leading-[1.45] tracking-normal">
+              <p className="max-w-[410px] text-[19px] font-bold leading-[1.45] tracking-normal">
                 {appReviewQuote}
               </p>
               <div className="mt-7 flex items-center gap-3">
@@ -160,7 +160,7 @@ export function AuthPageShell({
                   className="size-9 rounded-full object-cover"
                 />
                 <div>
-                  <p className="text-sm font-semibold leading-none text-[var(--auth-quote-foreground)]">
+                  <p className="text-sm font-medium leading-none text-[var(--auth-quote-foreground)]">
                     Caio Farah
                   </p>
                   <p className="mt-1 text-xs leading-4 text-[var(--auth-quote-muted)]">
@@ -204,7 +204,7 @@ export function AuthPageShell({
             />
           </div>
           <header className={cn(description ? "mb-8" : "sr-only")}>
-            <h1 className="text-3xl font-semibold tracking-normal">{title}</h1>
+            <h1 className="text-3xl font-bold tracking-normal">{title}</h1>
             {description ? (
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
                 {description}

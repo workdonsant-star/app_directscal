@@ -97,7 +97,7 @@ function InfoItem({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <dt className="text-muted-foreground text-xs font-medium uppercase tracking-[0.08em]">
+      <dt className="text-muted-foreground font-label text-ui-label">
         {label}
       </dt>
       <dd className="text-foreground text-sm leading-relaxed">
@@ -200,7 +200,7 @@ export function AdminLeadDetail({ leadId }: AdminLeadDetailProps) {
 
       <section className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
-          <h2 className="text-foreground text-base font-semibold">
+          <h2 className="text-ui-title text-foreground">
             Informações do formulário
           </h2>
           <p className="text-muted-foreground text-sm">

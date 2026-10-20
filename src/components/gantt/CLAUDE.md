@@ -42,3 +42,5 @@ Etapa (ícone + rótulo), prioridade (ícone de sinal + rótulo), avatar e célu
 - Progresso e etapa são gravados pelo Superadmin da empresa; atraso é só um aviso calculado pelo prazo. Não apresente a etapa como andamento confirmado pela pessoa responsável enquanto o agente não registrar check-ins.
 - Não reintroduzir barras, resize ou dependências do Gantt sem nova decisão explícita.
 - Foco visível, botões semânticos, `cursor-pointer` e contraste em light e dark. Números alinháveis usam `tabular-nums`.
+
+- Hovers usam cores neutras, nunca azul: texto `foreground` e superfícies `action-neutral-hover` com texto `action-neutral-foreground`. O sumário documental também mantém o item ativo em `foreground`, branco no escuro e escuro no claro.

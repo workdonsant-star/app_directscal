@@ -11,7 +11,7 @@ export default function AdminLoading() {
         <div className="flex w-full flex-col gap-8">
           <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="rounded-lg border bg-card p-5">
+              <div key={index} className="rounded-lg bg-card p-5">
                 <div className="h-3 w-24 rounded bg-muted" />
                 <div className="mt-6 h-8 w-16 rounded bg-muted" />
                 <div className="mt-5 h-3 w-32 rounded bg-muted" />

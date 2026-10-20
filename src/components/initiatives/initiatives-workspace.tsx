@@ -146,7 +146,7 @@ export function InitiativeForm({
           value={draft.objective}
           onChange={(e) => setDraft({ ...draft, objective: e.target.value })}
           placeholder="Qual resultado esta iniciativa deve produzir?"
-          className="w-full rounded-md border bg-background p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="w-full rounded-md border border-transparent bg-input p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -211,7 +211,7 @@ export function InitiativesWorkspace({ scope }: { scope: string }) {
         </Button>
       </AppTopbarActionsPortal>
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold">Iniciativas</h1>
+        <h1 className="text-ui-page">Iniciativas</h1>
         <p className="text-sm text-muted-foreground">
           Organize as frentes de trabalho, responsáveis e prazos.
         </p>

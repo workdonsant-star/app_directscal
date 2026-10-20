@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  hasExplicitResponsibilityGap,
   buildAnswerUserMessage,
   buildExtractiveAnswer,
   buildRetrievalQuery,
@@ -114,4 +115,23 @@ describe("asset answer policy", () => {
     );
     expect(buildRetrievalQuery("Quem aprova?")).toBe("Quem aprova?");
   });
+});
+
+
+describe("lacuna explícita de responsabilidade", () => {
+ it("não aceita status respondido quando o texto admite que falta responsável solicitado", () => {
+  const result = resolveGroundedAnswer({status:"answered",answer:"Customer Success coordena o onboarding. O procedimento não especifica quem escreve a ata do kickoff.",confidence:"alta",sources:["S1"]},selectEvidence([chunk({})]),"Quem é responsável pelo kickoff e pela ata?");
+  expect(result.status).toBe("insufficient_evidence");expect(result.citations).toEqual([]);expect(result.confidence).toBe("insuficiente");
+ });
+ it("preserva atribuição explícita e negação de regra que responde à pergunta", () => {
+  for (const [question, answer] of [["Quem revisa o fechamento?","O responsável financeiro revisa o fechamento."],["O SOP define jornada de trabalho?","O SOP não estabelece jornada de trabalho ou controle de presença."]]) {
+   expect(resolveGroundedAnswer({status:"answered",answer,confidence:"alta",sources:["S1"]},selectEvidence([chunk({})]),question).status).toBe("answered");
+  }
+ });
+});
+
+
+it("reconhece lacuna com advérbios sem confundir negação de regra", () => {
+ for (const phrase of ["não especifica nominalmente quem produz a ata", "não define claramente o responsável", "não está documentado explicitamente quem aprova"]) expect(hasExplicitResponsibilityGap("Quem é responsável?", phrase)).toBe(true);
+ expect(hasExplicitResponsibilityGap("O SOP define jornada?", "O documento não define jornada de trabalho.")).toBe(false);
 });

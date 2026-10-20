@@ -24,7 +24,7 @@ export default function InsightsLoading() {
               <Card
                 key={width}
                 size="sm"
-                className="h-[128px] gap-1 rounded-[5px] border-0 bg-sidebar py-2 shadow-none ring-0"
+                className="h-[128px] gap-1 rounded-[5px] border-0 bg-card py-2 shadow-none ring-0"
               >
                 <CardHeader className="flex flex-row items-start justify-between gap-3 pb-0">
                   <Skeleton className={`h-4 ${width}`} />
