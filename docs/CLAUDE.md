@@ -8,6 +8,8 @@ Esta pasta registra decisões de produto, especificações funcionais e proposta
 
 ## Convenções
 
+- `ambiente-demo.md` descreve o ambiente fictício, o roteiro de apresentação, reinício local e a distribuição isolada, sem tratar demonstração como homologação operacional.
+
 - Escreva em português do Brasil, com linguagem consultiva, direta e operacional.
 - Diferencie explicitamente decisão aprovada, hipótese, fase futura e item fora de escopo.
 - Não apresente uma proposta documentada como funcionalidade já implementada.
@@ -71,3 +73,12 @@ homologacao-integral-2026-10-20.md consolida matriz A01–A18, fronteiras de pro
 
 
 evidencias/ conserva relatórios fictícios e manifestos de avaliação; não contém credenciais/conversas reais. Bruto versus reprocessamento são provas distintas, explicitadas em operacao-e-qualidade-do-agente.md.
+
+
+ciclo-1-entrega-confiavel-2026-10-24.md registra A14/A16/M04/M03/A08/A01, evidências locais e SQL, revisão em Bloqueada e pendências de proteção/implantação. evidencias/ciclo-1-2026-10-24/index.html reúne capturas fictícias e PDFs; não é homologação autenticada nem ambiente de produção.
+
+ciclo-2-ativos-e-consulta-2026-10-26.md registra o início autorizado de C2, ajustes de interface, testes e limites de implantação/piloto. guia-operacao-ciclo-2.md é o roteiro reproduzível de validação com dados fictícios; os manuais de produto ficam em /docs e /admin/guia.
+
+ciclo-3-rotinas-acompanhadas-2026-10-26.md registra o início de C3, correções da operação de rotinas e limites entre fixtures, validação integrada e contato proativo autorizado.
+
+O complemento de 26/10/2026 em agente-proativo-rotinas.md distingue a base de contatos existente do acompanhamento contextual solicitado: leitura do ativo, perguntas adaptadas, relatos confirmados e indicadores por Action Point. O mecanismo e seus critérios de aceite são proposta ainda não implementada.

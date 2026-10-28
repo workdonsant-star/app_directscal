@@ -2,11 +2,25 @@ import { MapPin, Mail, UserRound } from "lucide-react";
 import Image from "next/image";
 
 import { buttonVariants } from "@/components/ui/button";
-import type { PublishedSpecialistContact } from "@/lib/data/person-profiles-data-source";
+type PublishedSpecialistContact = { name: string; email: string; title: string; location: string; avatarUrl: string | null };
 
-export function SpecialistContactCard({ specialist }: { specialist: PublishedSpecialistContact | null }) {
+export function SpecialistContactCard({ specialist, compact = false }: { specialist: PublishedSpecialistContact | null; compact?: boolean }) {
   if (!specialist) {
     return <p className="text-xs text-muted-foreground">O contato do especialista desta entrega ainda não está disponível.</p>;
+  }
+  if (compact) {
+    return (
+      <section aria-label={`Contato de ${specialist.name}`} className="space-y-2">
+        <div className="space-y-1">
+          <h2 className="text-sm font-medium">{specialist.name}</h2>
+          <p className="text-xs leading-5 text-muted-foreground">{specialist.title}</p>
+        </div>
+        <a href={`mailto:${specialist.email}`} className="inline-flex items-center gap-1.5 rounded-sm text-xs text-muted-foreground underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring">
+          <Mail aria-hidden="true" className="size-3.5" />
+          Entrar em contato
+        </a>
+      </section>
+    );
   }
   return (
     <section aria-labelledby="specialist-contact-title" className="rounded-[5px] bg-card">

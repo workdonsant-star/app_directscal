@@ -2,6 +2,7 @@
 
 import { Check, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAppRuntime } from "@/components/app-runtime";
 import { useEffect, useMemo, useState } from "react";
 
 import { AppTopbar } from "@/components/app-topbar";
@@ -91,6 +92,7 @@ export function DiagnosticsWorkspace({
   template,
 }: DiagnosticsWorkspaceProps) {
   const router = useRouter();
+  const runtime = useAppRuntime();
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<ModalMode>("create");
   const [selectedDiagnostic, setSelectedDiagnostic] =
@@ -156,12 +158,12 @@ export function DiagnosticsWorkspace({
     const payload = buildDiagnosticPayload(form, template);
     const response =
       mode === "edit" && selectedDiagnostic
-        ? await fetch(`/api/omdx/diagnostics/${selectedDiagnostic.id}`, {
+        ? await runtime.request(`/api/omdx/diagnostics/${selectedDiagnostic.id}`, {
             body: JSON.stringify(payload),
             headers: { "Content-Type": "application/json" },
             method: "PATCH",
           })
-        : await fetch("/api/omdx/diagnostics", {
+        : await runtime.request("/api/omdx/diagnostics", {
             body: JSON.stringify(payload),
             headers: { "Content-Type": "application/json" },
             method: "POST",
@@ -187,7 +189,7 @@ export function DiagnosticsWorkspace({
         throw new Error("Não foi possível identificar o diagnóstico.");
       }
 
-      const activateResponse = await fetch(
+      const activateResponse = await runtime.request(
         `/api/omdx/diagnostics/${saved.diagnosticId}/activate`,
         {
           method: "POST",
@@ -197,7 +199,7 @@ export function DiagnosticsWorkspace({
 
       if (!activateResponse.ok) {
         if (activateData.redirectTo) {
-          router.push(activateData.redirectTo);
+          router.push(runtime.href(activateData.redirectTo));
           return;
         }
 
@@ -226,7 +228,7 @@ export function DiagnosticsWorkspace({
     try {
       setPending(true);
       setNotice(null);
-      const response = await fetch(`/api/omdx/diagnostics/${diagnostic.id}/close`, { method: "POST" });
+      const response = await runtime.request(`/api/omdx/diagnostics/${diagnostic.id}/close`, { method: "POST" });
       const data = await readMutationResponse(response);
       if (!response.ok) throw new Error(data.message ?? "Não foi possível encerrar a coleta.");
       router.refresh();
@@ -240,7 +242,7 @@ export function DiagnosticsWorkspace({
   async function handleDelete(diagnostic: Diagnostic) {
     try {
       setPending(true);
-      const response = await fetch(`/api/omdx/diagnostics/${diagnostic.id}`, {
+      const response = await runtime.request(`/api/omdx/diagnostics/${diagnostic.id}`, {
         method: "DELETE",
       });
       const data = await readMutationResponse(response);

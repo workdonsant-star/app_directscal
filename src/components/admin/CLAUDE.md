@@ -74,3 +74,5 @@ A17: AssetQuestionAuditsWorkspace usa selector/operational e saúde real. AgentG
 
 
 A12: ativos vinculados a histórico de rotina não podem ser excluídos definitivamente; API orienta arquivar. A seleção e os registros são preservados.
+
+C2 (26/10/2026): AdminCompanyDetail inclui SlackDeliveriesPanel, sob demanda, usando a API administrativa existente. Lista paginada preserva conteúdo em falha; só Falhou sem tentativa automática oferece recuperação com confirmação e updatedAt. Incerto nunca recebe botão de reenvio. POST sem confirmação trava novas tentativas até releitura; sucesso em fila não equivale a entrega. Concluído sem deliveredTs aparece Encerrado sem envio. Link Guia de operação abre /admin/guia.

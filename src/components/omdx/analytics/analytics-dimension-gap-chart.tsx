@@ -20,15 +20,16 @@ export function AnalyticsDimensionGapChart({
   referenceLabel,
 }: {
   dimensions: AnalyticsDimensionGap[];
-  target: number;
+  target: number | null;
   referenceLabel: string | null;
 }) {
   const hasHistory = dimensions.some((item) => item.previous !== null);
+  const hasProgress = dimensions.some(item => item.progress !== null && item.progress !== 0);
 
   return (
     <AnalyticsCard
       className="flex-1"
-      description="Da menor para a maior nota, na escala de 0 a 5. O círculo mostra até onde o progresso pelas ações leva as dimensões com ação em curso."
+      description="Percepções por dimensão, da menor para a maior nota. As respostas usam a escala de 1 a 5; a barra começa em zero para comparação visual."
       title="Dimensões gerenciais"
     >
       {dimensions.length === 0 ? (
@@ -40,11 +41,11 @@ export function AnalyticsDimensionGapChart({
           <ChartLegend
             items={[
               { label: "Nota da pesquisa", marker: <SwatchMarker color="var(--overview-chart-dimensions)" /> },
-              { label: "Progresso pelas ações", marker: <DotMarker color="var(--overview-chart-progress)" hollow /> },
+              ...(hasProgress ? [{ label: "Progresso ilustrativo", marker: <DotMarker color="var(--overview-chart-progress)" hollow /> }] : []),
               ...(hasHistory
                 ? [{ label: referenceLabel ?? "Média anterior", marker: <span aria-hidden="true" className="h-3 border-l-2 border-dotted border-muted-foreground" /> }]
                 : []),
-              { label: `Mínimo ${formatScore(target)}`, marker: <span aria-hidden="true" className="h-3 border-l border-dashed border-muted-foreground" /> },
+              ...(target !== null ? [{ label: `Referência ilustrativa ${formatScore(target)}`, marker: <span aria-hidden="true" className="h-3 border-l border-dashed border-muted-foreground" /> }] : []),
             ]}
           />
 
@@ -59,11 +60,11 @@ export function AnalyticsDimensionGapChart({
 
             {/* A margem direita reserva espaço para o valor e o progresso após a barra. */}
             <div className="relative mr-24">
-              <span
+              {target !== null ? <span
                 aria-hidden="true"
                 className="absolute inset-y-0 border-l border-dashed border-muted-foreground"
                 style={{ left: position(target) }}
-              />
+              /> : null}
               <ul className="relative flex flex-col gap-3">
                 {dimensions.map((item) => {
                   const progress = item.treated && item.progress ? item.progress : null;

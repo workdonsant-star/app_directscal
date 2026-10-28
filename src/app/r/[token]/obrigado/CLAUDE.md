@@ -10,3 +10,5 @@ Página pública exibida depois que uma resposta anônima de Maturidade é regis
 - Manter copy curta, em pt-BR, confirmando o registro da resposta sem expor dados do diagnóstico.
 - Não oferecer ação para voltar ao formulário, para evitar incentivo a novas tentativas de resposta no mesmo link.
 - Preservar o logo Directscal discreto e a largura estreita usada no fluxo do respondente.
+
+A superfície de agradecimento é compartilhada em PublicResponseThankYou, sem consultas ou alteração do comportamento desta rota.

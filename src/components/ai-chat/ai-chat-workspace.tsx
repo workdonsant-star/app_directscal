@@ -1,5 +1,7 @@
 "use client";
 
+import { useAppRuntime } from "@/components/app-runtime";
+
 import {
   type FormEvent,
   type KeyboardEvent,
@@ -185,6 +187,7 @@ export function AiChatWorkspace({
     name: string;
   };
 }) {
+  const runtime = useAppRuntime();
   const [messages, setMessages] = useState<ChatMessage[]>([introMessage]);
   const [draft, setDraft] = useState("");
   const [asking, setAsking] = useState(false);
@@ -242,7 +245,7 @@ export function AiChatWorkspace({
     let reply: ChatMessage;
 
     try {
-      const response = await fetch("/api/assistant/ask", {
+      const response = await runtime.request("/api/assistant/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question, history }),
@@ -291,7 +294,7 @@ export function AiChatWorkspace({
       current.map((item) => (item.id === message.id ? { ...item, feedback: value } : item)),
     );
 
-    const response = await fetch("/api/assistant/feedback", {
+    const response = await runtime.request("/api/assistant/feedback", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ auditId: message.auditId, value }),

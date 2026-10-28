@@ -7,9 +7,9 @@ Tela autenticada de conversa com o agente de consulta: o time pergunta sobre SOP
 ## Convenções locais
 
 - A rota pertence à aplicação do cliente e redireciona `superadmin` para `/admin/operacao`.
-- O item `Agente` aparece na navegação principal e preserva a rota `/assistente`.
+- O Agente permanece fora da sidebar. Consultar agente no leitor de ativos abre `/assistente`; Guia de uso na topbar abre `/docs`.
 - A conversa chama `/api/assistant/ask` e `/api/assistant/feedback`; o provedor de IA é configurado no servidor (`src/lib/agent/CLAUDE.md`).
-- O histórico vive só na tela aberta. Não há memória entre sessões nesta etapa.
+- A conversa atual vive na tela; AssistantHistory consulta o histórico próprio persistido, com fontes e versão. Não carrega conversas de outras pessoas.
 - A tela usa altura restante do shell e mantém rolagem da conversa dentro do workspace.
 - Como raiz aberta pela sidebar, a rota não exibe breadcrumb; a conversa começa diretamente abaixo da topbar, sem cabeçalho interno.
 - O node Figma `226:7` é o contrato visual desta versão.

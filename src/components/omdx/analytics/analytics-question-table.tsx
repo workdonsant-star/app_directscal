@@ -12,7 +12,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { AnalyticsQuestionRow } from "@/lib/data/omdx-analytics-overview";
-import { classifyScore } from "@/lib/data/omdx-domain";
 import { cn } from "@/lib/utils";
 
 export function AnalyticsQuestionTable({
@@ -27,9 +26,9 @@ export function AnalyticsQuestionTable({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
-        <h3 className="text-ui-title text-foreground">Vulnerabilidades por pergunta</h3>
+        <h3 className="text-ui-title text-foreground">Perguntas para aprofundar</h3>
         <p className="text-xs text-muted-foreground">
-          {rows.length} perguntas de menor nota entre {total}. A divergência é a distância entre a maior e a menor camada; o progresso vem das ações da alavanca da dimensão.
+          {rows.length} perguntas de menor nota entre {total}. A divergência é a distância entre a maior e a menor média de camada; os resultados orientam a investigação do consultor.
         </p>
       </div>
 
@@ -43,9 +42,8 @@ export function AnalyticsQuestionTable({
             <TableRow>
               <TableHead>Pergunta</TableHead>
               <TableHead>Dimensão</TableHead>
-              <TableHead className="w-56">Nota e progresso</TableHead>
+              <TableHead className="w-56">Nota da pesquisa</TableHead>
               <TableHead className="text-right">Divergência</TableHead>
-              <TableHead className="text-right">Estado</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -79,7 +77,6 @@ export function AnalyticsQuestionTable({
                 >
                   {row.layerGap === null ? "—" : `${formatScore(row.layerGap)} pt`}
                 </TableCell>
-                <TableCell className="text-right text-muted-foreground">{classifyScore(row.score)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -1,4 +1,5 @@
 import { getAccountProfile } from "@/lib/data/person-profiles-data-source";
+import { selectCollectionForOverview } from "@/lib/data/collection-comparison";
 import { cache } from "react";
 
 import { getAccessibleOrganizationIdsForUser } from "@/lib/auth/authorization";
@@ -2087,14 +2088,10 @@ export const getOmdxOverviewAnalytics = cache(
 );
 
 export const getOmdxOverviewPageData = cache(
-  async function getOmdxOverviewPageData(requestedDiagnostic = "todos") {
+  async function getOmdxOverviewPageData(requestedDiagnostic?: string) {
     const allReports = await getReportsForFilter("todos");
     const diagnosticOptions = allReports.map((report) => report.diagnostic);
-    const selectedDiagnostic = diagnosticOptions.some(
-      (diagnostic) => diagnostic.id === requestedDiagnostic,
-    )
-      ? requestedDiagnostic
-      : "todos";
+    const selectedDiagnostic = selectCollectionForOverview(allReports, requestedDiagnostic)?.diagnostic.id ?? "todos";
     const { analytics, comparison, reportDiagnostic } =
       buildOmdxOverviewComparisonFromReports(allReports, selectedDiagnostic);
 

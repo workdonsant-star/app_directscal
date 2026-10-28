@@ -57,6 +57,8 @@ Maturidade avalia maturidade operacional em **6 dimensões** (Cultura, Visão, C
 
 ## Convenções de domínio
 
+- Descrições de cabeçalho dos cards de gráficos do Analytics, incluindo Perguntas por semana e Processos mais consultados, usam `text-balance` para equilibrar o comprimento das linhas. O limite anterior de 60% foi removido; o objetivo é balancear as quebras, como no Figma.
+
 - **Linguagem visível ao usuário** segue o vocabulário Directscal: "estruturação", "operação", "diagnóstico", "alavancagem", "modelo", "escala". **Nunca** "transformação digital", "DNA", "jornada", "incrível".
 - **Sentence case** em títulos, botões e labels. Sem ponto de exclamação.
 - **Score 1-5** sempre formatado com **uma casa decimal** (`(3.4).toFixed(1)`), com vírgula em pt-BR quando aplicável (formatação automática se vier de `toLocaleString("pt-BR")`).
@@ -213,4 +215,10 @@ OverviewExecutiveCards aceita titleDotClassName opcional por métrica para um po
 
 A13: PublicResponseForm mantém UUID aleatório de tentativa por link em localStorage e na aba para repetir envios sem duplicação. Falha de armazenamento local não transforma sucesso no servidor em erro. A confirmação continua dependendo da API; não persiste respostas nem identificação pessoal no navegador.
 
-A09: ProcessUsageSection permite abrir base e período reais em `Ver base e período`, com data/hora São Paulo, população atual usada nos dois períodos e denominadores de cobertura/utilidade. Identidades sem conciliação deixam adoção sem base; consulta não significa cumprimento da rotina.
+A09: ProcessUsageSection mantém adoção sem percentual quando as identidades não estão conciliadas. Por decisão do usuário em 26/10/2026, o resumo não exibe o aviso de ausência de vínculo nem o expansor `Ver base e período`. A contagem auxiliar permanece quando há percentual calculável; os dados de base e período continuam no contrato, sem alteração do cálculo. Consulta não significa cumprimento da rotina.
+
+Apresentação isolada: os mesmos componentes são reutilizados em /demo via AppRuntimeProvider. Links e requisições usam useAppRuntime; o default mantém as URLs/fetch do produto. A fonte local recusa operações desconhecidas, sem encaminhar para serviços reais. Não inserir condições visuais específicas de demo nestes componentes.
+
+C1/A16: o aviso público informa ausência de coleta de nome/e-mail/cargo, risco de identificação contextual em grupos pequenos/fundador e diferença para relatos identificados no Slack. Não promete anonimato absoluto enquanto a política de agregação ainda aguarda aprovação e enforcement.
+
+Downloads distinguem Relatório de diagnóstico (PDF), Dados da pesquisa (PDF) e Dados da pesquisa (CSV). O relatório padrão usa o modelo editorial; os dados PDF acrescentam `conteudo=dados`, e o CSV mantém `formato=csv`. A tabela de Pesquisas oferece as mesmas três opções e conserva o escopo da coleta pela URL de runtime.

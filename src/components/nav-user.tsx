@@ -5,6 +5,7 @@ import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { useAppRuntime } from "@/components/app-runtime";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,7 @@ export function NavUser({
   };
 }) {
   const router = useRouter();
+  const runtime = useAppRuntime();
   useEffect(() => {
     function refresh() { if (document.visibilityState === "visible") router.refresh(); }
     window.addEventListener("focus", refresh);
@@ -70,6 +72,12 @@ export function NavUser({
 
   async function handleSignOut() {
     setIsSigningOut(true);
+
+    if (runtime.signOut) {
+      await runtime.signOut();
+      setIsSigningOut(false);
+      return;
+    }
 
     await fetch("/api/auth/logout", { method: "POST" }).catch(() => null);
     await signOut({ callbackUrl: "/entrar", redirect: false }).catch(
@@ -111,7 +119,7 @@ export function NavUser({
           >
             {user.role !== "superadmin" ? (
               <>
-                <DropdownMenuItem render={<Link href="/perfil" />}>
+                <DropdownMenuItem render={<Link href={runtime.href("/perfil")} />}>
                   <UserRound aria-hidden="true" className="size-4" />
                   Meu perfil
                 </DropdownMenuItem>

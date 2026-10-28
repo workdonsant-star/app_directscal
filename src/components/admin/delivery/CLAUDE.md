@@ -27,3 +27,11 @@ Interface interna de `/admin/entregas/[id]/*`: analisar os dados do cliente, pro
 - Texto visível em pt-BR, sem emoji e sem ponto de exclamação; tokens e `cn()`; tabelas seguem `Table variant="operational"`.
 
 - Nomes e opções de especialistas usam useSpecialists e o cadastro persistido; as autorizações de atribuição são verificadas novamente pelo servidor.
+
+## Revisão C1 — 24/10/2026
+
+- Pré-visualizar abre a etapa de publicação com as seis seções editoriais e títulos/descrições de todas as ações selecionadas. Não persiste nem publica por navegar.
+- Textos iniciais e insights permanecem como apoio editável; o editor explica que a confirmação ocorre em Publicar. Nenhuma aprovação adicional foi criada.
+- O provider compara o conteúdo atual com o último payload salvo: mudanças mostram Alterações não salvas e permitem republicar. Uma resposta de salvamento não marca como salvas edições feitas durante a requisição.
+- Falha preserva toda a redação e aparece como alert; confirmação usa status neutro. Resposta sem JSON/publicação é falha, nunca sucesso.
+- O banco conserva o snapshot publicado durante save; o status do rascunho não retira a versão já entregue ao cliente.

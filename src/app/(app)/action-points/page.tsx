@@ -5,6 +5,7 @@ import { RoutineAgreements } from "@/components/action-points/routine-agreements
 import { getCustomerRoutineAgreements } from "@/lib/data/customer-routine-agreements";
 import { getCustomerRoutineRecords } from "@/lib/data/customer-routine-records";
 import { ActionPointsPeopleView } from "@/components/action-points/action-points-people-view";
+import { ActionPointsDownload } from "@/components/action-points/action-points-download";
 import { AppPage } from "@/components/app-page";
 import { AppTopbar } from "@/components/app-topbar";
 import { canAccessCustomerApp } from "@/lib/auth/access-control";
@@ -43,7 +44,7 @@ export default async function ActionPointsPage({ searchParams }: {
 
   return (
     <>
-      <AppTopbar />
+      <AppTopbar actions={workspace.source ? <ActionPointsDownload diagnosticId={workspace.source.diagnosticId} /> : undefined} />
 
       <AppPage>
         {workspace.source ? <><ActionPointsPeopleView board={board} /><RoutineAgreements agreements={agreements} records={records} /></> : (

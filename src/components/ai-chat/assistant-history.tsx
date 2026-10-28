@@ -1,16 +1,19 @@
 "use client";
+
+import { useAppRuntime } from "@/components/app-runtime";
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { assistantHistoryPageSchema, type AssistantHistoryPage } from "@/lib/contracts/assistant-history";
 export function AssistantHistory() {
+ const runtime = useAppRuntime();
  const [open, setOpen] = useState(false), [pending, setPending] = useState(false), [error, setError] = useState<string | null>(null);
  const [page, setPage] = useState<AssistantHistoryPage | null>(null);
  async function load(more = false) {
   setPending(true); setError(null);
   try {
-   const response = await fetch(`/api/assistant/history${more && page?.nextCursor ? `?cursor=${encodeURIComponent(page.nextCursor)}` : ""}`, { cache: "no-store" });
+   const response = await runtime.request(`/api/assistant/history${more && page?.nextCursor ? `?cursor=${encodeURIComponent(page.nextCursor)}` : ""}`, { cache: "no-store" });
    const body = await response.json(); if (!response.ok) throw new Error(body.message ?? "Não foi possível consultar o histórico.");
    const parsed = assistantHistoryPageSchema.parse(body);
    setPage(previous => ({ ...parsed, items: more ? [...previous?.items ?? [], ...parsed.items].filter((item, index, list) => list.findIndex(candidate => candidate.id === item.id) === index) : parsed.items }));

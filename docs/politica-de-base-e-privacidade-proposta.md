@@ -4,6 +4,25 @@ Estado: proposta para revisão do responsável pelo produto. Estes parâmetros a
 
 ## Decisões para revisão
 
+### Proposta concreta do ciclo 1 — 24/10/2026
+
+Recomendação para aprovação: cinco respostas por pergunta em cada camada anônima, somente coletas encerradas, sem filtros livres de período ou setor que permitam reconstituir um grupo. Enquanto uma camada presente estiver abaixo de cinco, a leitura numérica da coleta inteira fica protegida (incluindo média geral, distribuição, gaps e exportações). Ocultar só a camada pequena mantendo o total permitiria inferi-la por subtração. Camada com zero respostas continua “Sem dados”.
+
+| Exemplo fictício | Leitura proposta | O que não pode aparecer |
+| --- | --- | --- |
+| 1 resposta de liderança | Base insuficiente | Nota, distribuição, gap, texto derivado e total que permita subtração |
+| 4 respostas de liderança | Base insuficiente | Os mesmos dados; mudar filtro ou exportar não libera a leitura |
+| 5 respostas de liderança, nenhuma outra camada pequena | Agregado da camada disponível | Respostas individuais e recortes menores |
+| 5 respostas de time e 4 de liderança | Base insuficiente para a coleta | Total combinado, nota de time e diferença que recuperem liderança |
+| 1 fundador, 5 lideranças e 5 de time | Fundador identificável somente para dono e operação responsável | Leitura do fundador para admin de setor; não anunciar anonimato |
+| Coleta ativa crescendo de 4 para 5 respostas | Aguardar encerramento | Fotografias sucessivas que isolem a resposta recém-chegada |
+
+Visibilidade proposta: dono da empresa e operação responsável leem a percepção identificável do fundador. Admin da empresa fica sem esse recorte e sem totais que permitam inferi-lo. Relatos de rotina permanecem identificados no fluxo de execução; conversa completa não passa a ser visível a gestores por esta proposta.
+
+Aviso já ajustado no código local para descrever a coleta sem prometer anonimato absoluto: “Esta pesquisa registra percepções, sem solicitar nome, e-mail ou cargo. Os resultados são analisados por grupo. Grupos pequenos e a percepção do fundador podem permitir identificação pelo contexto.” O aviso também distingue o acompanhamento identificado pelo Slack.
+
+**Pendente de aprovação e implementação integrada:** limiar, público do fundador e proteção por subtração. Esta proposta não muda o cálculo atual, não libera produção e não autoriza retenção/expurgo. O enforcement deve abranger fonte de dados, permissões de leitura direta no banco, relatórios, CSV e eventual contexto analítico do agente; esconder elementos na interface não basta.
+
 | Tema | Proposta inicial | Efeito que precisa ser confirmado |
 | --- | --- | --- |
 | Time e liderança | Exibir leituras agregadas somente com ao menos cinco respostas na camada/recorte | Menos de cinco: mostrar base insuficiente, sem score, distribuição, texto que permita inferir resposta, exportação ou consulta indireta. O limiar vale por pergunta e recorte, não somente pelo total da pesquisa. |

@@ -1,6 +1,9 @@
 "use client";
 
-import { Pencil } from "lucide-react";
+import { useAppRuntime } from "@/components/app-runtime";
+
+import { MessageSquare, Pencil } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useEffect, useState, useTransition } from "react";
@@ -14,6 +17,7 @@ import type { ManagementAssetDocument } from "@/lib/contracts";
 
 export function ManagementAssetEditableReader({ asset, canEdit }: { asset: ManagementAssetDocument; canEdit: boolean }) {
   const router = useRouter();
+  const runtime = useAppRuntime();
   const [refreshing, startTransition] = useTransition();
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(asset.title);
@@ -46,7 +50,7 @@ export function ManagementAssetEditableReader({ asset, canEdit }: { asset: Manag
     setSaving(true);
     setError(null);
     try {
-      const response = await fetch(`/api/management-assets/${asset.id}`, {
+      const response = await runtime.request(`/api/management-assets/${asset.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ expectedVersionId: asset.versionId, title, summary, content }),
@@ -64,6 +68,9 @@ export function ManagementAssetEditableReader({ asset, canEdit }: { asset: Manag
   }
 
   return <>
+    {!editing ? <AppTopbarActionsPortal>
+      <Button variant="secondary" nativeButton={false} render={<Link href={runtime.href("/assistente")} />}><MessageSquare aria-hidden="true" />Consultar agente</Button>
+    </AppTopbarActionsPortal> : null}
     {canEdit && <AppTopbarActionsPortal>
       {editing ? <>
         <Button variant="secondary" disabled={saving} onClick={() => dirty ? setDiscardOpen(true) : setEditing(false)}>Cancelar</Button>
@@ -80,7 +87,7 @@ export function ManagementAssetEditableReader({ asset, canEdit }: { asset: Manag
       </div>
       {error && <p role="alert" className="mb-4 text-sm text-destructive">{error}</p>}
       <RichTextEditor initialContent={asset.content} editable={!saving} ariaLabel="Conteúdo do ativo de gestão" onChange={setContent} />
-    </div> : <ManagementAssetDocumentView asset={asset} />}
+    </div> : <ManagementAssetDocumentView asset={asset} downloadHref={runtime.href(`/ativos-de-gestao/download/${asset.type}/${asset.id}`)} />}
     <Dialog open={discardOpen} onOpenChange={setDiscardOpen}>
       <DialogContent>
         <DialogTitle>Descartar alterações?</DialogTitle>

@@ -32,3 +32,5 @@ A04: acordos publicados aparecem abaixo da lista, mediante autorização RLS do 
 
 
 A06: a página lê execução/acordos/registros em paralelo após resolver a publicação autorizada. Resumo real soma oportunidades explícitas vencidas dos últimos trinta dias; não usa média de percentuais nem meta ilustrativa. Timeline existente recebe somente mensagens registradas, com contexto do ciclo; acordo mostra relato integral, evidência, confirmação e revisões. Sem ciclos mantém ausência de base. Ver docs/conversa-de-execucao-rotinas.md.
+
+O botão Baixar Action Points ocupa as actions da AppTopbar, somente quando há fonte publicada. Preserva o diagnosticId da coleta; não há download duplicado nem link Voltar ao relatório no corpo. /v2 herda a mesma composição.

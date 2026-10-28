@@ -9,12 +9,14 @@ type OverviewDiagnosticFilterProps = {
   id?: string;
   diagnostics: Diagnostic[];
   value: string;
+  allowAll?: boolean;
 };
 
 export function OverviewDiagnosticFilter({
   id = "overview-diagnostic-filter",
   diagnostics,
   value,
+  allowAll = true,
 }: OverviewDiagnosticFilterProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -39,6 +41,7 @@ export function OverviewDiagnosticFilter({
     <DimensionDiagnosticFilter
       id={id}
       compact
+      allowAll={allowAll}
       diagnostics={diagnostics}
       value={value}
       onChange={handleDiagnosticChange}

@@ -24,3 +24,5 @@ Componentes das telas `/entrar`, `/criar-conta` e `/recuperar-senha`. A tela de 
 
 
 A14: recuperação fica disponível no login por senha real. PasswordResetForm lê #codigo uma vez, remove o fragmento do histórico e mantém o token somente em memória. Exibe formulário de nova senha/expiração, conserva erros e encerra sessão antes de voltar ao login após sucesso. Não promete envio quando a API falha.
+
+C1: a leitura do fragmento é idempotente mesmo com repetição do efeito. Código vazio ou malformado mostra erro explícito e permite solicitar outro; nunca apresenta o link inválido como uma entrada normal silenciosa.

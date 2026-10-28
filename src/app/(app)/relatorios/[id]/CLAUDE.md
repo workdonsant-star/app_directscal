@@ -21,3 +21,5 @@ A ação de Action Points inclui ?diagnostico=id, preservando o recorte da colet
 
 
 A11: contato usa exclusivamente specialistId da publicação autorizada, depois de confirmar empresa da publicação igual à do relatório. Nome, foto, título, localização e e-mail vêm do cadastro ativo. Não cai no principal atual nem em telefone fixo; cadastro indisponível produz mensagem explícita. Também é acessível na largura compacta.
+
+A composição visual foi extraída para ReportWorkspace. A página preserva autorização, busca e vínculo da publicação e injeta os dados nesse componente compartilhado com a apresentação.

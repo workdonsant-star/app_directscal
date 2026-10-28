@@ -124,6 +124,9 @@ export function DeliveryShell({ children }: { children: ReactNode }) {
       {!inAssets ? (
         <AppTopbarActionsPortal>
           <div className="flex items-center gap-2">
+            <Button nativeButton={false} variant="outline" render={<Link href={`${basePath}/publicar`} />}>
+              Pré-visualizar
+            </Button>
             <Button
               type="button"
               variant="outline"
@@ -137,11 +140,11 @@ export function DeliveryShell({ children }: { children: ReactNode }) {
               type="button"
               onClick={() => void draft.persistDelivery("publish")}
               disabled={
-                draft.isSaving || !draft.readyToPublish || draft.status === "publicada"
+                draft.isSaving || !draft.readyToPublish || (draft.status === "publicada" && !draft.hasUnsavedChanges)
               }
             >
               <Send aria-hidden="true" />
-              {draft.status === "publicada" ? "Publicado" : "Publicar entrega"}
+              {draft.status === "publicada" && !draft.hasUnsavedChanges ? "Publicado" : "Publicar entrega"}
             </Button>
           </div>
         </AppTopbarActionsPortal>
@@ -152,6 +155,7 @@ export function DeliveryShell({ children }: { children: ReactNode }) {
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-ui-page">{delivery.companyName}</h1>
             <AdminDeliveryStatusBadge status={draft.status} />
+            {draft.hasUnsavedChanges ? <span className="text-xs text-muted-foreground">Alterações não salvas</span> : null}
           </div>
           <p className="text-sm text-muted-foreground">
             {delivery.diagnosticName} · {delivery.responseCount.toLocaleString("pt-BR")} respostas · Maturidade {formatScore(delivery.generalScore)}/5 · Gap {formatScore(averageGap)}/5
@@ -195,7 +199,7 @@ export function DeliveryShell({ children }: { children: ReactNode }) {
       </header>
 
       {draft.feedback ? (
-        <p role="status" className="rounded-lg border border-primary/20 bg-primary/10 px-3 py-2 text-sm text-primary">
+        <p role={draft.feedbackKind === "error" ? "alert" : "status"} className={cn("rounded-lg bg-muted px-3 py-2 text-sm", draft.feedbackKind === "error" ? "text-destructive" : "text-foreground")}>
           {draft.feedback}
         </p>
       ) : null}

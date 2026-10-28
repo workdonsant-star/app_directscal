@@ -1,6 +1,10 @@
 # Testes unitários
 
+`demo.test.ts` valida ligação entre ativos/rotinas e os quatro tipos, fonte/recusa do agente, reentrada do estado local, proteção das coletas encerradas e revisão única. Não chama serviços externos.
+
 Vitest em ambiente Node, com alias `@/` configurado na raiz. Teste regras de domínio e contratos com dados fictícios, sem acessar serviços externos. Para mudanças localizadas, rode o arquivo específico. Os testes de categorias garantem agrupamento por categoria, normalização e conservação de todos os ativos.
+
+C1: collection-comparison verifica seleção da coleta por data original, IDs de pergunta independentes, mudança de texto/conjunto/empresa e exclusão de referências incompatíveis sem mutar o histórico.
 
 `management-asset-download.test.ts` verifica o handler de Markdown com sessão e data-source substituídos: exige autenticação, bloqueia superadmin antes da leitura, recusa tipo/ativo indisponível e valida attachment sem cache com nome seguro para os quatro tipos. O corpo Markdown é gerado pelo helper real; seus casos de formatação têm testes separados.
 
@@ -102,3 +106,10 @@ A17: asset-question-audits confirma lacuna na posição 501, empresa e cursor co
 
 
 A17: asset-answer-policy cobre resposta que admite não especificar quem é responsável (recusa sem citações), preservação de papel explícito e negação correta de regra; grader aceita exclusão de jornada e continua rejeitando afirmação positiva contraditória.
+
+A suíte demo também cobre URLs escopadas, recusa de destinos externos/IDs desconhecidos, conjunto integral e idempotência das respostas, transferência atômica de documentos entre categorias e contratos de agente/histórico.
+
+`diagnostic-report-download.test.ts` cobre sessão, papel, publicação da própria coleta/empresa, relatório editorial padrão, preservação do PDF de dados/CSV e as seis seções publicadas. `diagnostic-report-pdf.test.ts` renderiza com fontes reais, texto longo e camadas sem base; `PDF_REVIEW_DIR` opcional salva PDFs fictícios para inspeção visual. Não acessam banco nem serviços externos.
+
+
+`site-profile.test.ts` verifica CORS por origem exata, minimização da resposta, ausência de cache/cookies novos, sessão expirada/temporária, os três papéis e falhas seguras. Sessão substituída, sem serviços externos.

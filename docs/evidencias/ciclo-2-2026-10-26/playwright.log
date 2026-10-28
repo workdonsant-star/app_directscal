@@ -1,0 +1,28 @@
+
+Running 16 tests using 1 worker
+
+[1A[2K(node:5385) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:5385) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K[1/16] [chromium] › tests/e2e/cycle-two.spec.ts:21:9 › C2 light › atribuição preserva seleção em erro e contato da publicação
+[1A[2K[2/16] [chromium] › tests/e2e/cycle-two.spec.ts:43:9 › C2 light › fila preserva prazo ausente e filtra revisão vencida
+[1A[2K[3/16] [chromium] › tests/e2e/cycle-two.spec.ts:52:9 › C2 light › RACI conserva conteúdo editável depois de falha
+[1A[2K[4/16] [chromium] › tests/e2e/cycle-two.spec.ts:63:9 › C2 light › Slack distingue estados e recupera apenas falha confirmada
+[1A[2K[5/16] [chromium] › tests/e2e/cycle-two.spec.ts:88:9 › C2 light › falha de consulta conserva lista e erro de recuperação exige releitura
+[1A[2K[6/16] [chromium] › tests/e2e/cycle-two.spec.ts:105:9 › C2 light › Slack pagina sem perder linhas e distingue vazio de erro
+[1A[2K[7/16] [chromium] › tests/e2e/cycle-two.spec.ts:117:9 › C2 light › agente mostra fonte e feedback e distingue ausência de informação de falha
+[1A[2K[8/16] [chromium] › tests/e2e/cycle-two.spec.ts:145:9 › C2 light › leitor oferece consulta e guias usam os nomes atuais
+[1A[2K[9/16] [chromium] › tests/e2e/cycle-two.spec.ts:21:9 › C2 dark › atribuição preserva seleção em erro e contato da publicação
+[1A[2K[10/16] [chromium] › tests/e2e/cycle-two.spec.ts:43:9 › C2 dark › fila preserva prazo ausente e filtra revisão vencida
+[1A[2K[11/16] [chromium] › tests/e2e/cycle-two.spec.ts:52:9 › C2 dark › RACI conserva conteúdo editável depois de falha
+[1A[2K[12/16] [chromium] › tests/e2e/cycle-two.spec.ts:63:9 › C2 dark › Slack distingue estados e recupera apenas falha confirmada
+[1A[2K[13/16] [chromium] › tests/e2e/cycle-two.spec.ts:88:9 › C2 dark › falha de consulta conserva lista e erro de recuperação exige releitura
+[1A[2K[14/16] [chromium] › tests/e2e/cycle-two.spec.ts:105:9 › C2 dark › Slack pagina sem perder linhas e distingue vazio de erro
+[1A[2K[15/16] [chromium] › tests/e2e/cycle-two.spec.ts:117:9 › C2 dark › agente mostra fonte e feedback e distingue ausência de informação de falha
+[1A[2K[16/16] [chromium] › tests/e2e/cycle-two.spec.ts:145:9 › C2 dark › leitor oferece consulta e guias usam os nomes atuais
+[1A[2K  16 passed (16.9s)

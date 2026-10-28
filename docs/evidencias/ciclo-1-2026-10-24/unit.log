@@ -1,0 +1,13 @@
+
+> app_claude_directscal@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.6 /Users/donsantos/Documents/GitHub/app_directscal
+
+
+ Test Files  90 passed (90)
+      Tests  520 passed (520)
+   Start at  15:18:45
+   Duration  4.25s (transform 2.80s, setup 0ms, import 13.08s, tests 3.92s, environment 7ms)
+

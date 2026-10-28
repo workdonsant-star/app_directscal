@@ -13,12 +13,12 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   year: "numeric",
 });
 
-function DownloadButton({ asset }: { asset: ManagementAssetDocument }) {
+function DownloadButton({ asset, href }: { asset: ManagementAssetDocument; href?: string }) {
   return (
     <Button
       variant="secondary"
       nativeButton={false}
-      render={<a href={`/ativos-de-gestao/download/${asset.type}/${asset.id}`} download />}
+      render={<a href={href ?? `/ativos-de-gestao/download/${asset.type}/${asset.id}`} download />}
     >
       <Download aria-hidden="true" className="size-4" />
       Baixar MD
@@ -28,8 +28,10 @@ function DownloadButton({ asset }: { asset: ManagementAssetDocument }) {
 
 export function ManagementAssetDocumentView({
   asset,
+  downloadHref,
 }: {
   asset: ManagementAssetDocument;
+  downloadHref?: string;
 }) {
   const tableOfContents = getRichTextOutline(asset.content)
     .filter((item) => item.level === 2)
@@ -47,14 +49,14 @@ export function ManagementAssetDocumentView({
             />
           ) : null}
           <div className="mt-6">
-            <DownloadButton asset={asset} />
+            <DownloadButton asset={asset} href={downloadHref} />
           </div>
         </div>
       </aside>
 
       <article className="min-w-0">
         <div className="mb-6 lg:hidden">
-          <DownloadButton asset={asset} />
+          <DownloadButton asset={asset} href={downloadHref} />
         </div>
         <header className="border-b pb-8">
           <div className="flex flex-wrap items-center gap-2">

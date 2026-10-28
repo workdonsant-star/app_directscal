@@ -79,24 +79,15 @@ function AdherenceSummary({ analytics }: { analytics: ProcessUsageAnalytics }) {
         <p className="text-ui-kpi text-foreground tabular-nums">
           {adoption.value === null ? "—" : `${adoption.value}%`}
         </p>
-        <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+        {adoption.deltaPoints !== null || adoption.value !== null ? <div className="flex flex-col gap-1 text-xs text-muted-foreground">
           {adoption.deltaPoints !== null ? (
             <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <DeltaPoints delta={adoption.deltaPoints} />
               <span>vs. {periodDays} dias anteriores</span>
             </p>
           ) : null}
-          <p>{adoption.detail}</p>
-          <details>
-            <summary className="cursor-pointer rounded-sm underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Ver base e período</summary>
-            <div className="mt-2 space-y-1">
-              <p>{new Intl.DateTimeFormat("pt-BR", {dateStyle:"short",timeStyle:"short",timeZone:"America/Sao_Paulo"}).format(new Date(analytics.period.start))} até {new Intl.DateTimeFormat("pt-BR", {dateStyle:"short",timeStyle:"short",timeZone:"America/Sao_Paulo"}).format(new Date(analytics.period.end))} · São Paulo</p>
-              <p>População atual em ambos os períodos: {totals.teamSize === null ? "identidades não conciliadas" : `${totals.teamSize} pessoas elegíveis`}. Consultas com identidade elegível confirmada: {totals.askers}.</p>
-              <p>{coverage.detail}. {usefulness.detail}.</p>
-              <p>Consulta aos ativos e cumprimento de rotina são medidas distintas.</p>
-            </div>
-          </details>
-        </div>
+          {adoption.value !== null ? <p>{adoption.detail}</p> : null}
+        </div> : null}
       </div>
 
       <dl className="grid grid-cols-2 gap-x-6 gap-y-5 border-t border-border pt-5 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8">
@@ -140,7 +131,7 @@ function ChartCard({
         <CardTitle className="text-ui-title text-card-foreground">
           {title}
         </CardTitle>
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <p className="text-xs text-balance text-muted-foreground">{description}</p>
       </CardHeader>
       <CardContent className="px-0">{children}</CardContent>
     </Card>
@@ -450,12 +441,12 @@ export function ProcessUsageSection({
     >
       <header className="flex flex-col gap-1">
         <h3 id="process-usage-title" className="text-ui-title text-foreground">
-          Aderência dos ativos de gestão
+          Consultas aos ativos de gestão
         </h3>
         <p className="text-xs text-muted-foreground">
           Como o time consulta SOPs, playbooks e governança no WorkFlow e no
           Slack, nos últimos {periodDays} dias. Mostra adoção e clareza dos
-          ativos publicados; a execução dos processos aparece acima.
+          ativos publicados. Consulta, execução relatada e execução validada são medidas distintas.
         </p>
       </header>
 

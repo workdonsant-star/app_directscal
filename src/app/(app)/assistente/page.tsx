@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { AiChatWorkspace } from "@/components/ai-chat/ai-chat-workspace";
@@ -23,7 +24,7 @@ export default async function AssistantPage() {
 
   return (
     <>
-      <AppTopbar />
+      <AppTopbar actions={<Link href="/docs" className="text-sm underline underline-offset-4">Guia de uso</Link>} />
 
       <main className="flex h-[calc(100svh-3.5rem)] min-h-0 flex-col">
         <AiChatWorkspace

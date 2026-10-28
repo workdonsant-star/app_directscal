@@ -3,6 +3,7 @@
 import { useRef, useState, type PointerEvent } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useAppRuntime } from "@/components/app-runtime";
 import { Icon, MoreHorizontal, Pencil, Plus, RotateCcw, Trash2, X, type IconNode } from "lucide-react";
 import catalog from "@/lib/lucide-icon-catalog.json";
 import { lucideIconNames, resolveAssetIconName } from "@/lib/asset-navigation-icons";
@@ -39,7 +40,8 @@ export function ManagementAssetNavigation({ folders, initialPreferences, canMana
   canManage: boolean;
   onNavigate: () => void;
 }) {
-  const pathname = usePathname();
+  const runtime = useAppRuntime();
+  const pathname = runtime.pathname(usePathname());
   const createAnchor = useRef<HTMLButtonElement | null>(null);
   const [nameEditor, setNameEditor] = useState<{ folder: ManagementAssetCategoryFolder | null } | null>(null);
   const [categoryName, setCategoryName] = useState("");
@@ -84,7 +86,7 @@ export function ManagementAssetNavigation({ folders, initialPreferences, canMana
     setSaving(true);
     setError(null);
     try {
-      const response = await fetch("/api/settings/asset-navigation", {
+      const response = await runtime.request("/api/settings/asset-navigation", {
         method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ order: next.order, icons: next.icons }),
       });
       if (!response.ok) throw new Error("Não foi possível salvar a organização do menu.");
@@ -106,7 +108,7 @@ export function ManagementAssetNavigation({ folders, initialPreferences, canMana
     const folder = nameEditor.folder;
     setSaving(true); setError(null);
     try {
-      const response = await fetch("/api/settings/asset-categories", {
+      const response = await runtime.request("/api/settings/asset-categories", {
         method: folder ? "PATCH" : "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: categoryName.trim(), ...(folder ? { key: folder.key } : {}) }),
       });
@@ -114,7 +116,7 @@ export function ManagementAssetNavigation({ folders, initialPreferences, canMana
       if (!response.ok) throw new Error(result.message || "Não foi possível salvar a categoria.");
       setPreferences(previous => ({ ...previous, categories: [...(previous.categories ?? []).filter(item => item.key !== result.key), { key: result.key, title: result.title }] }));
       setNameEditor(null);
-      if (!folder) router.push(`/ativos-de-gestao/categorias/${encodeURIComponent(result.key)}`);
+      if (!folder) router.push(runtime.href(`/ativos-de-gestao/categorias/${encodeURIComponent(result.key)}`));
       router.refresh();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Não foi possível salvar a categoria.");
@@ -125,7 +127,7 @@ export function ManagementAssetNavigation({ folders, initialPreferences, canMana
     const requestId = ++deleteRequest.current;
     setDocumentCount(null);
     try {
-      const response = await fetch(`/api/settings/asset-categories?key=${encodeURIComponent(folder.key)}`, { cache: "no-store" });
+      const response = await runtime.request(`/api/settings/asset-categories?key=${encodeURIComponent(folder.key)}`, { cache: "no-store" });
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || "Não foi possível consultar os documentos.");
       if (requestId === deleteRequest.current) setDocumentCount(result.count);
@@ -147,7 +149,7 @@ export function ManagementAssetNavigation({ folders, initialPreferences, canMana
     if (saving || !deletingFolder || documentCount === null) return;
     setSaving(true); setError(null);
     try {
-      const response = await fetch("/api/settings/asset-categories", {
+      const response = await runtime.request("/api/settings/asset-categories", {
         method: "DELETE", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: deletingFolder.key,
           ...(destination === "__new" ? { newTitle: newDestinationName.trim() } : destination ? { destinationKey: destination } : {}),
@@ -157,7 +159,7 @@ export function ManagementAssetNavigation({ folders, initialPreferences, canMana
       if (!response.ok) throw new Error(result.message || "Não foi possível excluir a categoria.");
       closeDelete();
       const target = orderedFolders.find(folder => folder.key === result.destinationKey);
-      router.replace(target?.href ?? (result.destinationKey ? `/ativos-de-gestao/categorias/${encodeURIComponent(result.destinationKey)}` : "/ativos-de-gestao"));
+      router.replace(runtime.href(target?.href ?? (result.destinationKey ? `/ativos-de-gestao/categorias/${encodeURIComponent(result.destinationKey)}` : "/ativos-de-gestao")));
       router.refresh();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Não foi possível excluir a categoria.");
@@ -224,7 +226,7 @@ export function ManagementAssetNavigation({ folders, initialPreferences, canMana
     <>
     <SidebarGroup>
       <SidebarGroupLabel className="group/category-heading relative justify-between text-xs font-normal text-muted-foreground">
-        <Link href="/ativos-de-gestao" onClick={onNavigate} className="rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <Link href={runtime.href("/ativos-de-gestao")} onClick={onNavigate} className="rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
           Ativos de gestão
         </Link>
         {canManage ? <Button ref={createAnchor} variant="ghost" size="icon-xs" disabled={saving} aria-label="Criar categoria"
@@ -249,7 +251,7 @@ export function ManagementAssetNavigation({ folders, initialPreferences, canMana
                   event.preventDefault(); move(index, event.key === "ArrowUp" ? -1 : 1);
                 }
               }} className={draggedKey === folder.key ? "rounded-md bg-muted ring-1 ring-foreground/30" : undefined}>
-              <SidebarMenuButton render={<Link href={folder.href} />} tooltip={folder.title} isActive={isActive}
+              <SidebarMenuButton render={<Link href={runtime.href(folder.href)} />} tooltip={folder.title} isActive={isActive}
                 aria-current={isActive ? "page" : undefined} onClick={onNavigate} aria-describedby={canManage ? "asset-drag-instructions" : undefined} className={canManage ? "touch-none select-none pr-8 active:cursor-grabbing" : undefined}>
                 <CatalogIcon name={iconId} /><span>{folder.title}</span>
               </SidebarMenuButton>

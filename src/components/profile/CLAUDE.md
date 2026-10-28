@@ -33,3 +33,5 @@ A09: SlackIdentitySection é seção interna do box do perfil. Dados iniciais v�
 
 
 A14: troca de senha é real somente quando passwordEnabled vem do servidor. Google-only não vê campos simulados. Senha atual obrigatória; novo valor/confirmacão 12–128. Perfil salvo e falha de senha são explicitamente separados; sucesso de senha encerra sessão. Nenhuma senha em armazenamento local.
+
+Apresentação isolada: os mesmos componentes são reutilizados em /demo via AppRuntimeProvider. Links e requisições usam useAppRuntime; o default mantém as URLs/fetch do produto. A fonte local recusa operações desconhecidas, sem encaminhar para serviços reais. Não inserir condições visuais específicas de demo nestes componentes.

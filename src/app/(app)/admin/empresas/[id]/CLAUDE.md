@@ -5,6 +5,8 @@ Página dedicada para visualizar contexto da empresa, especialista principal, en
 ## Convenções locais
 
 - A empresa possui um especialista principal nesta primeira versão.
-- A atribuição é demonstrável, mas permanece em estado local até a integração funcional.
+- A atribuição persiste pelo PATCH administrativo com versão esperada. O especialista principal sugere novas entregas sem reatribuir publicações antigas.
 - Diagnósticos encerrados aparecem como entregas e levam ao workspace de análise.
 - O controle de acesso a módulos pertence ao detalhe da empresa, não à navegação principal do admin.
+
+C2: Entregas no Slack usa SlackDeliveriesPanel com a API por empresa. Falha confirmada pode ser recuperada após confirmação; Incerto exige revisão humana sem reenvio. Guia de operação abre /admin/guia.

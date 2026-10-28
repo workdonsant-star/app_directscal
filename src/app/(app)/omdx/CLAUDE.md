@@ -2,6 +2,8 @@
 
 ## Propósito
 
+C1/M04: a experiência operacional mostra Percepção e acompanhamento e seleciona a coleta mais recente por closedAt/createdAt. O parâmetro legado todos passa a selecionar a última coleta, sem consolidar instrumentos. Referências históricas exigem mesma empresa, instrumento e perguntas; a tela explicita limites de público/período. CollectionReading substitui o Veredito e consulta aos ativos fica distinta de execução. Estas regras substituem a descrição histórica abaixo.
+
 Raiz executiva do módulo Maturidade. Desde 18/10/2026 a página segue seis níveis de valor para o cliente, montados por `AnalyticsOverview` (`src/components/omdx/analytics/`): 1 · Veredito, 2 · O que atacar e como está andando, 3 · Onde está o gap, 4 · Quem vê diferente, 5 · Onde dói, pergunta a pergunta e 6 · Execução e impacto, com a aderência dos ativos ao final do nível 6. Notas, camadas, perguntas e aderência vêm dos dados reais; execução das alavancas, uso do ativo, estimativa do agente e evolução são ilustrativos e identificados como tal (ver `docs/analytics-impacto.md`).
 
 ## Convenções locais

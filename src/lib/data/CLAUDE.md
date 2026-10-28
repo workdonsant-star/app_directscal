@@ -4,7 +4,10 @@ Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no
 
 ## Regras
 
+- `demo/` concentra cenário fictício, relatório, ativos, agente determinístico e estado local validado de `/demo`. Não modifica as fontes operacionais nem usa serviços externos. A distribuição online exclui APIs e módulos operacionais.
+
 - Páginas e componentes devem importar dados daqui, não de `mock-data.ts`.
+- C1/M04: o Overview operacional escolhe a coleta individual mais recente por closedAt/createdAt, inclusive quando recebe o filtro legado todos. `collection-comparison.ts` restringe referências à mesma organização/template e ao mesmo conjunto de perguntas por dimensão/texto; IDs de perguntas podem variar entre coletas. Alterações do público/período são explicitadas na interface; a comparação não prova impacto. O histórico bruto permanece preservado.
 - Leituras Maturidade que falam com Supabase são assíncronas e server-side.
 - Leituras Maturidade nunca expandem `superadmin` para todas as organizações. Esse papel não possui escopo de cliente; dados administrativos são resolvidos pelas fontes e APIs de `admin`.
 - Client Components devem importar apenas helpers puros de `omdx-domain.ts`, nunca a data-source Supabase.
@@ -204,3 +207,8 @@ A12/A03: exclusão de ativo referenciado por histórico de rotina permanece impe
 
 
 A17: auditorias e avaliações administrativas avançam por cursor (created_at bruto + id), sem offset; novas consultas não deslocam a página e escondem lacunas antigas.
+
+
+C1: buildPublishedActionPointsBoard conserva recommendedAction em description, além da leitura editorial em why. Não substituir a descrição publicada pela leitura da dimensão.
+
+O DTO do painel conserva etapa, prazo e progresso da atribuição em implementation; valores ausentes permanecem nulos e separados da medição por oportunidades.

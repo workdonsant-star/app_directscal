@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Fragment, useState, type ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
 import { AnimatePresence, motion, useIsPresent, useReducedMotion, type Variants } from "motion/react";
@@ -50,7 +49,7 @@ function latestCheckIn(points: AdherenceActionPoint[]) {
 // Barra de aderência com a meta marcada; o número carrega o valor.
 function AdherenceBar({ value, health, showTarget = true }: { value: number | null; health: AdherenceHealth; showTarget?: boolean }) {
   if (value === null) {
-    return <span className="text-sm text-muted-foreground">Sem medida</span>;
+    return <span className="text-sm text-muted-foreground">Sem medição</span>;
   }
   return (
     <span className="flex items-center gap-3">
@@ -246,7 +245,6 @@ export function ActionPointsPeopleView({ board }: { board: AdherenceBoard }) {
       <div>
         <h1 className="text-ui-page">Action points</h1>
         <p className="mt-1 text-sm text-muted-foreground">{board.source ? `${allPoints.length} ${allPoints.length === 1 ? "action point publicado" : "action points publicados"} · ${board.source.name}` : headline}</p>
-        {board.source && <Link className="mt-2 inline-block text-sm underline" href={`/omdx/${board.source.diagnosticId}/action-points`}>Baixar action points publicados</Link>}
       </div>
 
       <AdherenceSummary average={averageAdherence(allPoints)} dist={totalDist} total={allPoints.length} measured={!board.source} operational={Boolean(board.source)} />

@@ -77,6 +77,8 @@ src/app/
 
 ## Convenções
 
+- `/demo` é uma rota pública aditiva com o shell compartilhado do produto e fixtures isoladas, sem sessão ou serviços reais. `scripts/demo/prepare.mjs` distribui somente essa rota em projeto dedicado. Ver `demo/CLAUDE.md` e `docs/ambiente-demo.md`.
+
 - **Server Components por padrão.** `"use client"` somente quando houver estado, efeito, browser API ou interação real. O Overview atual é Server Component; os filhos interativos (tabela com filtro, theme toggle) é que são `"use client"`.
 - **Route groups com parênteses** (`(auth)`, `(app)`) **não criam segmento de URL** — servem para agrupar rotas que compartilham layout ou responsabilidade.
 - **Redirects no servidor** com `redirect()` de `next/navigation` (vide `src/app/page.tsx`).
@@ -262,3 +264,12 @@ A superfície autenticada rola internamente abaixo da topbar: app-shell tem altu
 Fechamento de 19/10/2026: Action Points liga a seleção publicada real à visão por pessoa (inclusive v2), com filtro ?diagnostico e estado vazio. Downloads de ações recusam rascunhos e usam a mesma seleção; PDF de relatório inclui editorial aprovado. Revisões são privadas até publicar.
 
 A15: POST /api/internal/slack-deliveries é consumidor limitado a uma entrega, com segredo dedicado obrigatório (mínimo 32 caracteres), sem sessão/browser ou empresa enviada no payload. Não existe scheduler externo configurado pela implementação; o acionamento periódico deve ser homologado na implantação.
+
+Relatórios reais e demo usam ReportWorkspace com as mesmas seções, índice, contato e ações. Estados públicos de coleta e agradecimento ficam nos componentes omdx compartilhados, preservando o fluxo /r autorizado.
+
+Downloads de diagnóstico oferecem relatório editorial por padrão, PDF de dados em `conteudo=dados` e CSV em `formato=csv`. As rotas de exemplo/demo reutilizam o renderer com fontes locais; o tracing em next.config.ts inclui os assets PDF.
+
+C2: /docs é o guia do cliente com nomes atuais; /admin/guia é o guia da operação sob o layout administrativo. O leitor de ativos oferece acesso ao agente e /assistente oferece Guia de uso. Sem novo acesso a dados ou conexão externa.
+
+
+`GET /api/auth/site-profile` devolve somente nome/foto da sessão definitiva ao Website, com CORS restrito aos dois domínios oficiais e sem cache. Não compartilha tokens. Ver `api/auth/site-profile/CLAUDE.md`.

@@ -183,3 +183,12 @@ A06: dados operacionais agora incluem contagens reais por oportunidade e convers
 
 
 A07: detalhe do ciclo inclui decisões humanas autorizadas, com ator/motivo/data e prazo de retorno separado do prazo original. Validação/exceção continuam nos fatos de origem. Não apresentar orientação gravada no app como mensagem entregue no Slack.
+
+O download da visão por liderança passa pela resolução de URLs de AppRuntimeProvider, identidade por padrão. Na apresentação, source e dados de rotina vêm do cenário fictício; o componente visual é o mesmo do produto.
+
+C1/A01: Sem medição é uma ausência de base, separada da situação Sem responsável. Por decisão de 26/10/2026, o retorno ao relatório foi removido da abertura. `ActionPointsDownload` aparece exclusivamente nas actions da AppTopbar, com o diagnosticId da fonte publicada e URL resolvida pelo runtime. Sem fonte publicada, não há botão de download.
+
+
+C1: o detalhe recebe a descrição recomendada da ação publicada, idêntica à fonte do PDF de Action Points. A leitura do consultor permanece separada como contexto; exemplos sem descrição mantêm o resumo existente.
+
+O detalhe operacional também mostra responsável, etapa, prazo acordado e andamento da implantação. Prazo sugerido da publicação permanece identificado como sugestão; percentual de implantação não representa execução recorrente. Sem atribuição, prazo/andamento são ausentes, nunca zero inventado.

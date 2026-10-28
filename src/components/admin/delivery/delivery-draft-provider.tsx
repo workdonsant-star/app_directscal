@@ -42,6 +42,8 @@ type DeliveryDraft = {
   deliveryOptions: DeliveryOption[];
   dimensionReadings: Record<string, string>;
   feedback: string | null;
+  feedbackKind: "success" | "error" | null;
+  hasUnsavedChanges: boolean;
   isSaving: boolean;
   persistDelivery: (intent: "save" | "publish") => Promise<void>;
   readyToPublish: boolean;
@@ -113,7 +115,11 @@ export function DeliveryDraftProvider({
     ...publication?.dimensionReadings,
   }));
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [feedbackKind, setFeedbackKind] = useState<"success" | "error" | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const content = JSON.stringify({ specialistId, report, dimensionReadings, selectedActionPointIds: [...selectedActionPointIds].sort() });
+  const [savedContent, setSavedContent] = useState<string | null>(() => publication ? content : null);
+  const hasUnsavedChanges = content !== savedContent;
 
   const reportFilledCount = reportFields.filter(
     (field) => report[field.key].trim().length >= 20,
@@ -125,10 +131,13 @@ export function DeliveryDraftProvider({
     reportComplete && actionPointsComplete && specialistComplete;
 
   async function persistDelivery(intent: "save" | "publish") {
+    if (isSaving) return;
     if (intent === "publish" && !readyToPublish) return;
 
     setIsSaving(true);
     setFeedback(null);
+    setFeedbackKind(null);
+    const submittedContent = content;
 
     try {
       const response = await fetch(`/api/admin/deliveries/${delivery.id}`, {
@@ -142,16 +151,18 @@ export function DeliveryDraftProvider({
           selectedActionPointIds: [...selectedActionPointIds],
         }),
       });
-      const result = (await response.json()) as {
+      const result = (await response.json().catch(() => null)) as {
         message?: string;
         publication?: AdminDeliveryPublication;
-      };
+      } | null;
 
-      if (!response.ok || !result.publication) {
-        throw new Error(result.message ?? "Não foi possível salvar a entrega.");
+      if (!response.ok || !result?.publication) {
+        throw new Error(result?.message ?? "Não foi possível salvar a entrega. Sua redação foi preservada; tente novamente.");
       }
 
       setStatus(result.publication.status);
+      setSavedContent(submittedContent);
+      setFeedbackKind("success");
       setFeedback(
         intent === "publish"
           ? "Entrega publicada. O relatório já está disponível para o cliente."
@@ -159,6 +170,7 @@ export function DeliveryDraftProvider({
       );
       router.refresh();
     } catch (error) {
+      setFeedbackKind("error");
       setFeedback(
         error instanceof Error
           ? error.message
@@ -194,6 +206,8 @@ export function DeliveryDraftProvider({
         deliveryOptions,
         dimensionReadings,
         feedback,
+        feedbackKind,
+        hasUnsavedChanges,
         isSaving,
         persistDelivery,
         readyToPublish,

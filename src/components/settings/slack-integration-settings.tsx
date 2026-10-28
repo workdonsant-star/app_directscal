@@ -1,5 +1,7 @@
 "use client";
 
+import { useAppRuntime } from "@/components/app-runtime";
+
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -29,6 +31,7 @@ export function SlackIntegrationSettings({
   result: string | null;
 }) {
   const router = useRouter();
+  const runtime = useAppRuntime();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const resultMessage = result ? resultMessages[result] : null;
@@ -37,13 +40,13 @@ export function SlackIntegrationSettings({
     try {
       setPending(true);
       setError(null);
-      const response = await fetch("/api/integrations/slack/installation", {
+      const response = await runtime.request("/api/integrations/slack/installation", {
         method: "DELETE",
       });
 
       if (!response.ok) throw new Error();
 
-      router.replace("/configuracoes?secao=slack");
+      router.replace(runtime.href("/configuracoes?secao=slack"));
       router.refresh();
     } catch {
       setError("Não foi possível desconectar o Slack.");
@@ -72,7 +75,7 @@ export function SlackIntegrationSettings({
               variant="outline"
               disabled={!available}
               nativeButton={false}
-              render={<a href="/api/integrations/slack/install" />}
+              render={<a href={runtime.href("/api/integrations/slack/install")} />}
             >
               Conectar Slack
             </Button>
@@ -108,7 +111,7 @@ export function SlackIntegrationSettings({
               variant="outline"
               disabled={!available}
               nativeButton={false}
-              render={<a href="/api/integrations/slack/install" />}
+              render={<a href={runtime.href("/api/integrations/slack/install")} />}
             >
               Reconectar Slack
             </Button>

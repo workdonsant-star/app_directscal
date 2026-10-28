@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { useAppRuntime } from "@/components/app-runtime";
 
 import { getManagementAssetCategoryFolders, type ManagementAssetCategoryFolder } from "@/lib/data/management-asset-categories";
 import type { AssetNavigationPreferences } from "@/lib/contracts/asset-navigation";
@@ -158,7 +159,8 @@ export function AppSidebar({
     role?: "superadmin" | "admin" | "cliente";
   };
 }) {
-  const pathname = usePathname();
+  const runtime = useAppRuntime();
+  const pathname = runtime.pathname(usePathname());
   const { isCompact, isMobile, setOpen, setOpenMobile } = useSidebar();
   const closeCompactSidebar = () => {
     if (isMobile) setOpenMobile(false);

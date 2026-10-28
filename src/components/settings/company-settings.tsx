@@ -1,5 +1,7 @@
 "use client";
 
+import { useAppRuntime } from "@/components/app-runtime";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -107,6 +109,7 @@ function ReadOnlyCompanyField({
 
 export function CompanySettings({ profile }: CompanySettingsProps) {
   const router = useRouter();
+  const runtime = useAppRuntime();
   const [draft, setDraft] = useState<CompanyDraft>({
     companySize: profile.companyDetails.companySize ?? "",
     industry: profile.companyDetails.industry ?? "",
@@ -149,7 +152,7 @@ export function CompanySettings({ profile }: CompanySettingsProps) {
     setIsSaving(true);
     setNotice(null);
 
-    const response = await fetch("/api/profile", {
+    const response = await runtime.request("/api/profile", {
       body: JSON.stringify(commercialData),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",

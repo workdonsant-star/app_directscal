@@ -1,5 +1,7 @@
 "use client";
 
+import { useAppRuntime } from "@/components/app-runtime";
+
 import {
   Check,
   Copy,
@@ -161,6 +163,7 @@ export function DiagnosticsTable({
   onClose,
   pending = false,
 }: DiagnosticsTableProps) {
+  const runtime = useAppRuntime();
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [diagnosticToDelete, setDiagnosticToDelete] =
     useState<Diagnostic | null>(null);
@@ -189,15 +192,19 @@ export function DiagnosticsTable({
   }
 
   function handleDownloadReport(diagnostic: Diagnostic) {
-    window.location.assign(`/omdx/${diagnostic.id}/relatorio`);
+    window.location.assign(runtime.href(`/omdx/${diagnostic.id}/relatorio`));
   }
 
   function handleDownloadReportCsv(diagnostic: Diagnostic) {
-    window.location.assign(`/omdx/${diagnostic.id}/relatorio?formato=csv`);
+    window.location.assign(runtime.href(`/omdx/${diagnostic.id}/relatorio?formato=csv`));
+  }
+
+  function handleDownloadDataPdf(diagnostic: Diagnostic) {
+    window.location.assign(runtime.href(`/omdx/${diagnostic.id}/relatorio?conteudo=dados`));
   }
 
   function handleDownloadActionPoints(diagnostic: Diagnostic) {
-    window.location.assign(`/omdx/${diagnostic.id}/action-points`);
+    window.location.assign(runtime.href(`/omdx/${diagnostic.id}/action-points`));
   }
 
   return (
@@ -356,11 +363,17 @@ export function DiagnosticsTable({
                         </DropdownMenuItem>
                       )}
                       {canGenerateDiagnosticReport(d) && (
+                        <DropdownMenuItem onClick={() => handleDownloadDataPdf(d)}>
+                          <Download className="size-4" />
+                          Baixar dados PDF
+                        </DropdownMenuItem>
+                      )}
+                      {canGenerateDiagnosticReport(d) && (
                         <DropdownMenuItem
                           onClick={() => handleDownloadReportCsv(d)}
                         >
                           <Download className="size-4" />
-                          Baixar relatório CSV
+                          Baixar dados CSV
                         </DropdownMenuItem>
                       )}
                       {canGenerateDiagnosticActionPlan(d) && (

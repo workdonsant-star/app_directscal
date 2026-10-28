@@ -30,3 +30,5 @@ Componentes da página `/configuracoes`, responsável pelos dados empresariais d
 - `OrganizationStructureSettings` também atende `/onboarding` com `inlineActions`: CTA no fluxo da página, título h2 e o mesmo drawer e APIs de seleção pelo Slack. Em Configurações mantém h1 e ações na topbar.
 
 - Configurações mostra uma seção por vez via `secao`: setores (padrão), empresa e slack. Somente a seção montada injeta suas ações na topbar. Após desconectar Slack, permanece em `?secao=slack`; retornos OAuth legados `?slack=...` abrem Slack automaticamente.
+
+Apresentação isolada: os mesmos componentes são reutilizados em /demo via AppRuntimeProvider. Links e requisições usam useAppRuntime; o default mantém as URLs/fetch do produto. A fonte local recusa operações desconhecidas, sem encaminhar para serviços reais. Não inserir condições visuais específicas de demo nestes componentes.

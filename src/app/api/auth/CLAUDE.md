@@ -16,3 +16,6 @@ Endpoints HTTP usados pelas telas públicas de autenticação. A rota dinâmica 
 
 
 A14: reset-password é recuperação real e genérica para não revelar existência/método da conta; confirma persistência da solicitação antes de responder, falha de configuração/banco retorna indisponibilidade. complete valida token/versão/expiração e troca senha atomicamente; sem login automático. Nunca usar endpoint mockado para provar recuperação real.
+
+
+`site-profile` é a leitura mínima autenticada para o site público: nome/foto, sem tokens, apenas Origins HTTPS oficiais, sem cache. Usa a sessão existente e não altera o login. Ver `site-profile/CLAUDE.md`.

@@ -1,5 +1,7 @@
 "use client";
 
+import { useAppRuntime } from "@/components/app-runtime";
+
 import {
   useCallback,
   useState,
@@ -86,6 +88,7 @@ function getInitials(name: string) {
 
 export function ProfileSettings({ profile, slackIdentity, passwordEnabled = false }: ProfileSettingsProps) {
   const router = useRouter();
+  const runtime = useAppRuntime();
   const [draft, setDraft] = useState<ProfileDraft>({});
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -174,7 +177,7 @@ export function ProfileSettings({ profile, slackIdentity, passwordEnabled = fals
         socialName: profile.companyDetails.socialName,
         website: profile.companyDetails.website,
       };
-      const response = await fetch("/api/profile", {
+      const response = await runtime.request("/api/profile", {
         body: JSON.stringify(commercialData),
         headers: { "Content-Type": "application/json" },
         method: "PATCH",
@@ -197,7 +200,7 @@ export function ProfileSettings({ profile, slackIdentity, passwordEnabled = fals
       }
     }
 
-    const response = await fetch("/api/profile", {
+    const response = await runtime.request("/api/profile", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: trimmedName, avatarUrl: avatarPreviewUrl ?? null }),
@@ -211,7 +214,7 @@ export function ProfileSettings({ profile, slackIdentity, passwordEnabled = fals
     clearProfileOverrides(profile.id);
 
     if (passwordEnabled && (currentPassword || newPassword || confirmPassword)) {
-      const changed = await fetch("/api/profile/password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ currentPassword, password: newPassword, confirmation: confirmPassword }) }).catch(() => null);
+      const changed = await runtime.request("/api/profile/password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ currentPassword, password: newPassword, confirmation: confirmPassword }) }).catch(() => null);
       const body = await changed?.json().catch(() => null);
       if (!changed?.ok) {
         setIsSaving(false); setDraft({});

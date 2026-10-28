@@ -22,3 +22,5 @@ Página pública para responder ao diagnóstico Maturidade a partir de um token 
 
 
 A13: o formulário envia UUID aleatório por link/tentativa para idempotência transacional; a chave não identifica a pessoa. Recibos do banco são privados. A trava é por navegador/tentativa, sem prometer unicidade pessoal entre dispositivos. Respostas não são guardadas no armazenamento local; falha de localStorage não impede confirmação pelo cookie do servidor.
+
+PublicResponseState é compartilhado em components/omdx, preservando integralmente o estado visual. A página continua resolvendo token, cookie, prazo e ordem de perguntas no servidor.

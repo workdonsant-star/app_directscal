@@ -2,6 +2,7 @@
 
 import { ChevronDown, type LucideIcon } from "lucide-react";
 import Link from "next/link";
+import { useAppRuntime } from "@/components/app-runtime";
 import {
   Collapsible,
   CollapsibleContent,
@@ -38,11 +39,12 @@ export function NavMain({
   items: NavigationItem[];
 }) {
   const { state, isMobile, setOpen } = useSidebar();
+  const { href } = useAppRuntime();
   return (
     <SidebarGroup>
       {label ? (
         <SidebarGroupLabel className="text-xs font-normal text-muted-foreground">
-          {labelHref ? <Link href={labelHref} onClick={onNavigate} className="rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">{label}</Link> : label}
+          {labelHref ? <Link href={href(labelHref)} onClick={onNavigate} className="rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">{label}</Link> : label}
         </SidebarGroupLabel>
       ) : null}
       <SidebarMenu className="gap-1">
@@ -76,7 +78,7 @@ export function NavMain({
                 tooltip={item.disabled ? undefined : item.title}
                 disabled={item.disabled}
                 isActive={item.isActive}
-                render={item.url ? <Link href={item.url} /> : undefined}
+                render={item.url ? <Link href={href(item.url)} /> : undefined}
                 onClick={item.url ? onNavigate : undefined}
                 type={item.url ? undefined : "button"}
               >

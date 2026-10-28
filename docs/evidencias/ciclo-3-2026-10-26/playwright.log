@@ -1,0 +1,17 @@
+
+Running 8 tests using 1 worker
+
+(node:10505) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:10505) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › tests/e2e/cycle-three.spec.ts:14:9 › C3 light › diretório falho descarta pessoas antigas e preserva o formulário (3.5s)
+  ✓  2 [chromium] › tests/e2e/cycle-three.spec.ts:37:9 › C3 light › salvamento confirmado exige releitura antes de nova mutação (1.5s)
+  ✓  3 [chromium] › tests/e2e/cycle-three.spec.ts:59:9 › C3 light › responsável removido não pode salvar e transferência usa diretório atual (1.8s)
+  ✓  4 [chromium] › tests/e2e/cycle-three.spec.ts:86:9 › C3 light › pré-requisitos de criação aparecem junto à página (377ms)
+  ✓  5 [chromium] › tests/e2e/cycle-three.spec.ts:14:9 › C3 dark › diretório falho descarta pessoas antigas e preserva o formulário (1.2s)
+  ✓  6 [chromium] › tests/e2e/cycle-three.spec.ts:37:9 › C3 dark › salvamento confirmado exige releitura antes de nova mutação (1.1s)
+  ✓  7 [chromium] › tests/e2e/cycle-three.spec.ts:59:9 › C3 dark › responsável removido não pode salvar e transferência usa diretório atual (1.7s)
+  ✓  8 [chromium] › tests/e2e/cycle-three.spec.ts:86:9 › C3 dark › pré-requisitos de criação aparecem junto à página (466ms)
+
+  8 passed (17.4s)

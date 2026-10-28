@@ -510,8 +510,7 @@ export function OmdxReportDocument({ report, editorial }: {
     >
       <CoverPage report={report} />
       {editorial && (
-        <Page size="A4" style={styles.page} wrap>
-          <ReportHeader report={report} section="Análise publicada" />
+        <Page size="A4" style={[styles.page, { paddingTop: 82 }]} wrap>
           {Object.entries({
             "Resumo executivo": editorial.executiveSummary,
             "Leitura geral": editorial.generalReading,
@@ -521,10 +520,11 @@ export function OmdxReportDocument({ report, editorial }: {
             "Conclusão": editorial.conclusion,
           }).map(([title, text]) => (
             <View key={title} style={{ marginBottom: 16 }}>
-              <Text style={styles.subsectionTitle}>{title}</Text>
+              <Text style={styles.subsectionTitle} minPresenceAhead={30}>{title}</Text>
               <Text>{text}</Text>
             </View>
           ))}
+          <ReportHeader report={report} section="Análise publicada" />
           <ReportFooter report={report} />
         </Page>
       )}

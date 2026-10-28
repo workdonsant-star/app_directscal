@@ -71,3 +71,7 @@ Os cards das bibliotecas preservam `bg-sidebar` no claro e usam `dark:bg-card` n
 - O + do cabeçalho usa right-1 e área de 20px, igual ao SidebarMenuAction dos três pontinhos; os centros permanecem na mesma coluna.
 
 - Leitor (`rich-text-view.tsx`) e editor (`rich-text-editor.tsx`) usam os mesmos tokens de documento: `font-doc`/`font-doc-heading`, `text-doc-h2`, `text-doc-h3`, `text-doc-body` (16/28) em `muted-foreground`, `strong` em 700 e `text-doc-table`. O cabeçalho do ativo usa `text-doc-title` e `font-label text-doc-label` (mono, sem caixa alta). Ver `docs/tokens-de-tipografia.md`.
+
+Apresentação isolada: os mesmos componentes são reutilizados em /demo via AppRuntimeProvider. Links e requisições usam useAppRuntime; o default mantém as URLs/fetch do produto. A fonte local recusa operações desconhecidas, sem encaminhar para serviços reais. Não inserir condições visuais específicas de demo nestes componentes.
+
+C2: o leitor oferece Consultar agente na topbar enquanto está em leitura, inclusive para admin da empresa. O link usa AppRuntime e não envia pergunta automaticamente, nem presume acesso fora da sessão. Durante edição, apenas as ações do editor ficam visíveis.

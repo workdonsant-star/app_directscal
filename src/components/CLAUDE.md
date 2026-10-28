@@ -140,3 +140,7 @@ Quando a sidebar desktop estiver colapsada, o botão de expandir fica no Sidebar
 - Action Points usa ListChecks na sidebar para diferenciar ações executáveis do SquarePlus de Pesquisas.
 
 - Em `/configuracoes`, a sidebar substitui a navegação do app por Setores e lideranças, Empresa e Slack; o rodapé oferece Voltar ao app. A seleção acompanha `secao` na URL com Suspense localizado, sem mudar o shell ou permissões.
+
+AppRuntimeProvider define uma fronteira opcional de URLs, pathname, requisições e saída para apresentações isoladas. Sem provider, URLs e fetch preservam o comportamento operacional. Sidebar, NavMain, NavUser e AppTopbar são compartilhados; a demo não deve manter cópias visuais. Utilities é vazio no produto e recebe somente controles da apresentação na demo.
+
+C2: help/ProductGuide reúne guias de uso e operação com links por público. O botão Alertas sem ação foi removido da topbar; não há fluxo de notificações implementado. Ações contextuais e utilities da demo permanecem.

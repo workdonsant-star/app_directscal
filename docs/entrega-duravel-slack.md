@@ -46,3 +46,13 @@ SQL transacional com ROLLBACK aprovou: reentrada, payload divergente, reserva ex
 Piloto pendente: evento assinado do Slack, consumidor implantado, indisponibilidade provocada em ambiente de teste e confirmação única na conversa. Não confundir testes com substitutos ou SQL com prova de entrega real.
 
 Fontes: [Events API](https://docs.slack.dev/apis/events-api/), [chat.postMessage](https://docs.slack.dev/reference/methods/chat.postMessage/) e documentação local Next.js after().
+
+## Superfície operacional — 26/10/2026
+
+No detalhe da empresa, Entregas no Slack consulta a API existente sob demanda, com paginação e preservação da lista após falha. Pendente, Processando, Entregue, Encerrado sem envio, Falhou e Incerto são distintos. A confirmação entregue exige deliveredTs. Tentativa automática mostra a janela; somente falha sem tentativa automática oferece Recuperar entrega, após confirmar correção da causa. O POST conserva expectedUpdatedAt e as barreiras do servidor. Uma resposta perdida trava novas ações até Atualizar; erro nunca simula sucesso. O painel não ativa consumidor periódico nem comprova entrega externa.
+
+## Piloto real de DM/thread — 26/10/2026
+
+Três perguntas fictícias explicitamente autorizadas chegaram pela instalação existente. Resposta com fonte, continuação na thread e recusa por ausência de informação foram confirmadas no Slack. Os três jobs ficaram concluídos com uma tentativa e timestamp de entrega, sem duplicação observada. Versões citadas conferidas com as publicações vigentes. Ver `ciclo-2-ativos-e-consulta-2026-10-26.md` e `evidencias/ciclo-2-2026-10-26/slack-pilot.json`.
+
+A prova cobre o processamento imediato. Consumidor periódico, recuperação após falha controlada e envio incerto continuam sem piloto real; nenhum desses cenários deve ser inferido das três entregas bem-sucedidas.

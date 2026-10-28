@@ -111,9 +111,9 @@ export function AnalyticsCard({
     <div className={cn("flex min-w-0 flex-col gap-4 rounded-[10px] bg-sidebar p-5 dark:bg-card", className)}>
       {title ? (
         <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 flex-col gap-1">
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
             <h3 className="text-ui-title text-card-foreground">{title}</h3>
-            {description ? <p className="text-xs text-muted-foreground">{description}</p> : null}
+            {description ? <p className="text-xs text-balance text-muted-foreground">{description}</p> : null}
           </div>
           {aside}
         </div>

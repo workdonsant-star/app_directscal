@@ -1,17 +1,20 @@
 "use client";
+
+import { useAppRuntime } from "@/components/app-runtime";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { SlackIdentityStatus } from "@/lib/contracts/slack-identity";
 
 export function SlackIdentitySection({ initial }: { initial: SlackIdentityStatus }) {
+  const runtime = useAppRuntime();
   const [status, setStatus] = useState(initial);
   const [challenge, setChallenge] = useState<{ command: string; expiresAt: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [confirmUnlink, setConfirmUnlink] = useState(false);
   async function refresh() {
-    const response = await fetch("/api/profile/slack-identity", { cache: "no-store" });
+    const response = await runtime.request("/api/profile/slack-identity", { cache: "no-store" });
     const body = await response.json();
     if (!response.ok) throw new Error(body.message ?? "Não foi possível verificar a confirmação.");
     setStatus(body);
@@ -26,7 +29,7 @@ export function SlackIdentitySection({ initial }: { initial: SlackIdentityStatus
         setNotice(current.connected ? "Identidade confirmada nos dois canais." : "A confirmação ainda não foi recebida. Envie o código na conversa privada com o DirectScal.");
       } else {
         setChallenge(null);
-        const response = await fetch("/api/profile/slack-identity", { method: operation === "start" ? "POST" : "DELETE", headers: { "Content-Type": "application/json" }, body: "{}" });
+        const response = await runtime.request("/api/profile/slack-identity", { method: operation === "start" ? "POST" : "DELETE", headers: { "Content-Type": "application/json" }, body: "{}" });
         const body = await response.json();
         if (!response.ok) throw new Error(body.message ?? "Não foi possível atualizar sua identidade.");
         if (operation === "start") setChallenge(body);

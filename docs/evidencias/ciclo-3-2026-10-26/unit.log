@@ -1,0 +1,9 @@
+
+ RUN  v4.1.6 /Users/donsantos/Documents/GitHub/app_directscal
+
+
+ Test Files  3 passed (3)
+      Tests  12 passed (12)
+   Start at  10:38:40
+   Duration  988ms (transform 448ms, setup 0ms, import 1.50s, tests 27ms, environment 0ms)
+

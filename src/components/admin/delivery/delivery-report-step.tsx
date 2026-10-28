@@ -14,6 +14,8 @@ export function DeliveryReportStep() {
         </h2>
         <p className="max-w-3xl text-sm text-muted-foreground">
           Escreva a interpretação consultiva que será combinada aos dados e gráficos do diagnóstico.
+          Os textos iniciais são apoios editáveis: revise, substitua ou descarte conforme sua análise.
+          Salvar rascunho não altera a versão do cliente; Publicar confirma a entrega.
         </p>
       </section>
 

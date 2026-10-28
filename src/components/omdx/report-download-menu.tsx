@@ -22,8 +22,8 @@ type ReportDownloadMenuProps = {
   variant?: ComponentProps<typeof Button>["variant"];
 };
 
-function downloadReport(diagnosticId: string, format: "csv" | "pdf") {
-  const suffix = format === "csv" ? "?formato=csv" : "";
+function downloadReport(diagnosticId: string, format: "csv" | "pdf" | "data-pdf") {
+  const suffix = format === "csv" ? "?formato=csv" : format === "data-pdf" ? "?conteudo=dados" : "";
 
   window.location.assign(`/omdx/${diagnosticId}/relatorio${suffix}`);
 }
@@ -55,14 +55,18 @@ export function ReportDownloadMenu({
         </span>
         <ChevronDown className="size-3.5" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align={align}>
+      <DropdownMenuContent align={align} className="w-64">
         <DropdownMenuItem onClick={() => downloadReport(diagnosticId, "pdf")}>
           <FileText className="size-4" />
-          PDF
+          Relatório de diagnóstico (PDF)
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => downloadReport(diagnosticId, "data-pdf")}>
+          <FileText className="size-4" />
+          Dados da pesquisa (PDF)
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => downloadReport(diagnosticId, "csv")}>
           <FileSpreadsheet className="size-4" />
-          CSV
+          Dados da pesquisa (CSV)
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

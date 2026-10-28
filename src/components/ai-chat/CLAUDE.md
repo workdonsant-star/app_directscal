@@ -20,3 +20,5 @@ Esta pasta concentra a interface conversacional autenticada da Directscal, ligad
 
 
 A17: AssistantHistory abre Sheet com registros próprios do app e pagina anteriores. Não altera draft/conversa atual. Exibe fontes e versão usada; avisa que link abre publicação vigente. Falha conserva histórico já lido; sem localStorage nem dados de outras contas/Slack.
+
+Apresentação isolada: os mesmos componentes são reutilizados em /demo via AppRuntimeProvider. Links e requisições usam useAppRuntime; o default mantém as URLs/fetch do produto. A fonte local recusa operações desconhecidas, sem encaminhar para serviços reais. Não inserir condições visuais específicas de demo nestes componentes.

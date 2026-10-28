@@ -1,0 +1,48 @@
+{
+  "date": "2026-10-26",
+  "timezone": "America/Sao_Paulo",
+  "environment": "Instalação Slack existente; sem novo deploy",
+  "authorization": "Até três perguntas fictícias na conversa direta autorizada",
+  "sentQuestions": 3,
+  "checks": [
+    {
+      "case": "fonte_publicada",
+      "outcome": "passed",
+      "latencySecondsApprox": 44,
+      "status": "concluido",
+      "attempts": 1,
+      "deliveryConfirmed": true,
+      "error": null
+    },
+    {
+      "case": "continuacao_thread",
+      "outcome": "passed",
+      "latencySecondsApprox": 32,
+      "status": "concluido",
+      "attempts": 1,
+      "deliveryConfirmed": true,
+      "error": null
+    },
+    {
+      "case": "informacao_ausente",
+      "outcome": "passed",
+      "latencySecondsApprox": 30,
+      "status": "concluido",
+      "attempts": 1,
+      "deliveryConfirmed": true,
+      "error": null
+    }
+  ],
+  "publishedVersionsVerified": {
+    "sop": "1",
+    "governanca": "1",
+    "playbook": "2"
+  },
+  "duplicatesObserved": false,
+  "notVerified": [
+    "consumidor periódico",
+    "recuperação após falha",
+    "menção em canal",
+    "feedback por botão no Slack"
+  ]
+}

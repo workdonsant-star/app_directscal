@@ -1,6 +1,7 @@
 "use client";
 
 import { useSpecialists } from "@/components/admin/use-specialists";
+import { SlackDeliveriesPanel } from "@/components/admin/slack-deliveries-panel";
 
 import { ArrowRight, Building2, CalendarDays, UserRoundCheck } from "lucide-react";
 import Link from "next/link";
@@ -301,6 +302,10 @@ export function AdminCompanyDetail({ context }: { context: AdminCompanyContext }
           </Table>
         </div>
       </section>
+
+      {company.organizationId ? <SlackDeliveriesPanel key={company.id} companyId={company.id} /> : null}
+
+      <Link href="/admin/guia" className="w-fit text-sm underline underline-offset-4">Guia de operação</Link>
 
       <section className="flex flex-col gap-4" aria-labelledby="company-access-title">
         <div className="space-y-1">

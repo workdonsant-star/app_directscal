@@ -4,6 +4,10 @@ Antes de editar, releia o `AGENTS.md`, `src/components/CLAUDE.md` e `src/compone
 
 ## Propósito
 
+### Regra vigente do C1 — 24/10/2026
+
+O cabeçalho agora é Percepção e acompanhamento. `CollectionReading` substitui o veredito visível. Desde a revisão de 26/10/2026, mostra somente a média das percepções na escala visual de 1 a 5 e o volume de respostas de Fundador, Liderança e Time, com total. Nome repetido da coleta, período, instrumento e parágrafos metodológicos foram removidos desse bloco por decisão do usuário. A régua usa marcador e número, sem estágio de maturidade nem referência universal mínima; as barras por nível partem de zero e compartilham o maior volume como escala, sem representar percentual de adesão. Zero respostas é exibido como zero; ausência de coleta mantém Sem dados e nenhuma contagem inventada. O operacional seleciona uma coleta; `todos` fica restrito a exemplos explícitos e soma as contagens das opções exibidas. Não há classificação de tipos de crise implementada no modelo; não inferir nem inventar categorias na apresentação. Classificações de estado saíram das duas tabelas; dimensões/perguntas orientam aprofundamento humano. Consultas aos ativos ficam separadas de execução e resultados. Dados ausentes não viram zero ou estimativa. Os componentes antigos e os cálculos internos continuam disponíveis para compatibilidade; as descrições históricas abaixo não governam mais a apresentação operacional. A política de grupos pequenos ainda depende de A16 e não é implementada por esta mudança visual.
+
 Composição da página `/omdx` (e de `/exemplos/analytics`) em seis níveis, do que mais vale para o cliente ao detalhe:
 
 | Nível | Pergunta do cliente | Componente | Dado |
@@ -20,6 +24,8 @@ Ordem visual: veredito; Dimensões gerenciais e Percepção por camada lado a la
 `AnalyticsOverview` monta a página a partir de `buildAnalyticsOverview()` (`src/lib/data/omdx-analytics-overview.ts`). Os componentes só aplicam apresentação.
 
 ## Convenções
+
+- Descrições dos gráficos em `AnalyticsCard` usam `text-balance` (`text-wrap: balance`), alinhadas à esquerda, para distribuir o texto de modo equilibrado entre as linhas, como o Balance do Figma. Não limitar a largura a 60%; essa tentativa foi substituída após esclarecimento do usuário. Títulos e área de plotagem preservam sua largura.
 
 - **Dado ilustrativo é identificado nos charts e tabelas** pela tag `Ilustrativo`. A estimativa usa o token `--overview-chart-estimate`, forma vazada e traço tracejado; a coleta usa forma cheia. Retire a identificação apenas quando o dado vier do agente em produção.
 - **Sem conversa do agente na interface.** A estimativa nasce das conversas no Slack, mas a página mostra só números e charts.
@@ -41,3 +47,5 @@ Ordem visual: veredito; Dimensões gerenciais e Percepção por camada lado a la
 
 
 Desde 19/10/2026, o Analytics operacional não usa impacto ilustrativo: prioridades/notas reais permanecem e contagens/aderência/progresso sem evidência mostram Sem base. Apenas AnalyticsExampleDashboard passa illustrativeImpact. A separação de identidade app/Slack segue pendente em A09.
+
+`/demo` também opta explicitamente pelo cenário ilustrativo. `AnalyticsOverview.actionPointsHref` permite manter a navegação dentro da demo; o padrão operacional continua `/action-points`.

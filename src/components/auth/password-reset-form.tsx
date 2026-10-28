@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,12 +13,19 @@ export function PasswordResetForm() {
   const [password, setPassword] = useState(""), [confirmation, setConfirmation] = useState("");
   const [error, setError] = useState<string | null>(null), [message, setMessage] = useState<string | null>(null);
   const [pending, setPending] = useState(false), [completed, setCompleted] = useState(false);
+  const codeRead = useRef(false);
   useEffect(() => {
+    if (codeRead.current) return;
+    codeRead.current = true;
     const code = new URLSearchParams(window.location.hash.slice(1)).get("codigo");
     // O fragmento existe somente no navegador e é removido após a leitura inicial.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setToken(code && recoveryTokenSchema.safeParse(code).success ? code : null);
-    if (code) window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    if (code !== null) {
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      // Sincroniza o erro com o fragmento inicial, que não existe no servidor.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (!recoveryTokenSchema.safeParse(code).success) setError("Link de recuperação inválido. Solicite novas instruções.");
+    }
   }, []);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setError(null); setMessage(null);

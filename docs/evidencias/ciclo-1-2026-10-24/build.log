@@ -1,0 +1,170 @@
+
+> app_claude_directscal@0.1.0 build
+> next build
+
+▲ Next.js 16.2.6 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 9.3s
+  Running TypeScript ...
+  Finished TypeScript in 9.9s ...
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/88) ...
+  Generating static pages using 7 workers (22/88) 
+  Generating static pages using 7 workers (44/88) 
+  Generating static pages using 7 workers (66/88) 
+✓ Generating static pages using 7 workers (88/88) in 1535ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /a/[slug]
+├ ƒ /a/[slug]/completar
+├ ƒ /action-points
+├ ƒ /action-points/v2
+├ ƒ /admin
+├ ƒ /admin/ativos
+├ ƒ /admin/ativos/[id]
+├ ƒ /admin/ativos/perguntas
+├ ƒ /admin/campanhas
+├ ƒ /admin/empresas
+├ ƒ /admin/empresas/[id]
+├ ƒ /admin/empresas/[id]/criacao-dos-ativos
+├ ƒ /admin/empresas/[id]/criacao-dos-ativos/[assetId]
+├ ƒ /admin/empresas/[id]/criacao-dos-ativos/perguntas
+├ ƒ /admin/empresas/[id]/rotinas
+├ ƒ /admin/entregas/[id]
+├ ƒ /admin/entregas/[id]/action-points
+├ ƒ /admin/entregas/[id]/ativos
+├ ƒ /admin/entregas/[id]/ativos/[assetId]
+├ ƒ /admin/entregas/[id]/ativos/perguntas
+├ ƒ /admin/entregas/[id]/dados
+├ ƒ /admin/entregas/[id]/publicar
+├ ƒ /admin/entregas/[id]/relatorio
+├ ƒ /admin/entregas/[id]/relatorio/pdf
+├ ƒ /admin/especialistas
+├ ƒ /admin/leads
+├ ƒ /admin/leads/[id]
+├ ƒ /admin/modulos
+├ ƒ /admin/operacao
+├ ƒ /admin/operacao/criacao-dos-ativos
+├ ƒ /admin/operacao/criacao-dos-ativos/[id]
+├ ƒ /admin/operacao/criacao-dos-ativos/perguntas
+├ ƒ /api/acquisition/company-by-cnpj
+├ ƒ /api/acquisition/google-complete
+├ ƒ /api/acquisition/oauth-intents
+├ ƒ /api/acquisition/register
+├ ƒ /api/action-points
+├ ƒ /api/action-points/slack-users
+├ ƒ /api/admin/acquisition
+├ ƒ /api/admin/campaigns
+├ ƒ /api/admin/companies/[id]
+├ ƒ /api/admin/companies/[id]/agent-operations
+├ ƒ /api/admin/companies/[id]/result-baselines
+├ ƒ /api/admin/companies/[id]/routine-contact-policy
+├ ƒ /api/admin/companies/[id]/routine-events
+├ ƒ /api/admin/companies/[id]/routine-supervision
+├ ƒ /api/admin/companies/[id]/routines
+├ ƒ /api/admin/companies/[id]/slack-deliveries
+├ ƒ /api/admin/deliveries/[id]
+├ ƒ /api/admin/management-assets
+├ ƒ /api/admin/management-assets/[id]
+├ ƒ /api/admin/management-assets/[id]/transition
+├ ƒ /api/admin/management-assets/bulk
+├ ƒ /api/admin/module-access
+├ ƒ /api/admin/specialists
+├ ƒ /api/assistant/ask
+├ ƒ /api/assistant/feedback
+├ ƒ /api/assistant/history
+├ ƒ /api/auth/[...nextauth]
+├ ƒ /api/auth/leadership-invitations
+├ ƒ /api/auth/leadership-invitations/complete
+├ ƒ /api/auth/login
+├ ƒ /api/auth/logout
+├ ƒ /api/auth/register
+├ ƒ /api/auth/reset-password
+├ ƒ /api/auth/reset-password/complete
+├ ƒ /api/integrations/slack/events
+├ ƒ /api/integrations/slack/install
+├ ƒ /api/integrations/slack/installation
+├ ƒ /api/integrations/slack/interactions
+├ ƒ /api/integrations/slack/oauth
+├ ƒ /api/internal/password-resets
+├ ƒ /api/internal/routine-contacts
+├ ƒ /api/internal/slack-deliveries
+├ ƒ /api/management-assets/[id]
+├ ƒ /api/management-assets/bulk
+├ ƒ /api/omdx/diagnostics
+├ ƒ /api/omdx/diagnostics/[id]
+├ ƒ /api/omdx/diagnostics/[id]/activate
+├ ƒ /api/omdx/diagnostics/[id]/close
+├ ƒ /api/omdx/operational-members
+├ ƒ /api/omdx/operational-members/[id]
+├ ƒ /api/omdx/responses
+├ ƒ /api/profile
+├ ƒ /api/profile/password
+├ ƒ /api/profile/slack-identity
+├ ƒ /api/settings/asset-categories
+├ ƒ /api/settings/asset-navigation
+├ ƒ /api/settings/onboarding
+├ ƒ /api/settings/sectors
+├ ƒ /api/settings/sectors/[id]/resend
+├ ƒ /api/settings/slack-users
+├ ƒ /assistente
+├ ƒ /ativos-de-gestao
+├ ƒ /ativos-de-gestao/[area]
+├ ƒ /ativos-de-gestao/categorias/[categoria]
+├ ƒ /ativos-de-gestao/download/[type]/[id]
+├ ƒ /ativos-de-gestao/governanca
+├ ƒ /ativos-de-gestao/governanca/[id]
+├ ƒ /ativos-de-gestao/matriz-de-papeis
+├ ƒ /ativos-de-gestao/matriz-raci
+├ ƒ /ativos-de-gestao/matriz-raci/[id]
+├ ƒ /ativos-de-gestao/playbooks
+├ ƒ /ativos-de-gestao/playbooks/[id]
+├ ƒ /ativos-de-gestao/sops
+├ ƒ /ativos-de-gestao/sops/[id]
+├ ○ /aula-executiva
+├ ƒ /configuracoes
+├ ƒ /convites/lideranca/[token]
+├ ○ /convites/lideranca/confirmado
+├ ○ /criar-conta
+├ ƒ /demo/[[...path]]
+├ ƒ /demo/action-points/download
+├ ƒ /demo/ativos/download/[id]
+├ ƒ /demo/relatorio/download
+├ ƒ /docs
+├ ƒ /entrar
+├ ƒ /exemplos/analytics
+├ ƒ /gantt
+├ ƒ /iniciativas
+├ ƒ /iniciativas/[id]
+├ ƒ /insights
+├ ƒ /insights/[dimensao]
+├ ƒ /o/[token]
+├ ƒ /omdx
+├ ƒ /omdx/[id]/action-points
+├ ƒ /omdx/[id]/compartilhar
+├ ƒ /omdx/[id]/configurar
+├ ƒ /omdx/[id]/relatorio
+├ ƒ /omdx/camadas
+├ ƒ /omdx/diagnosticos
+├ ƒ /omdx/membros-da-operacao
+├ ƒ /omdx/novo
+├ ƒ /onboarding
+├ ƒ /perfil
+├ ƒ /r/[token]
+├ ƒ /r/[token]/obrigado
+├ ○ /recuperar-senha
+├ ƒ /relatorios
+├ ƒ /relatorios/[id]
+├ ƒ /relatorios/exemplo-acme
+├ ƒ /relatorios/exemplo-acme/download
+└ ƒ /sops
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

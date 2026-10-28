@@ -9,3 +9,5 @@ A07: routine-review-panel reutiliza tabela operational, Dialog e RoutineChoice. 
 
 
 A10: routine-results-panel mostra base de coleta por pergunta/camada e versão do ativo, captura explícita de acordo antigo e ausência de estimativa. Dados iniciais no servidor; atualização própria revalida acesso. Não expõe essas bases no cliente nem infere melhoria por execução. Revisão visual pendente.
+
+C3/A04: cada consulta ao diretório descarta a lista anterior. Erro ou responsável ausente impedem salvar/transferir, mantendo campos e motivo para correção. Gravação confirmada seguida de falha de leitura bloqueia novas mutações até Atualizar dados concluir; a lista anterior permanece visível. Atualização tem estado próprio para evitar leituras concorrentes com edição. Pré-requisitos ausentes para Nova rotina são descritos no fluxo da página. O fuso dos acordos segue o contrato único de São Paulo.

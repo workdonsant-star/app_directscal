@@ -50,11 +50,21 @@ export function AdherenceSheet({
                 {ap.name}
               </SheetTitle>
               <SheetDescription className="max-w-[531px] text-sm leading-5">
-                {ap.why}
+                {ap.description ?? ap.why}
               </SheetDescription>
             </SheetHeader>
 
             <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pb-6">
+              {ap.implementation ? <dl className="mb-6 grid grid-cols-2 gap-4 text-sm">
+                <div><dt className="text-xs text-muted-foreground">Responsável</dt><dd>{category.leader?.name ?? "Sem responsável"}</dd></div>
+                <div><dt className="text-xs text-muted-foreground">Etapa da implantação</dt><dd>{ap.implementation.stage}</dd></div>
+                <div><dt className="text-xs text-muted-foreground">Prazo acordado</dt><dd className="tabular-nums">{ap.implementation.dueOn ? ap.implementation.dueOn.split("-").reverse().join("/") : "Não definido"}</dd><dd className="text-xs text-muted-foreground">Sugestão publicada: {ap.implementation.suggestedDeadline}</dd></div>
+                <div><dt className="text-xs text-muted-foreground">Andamento da implantação</dt><dd className="tabular-nums">{ap.implementation.progress === null ? "Não informado" : `${ap.implementation.progress}%`}</dd><dd className="text-xs text-muted-foreground">Não mede execução recorrente</dd></div>
+              </dl> : null}
+              {ap.description && ap.why ? <div className="mb-6 space-y-2">
+                <h3 className="text-sm font-medium">Leitura que orientou a ação</h3>
+                <p className="whitespace-pre-wrap text-sm leading-5 text-muted-foreground">{ap.why}</p>
+              </div> : null}
               <h3 className="mb-5 text-sm font-medium">Atualizações</h3>
               {ap.checkIns.length === 0 ? (
                 <p className="text-sm text-muted-foreground">

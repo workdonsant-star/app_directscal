@@ -1,0 +1,13 @@
+
+> app_claude_directscal@0.1.0 test
+> vitest run tests/unit/asset-question-context.test.ts tests/unit/asset-question-audits.test.ts tests/unit/management-assets-bulk.test.ts tests/unit/customer-management-asset-update.test.ts tests/unit/customer-management-asset-bulk.test.ts tests/unit/assistant-history.test.ts
+
+
+ RUN  v4.1.6 /Users/donsantos/Documents/GitHub/app_directscal
+
+
+ Test Files  6 passed (6)
+      Tests  48 passed (48)
+   Start at  09:33:04
+   Duration  583ms (transform 700ms, setup 0ms, import 1.75s, tests 79ms, environment 0ms)
+

@@ -15,7 +15,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { classifyScore } from "@/lib/data/omdx-domain";
 import type { AnalyticsLever } from "@/lib/data/omdx-analytics-overview";
 
 function assetsLabel(count: number) {
@@ -23,20 +22,20 @@ function assetsLabel(count: number) {
   return `${count} ${count === 1 ? "ativo" : "ativos"}`;
 }
 
-export function AnalyticsLeverTable({ levers, illustrative = false }: { levers: AnalyticsLever[]; illustrative?: boolean }) {
+export function AnalyticsLeverTable({ levers, illustrative = false, actionPointsHref = "/action-points" }: { levers: AnalyticsLever[]; illustrative?: boolean; actionPointsHref?: string }) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
-            <h3 className="text-ui-title text-foreground">Alavancas prioritárias</h3>
+            <h3 className="text-ui-title text-foreground">Dimensões para aprofundar</h3>
             {illustrative && <IllustrativeTag />}
           </div>
           <p className="text-xs text-muted-foreground">
-            {illustrative ? "Estado e nota vêm da pesquisa. Os dados de execução são ilustrativos." : "Prioridades e notas vêm da coleta. Aderência e impacto ficam sem base até haver medição registrada."}
+            {illustrative ? "Notas vêm da pesquisa. Os dados de execução são ilustrativos." : "As menores notas e diferenças de percepção orientam a análise. A prioridade de intervenção é confirmada pelo consultor."}
           </p>
         </div>
-        <Button nativeButton={false} render={<Link href="/action-points" />} size="sm" variant="outline">
+        <Button nativeButton={false} render={<Link href={actionPointsHref} />} size="sm" variant="outline">
           Abrir action points
         </Button>
       </div>
@@ -50,11 +49,10 @@ export function AnalyticsLeverTable({ levers, illustrative = false }: { levers: 
           <TableHeader>
             <TableRow>
               <TableHead className="w-10">#</TableHead>
-              <TableHead>Alavanca</TableHead>
-              <TableHead className="w-56">Nota e progresso</TableHead>
-              <TableHead className="text-right">Aderência dos ativos</TableHead>
+              <TableHead>Dimensão</TableHead>
+              <TableHead className="w-56">Nota da pesquisa</TableHead>
+              <TableHead className="text-right">Medição de execução</TableHead>
               <TableHead className="text-right">Ativos criados</TableHead>
-              <TableHead className="text-right">Estado</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -83,17 +81,16 @@ export function AnalyticsLeverTable({ levers, illustrative = false }: { levers: 
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
                   {lever.assetUsage === null ? (
-                    <span className="text-muted-foreground">—</span>
+                    <span className="text-muted-foreground">Sem dados</span>
                   ) : (
                     `${lever.assetUsage}%`
                   )}
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
                   <span className={lever.assetsCreated === 0 ? "text-muted-foreground" : undefined}>
-                    {lever.measured ? assetsLabel(lever.assetsCreated) : "Sem base"}
+                    {lever.measured ? assetsLabel(lever.assetsCreated) : "Sem dados"}
                   </span>
                 </TableCell>
-                <TableCell className="text-right text-muted-foreground">{classifyScore(lever.score)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

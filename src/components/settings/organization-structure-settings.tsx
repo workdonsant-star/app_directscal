@@ -1,5 +1,7 @@
 "use client";
 
+import { useAppRuntime } from "@/components/app-runtime";
+
 import { Check, Loader2, Plus, Search, UsersRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -11,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type { SlackWorkspaceUser } from "@/lib/integrations/slack-format";
+type SlackWorkspaceUser = { userId: string; name: string; avatarUrl: string | null; position?: string | null };
 import type { OrganizationSector } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +23,7 @@ const emptyDraft: Draft = { name: "", slackUserId: "", position: "" };
 
 export function OrganizationStructureSettings({ sectors, inlineActions = false }: Props) {
   const router = useRouter();
+  const runtime = useAppRuntime();
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [positionEdited, setPositionEdited] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -36,7 +39,7 @@ export function OrganizationStructureSettings({ sectors, inlineActions = false }
     setDirectoryError(null);
     setUsers([]);
     try {
-      const response = await fetch("/api/settings/slack-users", { cache: "no-store" });
+      const response = await runtime.request("/api/settings/slack-users", { cache: "no-store" });
       const body = await response.json();
       if (!response.ok) throw new Error(body.message ?? "Não foi possível listar as pessoas do Slack.");
       setUsers(body.users);
@@ -66,7 +69,7 @@ export function OrganizationStructureSettings({ sectors, inlineActions = false }
     setIsSaving(true);
     setNotice(null);
     try {
-      const response = await fetch("/api/settings/sectors", {
+      const response = await runtime.request("/api/settings/sectors", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: draft.name, slackUserId: draft.slackUserId, ...(positionEdited ? { position: draft.position } : {}) }),
       });

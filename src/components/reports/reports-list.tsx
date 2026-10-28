@@ -24,7 +24,7 @@ function creatorInitials(name: string) {
     .join("");
 }
 
-export function ReportsList({ diagnostics }: { diagnostics: Diagnostic[] }) {
+export function ReportsList({ diagnostics, baseHref = "/relatorios" }: { diagnostics: Diagnostic[]; baseHref?: string }) {
   if (diagnostics.length === 0) {
     return (
       <div className="rounded-lg bg-card px-6 py-12 text-center">
@@ -46,7 +46,7 @@ export function ReportsList({ diagnostics }: { diagnostics: Diagnostic[] }) {
         return (
           <Link
             key={diagnostic.id}
-            href={`/relatorios/${diagnostic.id}`}
+            href={`${baseHref}/${diagnostic.id}`}
             className="group rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
             aria-label={`Abrir relatório ${diagnostic.name}`}
           >

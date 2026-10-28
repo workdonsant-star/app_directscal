@@ -7,4 +7,4 @@ Segue o layout dos ativos de gestão: índice sem card, coluna de 220px, gap de 
 - Sumário lateral alinhado ao topo da coluna documental, sem padding superior; sticky usa `top-8` (32px), acompanhando o recuo do conteúdo no scroll interno do shell.
 
 
-- Relatórios de maturidade oferecem somente Baixar PDF, abaixo do sumário e acima do artigo em larguras compactas. ReportPdfDownload usa attachment autenticado: /omdx/[id]/relatorio para reais e /relatorios/exemplo-acme/download para o exemplo, ambos com OmdxReportDocument. Ativos de gestão preservam Markdown.
+- As ações Relatório (PDF) e Dados (PDF) ficam visíveis abaixo do sumário e acima do artigo em larguras compactas. São links diretos de download, sem depender de JavaScript para abrir um menu. ReportPdfDownload usa attachment autenticado: /omdx/[id]/relatorio para reais e /relatorios/exemplo-acme/download para o exemplo. O padrão usa OmdxEditorialReportDocument; conteudo=dados preserva OmdxReportDocument. Parâmetros existentes da coleta são conservados. O exemplo fornece acmeReportEditorial e identificação fictícia. Ativos de gestão preservam Markdown.

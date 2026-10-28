@@ -296,6 +296,8 @@ Atualize este arquivo quando mudar stack, comandos, arquitetura, fluxo de dados,
 
 ## Interface Symbach
 
+Ambiente de apresentação: `/demo` usa somente fixtures e estado local reiniciável. A distribuição por `scripts/demo/prepare.mjs` contém apenas as rotas da demo, sem APIs, autenticação ou serviços de produção. Não conectar essa experiência ao banco/Slack nem usar como prova de homologação. Ver `docs/ambiente-demo.md`.
+
 Na branch `symbach`, a referência visual portada de `Symbach Os` governa o shell e a navegação: sidebar expandida em >=1280px, topbar de 56px, fundo contínuo e conteúdo com raio de 20px. Os itens Analytics, Pesquisas e Agente preservam `/omdx`, `/omdx/diagnosticos` e `/assistente`. Iniciativas usa armazenamento local por usuário/empresa; ativos por categoria reutilizam leituras publicadas existentes. Bibliotecas por tipo sai da sidebar; cada pasta reúne todos os tipos pela categoria cadastrada. Ver `docs/shell-e-iniciativas.md`.
 
 ## Lideranças pelo Slack

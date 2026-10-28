@@ -1,5 +1,33 @@
 # Contatos proativos de rotina — A05
 
+## Requisito esclarecido em 26/10/2026 — acompanhamento contextual
+
+Don confirmou que os Action Points são iniciativas e atividades que a liderança do cliente deve sustentar para executar as práticas definidas nos ativos de gestão da DirectScal. O agente deve entender cada ação, ler o contexto e o impacto esperado nos ativos relacionados, perguntar ao responsável no Slack sobre o andamento e alimentar os indicadores correspondentes a partir dos relatos. Acompanhamento contextual faz parte do ciclo 3.
+
+**Lacuna verificada:** `prepareRoutineContact` monta um texto fixo com título, expectativa, evidência, ativo/versão e período. Não recebe o conteúdo do ativo nem produz perguntas específicas a partir dele. A06 tem interpretação conservadora de relatos e confirmação; isso não equivale a uma conversa adaptativa sobre conformidade. A base de agenda, entrega e registros existe; a capacidade descrita ainda precisa ser implementada e homologada.
+
+### Mecanismo proposto para implementação
+
+1. Preparar o contexto do Action Point com responsável, estágio (implantação ou prática recorrente), ativo publicado e versão, objetivo, critérios observáveis, evidência esperada e indicador. Toda exigência extraída deve apontar ao trecho de origem. Contexto ausente ou contraditório vira pendência da operação, sem inventar critério.
+2. Produzir uma prévia do acompanhamento para revisão da operação. A extração do modelo é proposta; não muda automaticamente frequência, prazo, responsabilidade ou regra de cálculo já acordados. A primeira versão pode usar o único ativo vinculado pelo contrato atual; múltiplos ativos exigem evolução explícita do vínculo.
+3. Na janela acordada, formular uma pergunta curta sobre o período ou marco pertinente, considerando o último relato confirmado e bloqueios conhecidos. A conversa deve perguntar apenas o que falta, sem repetir informação já respondida.
+4. Interpretar a resposta livre e pedir esclarecimento específico quando necessário. Relato parcial, bloqueio, evidência ausente e silêncio permanecem distintos. Consulta de orientação pode usar o ativo e depois retomar o acompanhamento da mesma ação.
+5. Apresentar um resumo confirmável com execução, critérios relatados, bloqueio e evidências. Usar a confirmação e a escrita idempotente de A06; o modelo não escolhe identidade, empresa ou ciclo nem grava diretamente os indicadores.
+6. Recalcular os indicadores a partir dos fatos confirmados. Separar implantação da iniciativa, execução recorrente, conformidade aos critérios e resultado observado. O cálculo de execução já existe; representação e cálculo de conformidade por critério ainda precisam ser definidos e implementados. Realização de uma daily não comprova melhoria do negócio nem altera a nota da pesquisa.
+
+### Exemplo e critérios de aceite propostos
+
+Exemplo fictício: o ativo de daily exige registrar impedimentos e seus responsáveis. O agente pergunta se a daily ocorreu; ao ouvir que houve um impedimento, pergunta quem ficou responsável somente se isso ainda não estiver no relato. Após confirmar, registra realização, impedimento e responsável informado. Se não houver responsável, registra essa lacuna; não declara conformidade total.
+
+- Duas ações com ativos diferentes produzem perguntas pertinentes aos respectivos critérios, com fonte verificável.
+- Um critério ausente no documento não aparece como obrigação inventada.
+- Resposta completa evita pergunta repetida; resposta parcial gera esclarecimento vinculado à mesma ação e período.
+- Iniciativa em implantação e prática recorrente mantêm indicadores separados; realizar uma ocorrência não encerra a iniciativa inteira.
+- Confirmação alimenta uma única vez os fatos e indicadores correspondentes; cancelar, perguntar ou apenas ler não registra execução.
+- Evidência relatada e validação humana permanecem distintas. Alteração da versão do ativo exige revisão do acordo antes de novos contatos, conforme regra atual.
+
+Esta seção registra requisito e proposta, sem mudança de comportamento, ativação ou mensagem externa. Complementa A05/A06/A09/A07; não transfere o acompanhamento contextual para um ciclo posterior.
+
 Implementação no código local e migrações no OMDx em 20/10/2026. Nenhuma política real ativada, mensagem enviada ou implantação executada nos testes. Esta etapa inicia contato; interpretação/confirmação de relatos e supervisão pertencem a A06/A07.
 
 ## Configuração e público

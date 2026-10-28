@@ -1,4 +1,5 @@
 import { classifyScore } from "@/lib/data/omdx-domain";
+import { haveCompatibleCollectionInstruments } from "@/lib/data/collection-comparison";
 import type { Classification, DiagnosticReport } from "@/lib/types";
 
 export type LikertDistribution = {
@@ -951,7 +952,7 @@ export function buildOmdxOverviewComparisonFromReports(
     const latestReport = orderedReports.at(-1);
     const previousReport = orderedReports.at(-2);
 
-    if (!latestReport || !previousReport) {
+    if (!latestReport || !previousReport || !haveCompatibleCollectionInstruments(latestReport, previousReport)) {
       return {
         analytics,
         comparison: null,
@@ -1008,7 +1009,9 @@ export function buildOmdxOverviewComparisonFromReports(
     };
   }
 
-  const historicalReports = orderedReports.slice(0, currentIndex);
+  const historicalReports = orderedReports.slice(0, currentIndex).filter(report =>
+    haveCompatibleCollectionInstruments(currentReport, report),
+  );
   const historicalDiagnosticCount = historicalReports.length;
   const currentAnalytics = buildOmdxOverviewAnalyticsFromReports([
     currentReport,

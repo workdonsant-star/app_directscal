@@ -29,7 +29,7 @@ describe("fidelidade da entrega publicada", () => {
     const board = buildPublishedActionPointsBoard(workspace,[]);
     expect(board.source?.diagnosticId).toBe("d");
     expect(board.categories[0].leader).toBeNull();
-    expect(board.categories[0].actionPoints[0]).toMatchObject({id:"a",health:"parado",checkIns:[]});
+    expect(board.categories[0].actionPoints[0]).toMatchObject({id:"a",description:"Ação",why:"Leitura aprovada",implementation:{stage:"Sem responsável",dueOn:null,progress:null,suggestedDeadline:"30 dias"},health:"parado",checkIns:[]});
     expect(board.categories[0].actionPoints[0].cycleTotal).toBeUndefined();
     expect(countActionPoints(board.categories[0].actionPoints)).toMatchObject({risco:0,parado:1});
   });

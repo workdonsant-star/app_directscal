@@ -35,3 +35,5 @@ Rotas autenticadas da visão de superadministrador. Usam a mesma shell do app (`
 A11: Empresas lê atribuição principal e histórico real pela RPC privada por organização. A fila de Operação usa os mesmos estados, incluindo revisão privada e sugestão principal. O cadastro de especialistas é persistido; a orientação antiga de mocks não se aplica a esses caminhos.
 
 A04: /admin/empresas/[id]/rotinas exige sessão definitiva superadmin, usa connection() e consulta o workspace autorizado no servidor. Expõe criação/adaptação, pausa/retomada, transferência e histórico. JSX fica fora de catch; erro desconhecido não vira 404 silencioso.
+
+C2: /admin/guia apresenta o procedimento operacional, acessível pelo detalhe da empresa. O detalhe inclui consulta/recuperação das entregas Slack via API administrativa existente; nenhuma agenda externa é ativada por abrir o painel.

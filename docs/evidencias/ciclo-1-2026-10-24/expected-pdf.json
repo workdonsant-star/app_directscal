@@ -1,0 +1,28 @@
+{
+  "editorial": {
+    "executiveSummary": "Empresa fictícia C1 apresenta uma operação funcional, mas ainda depende de mecanismos informais para coordenar prioridades, decisões e responsabilidades.",
+    "generalReading": "Os resultados indicam que a estrutura de gestão evoluiu em ritmos diferentes entre as dimensões. As maiores fragilidades estão associadas à previsibilidade da execução e à distribuição das decisões.",
+    "vulnerabilities": "Processos críticos ainda variam entre áreas, informações importantes circulam sem um padrão único de registro e parte das decisões operacionais continua escalando para poucas pessoas.",
+    "structuralCauses": "Os sintomas compartilham três causas principais: limites de autonomia pouco explícitos, cadências de acompanhamento inconsistentes e critérios de performance ainda fragmentados.",
+    "recommendations": "Priorizar a definição de papéis e decisões, estabelecer uma cadência executiva e consolidar indicadores antes de ampliar a documentação dos processos.",
+    "conclusion": "O próximo estágio exige transformar práticas isoladas em um sistema comum de gestão, capaz de aumentar previsibilidade sem elevar a dependência da liderança."
+  },
+  "action": {
+    "id": "action_processos_ritual",
+    "title": "Mapear os processos críticos da operação",
+    "dimensionId": "processos",
+    "dimensionName": "Processos",
+    "problem": "Formalizar entradas, etapas, critérios de qualidade e responsáveis dos processos que mais afetam previsibilidade.",
+    "recommendedAction": "Formalizar entradas, etapas, critérios de qualidade e responsáveis dos processos que mais afetam previsibilidade.",
+    "owner": "Liderança",
+    "involved": [
+      "Responsáveis das áreas envolvidas"
+    ],
+    "suggestedDeadline": "45 dias",
+    "expectedImpact": "Reduzir variação de execução e dependência individual.",
+    "successIndicator": "Processos prioritários documentados e validados em operação.",
+    "priority": "Alta",
+    "score": 2.83,
+    "gap": 0.7
+  }
+}

@@ -27,3 +27,5 @@ Página autenticada de recurso para orientar o cliente administrador no uso do s
 - Compartilhamento é feito pela cópia dos links na tabela de Pesquisas; encerramento no menu de ações. A antiga central não existe mais.
 
 - Prazo de resposta é obrigatório na criação e configuração da pesquisa.
+
+C2: ProductGuide (customer) substitui o manual antigo Overview/Diagnósticos por Pesquisas, Analytics, Diagnósticos, Action Points, ativos e consulta. Explica a diferença entre rascunho editorial e atualização direta do dono. Entrada pelo link Guia de uso em /assistente.

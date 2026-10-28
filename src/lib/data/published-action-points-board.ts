@@ -1,6 +1,6 @@
 import type { ActionPointAssignment, GanttWorkspaceData } from "@/lib/contracts";
 import type { AdherenceBoard } from "@/lib/data/action-points-adherence-example";
-import { actionPointCadenceLabels, defaultCadence } from "@/lib/data/action-points-list";
+import { actionPointCadenceLabels, actionPointStageLabels, defaultCadence } from "@/lib/data/action-points-list";
 import type { RoutineExecutionRecord } from "@/lib/contracts/routine-replies";
 import { getAdherenceCycleState } from "@/lib/data/asset-adherence";
 
@@ -49,6 +49,13 @@ export function buildPublishedActionPointsBoard(
           lastCheckIn: latestReport ? format(latestReport.recordedAt) : "Sem relato",
           lastCheckInAt: latestReport?.recordedAt,
           why: task.actionPoint.problem,
+          description: task.actionPoint.recommendedAction,
+          implementation: {
+            stage: actionPointStageLabels[assignment?.stage ?? "sem_responsavel"],
+            dueOn: assignment?.dueOn ?? null,
+            progress: assignment?.progress ?? null,
+            suggestedDeadline: task.actionPoint.suggestedDeadline,
+          },
           checkIns: messages.map(message => ({ author: message.name, fromLeader: message.actor === "pessoa", when: format(message.at), message: message.text, context: message.context, source: "slack" as const })),
         }],
       }];

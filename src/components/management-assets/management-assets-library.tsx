@@ -4,6 +4,7 @@ import { ChevronRight, LayoutGrid, Search, Table2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useAppRuntime } from "@/components/app-runtime";
 import { Button } from "@/components/ui/button";
 import type { ManagementAssetCategoryFolder } from "@/lib/data/management-asset-categories";
 import { useMemo, useState } from "react";
@@ -47,7 +48,8 @@ function getAssetHref(asset: ManagementAsset) {
 }
 
 function ManagementAssetCard({ asset, showType }: { asset: ManagementAsset; showType: boolean }) {
-  const href = getAssetHref(asset);
+  const runtime = useAppRuntime();
+  const href = runtime.href(getAssetHref(asset) ?? "");
   const card = (
     <Card
       className={
@@ -142,6 +144,7 @@ function ManagementAssetsTable({ assets, canEdit, selected, saving, toggle, togg
   assets: ManagementAsset[]; canEdit: boolean; selected: Set<string>; saving: boolean;
   toggle: (id: string) => void; toggleAll: () => void;
 }) {
+  const runtime = useAppRuntime();
   return (
     <div className={cn(canEdit && "-ml-8 w-[calc(100%+2rem)]")}>
     <Table variant="operational" aria-label="Ativos de gestão" className="min-w-[720px]">
@@ -162,7 +165,7 @@ function ManagementAssetsTable({ assets, canEdit, selected, saving, toggle, togg
       </TableHeader>
       <TableBody>
         {assets.map((asset) => {
-          const href = getAssetHref(asset);
+          const href = runtime.href(getAssetHref(asset) ?? "");
           return (
             <TableRow key={asset.id} className="group/selection">
               {canEdit ? <TableCell className="border-b-0! px-0!"><div className="flex items-center justify-center"><AssetCheckbox label={`Selecionar ${asset.title}`} checked={selected.has(asset.id)} disabled={saving} onChange={() => toggle(asset.id)} /></div></TableCell> : null}
@@ -219,6 +222,7 @@ export function ManagementAssetsLibrary({
   canEdit?: boolean;
 }) {
   const router = useRouter();
+  const runtime = useAppRuntime();
   const [view, setView] = useState("cards");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [targetType, setTargetType] = useState("keep");
@@ -288,7 +292,7 @@ export function ManagementAssetsLibrary({
     if (saving || selected.size === 0) return;
     setSaving(true); setError(""); setMessage("");
     try {
-      const response = await fetch("/api/management-assets/bulk", {
+      const response = await runtime.request("/api/management-assets/bulk", {
         method: "PATCH", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ assetIds: [...selected], changes: {
           ...(targetType !== "keep" ? { type: targetType } : {}),
@@ -300,7 +304,7 @@ export function ManagementAssetsLibrary({
       setMessage(`${selected.size} ${selected.size === 1 ? "ativo atualizado" : "ativos atualizados"}.`);
       setSelectedIds(new Set()); setTargetType("keep"); setTargetCategory("keep");
       const destination = folders.find(folder => folder.key === targetCategory);
-      if (destination) router.replace(destination.href);
+      if (destination) router.replace(runtime.href(destination.href));
       router.refresh();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Não foi possível alterar os ativos.");

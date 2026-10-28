@@ -56,6 +56,8 @@ export type AdherenceActionPoint = {
   lastCheckInAt?: string;
   actualCounts?: { eligible: number; reported: number; validated: number };
   why?: string;
+  description?: string;
+  implementation?: { stage: string; dueOn: string | null; progress: number | null; suggestedDeadline: string };
   checkIns: AdherenceCheckIn[];
 };
 

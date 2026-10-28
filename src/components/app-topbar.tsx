@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Bell } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { Fragment, type ReactNode } from "react";
+import { useAppRuntime } from "@/components/app-runtime";
 
 import {
   Breadcrumb,
@@ -13,7 +13,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
@@ -23,7 +22,8 @@ type AppTopbarProps = {
 };
 
 export function AppTopbar({ breadcrumb = [], actions }: AppTopbarProps) {
-  const pathname = usePathname();
+  const runtime = useAppRuntime();
+  const pathname = runtime.pathname(usePathname());
   const title =
     pathname === "/omdx"
       ? "Analytics"
@@ -73,7 +73,7 @@ export function AppTopbar({ breadcrumb = [], actions }: AppTopbarProps) {
                           <BreadcrumbLink
                             className="inline-flex h-8 items-center"
                             render={
-                              item.href ? <Link href={item.href} /> : undefined
+                              item.href ? <Link href={runtime.href(item.href)} /> : undefined
                             }
                           >
                             {item.label}
@@ -99,9 +99,7 @@ export function AppTopbar({ breadcrumb = [], actions }: AppTopbarProps) {
             {actions}
           </div>
 
-          <Button variant="ghost" size="icon" aria-label="Alertas">
-            <Bell className="size-4" />
-          </Button>
+          {runtime.utilities}
         </div>
       </div>
     </header>

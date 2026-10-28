@@ -1,5 +1,7 @@
 "use client";
 
+import { useAppRuntime } from "@/components/app-runtime";
+
 import { AlertCircle, CheckCircle2, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
@@ -103,6 +105,7 @@ export function PublicResponseForm({
   workspace,
 }: PublicResponseFormProps) {
   const router = useRouter();
+  const runtime = useAppRuntime();
   const submissionIdRef = useRef<string | null>(null);
   const questionElementsRef = useRef(new Map<string, HTMLFieldSetElement>());
   const questions: PublicQuestion[] = workspace.dimensions.flatMap((dimension) =>
@@ -144,9 +147,9 @@ export function PublicResponseForm({
 
   useEffect(() => {
     if (storedSubmission) {
-      router.replace(`/r/${workspace.token}/obrigado`);
+      router.replace(runtime.href(`/r/${workspace.token}/obrigado`));
     }
-  }, [router, storedSubmission, workspace.token]);
+  }, [router, runtime, storedSubmission, workspace.token]);
 
   useEffect(() => {
     const elements = Array.from(questionElementsRef.current.values());
@@ -214,7 +217,7 @@ export function PublicResponseForm({
     if (hasStoredResponse(responseStorageKey)) {
       setSubmissionState("submitted");
       setMessage(alreadySubmittedMessage);
-      router.replace(`/r/${workspace.token}/obrigado`);
+      router.replace(runtime.href(`/r/${workspace.token}/obrigado`));
       return;
     }
 
@@ -243,7 +246,7 @@ export function PublicResponseForm({
         try { storage = window.localStorage; } catch { /* A aba mantém a tentativa. */ }
         submissionIdRef.current = getResponseSubmissionId(workspace.token, storage);
       }
-      const response = await fetch("/api/omdx/responses", {
+      const response = await runtime.request("/api/omdx/responses", {
         body: JSON.stringify({
           token: workspace.token,
           submissionId: submissionIdRef.current,
@@ -265,7 +268,7 @@ export function PublicResponseForm({
         window.localStorage.setItem(responseStorageKey, new Date().toISOString());
       } catch { /* O cookie do servidor confirma a gravação mesmo sem armazenamento local. */ }
       setSubmissionState("submitted");
-      router.replace(`/r/${workspace.token}/obrigado`);
+      router.replace(runtime.href(`/r/${workspace.token}/obrigado`));
     } catch (error) {
       setSubmissionState("error");
       setMessage(
@@ -293,8 +296,13 @@ export function PublicResponseForm({
               respondidas antes do envio.
             </p>
             <p>
-              A resposta é anônima, consolidada por grupo e não solicita nome,
-              e-mail ou cargo.
+              Esta pesquisa registra percepções, sem solicitar nome, e-mail ou cargo.
+              Os resultados são analisados por grupo. Grupos pequenos e a percepção
+              do fundador podem permitir identificação pelo contexto.
+            </p>
+            <p>
+              O acompanhamento de rotinas pelo Slack é separado desta pesquisa:
+              nele, os relatos são identificados e usados para acompanhar a execução.
             </p>
           </div>
           <DialogFooter>

@@ -4,6 +4,8 @@ import { UserRoundCheck } from "lucide-react";
 
 import { useDeliveryDraft } from "@/components/admin/delivery/delivery-draft-provider";
 import { Badge } from "@/components/ui/badge";
+import { reportFields } from "@/components/admin/delivery/delivery-draft";
+import { adminActionPointTemplates } from "@/lib/data/admin-operations-data-source";
 
 export function DeliveryPublishStep() {
   const { assignedSpecialistName, delivery, report, selectedActionPointIds } =
@@ -32,17 +34,23 @@ export function DeliveryPublishStep() {
           <Badge variant="outline">Score {delivery.generalScore.toLocaleString("pt-BR", { minimumFractionDigits: 1 })}</Badge>
         </div>
         <div className="space-y-5 pt-5">
-          <div>
-            <h4 className="font-heading text-base font-bold">Resumo executivo</h4>
-            <p className="mt-1 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-              {report.executiveSummary}
+          {reportFields.map(field => <div key={field.key}>
+            <h4 className="font-heading text-base font-bold">{field.label}</h4>
+            <p className="mt-1 max-w-3xl whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+              {report[field.key] || "Seção ainda não preenchida."}
             </p>
-          </div>
+          </div>)}
           <div>
             <h4 className="font-heading text-base font-bold">Plano de ação</h4>
             <p className="mt-1 text-sm text-muted-foreground">
               {selectedActionPointIds.size} action points selecionados para a página Action Points do cliente.
             </p>
+            <ul className="mt-3 space-y-3">
+              {adminActionPointTemplates.filter(item => selectedActionPointIds.has(item.id)).map(item => <li key={item.id} className="space-y-1">
+                <p className="text-sm font-medium">{item.title}</p>
+                <p className="text-sm text-muted-foreground">{item.description}</p>
+              </li>)}
+            </ul>
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <UserRoundCheck aria-hidden="true" className="size-4" />

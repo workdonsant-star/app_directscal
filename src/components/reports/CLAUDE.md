@@ -19,10 +19,17 @@ Esta pasta contém a listagem e as experiências de leitura de relatórios dentr
 - Cards de Diagnósticos seguem o padrão de ManagementAssetsLibrary: altura mínima de 277px, raio de 5px, superfície bg-sidebar/dark:bg-card sem ring, badge acima do título e autoria/data abaixo da divisória. Preservam identificação explícita do exemplo e fallback de autoria.
 
 
-- Relatórios de maturidade oferecem somente Baixar PDF, abaixo do sumário e acima do artigo em larguras compactas. ReportPdfDownload usa attachment autenticado: /omdx/[id]/relatorio para reais e /relatorios/exemplo-acme/download para o exemplo, ambos com OmdxReportDocument. Ativos de gestão preservam Markdown.
+- As ações Relatório (PDF) e Dados (PDF) ficam visíveis abaixo do sumário e acima do artigo em larguras compactas. São links diretos de download, sem depender de JavaScript para abrir um menu. ReportPdfDownload usa attachment autenticado: /omdx/[id]/relatorio para reais e /relatorios/exemplo-acme/download para o exemplo. O padrão usa OmdxEditorialReportDocument; conteudo=dados preserva OmdxReportDocument. Parâmetros existentes da coleta são conservados. O exemplo fornece acmeReportEditorial e identificação fictícia. Ativos de gestão preservam Markdown.
 
 
 Fechamento A08: listas fixas de desafios, causas e cronologia foram removidas. report-findings compara pontuações reais, distingue base uniforme e aponta prioridades sem afirmar causalidade. As seis seções editoriais aprovadas também entram no PDF. O link de Action Points conserva a coleta.
 
 
 A11: SpecialistContactCard recebe contato mínimo resolvido pelo specialistId publicado; não tem identidade, experiência, local ou telefone fixos. Usa e-mail de trabalho cadastrado. Ausência de atribuição ou especialista arquivado/inativo/excluído não inventa substituto. A leitura mobile oferece o mesmo contato.
+
+ReportWorkspace reúne a composição original de breadcrumb, sumário, ações, contato e leitura. Página autenticada e apresentação usam esse componente com suas fontes próprias. ReportsList aceita baseHref opcional; padrão continua /relatorios. SpecialistContactCard depende somente do contrato mínimo de contato, sem importar a fonte de banco.
+
+SpecialistContactCard aceita compact opcional para a demo: nome, cargo e link textual de contato, sem card, foto ou cidade. ReportWorkspace repassa a opção nas leituras desktop/mobile. O padrão operacional preserva o bloco completo.
+
+
+C1: o acesso a Action Points também aparece nas larguras compactas e conserva o ID da coleta, assim como no desktop.

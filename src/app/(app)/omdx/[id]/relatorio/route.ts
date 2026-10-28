@@ -9,6 +9,7 @@ import {
   getDiagnosticReport,
 } from "@/lib/data/omdx-data-source";
 import { buildDiagnosticReportCsv } from "@/lib/data/omdx-report-csv";
+import { OmdxEditorialReportDocument } from "@/lib/pdf/omdx-editorial-report-document";
 import { OmdxReportDocument } from "@/lib/pdf/omdx-report-document";
 
 export const runtime = "nodejs";
@@ -50,7 +51,7 @@ export async function GET(request: Request, { params }: ReportRouteContext) {
     return new Response("Diagnóstico não encontrado.", { status: 404 });
   }
 
-  if (publication?.status !== "publicada") {
+  if (publication?.status !== "publicada" || publication.diagnosticId !== id || publication.organizationId !== diagnostic.organizationId) {
     return new Response("Relatório ainda não publicado.", { status: 404 });
   }
 
@@ -80,12 +81,13 @@ export async function GET(request: Request, { params }: ReportRouteContext) {
     });
   }
 
-  const document = createElement(OmdxReportDocument, {
+  const dataOnly = new URL(request.url).searchParams.get("conteudo") === "dados";
+  const document = createElement(dataOnly ? OmdxReportDocument : OmdxEditorialReportDocument, {
     report,
     editorial: publication.report,
   }) as Parameters<typeof renderToBuffer>[0];
   const pdfBuffer = await renderToBuffer(document);
-  const filename = `relatorio-omdx-${company}-${report.diagnostic.id}.pdf`;
+  const filename = `${dataOnly ? "dados" : "relatorio"}-omdx-${company}-${report.diagnostic.id}.pdf`;
 
   return new Response(new Uint8Array(pdfBuffer), {
     headers: {

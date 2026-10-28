@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 type DimensionDiagnosticFilterProps = {
   id?: string;
   compact?: boolean;
+  allowAll?: boolean;
   diagnostics: Diagnostic[];
   value: string;
   onChange: (value: string) => void;
@@ -19,12 +20,13 @@ type DimensionDiagnosticFilterProps = {
 export function DimensionDiagnosticFilter({
   id = "dimension-diagnostic-filter",
   compact = false,
+  allowAll = true,
   diagnostics,
   value,
   onChange,
 }: DimensionDiagnosticFilterProps) {
   const options = [
-    { value: "todos", label: "Todos os diagnósticos" },
+    ...(allowAll ? [{ value: "todos", label: "Todos os diagnósticos" }] : []),
     ...diagnostics.map((diagnostic) => ({
       value: diagnostic.id,
       label: diagnostic.name,

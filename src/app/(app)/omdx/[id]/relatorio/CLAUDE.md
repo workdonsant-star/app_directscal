@@ -14,3 +14,6 @@ Route Handler autenticado para baixar o relatório consolidado de um diagnóstic
 - Sem query, retornar PDF como attachment direto, não preview HTML e não usar `window.print()`.
 - Com `?formato=csv`, retornar CSV consolidado do relatório como attachment UTF-8 com BOM e separado por `;`.
 - O CSV consolidado usa o DTO `DiagnosticReport`; não substitui `/omdx/[id]/respostas`, que permanece como exportação bruta anônima.
+
+- Download padrão: relatório formatado A4 retrato (`OmdxEditorialReportDocument`), com a análise publicada e os gráficos da coleta. `?conteudo=dados` mantém o PDF anterior (`OmdxReportDocument`), com nome `dados-omdx-*.pdf`. CSV permanece em `?formato=csv`.
+- A publicação deve pertencer ao mesmo diagnóstico e à mesma organização da leitura autorizada. Rascunho, publicação ausente e contexto divergente recebem 404 antes de renderizar.
