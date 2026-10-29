@@ -113,3 +113,8 @@ A suíte demo também cobre URLs escopadas, recusa de destinos externos/IDs desc
 
 
 `site-profile.test.ts` verifica CORS por origem exata, minimização da resposta, ausência de cache/cookies novos, sessão expirada/temporária, os três papéis e falhas seguras. Sessão substituída, sem serviços externos.
+
+`company-deletion.test.ts` cobre autorização/intents, feature, origem, limite/duplicatas/IDs, confirmação literal, ator da sessão, RPC única, conflitos sem vazamento e resposta inválida. Usa substitutos, sem dados reais.
+
+
+`superadmin-provisioning.test.ts` confere que o login conserva o membership global existente sem recriar a organização original por domínio após exclusão.

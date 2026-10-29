@@ -248,6 +248,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_admin_companies: {
+        Args: { p_actor_user_id: string; p_organization_ids: string[]; p_confirmation: string }
+        Returns: Json
+      }
       open_routine_event_contact: { Args: { p_organization_id: string; p_actor_user_id: string; p_input: Json }; Returns: Json }
       save_routine_contact_policy: { Args: { p_organization_id: string; p_actor_user_id: string; p_input: Json }; Returns: number }
       get_routine_contact_policy: { Args: { p_organization_id: string; p_actor_user_id: string }; Returns: Json }

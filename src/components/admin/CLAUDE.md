@@ -76,3 +76,7 @@ A17: AssetQuestionAuditsWorkspace usa selector/operational e saúde real. AgentG
 A12: ativos vinculados a histórico de rotina não podem ser excluídos definitivamente; API orienta arquivar. A seleção e os registros são preservados.
 
 C2 (26/10/2026): AdminCompanyDetail inclui SlackDeliveriesPanel, sob demanda, usando a API administrativa existente. Lista paginada preserva conteúdo em falha; só Falhou sem tentativa automática oferece recuperação com confirmação e updatedAt. Incerto nunca recebe botão de reenvio. POST sem confirmação trava novas tentativas até releitura; sucesso em fila não equivale a entrega. Concluído sem deliveredTs aparece Encerrado sem envio. Link Guia de operação abre /admin/guia.
+
+## Exclusão definitiva de empresas
+
+`AdminCompaniesTable` oferece seleção individual ou de até 100 empresas, estado parcial no checkbox do cabeçalho, limpeza de seleção e diálogo com os nomes congelados. A confirmação exige EXCLUIR. DELETE /api/admin/companies apaga o lote em transação; erro conserva seleção/diálogo, sucesso retira somente IDs confirmados e atualiza aquisição. A copy distingue contas exclusivas de contas com vínculos externos e não promete apagar contas/mensagens nos provedores Google/Slack.

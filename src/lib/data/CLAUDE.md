@@ -212,3 +212,10 @@ A17: auditorias e avaliações administrativas avançam por cursor (created_at b
 C1: buildPublishedActionPointsBoard conserva recommendedAction em description, além da leitura editorial em why. Não substituir a descrição publicada pela leitura da dimensão.
 
 O DTO do painel conserva etapa, prazo e progresso da atribuição em implementation; valores ausentes permanecem nulos e separados da medição por oportunidades.
+
+## Exclusão integral de empresas
+
+`company-deletion-data-source.ts` chama delete_admin_companies em uma única transação e traduz autorização, proteção administrativa, empresa ausente e conflitos sem expor banco. Apaga dados empresariais e usuários exclusivos; preserva qualquer conta com referência de domínio fora do lote. A autorização é revalidada pela RPC; empresa de superadmin e processamento Slack ativo impedem todo o lote. Não usa remoções sequenciais via HTTP.
+
+
+Exclusão de empresas com acesso global: a RPC conserva papéis superadmin já existentes na organização técnica global-admin.directscal.invalid antes de remover empresas e contas exclusivas. getAdminAcquisitionSnapshot exclui esse domínio reservado da listagem, preservando organizações com domínio nulo. Apenas o registro técnico é protegido; empresas de clientes com superadmin podem ser excluídas. Revogação de sessão permanece ativa.

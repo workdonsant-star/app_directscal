@@ -70,3 +70,5 @@ A10: routine_result_baselines é privada imutável, service_role SELECT/INSERT, 
 
 
 A18: omdx_question_aggregates mantém execução restrita e cálculo original, agora com search_path vazio (objetos já qualificados). aggregate-boundaries.sql verifica médias/ausência e negação da chamada direta por authenticated, incluindo dono/outro tenant/global; sem ampliar grants.
+
+`delete_admin_companies` tipa a RPC privada invoker de exclusão integral. A migração admin_company_deletion introduz uma exceção administrativa explícita à retenção dos históricos: grants DELETE apenas para service_role nas tabelas necessárias; anon/authenticated seguem sem execução. A rotina comum de exclusão de ativos mantém as FKs e suas recusas. Migração remota ainda não aplicada; aguarda aprovação explícita.

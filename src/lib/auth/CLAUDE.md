@@ -35,3 +35,6 @@ Sessões temporárias de aquisição e convite são promovidas pelo callback JWT
 
 
 A14: password-recovery/crypto implementam recuperação real somente de cliente/admin com credencial existente. Token aleatório de 256 bits, hash no banco e envelope AES-GCM na outbox; 1h, uso único, invalidado por nova solicitação/versão. Google-only e superadmin não recebem recuperação pública. JWT revalida membership e versão a cada request; JWT RLS dura até cinco minutos e inclui session_version. Enforcement direto do banco está desativado até deploy compatível. Ver docs/acesso-e-recuperacao-de-conta.md.
+
+
+Provisionamento corporativo preserva um membership superadmin já existente e retorna sua identidade real antes de criar/atualizar organização por domínio. Assim o login não recria empresas apagadas após transferência do acesso global ao registro interno. A conta e o papel continuam sendo validados no banco; e-mail sozinho não restaura membership removido.

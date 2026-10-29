@@ -25,3 +25,7 @@ Crie temporariamente `src/app/c2-review-fixture/page.tsx` com o mesmo gate `NODE
 ## Ciclo 3 — Operação de rotinas
 
 Use a rota temporária `src/app/c3-review-fixture/page.tsx` com o mesmo gate de desenvolvimento e Suspense, importando CycleThreeWorkspace de `../../../tests/e2e/fixtures/cycle-three-workspace`. Execute `DIRECTSCAL_C3_UI_FIXTURE=true npx playwright test tests/e2e/cycle-three.spec.ts --workers=1 --timeout=60000`. Remova a rota e regenere tipos depois. O fixture usa SidebarProvider e DTO fictício; APIs são interceptadas, sem autenticação ou Slack real. A suíte verifica diretório indisponível/atualizado, responsável removido, conflito de transferência preservando campos, gravação confirmada seguida de falha de leitura e pré-requisitos ausentes, nos dois temas. Não comprova persistência entre sessões.
+
+## Exclusão administrativa de empresas
+
+Crie temporariamente src/app/company-deletion-fixture/page.tsx, com gate NODE_ENV !== development chamando notFound(), e renderize AdminCompaniesTable em main com bg-background px-10 py-8 text-foreground. Registre a natureza temporária no CLAUDE.md dessa rota. Rode DIRECTSCAL_COMPANY_DELETE_FIXTURE=true npx playwright test tests/e2e/company-deletion.spec.ts --workers=1 --output=/tmp/directscal-company-e2e. Todas as APIs são interceptadas. Remova a rota e regenere tipos ao terminar.

@@ -14,3 +14,5 @@ A18: expectativas atuais usam Pesquisas/Analytics/Action Points, sem exigir bibl
 C2: cycle-two.spec.ts usa a rota temporária descrita em fixtures/CLAUDE.md e intercepta todas as APIs. Verifica atribuição com erro, fila de revisão, RACI preservada, leitor/guia e recuperação Slack em dois temas. Não comprova banco, autenticação, modelo ou envio real.
 
 C3: cycle-three.spec.ts cobre a operação de rotinas com fixtures (ver fixtures/CLAUDE.md). APIs interceptadas; nenhuma mutação de banco ou envio Slack. Conflitos e erros devem preservar campos, sem liberar responsáveis fora do diretório ou nova mutação após gravação sem releitura.
+
+`company-deletion.spec.ts` usa a fixture temporária descrita em fixtures/CLAUDE.md. APIs inteiramente interceptadas; cobre seleção parcial/todas, cancelamento, confirmação, erro preservado e sucesso em claro/escuro. Não exclui empresas reais. Use --output=/tmp/directscal-company-e2e para preservar capturas versionadas de outras suítes.

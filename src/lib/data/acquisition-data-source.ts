@@ -255,6 +255,7 @@ export async function getAdminAcquisitionSnapshot(): Promise<AdminDataSnapshot> 
   const { data: organizationRows, error: organizationsError } = await supabase
     .from("organizations")
     .select("id,name,employee_count,created_at,updated_at")
+    .or("domain.is.null,domain.neq.global-admin.directscal.invalid")
     .order("name", { ascending: true });
 
   assertNoSupabaseError(organizationsError);

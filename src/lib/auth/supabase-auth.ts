@@ -388,6 +388,9 @@ export async function ensureSupabaseAuthUserProvisioned(
 ) {
   if (!isSupabaseConfigured() || !user.id || !user.email) return null;
 
+  const existingUser = await resolveSupabaseAuthUser(user.id, user.email);
+  if (existingUser?.role === "superadmin") return existingUser;
+
   const seedUser = resolveAuthUserFromEmail(
     user.email,
     user.name?.trim() || undefined,

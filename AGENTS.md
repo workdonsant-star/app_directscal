@@ -315,3 +315,7 @@ Excluir categoria exige redistribuir todos os documentos existentes para outra c
 Acordos versionados em /admin/empresas/[id]/rotinas; políticas de contato por empresa começam desativadas, com público/janela/fuso/cotas explícitos. Agenda e consumidor internos exigem segredo dedicado e não são configurados automaticamente em produção. Eventos precisam de ocorrência atestada; envio Incerto nunca recebe retry cego. Identidade app/Slack exige prova de posse no perfil, sem conceder acesso. Ver docs/agente-proativo-rotinas.md, docs/entrega-duravel-slack.md e docs/identidade-app-slack.md.
 
 A14: cadastro público cria organização isolada atomicamente; nome/domínio não concedem acesso a empresa existente. Sessões revalidam membership/versão; enforcement de versão no RLS depende de ativação após deploy compatível. Ver `docs/acesso-e-recuperacao-de-conta.md`.
+
+## Exclusão integral de clientes
+
+O superadmin global pode excluir empresas mesmo com vínculos superadmin. A migração preserve_global_admin_company_deletion conserva somente os papéis globais já existentes em uma organização técnica de domínio reservado global-admin.directscal.invalid, fora da aquisição. Contas exclusivas de cliente e dados da empresa são removidos atomicamente; contas com referências externas permanecem. Somente o registro técnico é protegido. Login conserva membership global existente em vez de recriar empresa por domínio; rotação de sessão segue ativa e pode exigir novo login. Exige aplicação da nova migração no ambiente; ver supabase/CLAUDE.md para o estado da ativação.

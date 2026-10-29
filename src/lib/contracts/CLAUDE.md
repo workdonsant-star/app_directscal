@@ -84,3 +84,5 @@ A17: agent-operations valida evento idempotente, revisão esperada, status, resp
 
 
 A10: routine-results exige três camadas únicas, contagem e score coerentes (zero respostas implica score nulo). Não há valor padrão, confiança ou estimativa gerada por estes contratos. Captura aceita somente ruleId.
+
+`company-deletion.ts` valida exclusão administrativa: 1–100 IDs company_UUID únicos, confirmação literal EXCLUIR e nenhum campo extra. Resultado contém IDs efetivamente excluídos e contagens de contas removidas/preservadas.

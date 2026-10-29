@@ -56,3 +56,13 @@ A18: aggregate-boundaries.sql passou com ROLLBACK após fixar search_path da fun
 
 
 A10/A12: routine-result-baselines verifica também tentativa de excluir ativo já vinculado, recusa por FK e preservação de ativo/base, tudo em ROLLBACK.
+
+`admin-company-deletion.sql` usa empresas/contas/rotinas/ativos/pesquisas fictícias e ROLLBACK. Cobre papéis, confirmação, duplicatas, lote com ID ausente, proteção de superadmin, job Slack ativo, cascatas, exclusividade de conta e rotação de sessão compartilhada. Executar no ambiente de destino somente após aprovar/aplicar a migração.
+
+Verificado em 29/10/2026 no PostgreSQL embarcado local (PGlite), reconstruído por leitura do schema: tabelas, constraints, triggers, funções e grants. Inclui rollback após a remoção. Tipo vector substituído por text e configuração textual por português somente no harness temporário; busca não é exercitada. Após a execução manual da migração por Don no OMDx, o teste foi reexecutado no Supabase conectado em 29/10/2026 e retornou sucesso para autorização, lote atômico, cascatas, contas exclusivas/compartilhadas e sessões. Transação encerrada com ROLLBACK, sem alterações duráveis em dados reais. Grants da função também conferidos: service_role pode executar; anon e authenticated não podem.
+
+
+admin-company-deletion.sql passa a excluir também a empresa do ator global. Confere remoção da organização original, vínculo global no registro interno, proteção somente desse registro, exclusão das contas de cliente e preservação de conta externa. Fixtures e ROLLBACK.
+
+
+Atualização de 29/10/2026: após a aplicação manual da segunda migração, o teste atualizado foi executado diretamente no OMDx e passou com ROLLBACK. Confirma exclusão da empresa do ator global, preservação do superadmin no registro interno, contas exclusivas/compartilhadas, cascatas, sessões e proteção do registro técnico. O erro PT409 relatado antes vinha do teste antigo (array[v_org,v_global], que esperava PT403), incompatível com a nova regra. A nova regra está validada no banco; a exclusão real pela interface permanece com o operador.
