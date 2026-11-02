@@ -15,7 +15,7 @@ export function demoDiagnostics(state: DemoState) {
  });
 }
 export function demoShareLinks(state: DemoState, origin = "https://directscal-demo.vercel.app") {
- return Object.fromEntries(demoDiagnostics(state).map(diagnostic => [diagnostic.id, getRespondentGroups().flatMap(group => (group.id === "operacao" ? diagnostic.sectors ?? [] : [null]).map(sector => {
+ return Object.fromEntries(demoDiagnostics(state).map(diagnostic => [diagnostic.id, getRespondentGroups().flatMap(group => (group.id === "operacao" ? diagnostic.sectors?.length ? diagnostic.sectors : [null] : [null]).map(sector => {
   const token = `${diagnostic.id}~${group.id}${sector ? `~${sector.id}` : ""}`;
   const publicUrl = `${origin}/demo/r/${token}`;
   return { id: token, diagnosticId: diagnostic.id, group: group.id, sectorId: sector?.id ?? null, sectorName: sector?.name ?? null, token, publicUrl, previewPath: `/demo/r/${token}`, suggestedMessage: `${suggestedMessages[group.id]}\n${publicUrl}` } satisfies DiagnosticShareLink;

@@ -14,6 +14,7 @@ beforeEach(() => {
   responses.clear();
   started.length = 0;
   vi.mocked(createSupabaseAdminClient).mockReturnValue({
+    schema: () => ({ from: (table: string) => ({ select: () => ({ in: () => responses.get(table) ?? Promise.resolve({ data: [], error: null }) }) }) }),
     from(table: string) {
       const query = {
         select: () => query,
@@ -67,8 +68,11 @@ describe("snapshot administrativo", () => {
       { id: "org_cliente", name: "Empresa cadastrada", employee_count: 10, created_at: "2026-10-29T12:00:00Z", updated_at: "2026-10-29T12:00:00Z" },
       { id: "org_interna", name: "Organização interna", employee_count: 1, created_at: "2026-10-29T12:00:00Z", updated_at: "2026-10-29T12:00:00Z" },
     ], error: null }));
-    responses.set("organization_members", Promise.resolve({ data: [{ organization_id: "org_cliente" }], error: null }));
+    responses.set("organization_members", Promise.resolve({ data: [{ organization_id: "org_cliente", user_id: "user_1" }], error: null }));
+    responses.set("users", Promise.resolve({ data: [{ id: "user_1", name: "Nome da conta", email: "cliente@example.com" }], error: null }));
+    responses.set("account_profiles", Promise.resolve({ data: [{ user_id: "user_1", name: "Nome atualizado" }], error: null }));
     const snapshot = await getAdminAcquisitionSnapshot();
     expect(snapshot.companies.map((company) => company.name)).toEqual(["Empresa cadastrada"]);
+    expect(snapshot.companies[0].users).toEqual([{ name: "Nome atualizado", email: "cliente@example.com" }]);
   });
 });

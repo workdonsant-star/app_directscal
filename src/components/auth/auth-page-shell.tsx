@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { AuthGradientVisual } from "@/components/auth/auth-gradient-visual";
 import { cn } from "@/lib/utils";
 
-type AuthVisualVariant = "liquid" | "app";
+type AuthVisualVariant = "liquid" | "app" | "login";
 type AuthContentAlignment = "center" | "start";
 
 function AuthBackgroundVideo({ className }: { className: string }) {
@@ -102,6 +102,78 @@ export function AuthPageShell({
   title: ReactNode;
   visualVariant?: AuthVisualVariant;
 }) {
+  if (visualVariant === "login") {
+    return (
+      <main className="min-h-dvh bg-background text-foreground">
+        <section className="grid min-h-dvh lg:grid-cols-[42.5%_57.5%]">
+          <div className="relative flex min-h-dvh items-center px-6 pb-12 pt-32 sm:px-10 lg:px-12 lg:py-10 xl:pl-[clamp(5rem,8.125vw,9.75rem)] xl:pr-16">
+            <Link
+              href="/"
+              aria-label="Directscal"
+              className="absolute left-6 top-8 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring sm:left-10 lg:left-12 lg:top-[88px] xl:left-[clamp(5rem,8.125vw,9.75rem)]"
+            >
+              <Image
+                src="/auth/login-collage/logo-primary.svg"
+                alt=""
+                width={134}
+                height={18}
+                className="h-[18px] w-auto dark:hidden"
+              />
+              <Image
+                src="/auth/login-collage/logo-primary-dark.svg"
+                alt=""
+                width={134}
+                height={18}
+                className="hidden h-[18px] w-auto dark:block"
+              />
+            </Link>
+            <div className="w-full max-w-[396px]">
+              <header className="mb-5">
+                <h1 className="max-w-[360px] text-ui-page">{title}</h1>
+                {description ? (
+                  <p className="mt-2.5 text-xs leading-[18px] text-muted-foreground">
+                    {description}
+                  </p>
+                ) : null}
+                <div className="mt-5 h-px bg-border" />
+              </header>
+              {children}
+              {footer ? <div className="mt-6">{footer}</div> : null}
+            </div>
+          </div>
+          <aside className="relative hidden min-h-dvh overflow-hidden bg-background lg:block">
+            <Image
+              src="/auth/login-collage/background.png"
+              alt=""
+              fill
+              sizes="(min-width: 1024px) 58vw, 100vw"
+              className="object-cover object-center"
+              priority
+            />
+            <div className="absolute left-[30.4%] top-[33.8%] z-10 w-[min(432px,65%)] rounded-[9px] bg-[var(--auth-quote-card)] px-[30px] py-8 text-[var(--auth-quote-foreground)]">
+              <p className="text-[19px] font-bold leading-[1.45]">{appReviewQuote}</p>
+              <div className="mt-7 flex items-center gap-3">
+                <Image
+                  src="/auth/login-collage/caio.png"
+                  alt=""
+                  width={36}
+                  height={36}
+                  className="size-9 rounded-full object-cover"
+                />
+                <div>
+                  <p className="text-sm font-medium leading-none">Caio Farah</p>
+                  <p className="mt-1 text-xs leading-4 text-[var(--auth-quote-muted)]">
+                    CEO e Fahto Media Group
+                  </p>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </section>
+      </main>
+    );
+  }
+
   if (visualVariant === "app") {
     return (
       <main className="min-h-dvh overflow-x-hidden bg-background text-foreground">

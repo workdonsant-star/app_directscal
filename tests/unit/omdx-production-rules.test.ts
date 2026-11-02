@@ -160,7 +160,7 @@ describe("effective diagnostic status", () => {
 });
 
 describe("required research deadline", () => {
-  const payload = { name: "Pesquisa", templateId: "omdx-v1", leaderIds: [] };
+  const payload = { name: "Pesquisa", templateId: "omdx-v1" };
   it("accepts an explicit deadline", () => {
     expect(createDiagnosticInputSchema.safeParse({ ...payload, deadline: "2026-10-19" }).success).toBe(true);
   });

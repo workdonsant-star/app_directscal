@@ -14,12 +14,10 @@ Esta pasta contém a listagem e as experiências de leitura de relatórios dentr
 - Em `/relatorios/[id]`, ações e identificação do especialista ficam abaixo do índice, preservando a coluna documental.
 - `OmdxReportView` recebe o `DiagnosticReport` autorizado e o conteúdo editorial da publicação. Deriva os seis gráficos do diagnóstico selecionado e aplica à leitura as seis seções salvas pelo especialista. Pontuações, camadas, dimensões, perguntas, mínimo recomendado, prioridades e textos editoriais publicados não podem voltar a datasets locais fixos.
 
-- O card `exemplo-acme` identifica explicitamente a empresa fictícia e o relatório de exemplo. A leitura reutiliza OmdxReportView com DTO e editorial dedicados, sem atribuir autoria ou especialista real.
-
-- Cards de Diagnósticos seguem o padrão de ManagementAssetsLibrary: altura mínima de 277px, raio de 5px, superfície bg-sidebar/dark:bg-card sem ring, badge acima do título e autoria/data abaixo da divisória. Preservam identificação explícita do exemplo e fallback de autoria.
+- Cards de Diagnósticos seguem o padrão de ManagementAssetsLibrary: altura mínima de 277px, raio de 5px, superfície bg-sidebar/dark:bg-card sem ring, badge acima do título e autoria/data abaixo da divisória. Preservam fallback de autoria sem criar registros de exemplo.
 
 
-- As ações Relatório (PDF) e Dados (PDF) ficam visíveis abaixo do sumário e acima do artigo em larguras compactas. São links diretos de download, sem depender de JavaScript para abrir um menu. ReportPdfDownload usa attachment autenticado: /omdx/[id]/relatorio para reais e /relatorios/exemplo-acme/download para o exemplo. O padrão usa OmdxEditorialReportDocument; conteudo=dados preserva OmdxReportDocument. Parâmetros existentes da coleta são conservados. O exemplo fornece acmeReportEditorial e identificação fictícia. Ativos de gestão preservam Markdown.
+- As ações Relatório (PDF) e Dados (PDF) ficam visíveis abaixo do sumário e acima do artigo em larguras compactas. São links diretos de download, sem depender de JavaScript para abrir um menu. ReportPdfDownload usa attachment autenticado em /omdx/[id]/relatorio. O padrão usa OmdxEditorialReportDocument; conteudo=dados preserva OmdxReportDocument. Parâmetros existentes da coleta são conservados. Ativos de gestão preservam Markdown.
 
 
 Fechamento A08: listas fixas de desafios, causas e cronologia foram removidas. report-findings compara pontuações reais, distingue base uniforme e aponta prioridades sem afirmar causalidade. As seis seções editoriais aprovadas também entram no PDF. O link de Action Points conserva a coleta.

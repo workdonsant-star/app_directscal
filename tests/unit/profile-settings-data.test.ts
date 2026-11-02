@@ -136,4 +136,16 @@ describe("buildProfileSettingsData", () => {
       challenges: "Estruturar a operação",
     });
   });
+
+  it("does not fill a new real account with development organization data", () => {
+    const user: AuthUser = {
+      id: "9b0bb4f3-a5f8-4dcf-bdf5-ec14b33f9c1a",
+      name: "Nova pessoa",
+      email: "nova@example.test",
+      company: "Nova empresa",
+      role: "cliente",
+    };
+
+    expect(() => buildProfileSettingsData({ user })).toThrow("Organização do perfil não encontrada.");
+  });
 });

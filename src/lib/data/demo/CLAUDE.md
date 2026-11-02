@@ -12,6 +12,8 @@ O pacote online é montado por `scripts/demo/prepare.mjs`: inclui somente rotas 
 
 demo-workspaces.ts produz os DTOs dos componentes reais, validados pelos mesmos schemas. demo-routes.ts traduz URLs sem mudar a navegação original, incluindo a sidebar fictícia de superadmin sob `/demo/admin` e as abas da Vertex Logistics no mesmo contexto administrativo. demo-request.ts é uma lista fechada de transições locais de pesquisas, categorias, ativos, perfil e setores; não usa fetch. Formulário valida conjunto completo e único de 24 respostas e evita duplicação por token. IDs desconhecidos e endereços externos são recusados.
 
+Na criação/edição de pesquisas, a demo associa automaticamente lideranças ativas do estado local. Sem setores, gera um link fictício geral de Time, sem consultar Slack ou produção.
+
 ## Edição e operação administrativas
 
 demo-admin-assets.ts adapta os documentos fictícios para os contratos administrativos, com IDs UUID estáveis próprios e revisão de conflito. A publicação mantém conteúdo anterior até publicar; arquivar retira a leitura, restaurar conserva a identidade original. Metadados em lote preservam versões; exclusão recusa vínculos com rotinas. demo-admin-routines.ts monta acordos, diretório e eventos locais, conservando revisões e versões históricas. demo-state.ts guarda somente estado validado opcional para compatibilidade com apresentações anteriores. Reiniciar remove as alterações.

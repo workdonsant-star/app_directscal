@@ -410,7 +410,6 @@ export const createDiagnosticInputSchema = z.object({
   name: z.string().min(1),
   description: z.string().trim().optional().nullable(),
   deadline: isoDateSchema,
-  leaderIds: z.array(idSchema),
 });
 
 export const updateDiagnosticDraftInputSchema = createDiagnosticInputSchema.extend({

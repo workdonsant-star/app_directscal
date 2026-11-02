@@ -264,7 +264,7 @@ export async function getAdminAcquisitionSnapshot(): Promise<AdminDataSnapshot> 
       .order("name", { ascending: true }),
     supabase
       .from("organization_members")
-      .select("organization_id")
+      .select("organization_id,user_id")
       .eq("role", "cliente"),
     supabase
       .from("organization_module_access")
@@ -284,6 +284,26 @@ export async function getAdminAcquisitionSnapshot(): Promise<AdminDataSnapshot> 
   }
 
   assertNoSupabaseError(leadsError);
+
+  const customerUserIds = [...new Set((customerMembershipRows ?? []).map((row) => row.user_id))];
+  const [{ data: userRows, error: usersError }, { data: profileRows, error: profilesError }] = customerUserIds.length
+    ? await Promise.all([
+        supabase.schema("next_auth").from("users").select("id,name,email").in("id", customerUserIds),
+        supabase.from("account_profiles").select("user_id,name").in("user_id", customerUserIds),
+      ])
+    : [{ data: [], error: null }, { data: [], error: null }];
+  assertNoSupabaseError(usersError);
+  assertNoSupabaseError(profilesError);
+  const usersById = new Map((userRows ?? []).map((user) => [user.id, user]));
+  const profileNamesById = new Map((profileRows ?? []).map((profile) => [profile.user_id, profile.name]));
+  const usersByOrganization = new Map<string, { name: string | null; email: string }[]>();
+  for (const membership of customerMembershipRows ?? []) {
+    const user = usersById.get(membership.user_id);
+    if (!user?.email) continue;
+    const users = usersByOrganization.get(membership.organization_id) ?? [];
+    users.push({ name: profileNamesById.get(membership.user_id) ?? user.name ?? null, email: user.email });
+    usersByOrganization.set(membership.organization_id, users);
+  }
 
   const leads = (leadRows ?? []).map((lead) =>
     toLead(lead, campaignsById.get(lead.campaign_id)),
@@ -311,6 +331,9 @@ export async function getAdminAcquisitionSnapshot(): Promise<AdminDataSnapshot> 
       (organization) => ({
         id: organization.id,
         name: organization.name,
+        users: (usersByOrganization.get(organization.id) ?? []).sort((a, b) =>
+          (a.name ?? a.email).localeCompare(b.name ?? b.email, "pt-BR"),
+        ),
         employeeCount: organization.employee_count,
         createdAt: organization.created_at,
         updatedAt: organization.updated_at,

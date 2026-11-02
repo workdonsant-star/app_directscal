@@ -18,4 +18,4 @@ Esta rota autenticada é a entrada de `Relatórios` na seção `Documentos` da s
 - A rota de detalhe resolve um `DiagnosticReport` autorizado e conecta os seis gráficos às respostas consolidadas daquele diagnóstico.
 - Os textos editoriais vêm da entrega publicada; a foto do especialista continua como conteúdo de referência. Fontes, cores e estrutura vêm do próprio app.
 
-A listagem também oferece o relatório de exemplo da Acme, identificado como empresa fictícia, em `/relatorios/exemplo-acme`. A rota estática preserva a autorização de cliente e não participa da elegibilidade/publicação de diagnósticos reais. Não oferece download ou Action Points reais.
+Exemplos não entram na área operacional. O relatório Acme foi retirado da listagem e sua rota estática; `/relatorios/exemplo-acme` agora segue a rota dinâmica e retorna 404 por não ter diagnóstico autorizado e publicação. Com zero publicações e zero PDFs enviados, a página mostra somente o estado vazio.

@@ -10,7 +10,8 @@ Lista empresas que possuem conta cliente criada no sistema.
 - Não há cadastro manual de empresa nesta etapa.
 - A tabela deve permanecer densa e orientada a operação.
 - Cada empresa abre um detalhe próprio em `/admin/empresas/[id]`.
-- A listagem tem busca por nome e seleção para exclusão. Toda a linha abre o detalhe da empresa pelo link no nome, exceto o checkbox, que continua reservado à seleção em lote. Não há coluna ou botão de acesso. Histórico de aquisição não aparece como coluna principal.
+- A listagem busca empresa, nome ou e-mail das contas `cliente` vinculadas e mostra cada nome/e-mail em colunas alinhadas. Toda a linha abre o detalhe da empresa pelo link no nome, exceto o checkbox, que continua reservado à seleção em lote. Não há coluna ou botão de acesso. Histórico de aquisição não aparece como coluna principal.
+- Durante atualização do servidor de desenvolvimento, snapshots anteriores podem não ter `users`; a tabela normaliza esse campo para lista vazia antes de filtrar e renderizar.
 
 ## Produção de ativos na instância
 

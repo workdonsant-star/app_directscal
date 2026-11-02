@@ -14,8 +14,7 @@ for (const theme of ["light", "dark"] as const) {
   test("Analytics distingue percepção, consulta e execução e preserva coleta ao navegar", async ({ page }, testInfo) => {
    await page.goto("/c1-review-fixture?view=analytics");
    await expect(page.getByRole("heading", { name: "Percepção e acompanhamento" })).toBeVisible();
-   await expect(page.getByRole("meter", { name: "Média das percepções" })).toBeVisible();
-   await expect(page.getByRole("heading", { name: "Respostas por nível" })).toBeVisible();
+   await expect(page.getByRole("heading", { name: "Consistência de gestão" })).toHaveCount(0);
    await expect(page.getByText("OMDx v1 · versão original")).toHaveCount(0);
    await expect(page.locator("a").filter({ hasText: "Abrir action points" })).toHaveAttribute("href", "/action-points?diagnostico=analytics-example-1");
    await expect(page.getByText("Maturidade geral", { exact: true })).toHaveCount(0);

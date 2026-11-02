@@ -14,7 +14,7 @@ Esta rota autenticada abre um relatório selecionado na listagem de `/relatorios
 - Sumário lateral alinhado ao topo da coluna documental, sem padding superior; sticky usa `top-8` (32px), acompanhando o recuo do conteúdo no scroll interno do shell.
 
 
-- Relatórios de maturidade oferecem somente Baixar PDF, abaixo do sumário e acima do artigo em larguras compactas. ReportPdfDownload usa attachment autenticado: /omdx/[id]/relatorio para reais e /relatorios/exemplo-acme/download para o exemplo, ambos com OmdxReportDocument. Ativos de gestão preservam Markdown.
+- Relatórios de maturidade oferecem somente Baixar PDF, abaixo do sumário e acima do artigo em larguras compactas. ReportPdfDownload usa attachment autenticado em /omdx/[id]/relatorio. Ativos de gestão preservam Markdown.
 
 
 A ação de Action Points inclui ?diagnostico=id, preservando o recorte da coleta. A leitura utiliza apenas o snapshot aprovado; revisões salvas permanecem privadas.

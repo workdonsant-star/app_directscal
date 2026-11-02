@@ -18,7 +18,7 @@ Maturidade avalia maturidade operacional em **6 dimensões** (Cultura, Visão, C
 | `StatusBadge` | `status-badge.tsx` | Tabela de diagnósticos | 3 estados: `rascunho`, `ativo`, `encerrado`. |
 | `DiagnosticsTable` | `diagnostics-table.tsx` | Área de diagnósticos | Tabs de filtro, criador, setores, links de Fundador, Liderança e Times e menu condicionado à permissão de gestão. Somente pesquisas ativas dentro do prazo exibem ações de cópia. |
 | `DeleteDiagnosticDialog` | `delete-diagnostic-dialog.tsx` | Área de diagnósticos | Confirma exclusão persistida antes de remover diagnóstico e links vinculados. |
-| `DiagnosticForm` | `diagnostic-form.tsx` | Modal de criação/configuração | Formulário client-side em tela única: informações e lideranças responsáveis em uma única coluna, ações fixas no rodapé e empilhamento responsivo. O modal usa `bg-card` e campos de baixo contraste no dark mode para preservar a hierarquia entre painel, controles e popovers. Não exibe lista completa de dimensões nem escala Likert. |
+| `DiagnosticForm` | `diagnostic-form.tsx` | Modal de criação/configuração | Formulário client-side em tela única: nome, prazo e descrição, com ações fixas no rodapé. Lideranças não são escolhidas no formulário. O modal usa `bg-card` e campos de baixo contraste no dark mode para preservar a hierarquia entre painel, controles e popovers. Não exibe lista completa de dimensões nem escala Likert. |
 | `LikertScalePreview` | `likert-scale-preview.tsx` | Disponível para telas futuras | Visual da escala 1-5 do template selecionado. Não é exibido no modal atual. |
 | `DimensionsSummary` | `dimensions-summary.tsx` | Disponível para telas futuras | Resumo compacto das 6 dimensões avaliadas. Não é exibido no modal atual. |
 | `DiagnosticsWorkspace` | `diagnostics-workspace.tsx` | `/omdx/diagnosticos` | Controla lista, ações e modal de criação/configuração. |
@@ -193,7 +193,7 @@ OverviewExecutiveCards aceita titleDotClassName opcional por métrica para um po
 
 - Criação/configuração em tela única, sem stepper ou divisórias no cabeçalho/rodapé. Todos os tamanhos usam uma única coluna; corpo rola e ações ficam fixas. Campos usam Input com superfície neutra e raio de 5px; empresa/template não são exibidos. Lideranças usam dropdown de seleção múltipla, com foco e estado indisponível. Durante envio, controles ficam desabilitados e erros aparecem dentro do modal.
 
-- Empresa e template não aparecem no formulário; permanecem definidos pela sessão e pelo workspace. Lideranças usam Select multiple do sistema, em dropdown com nome, setor/cargo e opções inativas desabilitadas. Seleção múltipla preserva o payload leaderIds e a validação de ao menos uma liderança. Substitui a lista visível, busca e seleção em lote anteriores.
+- Empresa e template não aparecem no formulário; permanecem definidos pela sessão e pelo workspace. A API associa automaticamente as lideranças ativas dos setores cadastrados. Sem setores, a pesquisa ainda pode ser ativada e recebe link geral de Time.
 
 - Modal de pesquisa com largura máxima de 512px e campos empilhados: nome, prazo, descrição e lideranças.
 
@@ -205,7 +205,7 @@ OverviewExecutiveCards aceita titleDotClassName opcional por métrica para um po
 
 - A tabela preserva Respostas como total e, imediatamente após, mostra Resp. fundador, Resp. liderança e Resp. time com os volumes de responses.fundador/lideranca/operacao. Zero é exibido nas contagens por nível; números alinhados à direita e tabulares.
 
-- Tabela de Pesquisas sem coluna Setores. Ordem: Diagnóstico, Criado por, links Fundador/Liderança/Times, Status, Respostas, volumes por nível, Score e ações.
+- Tabela de Pesquisas sem coluna Setores. Ordem: Diagnóstico, Criado por, links Fundador/Liderança/Times, Status, Respostas, volumes por nível, Score, Dados CSV e ações.
 
 - Prazo de resposta é obrigatório ao criar/configurar pesquisas. Contratos de escrita recusam ausência/null e a ativação revalida o prazo persistido, inclusive para rascunhos antigos. Leituras preservam compatibilidade com pesquisas antigas sem prazo.
 
@@ -223,3 +223,5 @@ Apresentação isolada: os mesmos componentes são reutilizados em /demo via App
 C1/A16: o aviso público informa ausência de coleta de nome/e-mail/cargo, risco de identificação contextual em grupos pequenos/fundador e diferença para relatos identificados no Slack. Não promete anonimato absoluto enquanto a política de agregação ainda aguarda aprovação e enforcement.
 
 Downloads distinguem Relatório de diagnóstico (PDF), Dados da pesquisa (PDF) e Dados da pesquisa (CSV). O relatório padrão usa o modelo editorial; os dados PDF acrescentam `conteudo=dados`, e o CSV mantém `formato=csv`. A tabela de Pesquisas oferece as mesmas três opções e conserva o escopo da coleta pela URL de runtime.
+
+A coluna Dados CSV baixa respostas individuais concluídas via `/omdx/[id]/respostas`, sem exigir publicação; cada linha é uma nota por pergunta. O CSV consolidado do menu continua ligado ao relatório publicado. Na demo, o botão da coluna fica desativado porque não há respostas individuais persistidas.

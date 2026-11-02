@@ -16,6 +16,7 @@ export const demoAdminSnapshot: AdminDataSnapshot = {
     id: DEMO_ORGANIZATION_ID,
     organizationId: DEMO_ORGANIZATION_ID,
     name: DEMO_COMPANY,
+    users: [{ name: "Marina Costa", email: "marina@vertex.example" }],
     companySize: "51–200 pessoas",
     employeeCount: 84,
     leadCount: 0,

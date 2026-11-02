@@ -57,6 +57,7 @@ type DiagnosticsTableProps = {
   diagnostics: Diagnostic[];
   filter: DiagnosticsFilter;
   shareLinksByDiagnosticId: Record<string, DiagnosticShareLink[]>;
+  responseCsvAvailable?: boolean;
   onConfigure?: (diagnostic: Diagnostic) => void;
   onDelete?: (diagnostic: Diagnostic) => void;
   onClose?: (diagnostic: Diagnostic) => void;
@@ -158,6 +159,7 @@ export function DiagnosticsTable({
   diagnostics,
   filter,
   shareLinksByDiagnosticId,
+  responseCsvAvailable = true,
   onConfigure,
   onDelete,
   onClose,
@@ -210,7 +212,7 @@ export function DiagnosticsTable({
   return (
     <div>
       <div className="min-w-0">
-        <Table className="min-w-[1360px] table-fixed">
+        <Table className="min-w-[1480px] table-fixed">
           <TableHeader>
             <TableRow>
               <TableHead className="h-11 w-[260px] px-4">Diagnóstico</TableHead>
@@ -228,6 +230,7 @@ export function DiagnosticsTable({
               <TableHead className="h-11 w-[60px] px-4 text-right">
                 Score
               </TableHead>
+              <TableHead className="h-11 w-[120px] px-4">Dados CSV</TableHead>
               <TableHead className="h-11 w-[60px] px-4"></TableHead>
             </TableRow>
           </TableHeader>
@@ -325,6 +328,19 @@ export function DiagnosticsTable({
                   )}
                 </TableCell>
                 <TableCell className="px-4 py-4">
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    disabled={!responseCsvAvailable || d.responses.total === 0}
+                    title={!responseCsvAvailable ? "Indisponível na demonstração" : undefined}
+                    aria-label={`Baixar respostas de ${d.name} em CSV`}
+                    onClick={() => window.location.assign(runtime.href(`/omdx/${d.id}/respostas`))}
+                  >
+                    <Download className="size-3" />
+                    Baixar
+                  </Button>
+                </TableCell>
+                <TableCell className="px-4 py-4">
                   <DropdownMenu>
                     <DropdownMenuTrigger
                       render={
@@ -401,7 +417,7 @@ export function DiagnosticsTable({
             {visible.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={12}
+                  colSpan={13}
                   className="px-4 py-12 text-center text-sm text-muted-foreground"
                 >
                   Nenhum diagnóstico nesta categoria.

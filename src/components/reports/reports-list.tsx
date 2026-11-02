@@ -67,11 +67,7 @@ export function ReportsList({ diagnostics, baseHref = "/relatorios" }: { diagnos
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-1 flex-col justify-between gap-6">
-                <div>
-                  {diagnostic.id === "exemplo-acme" && (
-                    <p className="line-clamp-3 text-sm leading-5 text-muted-foreground">Empresa fictícia · Relatório de exemplo</p>
-                  )}
-                </div>
+                <div />
                 <div className="space-y-3 border-t pt-4">
                   {diagnostic.creator ? (
                     <div className="flex min-w-0 items-center gap-2">

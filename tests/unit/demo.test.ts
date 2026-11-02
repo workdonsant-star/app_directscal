@@ -100,6 +100,16 @@ import { demoHref, demoPathname } from "@/lib/data/demo/demo-routes";
 import { diagnosticResponseWorkspaceSchema, assetQuestionAnswerSchema } from "@/lib/contracts";
 
 describe("componentes operacionais sobre fonte isolada", () => {
+ it("cria pesquisa sem selecionar lideranças e mantém link geral de Time quando não há setores", () => {
+  const state = { ...createDemoState(), sectors: [] };
+  const created = applyDemoRequest(state, "/api/omdx/diagnostics", { method: "POST", body: JSON.stringify({ name: "Pesquisa sem setores", description: null, deadline: "2026-12-10" }) });
+  expect(created.status).toBeUndefined();
+  const id = (created.body as { diagnosticId: string }).diagnosticId;
+  expect(created.state.surveys.find(survey => survey.id === id)?.leaderIds).toEqual([]);
+  expect(demoShareLinks(created.state)[id].map(link => [link.group, link.sectorId])).toEqual([
+   ["fundador", null], ["lideranca", null], ["operacao", null],
+  ]);
+ });
  it("mantém alterações administrativas na fonte fictícia e reinicia o cenário", () => {
   const initial = createDemoState();
   const directory = applyDemoRequest(initial, "/api/admin/specialists");

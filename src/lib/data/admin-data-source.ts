@@ -22,6 +22,7 @@ type AdminOrganization = {
   employeeCount: number;
   createdAt: string;
   updatedAt: string;
+  users?: { name: string | null; email: string }[];
 };
 
 export type OrganizationModuleAccessRecord = {
@@ -139,6 +140,7 @@ function deriveCompanies({
         id: `company_${organization.id}`,
         organizationId: organization.id,
         name: organization.name,
+        users: organization.users ?? [],
         companySize: latest?.companySize ?? null,
         employeeCount: organization.employeeCount,
         leadCount: items.length,

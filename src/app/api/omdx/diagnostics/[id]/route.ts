@@ -7,6 +7,7 @@ import {
   deleteDiagnosticInputSchema,
   updateDiagnosticDraftInputSchema,
 } from "@/lib/contracts";
+import { getActiveDiagnosticLeaderIds } from "@/lib/data/diagnostic-leader-selection";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 type RouteContext = {
@@ -46,6 +47,16 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   }
 
   const supabase = createSupabaseAdminClient();
+  const { data: diagnostic, error: diagnosticError } = await supabase.from("diagnostics")
+    .select("organization_id").eq("id", id).eq("status", "rascunho").maybeSingle();
+  if (diagnosticError) return NextResponse.json({ message: "Não foi possível consultar a pesquisa." }, { status: 500 });
+  if (!diagnostic) return NextResponse.json({ message: "Rascunho não encontrado." }, { status: 404 });
+  let leaderIds: string[];
+  try {
+    leaderIds = await getActiveDiagnosticLeaderIds(diagnostic.organization_id);
+  } catch {
+    return NextResponse.json({ message: "Não foi possível consultar as lideranças cadastradas." }, { status: 500 });
+  }
   const { error } = await supabase
     .from("diagnostics")
     .update({
@@ -68,7 +79,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     .rpc("sync_diagnostic_leaders", {
       p_actor_user_id: session.user.id,
       p_diagnostic_id: id,
-      p_person_ids: parsed.data.leaderIds,
+      p_person_ids: leaderIds,
     });
 
   if (leadersError) {

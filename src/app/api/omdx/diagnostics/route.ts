@@ -4,6 +4,7 @@ import { canAccessCustomerApp } from "@/lib/auth/access-control";
 import { getAccessibleOrganizationIdsForUser } from "@/lib/auth/authorization";
 import { getCurrentAuthSession } from "@/lib/auth/session";
 import { createDiagnosticInputSchema } from "@/lib/contracts";
+import { getActiveDiagnosticLeaderIds } from "@/lib/data/diagnostic-leader-selection";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 type TemplateRow = {
@@ -67,6 +68,13 @@ export async function POST(request: Request) {
     );
   }
 
+  let leaderIds: string[];
+  try {
+    leaderIds = await getActiveDiagnosticLeaderIds(organizationId);
+  } catch {
+    return NextResponse.json({ message: "Não foi possível consultar as lideranças cadastradas." }, { status: 500 });
+  }
+
   const supabase = createSupabaseAdminClient();
   const { data: diagnostic, error } = await supabase
     .from("diagnostics")
@@ -94,7 +102,7 @@ export async function POST(request: Request) {
     .rpc("sync_diagnostic_leaders", {
       p_actor_user_id: session.user.id,
       p_diagnostic_id: diagnostic.id,
-      p_person_ids: parsed.data.leaderIds,
+      p_person_ids: leaderIds,
     });
 
   if (leadersError) {

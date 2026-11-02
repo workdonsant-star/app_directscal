@@ -222,6 +222,11 @@ export function buildProfileSettingsData({
   organization?: OrganizationProfileRow | null;
   user: AuthUser;
 }): ProfileSettingsData {
+  // Contas definitivas precisam de uma organização real; não usar os valores do fallback de desenvolvimento.
+  if (isUuid(user.id) && !organization) {
+    throw new Error("Organização do perfil não encontrada.");
+  }
+
   const values = lead ? jsonToStringRecord(lead.field_values) : {};
   const officialName =
     valueOrNull(values.razao_social) ??

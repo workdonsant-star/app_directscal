@@ -35,10 +35,13 @@ export function AdminCompaniesTable({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const visibleCompanies = companies.filter((company) => company.organizationId && !deletedIds.includes(company.id));
+  const visibleCompanies = companies
+    .filter((company) => company.organizationId && !deletedIds.includes(company.id))
+    .map((company) => ({ ...company, users: company.users ?? [] }));
   const normalizedSearch = search.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   const filteredCompanies = visibleCompanies.filter((company) =>
-    company.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().includes(normalizedSearch),
+    [company.name, ...company.users.flatMap((user) => [user.name ?? "", user.email])]
+      .some((value) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().includes(normalizedSearch)),
   );
   const selectedCompanies = visibleCompanies.filter((company) => selectedIds.includes(company.id));
   const allSelected = filteredCompanies.length > 0 && filteredCompanies.every((company) => selectedIds.includes(company.id));
@@ -86,7 +89,7 @@ export function AdminCompaniesTable({
         <Input
           aria-label="Buscar empresa cadastrada"
           className="pl-10"
-          placeholder="Buscar empresa cadastrada"
+          placeholder="Buscar empresa, nome ou e-mail"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
@@ -125,6 +128,8 @@ export function AdminCompaniesTable({
                 />
               </TableHead>
               <TableHead>Empresa</TableHead>
+              <TableHead>Usuário</TableHead>
+              <TableHead>E-mail</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -148,11 +153,17 @@ export function AdminCompaniesTable({
                     {company.name}
                   </Link>
                 </TableCell>
+                <TableCell className="text-sm text-foreground">
+                  {company.users.length ? company.users.map((user) => <div key={user.email}>{user.name ?? "Nome não informado"}</div>) : "—"}
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {company.users.length ? company.users.map((user) => <div key={user.email}>{user.email}</div>) : "—"}
+                </TableCell>
               </TableRow>
             ))}
             {filteredCompanies.length === 0 && (
               <TableRow>
-                <TableCell colSpan={2} className="py-12 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={4} className="py-12 text-center text-sm text-muted-foreground">
                   {visibleCompanies.length === 0 ? "Nenhuma empresa cadastrada até agora." : "Nenhuma empresa encontrada para esta busca."}
                 </TableCell>
               </TableRow>

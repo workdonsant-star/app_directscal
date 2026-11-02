@@ -27,23 +27,18 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getEffectiveDiagnosticStatus } from "@/lib/data/omdx-production-rules";
 import type {
-  AuthRole,
   Diagnostic,
   DiagnosticShareLink,
   DiagnosticTemplate,
-  OrganizationSector,
 } from "@/lib/types";
 
 type ModalMode = "create" | "edit";
 
 type DiagnosticsWorkspaceProps = {
-  currentUserEmail: string;
   currentUserId: string;
-  currentUserRole: AuthRole;
   diagnostics: Diagnostic[];
-  organizationName: string;
-  sectors: OrganizationSector[];
   shareLinksByDiagnosticId: Record<string, DiagnosticShareLink[]>;
+  responseCsvAvailable?: boolean;
   template: DiagnosticTemplate;
 };
 
@@ -76,19 +71,16 @@ function buildDiagnosticPayload(
   return {
     deadline: form.deadline || null,
     description: form.description || null,
-    leaderIds: form.leaderIds,
     name: form.name,
     templateId: template.id,
   };
 }
 
 export function DiagnosticsWorkspace({
-  currentUserEmail,
   currentUserId,
-  currentUserRole,
   diagnostics: storedDiagnostics,
-  sectors,
   shareLinksByDiagnosticId,
+  responseCsvAvailable = true,
   template,
 }: DiagnosticsWorkspaceProps) {
   const router = useRouter();
@@ -324,6 +316,7 @@ export function DiagnosticsWorkspace({
             diagnostics={diagnostics}
             filter={filter}
             shareLinksByDiagnosticId={shareLinksByDiagnosticId}
+            responseCsvAvailable={responseCsvAvailable}
             onConfigure={openEdit}
             onDelete={handleDelete}
             onClose={handleCloseCollection}
@@ -346,15 +339,11 @@ export function DiagnosticsWorkspace({
               {mode === "edit" ? "Configurar rascunho" : "Criar diagnóstico"}
             </DialogTitle>
             <DialogDescription>
-              Defina a coleta e selecione as lideranças participantes.
+              Defina o nome e o prazo da coleta.
             </DialogDescription>
           </DialogHeader>
           <DiagnosticForm
-            currentUserEmail={currentUserEmail}
-            currentUserRole={currentUserRole}
-            mode={mode === "edit" ? "edit" : "create"}
             diagnostic={selectedDiagnostic ?? undefined}
-            sectors={sectors}
             pending={pending}
             error={notice}
             onActivate={handleActivate}

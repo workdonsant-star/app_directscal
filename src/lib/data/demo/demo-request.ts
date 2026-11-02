@@ -15,7 +15,7 @@ import { demoHref } from "./demo-routes";
 import { demoAdminSnapshot, demoAdminSpecialists } from "./demo-admin-data";
 import { adminSpecialistSchema } from "@/lib/contracts/admin-operations";
 
-const surveyInput = z.object({ name: z.string().trim().min(1).max(120), description: z.string().nullable(), deadline: z.string().nullable(), leaderIds: z.string().array() });
+const surveyInput = z.object({ name: z.string().trim().min(1).max(120), description: z.string().nullable(), deadline: z.string().nullable() });
 const categoryInput = z.object({ key: z.string().optional(), title: z.string().trim().min(2).max(120) });
 type Result = { state: DemoState; body: unknown; status?: number };
 
@@ -136,7 +136,7 @@ export function applyDemoRequest(state: DemoState, address: string, init: Reques
     if (state.surveys.length >= 50 && !id) return fail("Reinicie a demo para começar uma nova apresentação.");
     const parsed = surveyInput.parse(body);
     const savedId = id ?? `demo-survey-${crypto.randomUUID()}`;
-    const saved = { id: savedId, ...parsed, status: survey?.status ?? "rascunho" as const, responses: survey?.responses ?? 0 };
+    const saved = { id: savedId, ...parsed, leaderIds: (state.sectors ?? demoSectors).filter(sector => sector.active && sector.inviteStatus === "ativo").map(sector => sector.leader.id), status: survey?.status ?? "rascunho" as const, responses: survey?.responses ?? 0 };
     const next = { ...state, surveys: id ? state.surveys.map(s => s.id === id ? saved : s) : [...state.surveys, saved] };
     return result({ diagnosticId: savedId, links: demoShareLinks(next)[savedId] }, next);
    }

@@ -175,6 +175,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - `/omdx/[id]/compartilhar` somente redireciona para Pesquisas; não renderiza tela ou breadcrumb.
 - `/omdx/[id]/action-points` não renderiza página nem breadcrumb; retorna PDF como attachment.
 - `/omdx/[id]/relatorio` não renderiza página nem breadcrumb; retorna PDF como attachment por padrão e CSV consolidado quando recebe `?formato=csv`.
+- `/omdx/[id]/respostas` não renderiza página nem breadcrumb; retorna CSV autenticado com respostas individuais concluídas, sem exigir relatório publicado.
 - `/configuracoes` mantém apenas as ações da página na topbar.
 - `/ativos-de-gestao` mostra as pastas por categoria.
 - `/ativos-de-gestao/sops/[id]` usa `SOPs / Nome do SOP`.

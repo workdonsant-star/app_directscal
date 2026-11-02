@@ -26,20 +26,6 @@ const initiativeSchema = z.object({
 });
 export type Initiative = z.infer<typeof initiativeSchema>;
 
-const initialInitiatives = (
-  [
-    { id: "novo-website", title: "Novo website", kind: "website" },
-    { id: "oferta-novo-sistema", title: "Oferta novo sistema", kind: "oferta" },
-    { id: "novo-aplicativo", title: "Novo aplicativo", kind: "aplicativo" },
-    { id: "testando-mac", title: "Testando Mac", kind: "teste" },
-  ] satisfies Pick<Initiative, "id" | "title" | "kind">[]
-).map((item): Initiative => ({
-  ...item,
-  objective: "",
-  owner: "",
-  deadline: "",
-  status: "planejada",
-}));
 const eventName = "directscal:initiatives";
 function key(scope: string) {
   return `directscal:initiatives:v1:${scope}`;
@@ -71,11 +57,11 @@ export function useInitiatives(scope: string) {
   try {
     parsed = raw ? z.array(initiativeSchema).safeParse(JSON.parse(raw)) : null;
   } catch {
-    /* Dados locais inválidos usam a lista inicial. */
+    /* Dados locais inválidos não criam iniciativas. */
   }
   const isLoaded = raw !== undefined;
   const initiatives = !isLoaded ? [] :
-    parsed?.success && parsed.data ? parsed.data : initialInitiatives;
+    parsed?.success && parsed.data ? parsed.data : [];
   function save(next: Initiative[]) {
     if (!isLoaded) return false;
     try {

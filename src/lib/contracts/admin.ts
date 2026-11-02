@@ -102,6 +102,7 @@ export const leadCompanySchema = z.object({
   id: idSchema,
   organizationId: idSchema.nullable().default(null),
   name: z.string().min(1),
+  users: z.array(z.object({ name: z.string().nullable(), email: z.string().email() })).default([]),
   companySize: z.string().nullable(),
   employeeCount: z.number().int().positive().nullable().default(null),
   leadCount: z.number().int().nonnegative(),

@@ -82,6 +82,20 @@ describe("carregamento das campanhas", () => {
 });
 
 describe("carregamento das empresas", () => {
+  it("aceita snapshot anterior sem contatos durante atualização do app", () => {
+    const snapshot = buildAdminDataSnapshot({
+      campaigns: [], leads: [],
+      organizations: [{
+        id: "00000000-0000-4000-8000-000000000001", name: "Cliente antigo", employeeCount: 10,
+        createdAt: "2026-10-29T12:00:00Z", updatedAt: "2026-10-29T12:00:00Z",
+      }],
+    });
+    Reflect.deleteProperty(snapshot.companies[0], "users");
+    const html = renderToStaticMarkup(createElement(AdminCompaniesTable, { initialSnapshot: snapshot }));
+    expect(html).toContain("Cliente antigo");
+    expect(html).toContain("Usuário");
+  });
+
   it("não injeta organizações de exemplo quando a fonte omite organizações", () => {
     expect(buildAdminDataSnapshot({ campaigns: [], leads: [] }).companies).toEqual([]);
   });

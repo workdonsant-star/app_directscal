@@ -21,6 +21,7 @@ Em 18/10/2026 a saturação desceu um degrau: as séries usam os tons mais suave
 | --- | --- | --- | --- | --- |
 | Camadas (Fundador, Liderança, Operação) | Teal, rampa ordinal | `--overview-chart-founder` / `-leadership` / `-tactical` | 300 / 200 / 100 | 75 / 100 / 200 |
 | Maturidade: nota da pesquisa, dimensões | Purple | `--overview-chart-dimensions` | 100 | 100 |
+| Consistência geral (composta das dimensões) | Purple | `--overview-chart-dimensions-overall` | 300 | 300 |
 | Estimativa do agente (forma vazada e tracejada) | Purple | `--overview-chart-estimate` | 75 | 75 |
 | Progresso pelas ações | Lime | `--overview-chart-progress` | 500 | 400 |
 | Agente: respondidas com fonte | Blue | `--overview-chart-usage-resolved` | 100 | 100 |

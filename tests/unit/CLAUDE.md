@@ -2,6 +2,8 @@
 
 `demo.test.ts` valida ligação entre ativos/rotinas e os quatro tipos, fonte/recusa do agente, reentrada do estado local, proteção das coletas encerradas, revisão única e roteamento isolado entre as visões de cliente e superadmin. Não chama serviços externos.
 
+`reports-empty-state.test.ts` verifica que uma conta sem diagnósticos publicados e sem PDFs enviados vê o estado vazio, sem relatório Acme inserido automaticamente. `profile-settings-data.test.ts` também recusa montar o perfil de uma conta definitiva sem organização persistida.
+
 `agent-openai-provider.test.ts` valida a chamada estruturada ao endpoint Responses da OpenAI com fonte fictícia, segredo somente no header e `store: false`; o transporte é substituído e não usa uma chave real.
 
 `admin-action-points-view.test.ts` verifica agrupamento das ações publicadas por responsável e uso da revisão vigente da rotina sem confundir Action Points de diagnósticos diferentes.
@@ -9,6 +11,10 @@
 `action-point-follow-up-classification.test.ts` cobre silêncio após prazo e entrega, falha de transporte, resposta vaga/contraditória, cumprimento parcial, falta de evidência e atendimento. A regra ainda não recebe respostas reais do Slack.
 
 Vitest em ambiente Node, com alias `@/` configurado na raiz. Teste regras de domínio e contratos com dados fictícios, sem acessar serviços externos. Para mudanças localizadas, rode o arquivo específico. Os testes de categorias garantem agrupamento por categoria, normalização e conservação de todos os ativos.
+
+`diagnostic-leader-selection.test.ts` cobre associação automática de lideranças ativas, exclusão de pendentes/inativas e empresa sem lideranças. A demo cobre criação de pesquisa sem seleção e link geral fictício de Time.
+
+`diagnostic-response-csv.test.ts` verifica autorização antes da leitura e serialização de notas individuais com UTF-8, acentos e proteção contra fórmulas de planilha. Não consulta respostas reais.
 
 C1: collection-comparison verifica seleção da coleta por data original, IDs de pergunta independentes, mudança de texto/conjunto/empresa e exclusão de referências incompatíveis sem mutar o histórico.
 

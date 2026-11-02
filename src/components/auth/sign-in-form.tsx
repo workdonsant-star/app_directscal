@@ -129,7 +129,7 @@ export function SignInForm({
         type="button"
         variant="outline"
         size="lg"
-        className="h-[45px] w-full gap-2.5 bg-background text-sm font-normal"
+        className="h-[45px] w-full gap-2.5 bg-secondary text-sm font-normal"
         disabled={isGoogleSubmitting}
         onClick={handleGoogleSignIn}
       >
@@ -162,7 +162,7 @@ export function SignInForm({
                 id="email"
                 type="email"
                 autoComplete="email"
-                className="h-[45px] px-2.5 text-sm md:text-sm"
+                className="h-[45px] rounded-[5px] px-2.5 text-sm md:text-sm"
                 placeholder="Digite seu e-mail"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
@@ -181,7 +181,7 @@ export function SignInForm({
                   id="password"
                   type={isPasswordVisible ? "text" : "password"}
                   autoComplete="current-password"
-                  className="h-[45px] px-2.5 pr-10 text-sm md:text-sm"
+                  className="h-[45px] rounded-[5px] px-2.5 pr-10 text-sm md:text-sm"
                   placeholder="Sua senha"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}

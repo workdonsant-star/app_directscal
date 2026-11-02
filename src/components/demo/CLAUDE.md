@@ -8,6 +8,8 @@
 
 Os dados continuam fictícios e locais. Nenhum transporte Slack, e-mail, modelo de IA ou autenticação é chamado. Formulário público usa a superfície de respondente, fora do shell autenticado.
 
+Na lista de Pesquisas, a coluna Dados CSV permanece visível e desativada: as contagens da demo são agregadas fictícias e não existem respostas individuais para exportar.
+
 Na entrega administrativa, o provider do rascunho troca de chave quando a publicação local salva aparece após a hidratação. Assim, a redação persistida no navegador é carregada ao reabrir ou atualizar o relatório.
 
 ## Superadmin por empresa

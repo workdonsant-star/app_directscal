@@ -60,6 +60,8 @@ Componentes compartilhados com `/demo/admin` usam `useAppRuntime()` para requisi
 
 `AdminCompaniesTable` também exige snapshot inicial real da página: organizações seed não podem ocupar a listagem durante o carregamento. A exclusão mantém seleção, confirmação, remoção otimista apenas dos IDs confirmados e releitura pelo evento administrativo.
 
+A tabela mostra nome e e-mail de todas as contas `cliente` vinculadas à empresa; busca também por esses campos. A demo usa contatos fictícios.
+
 Na tabela de empresas, o link do nome cobre visualmente a linha inteira para abertura por mouse ou toque, enquanto o checkbox mantém uma camada própria para seleção. A coluna `Acessar` não existe; o link permanece acessível pelo teclado.
 
 - A sidebar administrativa mostra Empresas cadastradas, Especialistas e Campanhas por grupos. `AdminOperationsNavigation` permanece apenas na rota legada de Operação, fora da navegação principal. Na aba Arquivos da empresa, pastas agrupam uploads e ativos editoriais existentes. A criação editorial permanece na etapa de ativos da entrega, sem seletor de empresa no formulário.

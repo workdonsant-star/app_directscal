@@ -2,7 +2,7 @@
 
 Contém o contrato Zod e o hook `useInitiatives`. Nesta entrega, não há API nem escrita no Supabase. O armazenamento usa `directscal:initiatives:v1:<userId>:<organizationId>`; a separação é por usuário e empresa, sem colaboração entre contas.
 
-Os quatro nomes iniciais vêm do frame Figma 242:267. São registros de partida da interface, com objetivo, responsável e prazo vazios; não representam projetos reais já cadastrados no servidor. A primeira gravação preserva a lista completa no navegador. Dados inválidos ou armazenamento indisponível devem ter fallback seguro. As mutações só confirmam sucesso após gravação; eventos locais e `storage` sincronizam sidebar e tela, inclusive entre abas. Prazos usam YYYY-MM-DD.
+Contas novas começam com lista vazia; nenhuma iniciativa de exemplo é criada na primeira leitura. Listas já salvas no navegador permanecem intactas. Dados inválidos ou armazenamento indisponível mostram lista vazia. As mutações só confirmam sucesso após gravação; eventos locais e `storage` sincronizam sidebar e tela, inclusive entre abas. Prazos usam YYYY-MM-DD.
 
 ## Prévia da execução
 
@@ -18,4 +18,4 @@ Prazos e horários de demonstração usam `YYYY-MM-DDTHH:mm`, interpretados como
 
 Suspensão é `paused`, separada de conclusão, e conserva a atenção anterior para retomada. Adiar retira a confirmação anterior e conserva o impedimento; call e orientação não resolvem pendência nem alteram prazo. `originalDueAt` nunca é sobrescrito. Exemplos históricos precedem as interações atuais; timestamps continuam locais. Testes em `tests/unit/project-decisions.test.ts` verificam essas invariantes e a rejeição de proposta desatualizada.
 
-A hidratação distingue armazenamento ainda não lido (`undefined`) de armazenamento vazio (`null`). `isLoaded` impede mostrar os quatro exemplos antes da lista salva e bloqueia gravação antes da leitura. Os exemplos deliberados da primeira utilização permanecem após confirmar ausência de dados locais.
+A hidratação distingue armazenamento ainda não lido (`undefined`) de armazenamento vazio (`null`). `isLoaded` impede mostrar dados antes da lista salva e bloqueia gravação antes da leitura. Ausência de dados locais produz o estado vazio.

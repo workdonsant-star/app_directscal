@@ -55,10 +55,12 @@ export default async function SignInPage({
     <AuthPageShell
       title={
         <>
-          Entenda os pontos vulneráveis da sua gestão e saiba como resolvê-los
+          Acesse sua estrutura
+          <br />
+          de gestão agentica
         </>
       }
-      visualVariant="app"
+      visualVariant="login"
     >
       <SignInForm
         authErrorMessage={getAuthErrorMessage(resolvedSearchParams?.error)}

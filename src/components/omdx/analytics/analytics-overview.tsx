@@ -3,7 +3,6 @@ import { AnalyticsLayerPerceptionChart } from "@/components/omdx/analytics/analy
 import { AnalyticsLeverTable } from "@/components/omdx/analytics/analytics-lever-table";
 import { AnalyticsLevel } from "@/components/omdx/analytics/analytics-primitives";
 import { AnalyticsQuestionTable } from "@/components/omdx/analytics/analytics-question-table";
-import { CollectionReading } from "@/components/omdx/analytics/collection-reading";
 import { OverviewDiagnosticFilter } from "@/components/omdx/overview-diagnostic-filter";
 import { ProcessUsageSection } from "@/components/omdx/process-usage-section";
 import { buildAnalyticsOverview } from "@/lib/data/omdx-analytics-overview";
@@ -44,13 +43,6 @@ export function AnalyticsOverview({
 }: AnalyticsOverviewProps) {
   const overview = buildAnalyticsOverview({ analytics, comparison, processUsage, illustrativeImpact });
   const diagnostic = diagnosticOptions.find(item => item.id === selectedDiagnostic);
-  const responseBase = diagnostic ? [diagnostic] : selectedDiagnostic === "todos" ? diagnosticOptions : [];
-  const responses = responseBase.length === 0 ? null : responseBase.reduce((total, item) => ({
-    total: total.total + item.responses.total,
-    fundador: total.fundador + item.responses.fundador,
-    lideranca: total.lideranca + item.responses.lideranca,
-    operacao: total.operacao + item.responses.operacao,
-  }), { total: 0, fundador: 0, lideranca: 0, operacao: 0 });
 
   return (
     <div className="flex w-full flex-col gap-10">
@@ -69,15 +61,12 @@ export function AnalyticsOverview({
         />
       </header>}
 
-      <AnalyticsLevel id="nivel-veredito" title="Leitura da coleta">
-        <CollectionReading score={overview.verdict?.maturity ?? null} responses={responses} />
-      </AnalyticsLevel>
-
       <div className="grid gap-10 xl:grid-cols-2 xl:gap-4">
         <AnalyticsLevel id="nivel-gap" title="Onde está o gap">
           <AnalyticsDimensionGapChart
             concise={concise}
             dimensions={overview.dimensions}
+            overall={overview.verdict?.maturity ?? null}
             referenceLabel={comparison?.referenceLabel ?? null}
             target={illustrativeImpact ? maturityCutoff : null}
           />

@@ -46,6 +46,7 @@ As ações em massa usam schemas estritos em `management-assets.ts`: empresa UUI
 - deleteAssetCategoryInputSchema recebe key e no máximo um de destinationKey/newTitle. Ausência de destino é permitida no contrato só para categoria vazia; banco reconta e exige destino se houver documentos. Registro categories aceita deleted opcional para suprimir os quatro padrões excluídos (até 100 categorias ativas + quatro supressões).
 
 - Prazo de resposta é obrigatório ao criar/configurar pesquisas. Contratos de escrita recusam ausência/null e a ativação revalida o prazo persistido, inclusive para rascunhos antigos. Leituras preservam compatibilidade com pesquisas antigas sem prazo.
+- O input de criação/edição de pesquisa não recebe `leaderIds`; a associação de lideranças é derivada no servidor pela organização autenticada.
 
 
 O catálogo administrativo de ações exige dimensionId (enum das seis dimensões); dimension permanece somente como rótulo. A conciliação com relatórios nunca compara nomes visíveis.
@@ -58,6 +59,8 @@ A13: submissão anônima exige `submissionId` UUID aleatório por tentativa/link
 
 
 A11: companySpecialistInputSchema é estrito, aceita somente specialistId e expectedUpdatedAt (ambos anuláveis). Empresa/ator vêm de rota/sessão. companyOperationsSchema descreve atribuição versionada e histórico real por diagnóstico, com indicação de base para análise.
+
+`leadCompanySchema.users` contém os nomes e e-mails das contas `cliente` vinculadas à organização; a lista padrão é vazia para registros sem conta.
 
 A12: os quatro tipos (SOP, Playbook, Governança e RACI) são editáveis. `updateManagementAssetInputSchema` exige `expectedRevision` com timestamps brutos do ativo/rascunho e ID do rascunho, sem normalização que perca precisão. O contrato de publicação aceita rascunho diretamente; periodicidade e revisão de validade não fazem parte da superfície dos ativos.
 

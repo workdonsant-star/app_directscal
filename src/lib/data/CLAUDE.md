@@ -47,6 +47,7 @@ Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no
 - `organization-structure-data-source.ts` concentra setores, lideranças e convites. Criação e aceite usam funções transacionais no schema `app_private`; o token bruto existe apenas no link/cookie curto e o banco guarda somente SHA-256. O aceite exige o mesmo e-mail, copia nome/foto de `next_auth.users` e cria membership `cliente` ou `admin`, preservando papéis mais privilegiados já existentes. Falhas do provedor não apagam o cadastro: ficam registradas para reenvio.
 - `omdx-data-source.ts` deriva a visibilidade por criador e atribuição setorial. `cliente` recebe todos os diagnósticos; `admin` recebe os próprios e os atribuídos. Links de Time são filtrados pelos setores atribuídos, enquanto o link de Fundador permanece exclusivo de `cliente`.
 - A ativação de diagnóstico chama `app_private.activate_diagnostic_with_links`, que cria os links e muda o status na mesma transação. A seleção de lideranças de um rascunho usa `app_private.sync_diagnostic_leaders`.
+- `diagnostic-leader-selection.ts` consulta as lideranças ativas da estrutura da empresa para associá-las automaticamente ao diagnóstico. Se não houver setores ativos, a associação fica vazia e a ativação cria link geral de Time.
 - Em aquisição Google, o e-mail OAuth autenticado é a fonte canônica; valide que `userId` e e-mail pertencem à mesma linha em `next_auth.users` e não crie nova conta quando o e-mail já tem acesso ativo.
 
 ## Fluxo público de resposta
@@ -73,6 +74,8 @@ Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no
 ## Exportação CSV de relatório
 
 `buildDiagnosticReportCsv()` transforma um `DiagnosticReport` já consolidado em CSV para `/omdx/[id]/relatorio?formato=csv`.
+
+`buildDiagnosticResponseCsv()` serializa as respostas individuais concluídas de uma coleta em CSV para `/omdx/[id]/respostas`, com proteção contra fórmulas de planilha. O endpoint pagina a leitura no servidor e usa a autorização de `getDiagnosticById`.
 
 - O helper é puro, não consulta Supabase e não altera a regra de disponibilidade do relatório.
 - O CSV usa UTF-8 com BOM, separador `;` e uma estrutura longa com `secao = resumo | dimensao | pergunta`.
@@ -144,7 +147,9 @@ A decisão de entrada usa `requiresOnboarding`, derivada no servidor: conclusão
 
 `analytics-example.ts` produz dois relatórios fictícios validados por Zod, com seis dimensões, três camadas e 48 respostas no total. Reutiliza o cálculo real de Analytics e comparação histórica; o filtro escolhe um diagnóstico ou todos. Não lê nem grava dados reais.
 
-`acme-report-example.ts` fornece o relatório fictício da Acme para `/relatorios/exemplo-acme`, com 27 participantes, seis dimensões, 24 perguntas e seis textos editoriais. Reutiliza os scores determinísticos de `buildAnalyticsExampleReports()`, sem consultar ou alterar dados reais. O exemplo é identificado na listagem e na leitura, sem publicação ou ações reais associadas.
+`acme-report-example.ts` é fixture para os testes de geração e download de PDF. Não entra na listagem, na leitura nem no download operacional de relatórios.
+
+`profile-data-source.ts` exige organização persistida para um usuário com ID definitivo antes de montar o perfil. Valores do mock são restritos a identidades locais de desenvolvimento; uma conta real sem organização falha explicitamente, sem receber identificação, número de funcionários ou datas fictícias.
 
 - `last_edited_by_user_id` registra o ator autenticado ao criar/salvar rascunho de ativo. A leitura mostra `lastEditedBy` da versão publicada, resolvido pelo perfil da conta, em Editado por na barra de metadados. Histórico sem registro fica Não registrado; criador, especialista e publicador não são usados para inferir a última edição.
 
@@ -237,6 +242,8 @@ Exclusão de empresas com acesso global: a RPC conserva papéis superadmin já e
 ## Primeira renderização administrativa
 
 `admin-page-data.ts` autoriza sessão definitiva de superadmin e memoiza somente por request o snapshot compartilhado. Todas as páginas de aquisição passam o snapshot real obrigatório aos componentes. `buildAdminDataSnapshot` não preenche organizações omitidas com seeds; `getAdminDataServerSnapshot` foi removido. Catálogo e campos padrão permanecem referências estáticas para criação, nunca registros temporários da listagem. O contexto da entrega carrega rascunho e especialistas em paralelo e expõe o diretório completo não excluído ao provider.
+
+O snapshot administrativo associa cada organização às contas com membership `cliente`, consultando `next_auth.users` para o e-mail e `account_profiles` para o nome atualizado (fallback para o nome da conta). Essa leitura é server-side e autorizada ao superadmin; organizações sem conta cliente não entram na lista.
 
 admin-delivery-domain.ts concentra o catálogo de action points e a conversão/análise pura de um DiagnosticReport em entrega. admin-operations-data-source.ts reexporta esses contratos/helpers para compatibilidade e mantém os seeds legados separados. A demo pode importar o domínio sem carregar especialistas e empresas operacionais.
 

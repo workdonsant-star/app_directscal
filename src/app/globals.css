@@ -449,6 +449,7 @@
   --overview-chart-tactical-label: var(--palette-grey-300);
   /* Maturidade (nota da pesquisa, dimensões): roxo. */
   --overview-chart-dimensions: var(--palette-purple-100);
+  --overview-chart-dimensions-overall: var(--palette-purple-300);
   /* Agente: quatro medidas, quatro cores — nenhuma repete outra medida. */
   --overview-chart-usage-resolved: var(--palette-blue-100);
   --overview-chart-usage-gap: var(--palette-orange-400);
@@ -678,6 +679,7 @@
   --overview-chart-leadership-label: var(--palette-grey-300);
   --overview-chart-tactical-label: var(--overview-chart-label);
   --overview-chart-dimensions: var(--palette-purple-100);
+  --overview-chart-dimensions-overall: var(--palette-purple-300);
   --overview-chart-usage-resolved: var(--palette-blue-100);
   --overview-chart-usage-gap: var(--palette-orange-400);
   --overview-chart-usage-queries: var(--palette-mint-400);

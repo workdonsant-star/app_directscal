@@ -15,6 +15,7 @@ const columns = [
   { label: "Resp. liderança", width: 120 },
   { label: "Resp. time", width: 120 },
   { label: "Score", width: 60 },
+  { label: "Dados CSV", width: 120 },
   { label: "", width: 60 },
 ];
 
@@ -33,7 +34,7 @@ export default function DiagnosticsLoading() {
         <div role="status" aria-busy="true" className="min-w-0 w-full">
           <span className="sr-only">Carregando pesquisas</span>
           <div aria-hidden="true">
-            <Table className="min-w-[1360px] table-fixed">
+            <Table className="min-w-[1480px] table-fixed">
               <TableHeader>
                 <TableRow>
                   {columns.map((column, index) => (
@@ -62,6 +63,7 @@ export default function DiagnosticsLoading() {
                     {[0, 1, 2].map((index) => <TableCell key={index} className="px-4 py-4"><Skeleton className="h-6 w-16 rounded-[5px] motion-reduce:animate-none" /></TableCell>)}
                     <TableCell className="px-4 py-4"><Skeleton className="h-5 w-14 rounded-full motion-reduce:animate-none" /></TableCell>
                     {[0, 1, 2, 3, 4].map((index) => <TableCell key={index} className="px-4 py-4"><Skeleton className="ml-auto h-4 w-6 motion-reduce:animate-none" /></TableCell>)}
+                    <TableCell className="px-4 py-4"><Skeleton className="h-6 w-16 rounded-[5px] motion-reduce:animate-none" /></TableCell>
                     <TableCell className="px-4 py-4"><Skeleton className="size-7 rounded-[5px] motion-reduce:animate-none" /></TableCell>
                   </TableRow>
                 ))}

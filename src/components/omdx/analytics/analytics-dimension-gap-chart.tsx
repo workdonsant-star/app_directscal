@@ -16,11 +16,14 @@ function position(value: number) {
 
 export function AnalyticsDimensionGapChart({
   dimensions,
+  overall,
   target,
   referenceLabel,
   concise = false,
 }: {
   dimensions: AnalyticsDimensionGap[];
+  /** Consistência de gestão: pontuação composta das dimensões; null sem base. */
+  overall: number | null;
   target: number | null;
   referenceLabel: string | null;
   concise?: boolean;
@@ -31,7 +34,7 @@ export function AnalyticsDimensionGapChart({
   return (
     <AnalyticsCard
       className="flex-1"
-      description={concise ? undefined : "Percepções por dimensão, da menor para a maior nota. As respostas usam a escala de 1 a 5; a barra começa em zero para comparação visual."}
+      description={concise ? undefined : "Consistência de gestão e notas por dimensão, da menor para a maior. As respostas usam a escala de 1 a 5; a barra começa em zero para comparação visual."}
       title="Dimensões gerenciais"
     >
       {dimensions.length === 0 ? (
@@ -42,7 +45,8 @@ export function AnalyticsDimensionGapChart({
         <div className="flex flex-col gap-4">
           <ChartLegend
             items={[
-              { label: "Nota da pesquisa", marker: <SwatchMarker color="var(--overview-chart-dimensions)" /> },
+              ...(overall !== null ? [{ label: "Consistência geral", marker: <SwatchMarker color="var(--overview-chart-dimensions-overall)" /> }] : []),
+              { label: "Nota da dimensão", marker: <SwatchMarker color="var(--overview-chart-dimensions)" /> },
               ...(hasProgress ? [{ label: "Progresso ilustrativo", marker: <DotMarker color="var(--overview-chart-progress)" hollow /> }] : []),
               ...(hasHistory
                 ? [{ label: referenceLabel ?? "Média anterior", marker: <span aria-hidden="true" className="h-3 border-l-2 border-dotted border-muted-foreground" /> }]
@@ -51,8 +55,12 @@ export function AnalyticsDimensionGapChart({
             ]}
           />
 
-          <div className="grid grid-cols-[88px_minmax(0,1fr)] gap-x-3">
+          <div className="grid grid-cols-[112px_minmax(0,1fr)] gap-x-3">
             <ul className="flex flex-col gap-3">
+              {overall !== null ? <>
+                <li className="flex h-8 items-center truncate text-xs font-medium text-foreground">Consistência geral</li>
+                <li aria-hidden="true" className="h-px" />
+              </> : null}
               {dimensions.map((item) => (
                 <li className="flex h-7 items-center truncate text-xs text-muted-foreground" key={item.dimension}>
                   {item.shortDimension}
@@ -68,6 +76,22 @@ export function AnalyticsDimensionGapChart({
                 style={{ left: position(target) }}
               /> : null}
               <ul className="relative flex flex-col gap-3">
+                {overall !== null ? <>
+                  <li className="relative h-8" title={`Consistência de gestão: ${formatScore(overall)}/5`}>
+                    <span
+                      className="absolute inset-y-1 left-0 rounded-[5px]"
+                      style={{ backgroundColor: "var(--overview-chart-dimensions-overall)", width: position(overall) }}
+                    />
+                    <span
+                      className="absolute top-1/2 -translate-y-1/2 pl-2 text-xs font-medium whitespace-nowrap text-foreground tabular-nums"
+                      style={{ left: position(overall) }}
+                    >
+                      {formatScore(overall)}
+                    </span>
+                  </li>
+                  {/* Divisor entre o geral e as dimensões; estende-se sob a coluna de rótulos. */}
+                  <li aria-hidden="true" className="h-px bg-border" />
+                </> : null}
                 {dimensions.map((item) => {
                   const progress = item.treated && item.progress ? item.progress : null;
                   const reached = progress === null ? null : Math.min(5, Math.max(1, item.score + progress));

@@ -7,11 +7,11 @@ import { DiagnosticsWorkspace } from "@/components/omdx/diagnostics-workspace";
 import { PublicResponseForm } from "@/components/omdx/public-response-form";
 import { PublicResponseState } from "@/components/omdx/public-response-state";
 import { Badge } from "@/components/ui/badge";
-import { demoDiagnostics, demoResponseWorkspace, demoSectors, demoShareLinks, demoTemplate, demoUser } from "@/lib/data/demo/demo-workspaces";
+import { demoDiagnostics, demoResponseWorkspace, demoShareLinks, demoTemplate, demoUser } from "@/lib/data/demo/demo-workspaces";
 
 export function DemoSurveys() {
  const { state } = useDemo();
- return <DiagnosticsWorkspace currentUserId={demoUser.id} currentUserEmail="marina@vertex.example" currentUserRole="cliente" organizationName={demoUser.company} diagnostics={demoDiagnostics(state)} sectors={state.sectors ?? demoSectors} shareLinksByDiagnosticId={demoShareLinks(state, typeof window === "undefined" ? undefined : window.location.origin)} template={demoTemplate} />;
+ return <DiagnosticsWorkspace currentUserId={demoUser.id} diagnostics={demoDiagnostics(state)} shareLinksByDiagnosticId={demoShareLinks(state, typeof window === "undefined" ? undefined : window.location.origin)} responseCsvAvailable={false} template={demoTemplate} />;
 }
 export function DemoResponse({ token }: { token: string }) {
  const { state } = useDemo();
