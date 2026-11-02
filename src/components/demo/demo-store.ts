@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { createDemoState, DEMO_STORAGE_KEY, restoreDemoState, type DemoState } from "@/lib/data/demo/demo-state";
+import { clearDemoFiles } from "./demo-file-store";
 
 const initialState = createDemoState();
 let snapshot = initialState;
@@ -35,6 +36,7 @@ export function updateDemo(update: (state: DemoState) => DemoState) {
   listeners.forEach(listener => listener());
 }
 export function resetDemo() {
+  void clearDemoFiles().catch(() => {});
   const previous = readSnapshot();
   for (const token of previous.responseTokens) {
     try {

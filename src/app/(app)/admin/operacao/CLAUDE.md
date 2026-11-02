@@ -19,3 +19,5 @@ Página inicial do superadmin para acompanhar o fluxo entre diagnóstico encerra
 - Os IDs antigos em `/admin/ativos` e `/admin/operacao/criacao-dos-ativos` redirecionam para a instância da empresa proprietária.
 
 - A instância operacional `/admin/entregas/[id]` contém a aba Criação dos ativos no próprio menu da empresa, junto de Dados, Relatório, Action points e Publicação. Listagem, editor e perguntas usam o escopo dessa organização.
+
+Sessão definitiva de superadmin é validada antes das leituras. Relatórios e diretório de especialistas são carregados em paralelo; SpecialistsProvider fornece nomes e opções desde a primeira renderização.

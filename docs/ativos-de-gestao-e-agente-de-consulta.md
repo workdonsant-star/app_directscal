@@ -30,7 +30,7 @@ Estão aprovadas as seguintes decisões para o planejamento:
 11. O Slack é instalado por empresa via OAuth (um workspace ativo pertence a uma empresa). O app responde menções na thread e mensagens diretas, sempre com a organização da instalação, e oferece avaliação útil/não útil na própria mensagem.
 12. O conteúdo dos ativos textuais (SOP, playbook, governança) é escrito num editor de texto (Tiptap) com vocabulário restrito e guardado como JSON validado. A matriz RACI terá componente tabular próprio em etapa futura.
 13. A criação replica o fluxo de diagnósticos: drawer em três etapas para identificar o ativo e o ponto de partida; o conteúdo é escrito numa página própria do ativo.
-14. A IA participa só da redação da resposta. Busca, filtro por empresa, permissões e citações são do Directscal. O provedor é configurável (Anthropic, Gemini, Ollama ou modo extrativo sem IA).
+14. A IA participa só da redação da resposta. Busca, filtro por empresa, permissões e citações são do Directscal. O superadmin pode conectar e selecionar uma alternativa entre Anthropic, OpenAI e Google Gemini em `/admin/motores-de-ia`; variáveis de ambiente, Ollama e modo extrativo permanecem como fallback. O teste de conexão gera uma resposta estruturada com fonte fictícia, sem enviar documentos de cliente.
 
 ## 3. Objetivo da primeira entrega
 
@@ -85,8 +85,6 @@ Empresa
 Especialista Directscal
   → cria ou importa o ativo
   → salva como rascunho
-  → envia para revisão
-  → conclui a revisão
   → publica uma versão
   → sistema indexa a publicação
   → cliente consulta pelo agente
@@ -106,8 +104,7 @@ Especialista Directscal
 - Visualiza as empresas e entregas sob sua responsabilidade.
 - Cria e importa ativos.
 - Edita rascunhos.
-- Envia ativos para revisão.
-- Publica versões autorizadas.
+- Publica diretamente rascunhos completos.
 - Arquiva ou substitui versões conforme as permissões definidas.
 
 ### Superadmin da empresa (`cliente`)
@@ -131,8 +128,6 @@ O acesso por setor ou papel pode ser introduzido gradualmente. Mesmo quando o pr
 ### Estados do ativo
 
 - `rascunho`: conteúdo em preparação, visível apenas à operação autorizada.
-- `em_revisao`: conteúdo bloqueado ou controlado durante revisão editorial.
-- `pronto_para_publicar`: revisão concluída e publicação autorizada.
 - `publicado`: existe uma versão vigente disponível para o cliente e para pesquisa.
 - `arquivado`: ativo retirado de circulação e indisponível para novas respostas.
 
@@ -378,7 +373,6 @@ O workspace deve concentrar:
 - responsável e escopo;
 - editor do conteúdo;
 - histórico de versões;
-- revisão;
 - prévia;
 - publicação;
 - estado de indexação;
@@ -388,7 +382,7 @@ O workspace deve concentrar:
 
 - A sidebar apresenta a seção `Ativos de gestão` com links ativos para `SOPs`, `Playbooks`, `Governança` e `Matriz RACI`.
 - SOPs, Playbooks e Governança são indexados por categoria para suportar conteúdos de diferentes áreas; Matriz RACI permanece organizada sem categoria nesta primeira versão.
-- Na biblioteca de SOPs, cada card publicado abre uma página de leitura contínua com autoria, data de atualização, versão, responsável operacional, ciclo de revisão e sumário navegável por seção.
+- Na biblioteca de SOPs, cada card publicado abre uma página de leitura contínua com autoria, data de atualização, versão, responsável operacional e sumário navegável por seção.
 - O conteúdo é o documento do editor, renderizado por componentes próprios; a interface não renderiza HTML livre. A leitura vem do Supabase.
 - Cada card da biblioteca registra título, resumo, autor responsável e data de atualização, seguindo a densidade visual do grid de Relatórios.
 - `/ativos-de-gestao/<tipo>`: bibliotecas de ativos publicados (SOPs, Playbooks, Governança, Matriz RACI).
@@ -410,7 +404,7 @@ Entregas:
 - lista administrativa por empresa;
 - workspace editorial;
 - versionamento;
-- revisão, publicação e arquivamento;
+- publicação direta e arquivamento;
 - biblioteca de leitura do cliente.
 
 Critérios de aceite:
@@ -525,7 +519,7 @@ Antes do piloto:
 Resolvidas em 1 de outubro de 2026:
 
 - Editor e formato: Tiptap, com JSON do editor como formato canônico (`content_format = json`).
-- Fluxo de revisão: qualquer superadmin move de `em_revisao` para `pronto_para_publicar`; revisão e publicação podem ser feitas pela mesma pessoa nesta primeira versão, com `reviewed_by` e `published_by` registrados.
+- Fluxo de publicação: o superadmin publica diretamente o rascunho completo. Versões publicadas permanecem imutáveis; uma edição abre novo rascunho, mantendo a versão vigente até publicar.
 - Provedor: configurável. Recomendação para dados reais é a API da Anthropic; testes com Gemini gratuito ou Ollama local, somente com conteúdo fictício no caso do Gemini.
 - Histórico do agente: apenas a conversa aberta; sem memória entre sessões.
 
@@ -541,7 +535,7 @@ Ainda abertas:
 Implementado em 1 de outubro de 2026:
 
 - Migration `20261001120000_management_asset_editorial_agent.sql`: estado editorial por versão, imutabilidade de versões publicadas, rascunho único por ativo, publicação transacional (`app_private.publish_management_asset_version`), busca híbrida em português (`pt_unaccent` + `pgvector`, fusão RRF) filtrada pela organização antes do ranking, auditoria multicanal e instalação do Slack por workspace.
-- Fase 1: `/admin/empresas/[id]/criacao-dos-ativos` com criação a partir de modelos, editor Tiptap, revisão, publicação, arquivamento, restauração e histórico; bibliotecas e leitura do cliente lendo do Supabase.
+- Fase 1: `/admin/empresas/[id]/criacao-dos-ativos` com criação a partir de modelos, editor Tiptap, publicação direta, arquivamento, restauração e histórico; bibliotecas e leitura do cliente lendo do Supabase.
 - Fase 2: trechos por seção H2/H3, embeddings opcionais (Gemini ou Ollama, 768 dimensões) e `Reindexar vetores` para completar falhas.
 - Fase 3: `answerAssetQuestion` com citações, recusa por evidência insuficiente, auditoria, feedback e painel de lacunas; `/assistente` ligado ao serviço.
 - Slack: OAuth por empresa, menções e mensagens diretas, confirmação imediata com processamento em segundo plano, descarte de reenvios e botões de avaliação.

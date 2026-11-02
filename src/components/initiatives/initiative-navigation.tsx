@@ -11,6 +11,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useInitiatives, type Initiative } from "@/lib/initiatives/storage";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const initiativeIcons = {
   website: Globe,
@@ -32,7 +33,7 @@ export function InitiativeNavigation({
   scope: string;
   onNavigate: () => void;
 }) {
-  const { initiatives } = useInitiatives(scope);
+  const { initiatives, isLoaded } = useInitiatives(scope);
   const pathname = usePathname();
   return (
     <SidebarGroup>
@@ -54,6 +55,7 @@ export function InitiativeNavigation({
         </Link>
       </SidebarGroupLabel>
       <SidebarMenu className="gap-1">
+        {!isLoaded && <SidebarMenuItem role="status" aria-label="Carregando iniciativas"><Skeleton className="h-8 w-full" /></SidebarMenuItem>}
         {initiatives.map((item: Initiative) => {
           const Icon = initiativeIcons[item.kind];
           const href = `/iniciativas/${item.id}`;
@@ -72,7 +74,7 @@ export function InitiativeNavigation({
             </SidebarMenuItem>
           );
         })}
-        {initiatives.length === 0 ? (
+        {isLoaded && initiatives.length === 0 ? (
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Criar iniciativa"

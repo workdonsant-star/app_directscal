@@ -12,9 +12,7 @@ const fields: Array<{ value: Field; label: string }> = [
   { value: "specialistId", label: "Autor" },
   { value: "category", label: "Categoria" },
   { value: "ownerLabel", label: "Líder responsável" },
-  { value: "reviewCycle", label: "Ciclo de revisão" },
 ];
-const cycles = ["Mensal", "Trimestral", "Semestral", "Anual", "Sob demanda"];
 
 export function ManagementAssetsBulkEditDialog({ organizationId, assetIds, specialists, pending, error, onClose, onSave }: {
   organizationId: string;
@@ -28,9 +26,7 @@ export function ManagementAssetsBulkEditDialog({ organizationId, assetIds, speci
   const [field, setField] = useState<Field>("specialistId");
   const [value, setValue] = useState("");
   const [validationError, setValidationError] = useState<string | null>(null);
-  const choices = field === "specialistId"
-    ? [{ value: "directscal", label: "Directscal (sem especialista)" }, ...specialists.map((item) => ({ value: item.id, label: item.name }))]
-    : cycles.map((cycle) => ({ value: cycle, label: cycle }));
+  const choices = [{ value: "directscal", label: "Directscal (sem especialista)" }, ...specialists.map((item) => ({ value: item.id, label: item.name }))];
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -60,7 +56,7 @@ export function ManagementAssetsBulkEditDialog({ organizationId, assetIds, speci
           </div>
           <div className="space-y-1.5">
             <label htmlFor="bulk-value" className="text-sm font-medium">{fields.find((item) => item.value === field)?.label}</label>
-            {field === "specialistId" || field === "reviewCycle" ? (
+            {field === "specialistId" ? (
               <Select value={value || null} items={choices} disabled={pending} onValueChange={(next) => { if (typeof next === "string") setValue(next); }}>
                 <SelectTrigger id="bulk-value" className="w-full"><SelectValue placeholder="Selecione uma opção" /></SelectTrigger>
                 <SelectContent>{choices.map((item) => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>)}</SelectContent>

@@ -62,7 +62,7 @@ export const demoAssets = demoBoard.categories.map((category, index) => {
     category: categoryNames[category.colorKey], author: { name: "Clara Mendes", role: "Consultora de estruturação" },
     versionNumber: category.version.replace(/^v/i, ""), versionId: `${category.id}-v1`,
     publishedAt: "2026-10-01T12:00:00.000Z", updatedAt: "2026-10-15T12:00:00.000Z",
-    operationalOwner: owner, lastEditedBy: "Clara Mendes", reviewCycle: "Trimestral", content: { type: "doc", content },
+    operationalOwner: owner, lastEditedBy: "Clara Mendes", content: { type: "doc", content },
   });
 });
 

@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 
 import { getCurrentAuthSession } from "@/lib/auth/session";
-import { createManagementAssetInputSchema } from "@/lib/contracts";
+import { createManagementAssetInputSchema, quickCreateManagementAssetInputSchema } from "@/lib/contracts";
 import {
   createManagementAsset,
+  createQuickManagementAsset,
   ManagementAssetError,
 } from "@/lib/data/management-assets-admin-data-source";
 
@@ -22,9 +23,10 @@ export async function POST(request: Request) {
   }
 
   const body: unknown = await request.json().catch(() => null);
+  const quick = quickCreateManagementAssetInputSchema.safeParse(body);
   const parsed = createManagementAssetInputSchema.safeParse(body);
 
-  if (!parsed.success) {
+  if (!quick.success && !parsed.success) {
     return NextResponse.json(
       { message: "Revise os dados do ativo." },
       { status: 400 },
@@ -32,7 +34,12 @@ export async function POST(request: Request) {
   }
 
   try {
-    const assetId = await createManagementAsset(session.user.id, parsed.data);
+    const assetId = quick.success
+      ? await createQuickManagementAsset(session.user.id, quick.data)
+      : parsed.success
+        ? await createManagementAsset(session.user.id, parsed.data)
+        : null;
+    if (!assetId) return NextResponse.json({ message: "Revise os dados do ativo." }, { status: 400 });
     return NextResponse.json({ assetId }, { status: 201 });
   } catch (error) {
     if (error instanceof ManagementAssetError) {

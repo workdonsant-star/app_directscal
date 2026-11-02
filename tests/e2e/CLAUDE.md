@@ -11,8 +11,14 @@ profile-identity.spec.ts coloca nome e foto divergentes no localStorage antes da
 
 A18: expectativas atuais usam Pesquisas/Analytics/Action Points, sem exigir bibliotecas/títulos seed na sidebar. Casos demo (incluindo identidade) exigem DIRECTSCAL_E2E_DEMO=true em ambiente isolado. password-recovery cobre renderização pública light/dark em 1440/375, sem enviar e-mail. pilot-read-boundaries usa storage states de login normal fornecidos por ambiente e IDs de fixtures; não injeta cookie privilegiado. Falta de configuração é não execução, nunca aprovação. Sessões não entram no Git. Execução visual desta entrega bloqueada pela conexão Chrome indisponível.
 
+A navegação do superadmin passa a usar `/admin/empresas` como destino inicial; os testes de limite de papel devem validar esse destino e o link Empresas cadastradas.
+
 C2: cycle-two.spec.ts usa a rota temporária descrita em fixtures/CLAUDE.md e intercepta todas as APIs. Verifica atribuição com erro, fila de revisão, RACI preservada, leitor/guia e recuperação Slack em dois temas. Não comprova banco, autenticação, modelo ou envio real.
 
 C3: cycle-three.spec.ts cobre a operação de rotinas com fixtures (ver fixtures/CLAUDE.md). APIs interceptadas; nenhuma mutação de banco ou envio Slack. Conflitos e erros devem preservar campos, sem liberar responsáveis fora do diretório ou nova mutação após gravação sem releitura.
 
 `company-deletion.spec.ts` usa a fixture temporária descrita em fixtures/CLAUDE.md. APIs inteiramente interceptadas; cobre seleção parcial/todas, cancelamento, confirmação, erro preservado e sucesso em claro/escuro. Não exclui empresas reais. Use --output=/tmp/directscal-company-e2e para preservar capturas versionadas de outras suítes.
+
+`demo-files.spec.ts` percorre o fluxo fictício do superadmin à sidebar e aos relatórios do cliente: cria pasta, envia PDF, baixa o ativo e confirma o relatório. Usa somente o estado local e IndexedDB da demo, sem banco ou APIs operacionais.
+
+`theme-system.spec.ts` valida na demo que o padrão Sistema reage a mudanças de claro/escuro do dispositivo e que uma escolha manual pode voltar a Sistema pelo menu do usuário.

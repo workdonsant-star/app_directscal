@@ -5,7 +5,9 @@ Página dedicada para leitura completa de um lead capturado por link de aquisiç
 ## Convenções locais
 
 - Renderizar dentro da shell autenticada e de `AppPage`, em largura total como as demais páginas do admin.
-- O detalhe consome `useAdminData`, que busca leads persistidos no Supabase por `/api/admin/acquisition`.
+- O detalhe consome `useAdminDataSnapshot(initialSnapshot)`; a API `/api/admin/acquisition` é usada somente para atualizações após mutações.
 - Mostrar dados em modo leitura: contato, empresa, origem de aquisição e todos os campos preenchidos no formulário.
 - Leads não abrem modal ou drawer; a navegação parte da tabela em `/admin/leads` para esta página.
 - Usar cards apenas para blocos de informação do detalhe. Tabelas de listagem continuam livres, sem card externo.
+
+O detalhe recebe snapshot real obrigatório do servidor, sem busca na montagem. ID ausente retorna notFound após leitura autorizada, sem mostrar temporariamente um detalhe vazio.

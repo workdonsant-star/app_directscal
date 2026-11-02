@@ -14,6 +14,7 @@ Esta pasta define os contratos de dados preparados para a futura integração co
 - Contratos do cronograma ficam em `gantt.ts`: status, tarefas recursivas, metadados opcionais de action point para detalhe de execução e payload de workspace usado para transformar action points em frentes no Gantt.
 - Contratos do superadmin ficam em `admin.ts`: módulos, campanhas, campos configuráveis, leads, empresas e input de submissão pública.
 - Contratos da operação especializada ficam em `admin-operations.ts`: especialistas, entregas, estados e catálogo de action points da primeira versão frontend.
+- `slack-delivery-page.ts` tipa a página de entregas mostrada no detalhe administrativo, sem importar o serviço server-side no componente; a demo retorna somente uma lista fictícia vazia.
 - Especialistas e autores dos ativos aceitam `avatarUrl` opcional, como URL absoluta ou caminho local iniciado por uma única `/`. Ausência de foto mantém as iniciais na biblioteca.
 - Contratos dos ativos de gestão ficam em `management-assets.ts` (biblioteca, leitura, fluxo editorial do admin, perguntas ao agente com histórico opcional, citações e auditoria) e `rich-text.ts` (documento restrito do editor). O formato legado em blocos por seção continua aceito como `legacySop*` para modelos e versões antigas.
 - Contratos de setores, lideranças e convites ficam em `organization-structure.ts`. `accessLevel` usa `owner | admin` na UI e mapeia para `cliente | admin` no banco; o `superadmin` global nunca é uma opção. Essa opção de acesso pertence aos convites legados. Novas lideranças usam `createSlackSectorLeaderInputSchema`: setor e Slack user ID, cargo opcional, sem e-mail nem nível de acesso. DTO permite cargo/e-mail vazios e carrega referência Slack opcional; nome/foto/cargo são hidratados do workspace, sem persistir diretório.
@@ -58,7 +59,9 @@ A13: submissão anônima exige `submissionId` UUID aleatório por tentativa/link
 
 A11: companySpecialistInputSchema é estrito, aceita somente specialistId e expectedUpdatedAt (ambos anuláveis). Empresa/ator vêm de rota/sessão. companyOperationsSchema descreve atribuição versionada e histórico real por diagnóstico, com indicação de base para análise.
 
-A12: os quatro tipos (SOP, Playbook, Governança e RACI) são editáveis. `updateManagementAssetInputSchema` exige `expectedRevision` com timestamps brutos do ativo/rascunho e ID do rascunho, sem normalização que perca precisão. A lista administrativa inclui responsável, periodicidade e revisão de validade com data ISO ou ausência explícita de prazo.
+A12: os quatro tipos (SOP, Playbook, Governança e RACI) são editáveis. `updateManagementAssetInputSchema` exige `expectedRevision` com timestamps brutos do ativo/rascunho e ID do rascunho, sem normalização que perca precisão. O contrato de publicação aceita rascunho diretamente; periodicidade e revisão de validade não fazem parte da superfície dos ativos.
+
+`quickCreateManagementAssetInputSchema` aceita somente empresa, tipo e categoria escolhidos antes do editor. O contrato completo de criação permanece para integrações e avaliações existentes.
 
 A03: `asset-adherence.ts` define acordos imutáveis versionados, regra periódica/por evento, oportunidades explícitas e fatos separados de leitura, relato, revisão de evidência, exceção e resultado. Revisões referenciam o relato/solicitação específico; nenhum desses tipos representa nota estimada de impacto.
 
@@ -86,3 +89,9 @@ A17: agent-operations valida evento idempotente, revisão esperada, status, resp
 A10: routine-results exige três camadas únicas, contagem e score coerentes (zero respostas implica score nulo). Não há valor padrão, confiança ou estimativa gerada por estes contratos. Captura aceita somente ruleId.
 
 `company-deletion.ts` valida exclusão administrativa: 1–100 IDs company_UUID únicos, confirmação literal EXCLUIR e nenhum campo extra. Resultado contém IDs efetivamente excluídos e contagens de contas removidas/preservadas.
+
+routine-directory.ts define RoutineDirectoryUser, o DTO mínimo exibido no editor administrativo de rotinas (ID, nome, foto e cargo opcional). Não importa o adaptador Slack; continua estruturalmente compatível com sua resposta.
+
+# Arquivos enviados
+
+`customer-documents.ts` define o DTO de metadados usado pelo produto e pela demo. O DTO nunca inclui o caminho privado do bucket nem o conteúdo do arquivo.

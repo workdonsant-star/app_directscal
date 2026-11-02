@@ -7,6 +7,7 @@ import { DeliveryShell } from "@/components/admin/delivery/delivery-shell";
 import { AppPage } from "@/components/app-page";
 import { AppTopbar } from "@/components/app-topbar";
 import { loadAdminDeliveryContext } from "@/lib/data/admin-delivery-workspace-data";
+import { SpecialistsProvider } from "@/components/admin/use-specialists";
 
 export const metadata: Metadata = {
   title: "Entrega — Admin Directscal",
@@ -33,15 +34,17 @@ export default async function AdminDeliveryLayout({
         ]}
       />
       <AppPage>
-        <DeliveryDraftProvider
-          key={id}
-          analysis={context.analysis}
-          delivery={context.delivery}
-          deliveryOptions={context.deliveryOptions}
-          publication={context.publication}
-        >
-          <DeliveryShell>{children}</DeliveryShell>
-        </DeliveryDraftProvider>
+        <SpecialistsProvider initialSpecialists={context.specialistDirectory}>
+          <DeliveryDraftProvider
+            key={id}
+            analysis={context.analysis}
+            delivery={context.delivery}
+            deliveryOptions={context.deliveryOptions}
+            publication={context.publication}
+          >
+            <DeliveryShell>{children}</DeliveryShell>
+          </DeliveryDraftProvider>
+        </SpecialistsProvider>
       </AppPage>
     </>
   );

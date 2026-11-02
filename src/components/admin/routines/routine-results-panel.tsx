@@ -1,4 +1,5 @@
 "use client";
+import { useAppRuntime } from "@/components/app-runtime";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -7,16 +8,17 @@ import type { RoutineRevision } from "@/lib/contracts/admin-adherence";
 const groups = { fundador: "Fundador", lideranca: "Liderança", operacao: "Time" };
 const date = (value: string) => new Date(value).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
 export function RoutineResultsPanel({ companyId, initial, rules, assets }: { companyId: string; initial: ResultBaseline[]; rules: RoutineRevision[]; assets: Array<{ id: string; versionId: string; title: string; version: string }> }) {
+  const runtime = useAppRuntime();
  const [items, setItems] = useState(initial), [pending, setPending] = useState(false), [error, setError] = useState<string | null>(null);
  const endpoint = `/api/admin/companies/${companyId}/result-baselines`;
  async function update(ruleId?: string) {
   setPending(true); setError(null); let committed = false;
   try {
    if (ruleId) {
-    const response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ruleId }) });
+    const response = await runtime.request(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ruleId }) });
     const body = await response.json(); if (!response.ok) throw new Error(body.message ?? "Não foi possível registrar a base."); committed = true;
    }
-   const response = await fetch(endpoint, { cache: "no-store" }); const body = await response.json();
+   const response = await runtime.request(endpoint, { cache: "no-store" }); const body = await response.json();
    if (!response.ok) throw new Error(body.message ?? "Não foi possível carregar as bases.");
    setItems(resultBaselineSchema.array().parse(body.items));
   } catch (cause) { setError(committed ? "A base foi registrada, mas a leitura falhou. Atualize para conferir." : cause instanceof Error ? cause.message : "Não foi possível carregar a linha de base."); }

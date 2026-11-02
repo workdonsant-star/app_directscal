@@ -74,7 +74,6 @@ export function buildManagementAssetMarkdown(asset: ManagementAssetDocument): st
       ...(asset.category ? [`- **Categoria:** ${escapeText(asset.category)}`] : []),
       `- **Líder responsável:** ${escapeText(asset.operationalOwner)}`,
       `- **Versão:** ${escapeText(asset.versionNumber)}`,
-      `- **Revisão:** ${escapeText(asset.reviewCycle)}`,
       `- **Autoria:** ${escapeText(asset.author.name)}`,
       `- **Atualizado em:** ${updatedAt}`,
     ].join("\n"),

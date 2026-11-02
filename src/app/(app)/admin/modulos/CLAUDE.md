@@ -8,3 +8,5 @@ Rota legada do superadmin para consultar o catálogo e o controle histórico de 
 - A tabela de campanhas fica em `/admin/campanhas`.
 - Manter esta página focada no catálogo e nas métricas agregadas dos módulos.
 - A rota não aparece mais na navegação principal. O contexto operacional começa em `/admin/operacao` e o acesso de cada cliente migra visualmente para `/admin/empresas/[id]`.
+
+Métricas, empresas e campanhas recebem snapshot real do servidor, com autorização definitiva de superadmin. Não há fallback de registros seed nem busca na montagem.

@@ -26,6 +26,13 @@ export async function getAdminCompanyContext(companyId: string) {
   return { company, modules: snapshot.modules, operations: await getOrganizationOperations(company.organizationId, session.user.id) };
 }
 
+export async function getAdminCompanyOverview(companyId: string) {
+  const session = await getCurrentAuthSession();
+  if (!session || session.user.role !== "superadmin") return null;
+  const snapshot = await getAdminAcquisitionSnapshot();
+  return snapshot.companies.find(item => item.id === companyId) ?? null;
+}
+
 export async function getOrganizationOperations(organizationId: string, actorUserId: string) {
   const { data, error } = await createSupabaseAdminClient().schema("app_private").rpc("get_organization_operations", {
     p_organization_id: organizationId, p_actor_user_id: actorUserId,

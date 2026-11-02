@@ -9,7 +9,7 @@ vi.mock("@/lib/data/person-profiles-data-source", () => ({ canAssignSpecialist: 
 import { DELETE, PATCH } from "@/app/api/admin/management-assets/bulk/route";
 import { getCurrentAuthSession } from "@/lib/auth/session";
 import { managementAssetBulkSelectionSchema, managementAssetBulkUpdateSchema } from "@/lib/contracts";
-import { createManagementAsset, deleteManagementAssets, transitionManagementAsset, updateManagementAsset, updateManagementAssetsInBulk } from "@/lib/data/management-assets-admin-data-source";
+import { createManagementAsset, createQuickManagementAsset, deleteManagementAssets, transitionManagementAsset, updateManagementAsset, updateManagementAssetsInBulk } from "@/lib/data/management-assets-admin-data-source";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 const organizationId = "10000000-0000-4000-8000-000000000001";
@@ -38,8 +38,19 @@ beforeEach(() => {
 });
 
 describe("contrato de seleção e edição em massa", () => {
+  it("cria o modelo padrão com categoria e tipo, sem formulário prévio", async () => {
+    results = [
+      { data: { id: organizationId }, error: null },
+      { data: { id: assetIds[0] }, error: null },
+      { data: null, error: null },
+    ];
+    await expect(createQuickManagementAsset("actor", { organizationId, category: "Governança", type: "sop" })).resolves.toBe(assetIds[0]);
+    expect(tables).toEqual(["organizations", "management_assets", "management_asset_versions"]);
+    expect(chains[1].insert).toHaveBeenCalledWith(expect.objectContaining({ category: "Governança", type: "sop", title: "Novo SOP" }));
+    expect(chains[2].insert).toHaveBeenCalledWith(expect.objectContaining({ version_number: "1", review_status: "rascunho" }));
+  });
   it("recusa modelo de outro tipo antes de escrever", async () => {
-    await expect(createManagementAsset("actor", { organizationId, type: "raci", title: "Matriz de teste", summary: "Resumo da matriz", category: null, ownerLabel: "Operações", reviewCycle: "Semestral", specialistId: null, templateId: "estrutura-sop" })).rejects.toMatchObject({ status: 400 });
+    await expect(createManagementAsset("actor", { organizationId, type: "raci", title: "Matriz de teste", summary: "Resumo da matriz", category: null, ownerLabel: "Operações", specialistId: null, templateId: "estrutura-sop" })).rejects.toMatchObject({ status: 400 });
     expect(createSupabaseAdminClient).not.toHaveBeenCalled();
   });
   it("recusa seleção vazia, duplicada, inválida ou acima de 200", () => {
@@ -139,7 +150,7 @@ describe("edição como nova versão", () => {
 
 it("envia a revisão esperada e o ator para gravação atômica sem escrita paralela", async () => {
   const content = { type: "doc" as const, content: [{ type: "paragraph" as const, content: [{ type: "text" as const, text: "Nova edição" }] }] };
-  const input = { expectedRevision: { assetUpdatedAt: "2026-10-19T12:00:00.123456Z", draftId: assetIds[1], draftUpdatedAt: "2026-10-19T12:00:00.234567Z" }, title: "Ativo de teste", summary: "Resumo do ativo", category: null, ownerLabel: "Liderança", reviewCycle: "Mensal", specialistId: null, changeNote: "Revisão", content };
+  const input = { expectedRevision: { assetUpdatedAt: "2026-10-19T12:00:00.123456Z", draftId: assetIds[1], draftUpdatedAt: "2026-10-19T12:00:00.234567Z" }, title: "Ativo de teste", summary: "Resumo do ativo", category: null, ownerLabel: "Liderança", specialistId: null, changeNote: "Nova edição", content };
   const rpc = vi.fn().mockResolvedValue({ error: null });
   vi.mocked(createSupabaseAdminClient).mockReturnValue({ schema: () => ({ rpc }) } as unknown as ReturnType<typeof createSupabaseAdminClient>);
   await updateManagementAsset("actor", assetIds[0], input);

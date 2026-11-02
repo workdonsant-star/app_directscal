@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { getAssetNavigationPreferences } from "@/lib/data/asset-navigation-data-source";
+import { listCustomerDocumentsForUser } from "@/lib/data/customer-documents-data-source";
 import { getManagementAssetCategoryFolders } from "@/lib/data/management-asset-categories";
 
 import { getAccessibleOrganizationIdsForUser } from "@/lib/auth/authorization";
@@ -27,22 +28,21 @@ type AssetRow = Pick<
   | "description"
   | "category"
   | "owner_label"
-  | "review_cycle"
   | "assigned_specialist_id"
   | "current_published_version_id"
 >;
 
 type VersionRow = Pick<
   Database["public"]["Tables"]["management_asset_versions"]["Row"],
-  "id" | "version_number" | "summary" | "content" | "published_at" | "updated_at" | "last_edited_by_user_id"
->;
+  "id" | "version_number" | "summary" | "published_at" | "updated_at" | "last_edited_by_user_id"
+> & Partial<Pick<Database["public"]["Tables"]["management_asset_versions"]["Row"], "content">>;
 
 type AssetWithVersionRow = AssetRow & {
   current_version: VersionRow | null;
 };
 
 const assetColumns =
-  "id,organization_id,type,title,description,category,owner_label,review_cycle,assigned_specialist_id,current_published_version_id";
+  "id,organization_id,type,title,description,category,owner_label,assigned_specialist_id,current_published_version_id";
 
 export const managementAssetLibraryTypes = [
   "sop",
@@ -100,10 +100,13 @@ async function selectPublishedAssets(
   if (organizationIds.length === 0) return [];
 
   const supabase = createSupabaseAdminClient();
+  const versionColumns = filter.id
+    ? "id,version_number,summary,content,published_at,updated_at,last_edited_by_user_id"
+    : "id,version_number,summary,published_at,updated_at,last_edited_by_user_id";
   let query = supabase
     .from("management_assets")
     .select(
-      `${assetColumns},current_version:management_asset_versions!management_assets_current_version_fkey(id,version_number,summary,content,published_at,updated_at,last_edited_by_user_id)`,
+      `${assetColumns},current_version:management_asset_versions!management_assets_current_version_fkey(${versionColumns})`,
     )
     .in("organization_id", organizationIds)
     .eq("status", "publicado")
@@ -165,7 +168,6 @@ export async function getManagementAssetDocument(
       ? (await getAccountProfile(row.current_version.last_edited_by_user_id))?.name ?? null
       : null,
     operationalOwner: row.owner_label ?? asset.author.name,
-    reviewCycle: row.review_cycle ?? "Sob demanda",
     content,
   });
 }
@@ -174,9 +176,14 @@ export async function getPublishedManagementAssetFolders() {
   const session = await getCurrentAuthSession();
   if (!session || !canAccessCustomerApp(session.user)) return getManagementAssetCategoryFolders([]);
   const access = await getAccessibleOrganizationIdsForUser(session.user.id);
-  const [assets, preferences] = await Promise.all([
+  const [assets, preferences, files] = await Promise.all([
     getPublishedManagementAssets(),
     access.primaryOrganizationId ? getAssetNavigationPreferences(access.primaryOrganizationId) : null,
+    listCustomerDocumentsForUser(session.user.id, "asset"),
   ]);
-  return getManagementAssetCategoryFolders(assets, preferences?.categories);
+  const registered = getManagementAssetCategoryFolders([], preferences?.categories);
+  return getManagementAssetCategoryFolders([
+    ...assets,
+    ...files.map(file => ({ category: registered.find(folder => folder.key === file.categoryKey)?.title ?? null })),
+  ], preferences?.categories);
 }

@@ -9,7 +9,9 @@ Route Handlers privados para a visão de superadmin. Servem snapshots e mutaçõ
 - Exigir sessão `superadmin` antes de qualquer leitura ou escrita.
 - Usar DTOs de `src/lib/contracts/` em camelCase na fronteira HTTP.
 - Service role fica restrita a `src/lib/data/`; handlers não expõem detalhes de banco.
+- `/companies/[id]/documents` recebe e remove arquivos privados publicados da empresa; `/companies/[id]/document-categories` cria pastas compartilhadas com a navegação do cliente. Ambos exigem sessão superadmin definitiva e resolvem a organização pelo ID da rota.
 - Respostas de erro devem ser curtas e em pt-BR.
+- `/ai-providers` lista, testa, salva, seleciona e desconecta motores globais com sessão definitiva de superadmin. Chaves nunca retornam na resposta; POST testa sem gravar, PUT valida antes de persistir.
 
 - /specialists persiste o cadastro interno, nome, foto e estados. Exclusão é lógica. As rotas de atribuição usam o mesmo cadastro do banco.
 

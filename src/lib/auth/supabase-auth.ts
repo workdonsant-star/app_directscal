@@ -458,6 +458,18 @@ export async function resolveSupabaseAuthUser(
   let resolvedEmail = email ? normalizeEmail(email) : null;
   let resolvedName: string | null = null;
   let resolvedImage: string | null = null;
+  let preloadedMemberships: OrganizationMemberRow[] | null = null;
+
+  async function loadMemberships(id: string) {
+    const { data, error } = await supabase
+      .from("organization_members")
+      .select("organization_id,role")
+      .eq("user_id", id)
+      .order("created_at", { ascending: true })
+      .returns<OrganizationMemberRow[]>();
+    if (error) throw error;
+    return data;
+  }
 
   if (!resolvedUserId && resolvedEmail) {
     const { data: authUser, error: userError } = await supabase
@@ -473,15 +485,15 @@ export async function resolveSupabaseAuthUser(
     resolvedName = authUser?.name ?? null;
     resolvedImage = authUser?.image ?? null;
   } else if (resolvedUserId) {
-    const { data: authUser, error: userError } = await supabase
-      .schema("next_auth")
-      .from("users")
-      .select("id,name,email,image")
-      .eq("id", resolvedUserId)
-      .maybeSingle();
+    const [{ data: authUser, error: userError }, memberships] = await Promise.all([
+      supabase.schema("next_auth").from("users")
+        .select("id,name,email,image").eq("id", resolvedUserId).maybeSingle(),
+      loadMemberships(resolvedUserId),
+    ]);
 
     if (userError) throw userError;
 
+    preloadedMemberships = memberships;
     resolvedEmail = authUser?.email ? normalizeEmail(authUser.email) : resolvedEmail;
     resolvedName = authUser?.name ?? null;
     resolvedImage = authUser?.image ?? null;
@@ -489,14 +501,7 @@ export async function resolveSupabaseAuthUser(
 
   if (!resolvedUserId || !resolvedEmail) return null;
 
-  const { data: memberships, error: memberError } = await supabase
-    .from("organization_members")
-    .select("organization_id,role")
-    .eq("user_id", resolvedUserId)
-    .order("created_at", { ascending: true })
-    .returns<OrganizationMemberRow[]>();
-
-  if (memberError) throw memberError;
+  const memberships = preloadedMemberships ?? await loadMemberships(resolvedUserId);
 
   const member =
     memberships.find((membership) => membership.role === "superadmin") ??

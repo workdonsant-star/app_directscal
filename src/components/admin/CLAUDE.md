@@ -25,16 +25,21 @@ Componentes específicos da visão de superadministrador da Directscal. Eles adm
 
 ## Componentes atuais
 
+Componentes compartilhados com `/demo/admin` usam `useAppRuntime()` para requisições e links da apresentação. O runtime padrão preserva os endpoints operacionais; o runtime da demo atende somente fixtures locais.
+
 | Componente | Uso |
 | --- | --- |
 | `AdminModulesWorkspace` | `/admin/modulos`, KPIs e tabela de módulos. |
 | `AdminOperationsWorkspace` | `/admin/operacao`, métricas e fila de entregas. |
 | `AdminSpecialistsWorkspace` | `/admin/especialistas`, equipe, cadastro persistido, perfil com nome e foto, ativação, arquivamento e exclusão. |
+| `AdminAiProvidersWorkspace` | `/admin/motores-de-ia`, três conexões reais, teste de chave/modelo e seleção de um motor para o agente. |
+
 | `AdminCompanyDetail` | `/admin/empresas/[id]`, atribuição, entregas e acessos. |
 | `DeliveryDraftProvider` / `DeliveryShell` e etapas em `delivery/` | `/admin/entregas/[id]/*`, rascunho compartilhado, cabeçalho, navegação lateral por fase, checklist de publicação e uma etapa por rota (dados, relatório, action points, publicação). Ver `delivery/CLAUDE.md`. |
 | `AdminDeliveryStatusBadge` | Estados operacionais compartilhados das entregas. |
-| `ManagementAssetsWorkspace` | `/admin/empresas/[id]/criacao-dos-ativos`, abas por estado, empresa fixa, tabela e drawer de criação. |
-| `ManagementAssetCreateForm` | Drawer em três etapas para criar ativo a partir de modelo ou em branco, no padrão do formulário de diagnóstico. |
+| `ManagementAssetsWorkspace` | Etapa de ativos da entrega, com abas por estado, tabela e diálogo compacto de categoria/tipo. |
+| `CompanyFilesWorkspace` / `CustomerDocumentsWorkspace` | Na aba Arquivos da empresa, a raiz mostra pastas. Cada pasta reúne uploads e ativos editoriais existentes; os modais criam pastas e enviam arquivos prontos para a biblioteca e para Relatórios do cliente. |
+| `ManagementAssetCreateForm` | Escolha compacta de categoria e tipo; clicar no tipo abre o editor com o modelo padrão. |
 | `ManagementAssetEditorWorkspace` | `/admin/empresas/[id]/criacao-dos-ativos/[assetId]`, editor, prévia, versão publicada, metadados, índice, histórico e ações editoriais. |
 | `ManagementAssetStatusBadge` | Estados do ativo e das versões. |
 | `AssetQuestionAuditsWorkspace` | `/admin/empresas/[id]/criacao-dos-ativos/perguntas`, lacunas e histórico de perguntas ao agente. |
@@ -42,15 +47,23 @@ Componentes específicos da visão de superadministrador da Directscal. Eles adm
 | `CampaignEditorDrawer` | Drawer para criar/editar campanha, selecionar módulo, definir slug de aquisição e campos do formulário. |
 | `AdminLeadsTable` | `/admin/leads`, listagem de leads capturados com navegação por linha para o detalhe. |
 | `AdminLeadDetail` | `/admin/leads/[id]`, leitura completa de contato, empresa, aquisição e campos preenchidos. |
-| `AdminCompaniesTable` | `/admin/empresas`, empresas agrupadas a partir dos leads. |
+| `AdminCompaniesTable` | `/admin/empresas`, empresas com conta cliente, busca e entrada no detalhe. |
 | `AcquisitionPublicFlow` | `/a/[slug]`, escolha de método de acesso e formulário público configurável na etapa de e-mail. |
 | `AcquisitionGoogleCompleteFlow` | `/a/[slug]/completar`, coleta empresa após Google e conclui o cadastro como cliente. |
 | `AcquisitionProgressiveForm` | Formulário progressivo compartilhado pelos fluxos de e-mail e Google, com até três campos de campanha por bloco, avanço automático e altura estável. |
 | `AdminStatusBadge` | Status discretos de módulos/campanhas. |
-| `useAdminData` | Busca client-side do snapshot Supabase em `/api/admin/acquisition`. |
+| `useAdminDataSnapshot` | Snapshot inicial obrigatório do servidor; atualização por evento em `/api/admin/acquisition`. |
 
-- `AdminOperationsNavigation` organiza as áreas Entregas e Criação dos ativos sob Operação. Não criar entrada independente de ativos na sidebar administrativa.
-- `ManagementAssetCreateForm` recebe `initialOrganizationId` e `organizationLocked` da instância; a empresa fica fixa. `ManagementAssetsWorkspace` recebe só a empresa da instância e os ativos dela.
+`AdminSpecialistsWorkspace` usa apenas um título para a lista; arquivar alterna o título para `Especialistas arquivados`. A tabela fica após o controle de arquivados, sem subtítulos de apresentação.
+
+`AdminCampaignsWorkspace` exige `initialSnapshot` real, autorizado e carregado pela página no servidor. Usa `useAdminDataSnapshot(initialSnapshot)`, sem busca redundante ao montar ou campanhas seed temporárias. O evento administrativo mantém a atualização após criar/editar; lista sem campanhas mostra estado vazio.
+
+`AdminCompaniesTable` também exige snapshot inicial real da página: organizações seed não podem ocupar a listagem durante o carregamento. A exclusão mantém seleção, confirmação, remoção otimista apenas dos IDs confirmados e releitura pelo evento administrativo.
+
+Na tabela de empresas, o link do nome cobre visualmente a linha inteira para abertura por mouse ou toque, enquanto o checkbox mantém uma camada própria para seleção. A coluna `Acessar` não existe; o link permanece acessível pelo teclado.
+
+- A sidebar administrativa mostra Empresas cadastradas, Especialistas e Campanhas por grupos. `AdminOperationsNavigation` permanece apenas na rota legada de Operação, fora da navegação principal. Na aba Arquivos da empresa, pastas agrupam uploads e ativos editoriais existentes. A criação editorial permanece na etapa de ativos da entrega, sem seletor de empresa no formulário.
+- `ManagementAssetCreateForm` recebe a empresa fixa e categorias disponíveis; exige escolha de categoria antes de habilitar o tipo. No editor, o breadcrumb da topbar termina no nome da empresa; o cabeçalho do conteúdo mostra título editável e estado, sem repetir categoria, tipo ou empresa. O salvamento ocorre após pausa curta. Resumo e responsável permanecem na lateral; falha de salvamento oferece nova tentativa.
 
 - A entrega reúne Dados, Relatório, Action points, Criação dos ativos e Publicação como rotas aninhadas de `/admin/entregas/[id]/`; o menu lateral agrupa as etapas em Analisar, Produzir e Entregar. Listagem, editor e perguntas dos ativos rodam em `/ativos`, `/ativos/[assetId]` e `/ativos/perguntas` com `embedded`, compartilhando topbar e espaçamento. A empresa é resolvida pela organização do diagnóstico.
 
@@ -58,16 +71,23 @@ Componentes específicos da visão de superadministrador da Directscal. Eles adm
 
 ## Edição e exclusão de ativos
 
-`ManagementAssetsWorkspace` usa tabela operacional com seleção de até 200 ativos, ação individual de editar e exclusão com confirmação explícita. Editar cria a próxima versão em rascunho quando não há uma aberta e mantém o contexto da entrega. A publicação continua passando pela revisão editorial. `ManagementAssetsBulkEditDialog` altera um campo por operação: autor (especialista atribuído, ou Directscal), categoria, líder responsável ou ciclo de revisão. Metadados são comuns às versões; a edição em massa não altera conteúdo nem cria versões. Ativos arquivados precisam ser restaurados antes da edição. Exclusão definitiva individual ou em massa remove também versões, escopos e índice de busca; a seleção e os erros permanecem visíveis em caso de falha.
+`ManagementAssetsWorkspace` usa tabela operacional com seleção de até 200 ativos, ação individual de editar e exclusão com confirmação explícita. Editar cria a próxima versão em rascunho quando não há uma aberta; o rascunho é publicado diretamente. `ManagementAssetsBulkEditDialog` altera um campo por operação: autor (especialista atribuído, ou Directscal), categoria ou líder responsável. Metadados são comuns às versões; a edição em massa não altera conteúdo nem cria versões. Ativos arquivados precisam ser restaurados antes da edição. Exclusão definitiva individual ou em massa remove também versões, escopos e índice de busca; a seleção e os erros permanecem visíveis em caso de falha.
 
-- useSpecialists lê o cadastro compartilhado via /api/admin/specialists, no carregamento, foco e a cada minuto. Seletores da operação, empresa e entrega não consultam a lista fixa de demonstração. Edição de especialista não concede acesso ao painel.
+A tabela administrativa reutiliza `Table variant="operational"` e o `AssetCheckbox` da biblioteca do cliente: seleção em margem de 32px, visível no hover, foco, toque e quando marcada, com estado parcial no cabeçalho.
+
+- useSpecialists lê o snapshot do servidor via SpecialistsProvider; /api/admin/specialists atualiza em foco e a cada minuto visível. Seletores da operação, empresa e entrega não consultam a lista fixa de demonstração. Edição de especialista não concede acesso ao painel.
 
 
 A11: AdminCompanyDetail recebe contexto real do servidor por ID da empresa. Salvar chama PATCH autenticado com updatedAt esperado; erro mantém seleção e não confirma sucesso. Histórico lista diagnósticos encerrados reais, inclusive os que ainda não têm base de Fundador para análise. Principal sugere especialista em entregas novas, sem reatribuir publicações ou revisões já existentes.
 
-A12: criação inclui RACI e modelo de responsabilidades. Editor envia a revisão esperada e preserva texto após conflito. Lista de ativos oferece filtro Revisão vencida, prazo calculado da versão publicada e responsável documental; publicar uma revisão reinicia o ciclo, sem arquivamento automático. Seletores seguem TabsList variant="selector". A fila administrativa ainda exige revisão visual autenticada em claro/escuro.
+A12: criação inclui RACI e modelo de responsabilidades. Editor envia a versão esperada e preserva texto após conflito. A lista de ativos mostra rascunhos, publicados e arquivados; a publicação direta mantém a versão anterior disponível até a nova publicação. Seletores seguem TabsList variant="selector". A fila administrativa ainda exige conferência visual autenticada em claro/escuro.
 
 A04: routines/ contém workspace por empresa com tabela operacional, criação/edição em Sheet, histórico de revisões, pausa/retomada e transferência de todas as rotinas da ação. Diretório é consultado ao abrir formulário; erros mantêm texto/seleção. Link Operação das rotinas no detalhe da empresa. Sem percentuais inventados ou contato automático.
+
+O detalhe da empresa usa `AdminCompanyTabs` em Visão geral, Arquivos e Action points quando há organização. `AdminActionPointsWorkspace` agrupa as ações publicadas pelo responsável atual e mostra a revisão vigente da rotina, quando existe; a aba não cria um segundo cadastro. A prop `showActionPoints` mantém a demo no mesmo componente. As rotas antigas de Operação e Rotinas permanecem acessíveis por URL, sem abas na navegação da empresa.
+As duas abas mantêm largura e posição estáveis entre rotas, inclusive quando o peso da aba ativa muda.
+
+Na Visão geral e em Arquivos, não repetir o nome da área em frases auxiliares como “Dados e trabalho desta empresa” ou “Área de gestão desta empresa”.
 
 
 A17: AssetQuestionAuditsWorkspace usa selector/operational e saúde real. AgentGapReviewDialog mostra registro completo e histórico, exige responsável/evidência para resolver e preserva texto em erro. Lacunas exclui resolvidas; Todas conserva consultas. Sem alertas externos ou promessa de monitoramento contínuo. Revisão visual em claro/escuro pendente de navegador.
@@ -80,3 +100,15 @@ C2 (26/10/2026): AdminCompanyDetail inclui SlackDeliveriesPanel, sob demanda, us
 ## Exclusão definitiva de empresas
 
 `AdminCompaniesTable` oferece seleção individual ou de até 100 empresas, estado parcial no checkbox do cabeçalho, limpeza de seleção e diálogo com os nomes congelados. A confirmação exige EXCLUIR. DELETE /api/admin/companies apaga o lote em transação; erro conserva seleção/diálogo, sucesso retira somente IDs confirmados e atualiza aquisição. A copy distingue contas exclusivas de contas com vínculos externos e não promete apagar contas/mensagens nos provedores Google/Slack.
+
+## Carregamento inicial sem dados provisórios
+
+Todos os consumidores de `useAdminDataSnapshot` exigem snapshot do servidor: Campanhas, Empresas, Leads, detalhe de Lead e Módulos. O hook não busca ao montar, acompanha novos snapshots do servidor e conserva o último confirmado em erro de atualização; respostas antigas não sobrescrevem uma requisição mais nova.
+
+`SpecialistsProvider` recebe diretório real do servidor em Operação, detalhe da empresa e layout da entrega. `useSpecialists` exige esse provider e não começa com lista vazia. Um único listener de foco e timer por provider atualiza os consumidores; não há fetch redundante na montagem. A atualização mantém os dados anteriores em falha e só roda com a página visível. Especialistas mantém sua página própria com snapshot inicial.
+
+## Transporte compartilhado com a demo
+
+Listagem/editor/perguntas de ativos, revisão de lacunas, operação e navegação usam useAppRuntime para requisições e URLs. O runtime padrão conserva o backend administrativo; a demo mantém estado local. O editor aceita companyId explícito para conservar a empresa do breadcrumb (o fallback operacional continua company_organizationId). Regras editoriais e componentes visuais permanecem compartilhados.
+
+`AdminCompanyTabs` aceita `actions` opcional para mostrar as ações da aba ativa na mesma linha das abas, à direita. `CompanyFilesWorkspace` só usa isso com `actionsInTabs` (repassado como `renderTabs` a `CustomerDocumentsWorkspace`, que então omite o título Arquivos). Sem essas props, o app operacional mantém o layout anterior; hoje só a demo as liga.

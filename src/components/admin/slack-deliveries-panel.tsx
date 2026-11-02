@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useAppRuntime } from "@/components/app-runtime";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type { listSlackDeliveries } from "@/lib/data/slack-delivery-operations";
+import type { SlackDeliveryPage } from "@/lib/contracts/slack-delivery-page";
 
-type DeliveryPage = Awaited<ReturnType<typeof listSlackDeliveries>>;
+type DeliveryPage = SlackDeliveryPage;
 type Delivery = DeliveryPage["items"][number];
 const labels: Record<string, string> = { recebido: "Pendente", processando: "Processando", concluido: "Entregue", falhou: "Falhou", incerto: "Incerto" };
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" });
@@ -20,6 +21,7 @@ function recoveryText(item: Delivery) {
 }
 
 export function SlackDeliveriesPanel({ companyId }: { companyId: string }) {
+  const runtime = useAppRuntime();
   const [data, setData] = useState<DeliveryPage | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +31,7 @@ export function SlackDeliveriesPanel({ companyId }: { companyId: string }) {
   const endpoint = `/api/admin/companies/${encodeURIComponent(companyId)}/slack-deliveries`;
 
   async function read(cursor?: string) {
-    const response = await fetch(`${endpoint}${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ""}`, { cache: "no-store" });
+    const response = await runtime.request(`${endpoint}${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ""}`, { cache: "no-store" });
     const body = await response.json();
     if (!response.ok) throw new Error(body.message ?? "Não foi possível consultar as entregas.");
     return body as DeliveryPage;
@@ -56,7 +58,7 @@ export function SlackDeliveriesPanel({ companyId }: { companyId: string }) {
     // Uma resposta perdida do POST exige releitura, nunca repetição cega.
     setRetryLocked(true);
     try {
-      const response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: selected.id, expectedUpdatedAt: selected.updatedAt }) });
+      const response = await runtime.request(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: selected.id, expectedUpdatedAt: selected.updatedAt }) });
       const body = await response.json();
       if (!response.ok) throw new Error(body.message ?? "Não foi possível recuperar a entrega.");
       setNotice("Entrega recolocada na fila. Isso ainda não confirma o envio.");

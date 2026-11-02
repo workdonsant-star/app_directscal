@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 
-import { useAdminData } from "@/components/admin/use-admin-data";
+import { useAdminDataSnapshot } from "@/components/admin/use-admin-data";
+import type { AdminDataSnapshot } from "@/lib/data/admin-data-source";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,6 +20,7 @@ import type {
 
 type AdminLeadDetailProps = {
   leadId: string;
+  initialSnapshot: AdminDataSnapshot;
 };
 
 function formatDateTime(iso: string) {
@@ -107,8 +109,8 @@ function InfoItem({
   );
 }
 
-export function AdminLeadDetail({ leadId }: AdminLeadDetailProps) {
-  const { campaigns, leads, modules } = useAdminData();
+export function AdminLeadDetail({ leadId, initialSnapshot }: AdminLeadDetailProps) {
+  const { campaigns, leads, modules } = useAdminDataSnapshot(initialSnapshot);
   const lead = leads.find((item) => item.id === leadId);
   const campaign = lead
     ? campaigns.find((item) => item.id === lead.campaignId)

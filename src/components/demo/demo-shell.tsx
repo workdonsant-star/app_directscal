@@ -13,22 +13,29 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } f
 import { useState } from "react";
 import { getDemoState, updateDemo, resetDemo, useDemo } from "./demo-store";
 import { applyDemoRequest } from "@/lib/data/demo/demo-request";
+import { handleDemoDocumentRequest } from "./demo-document-requests";
 import { demoHref, demoPathname } from "@/lib/data/demo/demo-routes";
 import { demoFolders, demoUser } from "@/lib/data/demo/demo-workspaces";
 
 function DemoUtilities() {
  const [confirm, setConfirm] = useState(false);
  const router = useRouter();
- return <><DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="sm" />}>Demo</DropdownMenuTrigger><DropdownMenuContent align="end">
-  <DropdownMenuItem render={<Link href="/demo/agente" />}>Agente</DropdownMenuItem>
+ const pathname = usePathname();
+ const isAdminDemo = pathname === "/demo/admin" || pathname.startsWith("/demo/admin/");
+ return <><DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="sm" />}>Demo</DropdownMenuTrigger><DropdownMenuContent align="end" className="min-w-48">
+  <DropdownMenuItem render={<Link href={isAdminDemo ? "/demo" : "/demo/admin"} />}>{isAdminDemo ? "Visão do cliente" : "Visão de superadmin"}</DropdownMenuItem>
+  {!isAdminDemo ? <><DropdownMenuSeparator />
+  <DropdownMenuItem render={<Link href="/demo/agente" />}>Agente</DropdownMenuItem></> : null}
   <DropdownMenuSeparator />
   <DropdownMenuItem onClick={() => setConfirm(true)}>Reiniciar demo</DropdownMenuItem>
  </DropdownMenuContent></DropdownMenu>
- <Dialog open={confirm} onOpenChange={setConfirm}><DialogContent><DialogTitle>Reiniciar demo?</DialogTitle><DialogDescription>As alterações desta apresentação serão removidas deste navegador.</DialogDescription><DialogFooter><Button variant="secondary" onClick={() => setConfirm(false)}>Cancelar</Button><Button onClick={() => { resetDemo(); setConfirm(false); router.push("/demo"); router.refresh(); }}>Reiniciar demo</Button></DialogFooter></DialogContent></Dialog></>;
+ <Dialog open={confirm} onOpenChange={setConfirm}><DialogContent><DialogTitle>Reiniciar demo?</DialogTitle><DialogDescription>As alterações desta apresentação serão removidas deste navegador.</DialogDescription><DialogFooter><Button variant="secondary" onClick={() => setConfirm(false)}>Cancelar</Button><Button onClick={() => { resetDemo(); setConfirm(false); router.push(isAdminDemo ? "/demo/admin" : "/demo"); router.refresh(); }}>Reiniciar demo</Button></DialogFooter></DialogContent></Dialog></>;
 }
 const runtime = {
  href: demoHref, pathname: demoPathname,
  async request(url: string, init?: RequestInit) {
+  const documentResponse = await handleDemoDocumentRequest(url, init);
+  if (documentResponse) return documentResponse;
   const current = getDemoState();
   const result = applyDemoRequest(current, url, init);
   if (result.state !== current) updateDemo(() => result.state);
@@ -42,8 +49,11 @@ export function DemoShell({ children }: { children: ReactNode }) {
  const pathname = usePathname();
  const { state, persistent } = useDemo();
  const profile = state.profile;
- const user = profile ? { ...demoUser, name: profile.name, company: profile.companyDetails.socialName ?? profile.company, avatarUrl: profile.avatarUrl } : demoUser;
+ const isAdminDemo = pathname === "/demo/admin" || pathname.startsWith("/demo/admin/");
+ const user = isAdminDemo
+  ? { id: "demo-superadmin", name: "Admin Directscal", company: "Directscal", role: "superadmin" as const, initials: "DS" }
+  : profile ? { ...demoUser, name: profile.name, company: profile.companyDetails.socialName ?? profile.company, avatarUrl: profile.avatarUrl } : demoUser;
  return <AppRuntimeProvider value={runtime}><TooltipProvider delay={200}>
- {(pathname.startsWith("/demo/r/") || pathname === "/demo/responder") ? children : <SidebarProvider className="app-shell bg-shell"><AppSidebar user={user} initiativeScope="demo-vertex" assetNavigationPreferences={state.navigation} managementAssetCategories={demoFolders(state)} /><SidebarInset className="overflow-clip bg-shell">{!persistent && <p role="status" className="px-6 py-2 text-xs text-muted-foreground">As alterações duram somente nesta aba porque o armazenamento está indisponível.</p>}{children}</SidebarInset></SidebarProvider>}
+ {(pathname.startsWith("/demo/r/") || pathname === "/demo/responder") ? children : <SidebarProvider className="app-shell bg-shell"><AppSidebar user={user} demoMode initiativeScope="demo-vertex" assetNavigationPreferences={state.navigation} managementAssetCategories={demoFolders(state)} /><SidebarInset className="overflow-clip bg-shell">{!persistent && <p role="status" className="px-6 py-2 text-xs text-muted-foreground">As alterações duram somente nesta aba porque o armazenamento está indisponível.</p>}{children}</SidebarInset></SidebarProvider>}
  </TooltipProvider></AppRuntimeProvider>;
 }

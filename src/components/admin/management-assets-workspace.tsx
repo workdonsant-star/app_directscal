@@ -1,28 +1,22 @@
 "use client";
 
-import { MessageSquareText, Pencil, Plus, Trash2 } from "lucide-react";
+import { useAppRuntime } from "@/components/app-runtime";
+
+import { MessageSquareText, Pencil, Plus, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 
-import {
-  ManagementAssetCreateForm,
-  type ManagementAssetTemplateOption,
-} from "@/components/admin/management-asset-create-form";
-import { ManagementAssetStatusBadge } from "@/components/admin/management-asset-status-badge";
+import { ManagementAssetCreateForm } from "@/components/admin/management-asset-create-form";
+import { ManagementAssetStatusBadge, managementAssetStatusLabels } from "@/components/admin/management-asset-status-badge";
 import { ManagementAssetsBulkEditDialog } from "@/components/admin/management-assets-bulk-edit-dialog";
 import { AppPage } from "@/components/app-page";
 import { AppTopbarActionsPortal } from "@/components/app-topbar-actions-portal";
 import { AppTopbar } from "@/components/app-topbar";
+import { AdminCompanyTabs } from "@/components/admin/admin-company-tabs";
+import { AssetCheckbox } from "@/components/management-assets/asset-checkbox";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -35,60 +29,48 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   managementAssetTypeLabels,
   type AdminManagementAssetListItem,
-  type CreateManagementAssetInput,
+  type QuickCreateManagementAssetInput,
   type ManagementAssetBulkUpdate,
 } from "@/lib/contracts";
-import { managementAssetReviewLabels } from "@/lib/data/management-asset-review";
 
-type Filter = "todos" | "rascunho" | "em_revisao" | "publicado" | "revisao_vencida" | "arquivado";
+type Filter = "todos" | "rascunho" | "publicado" | "arquivado";
 type Option = { id: string; name: string };
 
 const filters: Array<{ value: Filter; label: string }> = [
   { value: "todos", label: "Todos" },
   { value: "rascunho", label: "Rascunho" },
-  { value: "em_revisao", label: "Em revisão" },
   { value: "publicado", label: "Publicado" },
-  { value: "revisao_vencida", label: "Revisão vencida" },
   { value: "arquivado", label: "Arquivado" },
 ];
 
-// Rascunho e Em revisão olham para a versão em andamento, inclusive a nova
-// versão de um ativo já publicado; o mesmo ativo pode aparecer em Publicado.
+// Rascunho inclui uma nova versão ainda não publicada de um ativo publicado.
 function matchesFilter(asset: AdminManagementAssetListItem, filter: Filter) {
   if (filter === "todos") return true;
-  if (filter === "revisao_vencida") return asset.review.status === "vencida";
   if (filter === "publicado" || filter === "arquivado") return asset.status === filter;
   if (asset.status === "arquivado") return false;
-  if (filter === "em_revisao") {
-    return asset.draftStatus === "em_revisao" || asset.draftStatus === "pronto_para_publicar";
-  }
-
-  return asset.draftStatus === "rascunho";
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return asset.draftStatus !== null;
 }
 
 export function ManagementAssetsWorkspace({
   assets,
   embedded = false,
+  listOnly = false,
   deliveryId,
   company,
   specialists,
-  templates,
+  categories,
+  fileWorkspace,
 }: {
   assets: AdminManagementAssetListItem[];
   embedded?: boolean;
+  listOnly?: boolean;
   deliveryId?: string;
   company: Option & { organizationId: string };
   specialists: Option[];
-  templates: ManagementAssetTemplateOption[];
+  categories: string[];
+  fileWorkspace?: ReactNode;
 }) {
+  const runtime = useAppRuntime();
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>("todos");
   const assetHref = (assetId: string) => deliveryId
@@ -115,10 +97,10 @@ export function ManagementAssetsWorkspace({
     [assets],
   );
   const visibleAssets = assets.filter((asset) => matchesFilter(asset, filter));
-  const specialistNames = new Map(specialists.map((item) => [item.id, item.name]));
   const selectedAssets = assets.filter((asset) => selectedIds.includes(asset.id));
   const currentSelection = selectedAssets.map((asset) => asset.id);
-  const allVisibleSelected = visibleAssets.length > 0 && visibleAssets.every((asset) => selectedIds.includes(asset.id));
+  const selectableVisibleAssets = visibleAssets.slice(0, 200);
+  const allVisibleSelected = selectableVisibleAssets.length > 0 && selectableVisibleAssets.every((asset) => selectedIds.includes(asset.id));
   const someVisibleSelected = visibleAssets.some((asset) => selectedIds.includes(asset.id));
 
   async function handleEdit(asset: AdminManagementAssetListItem) {
@@ -127,14 +109,14 @@ export function ManagementAssetsWorkspace({
       setEditingId(asset.id);
       setActionError(null);
       if (!asset.draftStatus) {
-        const response = await fetch(`/api/admin/management-assets/${asset.id}/transition`, {
+        const response = await runtime.request(`/api/admin/management-assets/${asset.id}/transition`, {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "abrir_rascunho" }),
         });
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data.message ?? "Não foi possível abrir a edição.");
       }
-      router.push(assetHref(asset.id));
+      router.push(runtime.href(assetHref(asset.id)));
       router.refresh();
     } catch (error) {
       setActionError(error instanceof Error ? error.message : "Não foi possível abrir a edição.");
@@ -145,7 +127,7 @@ export function ManagementAssetsWorkspace({
     setPending(true);
     setActionError(null);
     try {
-      const response = await fetch("/api/admin/management-assets/bulk", {
+      const response = await runtime.request("/api/admin/management-assets/bulk", {
         method: changes ? "PATCH" : "DELETE", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ organizationId: company.organizationId, assetIds: ids, ...(changes ? { changes } : {}) }),
       });
@@ -163,11 +145,12 @@ export function ManagementAssetsWorkspace({
       router.refresh();
     } finally { setPending(false); }
   }
-  async function handleCreate(input: CreateManagementAssetInput) {
+  async function handleCreate(input: QuickCreateManagementAssetInput) {
     try {
       setPending(true);
       setNotice(null);
-      const response = await fetch("/api/admin/management-assets", {
+      setActionError(null);
+      const response = await runtime.request("/api/admin/management-assets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...input, organizationId: company.organizationId }),
@@ -181,18 +164,17 @@ export function ManagementAssetsWorkspace({
         throw new Error(data.message ?? "Não foi possível criar o ativo.");
       }
 
-      router.push(assetHref(data.assetId));
+      router.push(runtime.href(assetHref(data.assetId)));
     } catch (error) {
-      setOpen(false);
-      setNotice(error instanceof Error ? error.message : "Não foi possível criar o ativo.");
+      setActionError(error instanceof Error ? error.message : "Não foi possível criar o ativo.");
       setPending(false);
     }
   }
 
   const PageContent = embedded ? "div" : AppPage;
-  const Heading = embedded ? "h2" : "h1";
+  const Heading = "h2";
   const actions = (
-          <div className="flex min-w-0 items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             <Tabs value={filter} onValueChange={(value) => { setFilter(value as Filter); setSelectedIds([]); }}>
               <TabsList variant="selector">
                 {filters.map((item) => (
@@ -208,55 +190,63 @@ export function ManagementAssetsWorkspace({
             <Button
               variant="outline"
               nativeButton={false}
-              render={<Link href={deliveryId ? `/admin/entregas/${deliveryId}/ativos/perguntas` : `${basePath}/perguntas`} />}
+              render={<Link href={runtime.href(deliveryId ? `/admin/entregas/${deliveryId}/ativos/perguntas` : `${basePath}/perguntas`)} />}
             >
               <MessageSquareText className="size-4" />
               Perguntas
             </Button>
             <Button
-              onClick={() => setOpen(true)}
+              variant="outline"
+              onClick={() => { setActionError(null); setOpen(true); }}
               disabled={pending}
             >
               <Plus className="size-4" />
-              Criar ativo
+              Novo ativo
             </Button>
           </div>
   );
 
   return (
     <>
-      {embedded ? <AppTopbarActionsPortal>{actions}</AppTopbarActionsPortal> : (
+      {embedded ? (!listOnly ? <AppTopbarActionsPortal>{actions}</AppTopbarActionsPortal> : null) : (
       <AppTopbar
         breadcrumb={[
           { label: "Empresas", href: "/admin/empresas" },
-          { label: company.name, href: `/admin/empresas/${company.id}` },
-          { label: "Criação dos ativos" },
+          { label: company.name },
         ]}
-        actions={actions}
       />
       )}
 
       <PageContent>
         <div className="flex w-full flex-col gap-5">
+          {!embedded ? (
+            <>
+              <div className="space-y-1">
+                <h1 className="text-ui-page">{company.name}</h1>
+                <p className="text-sm text-muted-foreground">Área de gestão desta empresa.</p>
+              </div>
+              <AdminCompanyTabs companyId={company.id} active="assets" hasOrganization />
+            </>
+          ) : null}
+          {fileWorkspace}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="space-y-1">
-              <Heading className="font-heading text-2xl font-bold">Criação dos ativos</Heading>
+              <Heading className="font-heading text-2xl font-bold">Editor de ativos</Heading>
               <p className="text-sm text-muted-foreground">
-                SOPs, playbooks, governança e matrizes RACI de {company.name}.
+                {listOnly ? "Consulte os documentos exclusivos desta empresa." : "Crie e acompanhe documentos exclusivos desta empresa."}
               </p>
             </div>
-
           </div>
+          {!embedded && !listOnly ? actions : null}
 
           {notice ? (
             <p role="status" className="rounded-lg bg-card px-3 py-2 text-sm text-foreground">
               {notice}
             </p>
           ) : null}
-          {filter === "revisao_vencida" ? <p className="text-sm text-muted-foreground">Revise o conteúdo e publique a versão aprovada para iniciar um novo ciclo. A pendência de revisão mantém a versão vigente disponível para consulta.</p> : null}
           {actionError && !bulkEditOpen && deleteIds.length === 0 ? <p role="alert" className="text-sm text-destructive">{actionError}</p> : null}
           {visibleAssets.length > 200 ? <p className="text-xs text-muted-foreground">Selecione até 200 ativos por operação. A seleção geral inclui os primeiros 200 deste filtro.</p> : null}
-          {selectedAssets.length > 0 ? (
+          {!listOnly && selectedAssets.length > 0 ? (
             <div className="flex flex-wrap items-center gap-3" role="region" aria-label="Ações dos ativos selecionados">
               <p className="text-sm tabular-nums">{selectedAssets.length} {selectedAssets.length === 1 ? "ativo selecionado" : "ativos selecionados"}</p>
               <Button variant="secondary" disabled={pending || selectedAssets.some((asset) => asset.status === "arquivado")} onClick={() => { setActionError(null); setBulkEditOpen(true); }}><Pencil className="size-4" />Editar em massa</Button>
@@ -273,96 +263,65 @@ export function ManagementAssetsWorkspace({
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
                 {assets.length === 0
-                  ? "Crie o primeiro ativo para uma empresa a partir de um modelo ou do zero."
+                  ? "Crie o primeiro ativo desta empresa a partir de um modelo ou do zero."
                   : "Ajuste o status selecionado."}
               </p>
             </div>
           ) : (
-            <div className="min-w-0">
-              <Table variant="operational" className="min-w-[1450px] table-fixed">
+            <div className="-ml-8 min-w-0 w-[calc(100%+2rem)]">
+              <Table variant="operational" className="min-w-[760px] table-fixed">
                 <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12">
-                      <input type="checkbox" aria-label="Selecionar todos os ativos visíveis" checked={allVisibleSelected} disabled={pending || visibleAssets.length === 0}
-                        ref={(node) => { if (node) node.indeterminate = someVisibleSelected && !allVisibleSelected; }}
-                        className="size-4 cursor-pointer accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        onChange={(event) => setSelectedIds(event.target.checked ? visibleAssets.slice(0, 200).map((asset) => asset.id) : [])} />
-                    </TableHead>
-                    <TableHead className="h-11 w-[300px] px-4">Ativo</TableHead>
-                    <TableHead className="h-11 w-[200px] px-4">Empresa</TableHead>
-                    <TableHead className="h-11 w-[150px] px-4">Status</TableHead>
-                    <TableHead className="h-11 w-[100px] px-4 text-right">Versão</TableHead>
-                    <TableHead className="h-11 w-[170px] px-4">Próxima versão</TableHead>
-                    <TableHead className="h-11 w-[160px] px-4">Autor</TableHead>
-                    <TableHead className="h-11 w-[180px] px-4">Revisão de validade</TableHead>
-                    <TableHead className="h-11 w-[160px] px-4">Responsável</TableHead>
-                    <TableHead className="h-11 w-[130px] px-4">Atualizado</TableHead>
-                    <TableHead className="w-24"><span className="sr-only">Ações</span></TableHead>
+                  <TableRow className="group/selection">
+                    {!listOnly ? <TableHead className="w-8 min-w-8 rounded-none! bg-transparent! px-0!">
+                      <div className="flex items-center justify-center">
+                        <AssetCheckbox
+                          label={visibleAssets.length > 200 ? "Selecionar até 200 ativos deste filtro" : "Selecionar todos os ativos visíveis"}
+                          checked={allVisibleSelected}
+                          mixed={someVisibleSelected && !allVisibleSelected}
+                          disabled={pending || visibleAssets.length === 0}
+                          onChange={() => setSelectedIds(allVisibleSelected ? [] : selectableVisibleAssets.map((asset) => asset.id))}
+                        />
+                      </div>
+                    </TableHead> : null}
+                    <TableHead className="rounded-l-[5px]!">Ativo</TableHead>
+                    <TableHead className="w-40">Tipo</TableHead>
+                    <TableHead className="w-48">Situação</TableHead>
+                    <TableHead className="w-36 text-right">Ação</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {visibleAssets.map((asset) => (
-                    <TableRow
-                      key={asset.id}
-                      className="cursor-pointer"
-                      onClick={() => { if (!pending) router.push(assetHref(asset.id)); }}
-                    >
-                      <TableCell onClick={(event) => event.stopPropagation()}>
-                        <input type="checkbox" aria-label={`Selecionar ${asset.title}`} checked={selectedIds.includes(asset.id)} disabled={pending || (!selectedIds.includes(asset.id) && selectedAssets.length >= 200)}
-                          className="size-4 cursor-pointer accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          onChange={(event) => setSelectedIds((current) => event.target.checked ? [...current, asset.id] : current.filter((id) => id !== asset.id))} />
+                    <TableRow key={asset.id} className="group/selection">
+                      {!listOnly ? <TableCell className="border-b-0! px-0!">
+                        <div className="flex items-center justify-center">
+                          <AssetCheckbox
+                            label={`Selecionar ${asset.title}`}
+                            checked={selectedIds.includes(asset.id)}
+                            disabled={pending || (!selectedIds.includes(asset.id) && selectedAssets.length >= 200)}
+                            onChange={() => setSelectedIds((current) => current.includes(asset.id) ? current.filter((id) => id !== asset.id) : [...current, asset.id])}
+                          />
+                        </div>
+                      </TableCell> : null}
+                      <TableCell className="whitespace-normal">
+                        <span className="font-medium text-foreground">{asset.title}</span>
+                        {asset.category ? <span className="block text-xs text-muted-foreground">{asset.category}</span> : null}
                       </TableCell>
-                      <TableCell className="px-4 py-4 whitespace-normal">
-                        <div className="flex flex-col">
-                          <Link
-                            href={assetHref(asset.id)}
-                            className="rounded-sm font-medium text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            onClick={(event) => { event.stopPropagation(); if (pending) event.preventDefault(); }}
-                          >
-                            {asset.title}
-                          </Link>
-                          <span className="text-xs text-muted-foreground">
-                            {managementAssetTypeLabels[asset.type]}
-                            {asset.category ? ` · ${asset.category}` : ""}
-                          </span>
+                      <TableCell className="text-muted-foreground">{managementAssetTypeLabels[asset.type]}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col items-start gap-1">
+                          <ManagementAssetStatusBadge status={asset.status} />
+                          {asset.draftStatus ? (
+                            <span className="text-xs text-muted-foreground">Em edição: {managementAssetStatusLabels[asset.draftStatus]}</span>
+                          ) : null}
                         </div>
                       </TableCell>
-                      <TableCell className="truncate px-4 py-4 text-sm">
-                        {asset.organizationName}
-                      </TableCell>
-                      <TableCell className="px-4 py-4">
-                        <ManagementAssetStatusBadge status={asset.status} />
-                      </TableCell>
-                      <TableCell className="px-4 py-4 text-right tabular-nums">
-                        {asset.publishedVersionNumber ? (
-                          <span className="text-foreground">v{asset.publishedVersionNumber}</span>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="px-4 py-4">
-                        {asset.publishedVersionNumber && asset.draftStatus ? (
-                          <ManagementAssetStatusBadge status={asset.draftStatus} />
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="truncate px-4 py-4 text-sm text-muted-foreground">
-                        {(asset.specialistId && specialistNames.get(asset.specialistId)) ??
-                          "Directscal"}
-                      </TableCell>
-                      <TableCell className="px-4 py-4 text-sm">
-                        <p>{managementAssetReviewLabels[asset.review.status]}</p>
-                        <p className="text-xs text-muted-foreground tabular-nums">{asset.review.nextReviewDate ? formatDate(`${asset.review.nextReviewDate}T12:00:00-03:00`) : asset.reviewCycle ?? "Sem periodicidade"}</p>
-                      </TableCell>
-                      <TableCell className="truncate px-4 py-4 text-sm text-muted-foreground">{asset.ownerLabel ?? "Não definido"}</TableCell>
-                      <TableCell className="px-4 py-4 text-sm text-muted-foreground tabular-nums">
-                        {formatDate(asset.updatedAt)}
-                      </TableCell>
-                      <TableCell onClick={(event) => event.stopPropagation()}>
-                        <div className="flex items-center gap-1">
-                          <Button variant="ghost" size="icon-sm" aria-label={`Editar ${asset.title}`} disabled={pending || asset.status === "arquivado"} onClick={() => handleEdit(asset)}><Pencil aria-hidden="true" className="size-4" /></Button>
-                          <Button variant="ghost" size="icon-sm" aria-label={`Excluir ${asset.title}`} disabled={pending} onClick={() => { setActionError(null); setDeleteIds([asset.id]); }}><Trash2 aria-hidden="true" className="size-4" /></Button>
+                      <TableCell>
+                        <div className="flex items-center justify-end gap-1">
+                          <Link href={runtime.href(assetHref(asset.id))} aria-label={`Abrir ${asset.title}`} className="rounded-sm px-2 text-sm font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                            Abrir →
+                          </Link>
+                          {!listOnly ? <><Button variant="ghost" size="icon-sm" aria-label={`Editar ${asset.title}`} disabled={pending || asset.status === "arquivado"} onClick={() => handleEdit(asset)}><Pencil aria-hidden="true" className="size-4" /></Button>
+                          <Button variant="ghost" size="icon-sm" aria-label={`Excluir ${asset.title}`} disabled={pending} onClick={() => { setActionError(null); setDeleteIds([asset.id]); }}><Trash2 aria-hidden="true" className="size-4" /></Button></> : null}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -375,7 +334,7 @@ export function ManagementAssetsWorkspace({
       </PageContent>
 
       {editingId ? <p role="status" className="sr-only">Preparando a edição do ativo</p> : null}
-      {bulkEditOpen ? <ManagementAssetsBulkEditDialog organizationId={company.organizationId} assetIds={currentSelection} specialists={specialists} pending={pending} error={actionError}
+      {!listOnly && bulkEditOpen ? <ManagementAssetsBulkEditDialog organizationId={company.organizationId} assetIds={currentSelection} specialists={specialists} pending={pending} error={actionError}
         onClose={() => { setBulkEditOpen(false); setActionError(null); }} onSave={(input) => mutateSelection(input.assetIds, input.changes)} /> : null}
       <Dialog open={deleteIds.length > 0} onOpenChange={(next) => { if (!next && !pending) { setDeleteIds([]); setActionError(null); } }}>
         <DialogContent>
@@ -392,28 +351,26 @@ export function ManagementAssetsWorkspace({
         </DialogContent>
       </Dialog>
 
-      <Sheet open={open} onOpenChange={(value) => !pending && setOpen(value)}>
-        <SheetContent className="gap-0 overflow-hidden data-[side=right]:!w-[min(100vw,56rem)] data-[side=right]:!max-w-none">
-          <SheetHeader className="shrink-0 border-b px-4 py-4 sm:px-6">
-            <SheetTitle>Criar ativo</SheetTitle>
-            <SheetDescription>
-              Registre o ativo para a empresa e abra o editor com o ponto de partida escolhido.
-            </SheetDescription>
-          </SheetHeader>
+      <Dialog open={open} onOpenChange={(value) => { if (!pending) setOpen(value); }}>
+        <DialogContent className="max-w-xl">
+          <DialogClose disabled={pending} aria-label="Fechar" className="absolute right-4 top-4 cursor-pointer rounded-md p-1 text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
+            <X className="size-4" />
+          </DialogClose>
+          <DialogHeader>
+            <DialogTitle>Categoria e tipo</DialogTitle>
+            <DialogDescription>Escolha os dois e abra o editor direto para {company.name}.</DialogDescription>
+          </DialogHeader>
           {open ? (
             <ManagementAssetCreateForm
-              organizations={[{ id: company.organizationId, name: company.name }]}
-              initialOrganizationId={company.organizationId}
-              organizationLocked
-              specialists={specialists}
-              templates={templates}
+              organizationId={company.organizationId}
+              categories={categories}
               pending={pending}
-              onCancel={() => setOpen(false)}
               onSubmit={handleCreate}
             />
           ) : null}
-        </SheetContent>
-      </Sheet>
+          {actionError ? <p role="alert" className="text-sm text-destructive">{actionError}</p> : null}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

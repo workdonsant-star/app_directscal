@@ -2,7 +2,7 @@
 
 import { useDeliveryDraft } from "@/components/admin/delivery/delivery-draft-provider";
 import { Badge } from "@/components/ui/badge";
-import { adminActionPointTemplates } from "@/lib/data/admin-operations-data-source";
+import { adminActionPointTemplates } from "@/lib/data/admin-delivery-domain";
 import { cn } from "@/lib/utils";
 
 export function DeliveryActionPointsStep() {

@@ -1,7 +1,6 @@
 import {
   acquisitionCampaigns as seedCampaigns,
   adminModules as seedModules,
-  mockOrganizations as seedOrganizations,
 } from "@/lib/mock-data";
 import {
   acquisitionCampaignSchema,
@@ -32,14 +31,8 @@ export type OrganizationModuleAccessRecord = {
   updatedAt: string | null;
 };
 
-export type AdminDataSnapshot = {
-  modules: AdminModule[];
-  campaigns: AcquisitionCampaign[];
-  leads: Lead[];
-  companies: LeadCompany[];
-};
-
-export const adminUpdatedEventName = "directscal:admin-data-updated";
+export { adminUpdatedEventName, type AdminDataSnapshot } from "@/lib/data/admin-snapshot";
+import { adminUpdatedEventName, type AdminDataSnapshot } from "@/lib/data/admin-snapshot";
 export const acquisitionCoreFieldIds = [
   "nome",
   "email",
@@ -237,13 +230,7 @@ export function buildAdminDataSnapshot({
   accessRecords = [],
   campaigns,
   leads,
-  organizations = seedOrganizations.map((organization) => ({
-    id: organization.id,
-    name: organization.name,
-    employeeCount: organization.employeeCount,
-    createdAt: organization.createdAt,
-    updatedAt: organization.updatedAt,
-  })),
+  organizations = [],
 }: {
   accessRecords?: OrganizationModuleAccessRecord[];
   campaigns: AcquisitionCampaign[];
@@ -270,15 +257,6 @@ export function buildAdminDataSnapshot({
     leads,
     companies,
   };
-}
-
-const adminDataServerSnapshot = buildAdminDataSnapshot({
-  campaigns: seedCampaigns,
-  leads: [],
-});
-
-export function getAdminDataServerSnapshot(): AdminDataSnapshot {
-  return adminDataServerSnapshot;
 }
 
 export function fieldTypeLabel(type: AcquisitionFormFieldType) {

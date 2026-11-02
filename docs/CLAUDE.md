@@ -82,3 +82,5 @@ ciclo-2-ativos-e-consulta-2026-10-26.md registra o início autorizado de C2, aju
 ciclo-3-rotinas-acompanhadas-2026-10-26.md registra o início de C3, correções da operação de rotinas e limites entre fixtures, validação integrada e contato proativo autorizado.
 
 O complemento de 26/10/2026 em agente-proativo-rotinas.md distingue a base de contatos existente do acompanhamento contextual solicitado: leitura do ativo, perguntas adaptadas, relatos confirmados e indicadores por Action Point. O mecanismo e seus critérios de aceite são proposta ainda não implementada.
+
+`arquitetura-agente-action-points.md` preserva o rascunho histórico de 01/11/2026 e aponta a decisão vigente no Notion: aprovação do plano antes da ativação, sem aprovação por ciclo. A aba administrativa de ações publicadas e a regra pura de classificação iniciaram a implementação; plano persistido, perguntas contextuais e integração de IA continuam pendentes.

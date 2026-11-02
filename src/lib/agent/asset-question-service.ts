@@ -13,6 +13,7 @@ import {
 } from "@/lib/agent/answer-policy";
 import { generateGroundedAnswer } from "@/lib/agent/answer-providers";
 import { getAnswerProviderConfig } from "@/lib/agent/config";
+import { getActiveAgentProvider } from "@/lib/data/agent-provider-data-source";
 import { embedTexts, toPgVector } from "@/lib/agent/embeddings";
 import {
   assetQuestionAnswerSchema,
@@ -134,7 +135,10 @@ export async function answerAssetQuestion(input: {
 }): Promise<AssetQuestionAnswer> {
   const startedAt = Date.now();
   const question = input.question.trim().replace(/\s+/g, " ");
-  const { provider, model } = getAnswerProviderConfig();
+  const fallback = getAnswerProviderConfig();
+  let provider = fallback.provider;
+  let model = fallback.model;
+  let apiKey: string | null = null;
   let resolved: ResolvedAnswer;
   let failed = false;
   const history = input.history ?? [];
@@ -158,14 +162,18 @@ export async function answerAssetQuestion(input: {
         citations: [],
         refusalReason: "Nenhum trecho publicado corresponde à pergunta.",
       };
-    } else if (provider === "extractive" || !model) {
-      resolved = buildExtractiveAnswer(evidence);
     } else {
-      resolved = resolveGroundedAnswer(
-        await generateGroundedAnswer(provider, model, question, evidence, history),
-        evidence,
-        buildRetrievalQuery(question, history),
-      );
+      const active = await getActiveAgentProvider();
+      provider = active.provider;
+      model = active.model;
+      apiKey = active.apiKey;
+      resolved = provider === "extractive" || !model
+        ? buildExtractiveAnswer(evidence)
+        : resolveGroundedAnswer(
+            await generateGroundedAnswer(provider, model, question, evidence, history, apiKey),
+            evidence,
+            buildRetrievalQuery(question, history),
+          );
     }
   } catch (error) {
     console.error("[asset-agent] answer failed", error);

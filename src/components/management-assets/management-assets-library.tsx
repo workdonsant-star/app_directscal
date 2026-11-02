@@ -10,6 +10,7 @@ import type { ManagementAssetCategoryFolder } from "@/lib/data/management-asset-
 import { useMemo, useState } from "react";
 
 import { AppTopbarActionsPortal } from "@/components/app-topbar-actions-portal";
+import { AssetCheckbox } from "@/components/management-assets/asset-checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -129,15 +130,6 @@ function ManagementAssetCard({ asset, showType }: { asset: ManagementAsset; show
   ) : (
     card
   );
-}
-
-function AssetCheckbox({ label, checked, mixed = false, disabled, onChange }: {
-  label: string; checked: boolean; mixed?: boolean; disabled?: boolean; onChange: () => void;
-}) {
-  return <input type="checkbox" aria-label={label} aria-checked={mixed ? "mixed" : checked}
-    checked={checked} disabled={disabled} onChange={onChange}
-    ref={node => { if (node) node.indeterminate = mixed; }}
-    className="size-4 shrink-0 cursor-pointer opacity-0 transition-opacity group-hover/selection:opacity-100 group-focus-within/selection:opacity-100 checked:opacity-100 aria-[checked=mixed]:opacity-100 focus-visible:opacity-100 [@media(pointer:coarse)]:opacity-100 accent-primary outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-default disabled:opacity-50" />;
 }
 
 function ManagementAssetsTable({ assets, canEdit, selected, saving, toggle, toggleAll }: {

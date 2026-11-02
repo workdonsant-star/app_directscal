@@ -26,7 +26,7 @@ export async function updateCustomerManagementAsset(actorId: string, assetId: st
   if (error) {
     if (error.code === "42501") throw new CustomerAssetUpdateError("Você não tem permissão para editar este ativo.", 403);
     if (error.code === "P0002") throw new CustomerAssetUpdateError("Ativo não encontrado.", 404);
-    if (["PT409", "55P03", "40001", "23505", "22023"].includes(error.code)) throw new CustomerAssetUpdateError("O ativo foi atualizado ou possui uma revisão aberta. Preserve seu texto e atualize a página antes de tentar novamente.", 409);
+    if (["PT409", "55P03", "40001", "23505", "22023"].includes(error.code)) throw new CustomerAssetUpdateError("O ativo foi atualizado ou possui um rascunho aberto. Preserve seu texto e atualize a página antes de tentar novamente.", 409);
     throw error;
   }
   return data;

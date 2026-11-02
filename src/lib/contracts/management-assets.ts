@@ -32,8 +32,6 @@ export const managementAssetTypeLabels: Record<ManagementAssetType, string> = {
 
 export const managementAssetStatusValues = [
   "rascunho",
-  "em_revisao",
-  "pronto_para_publicar",
   "publicado",
   "arquivado",
 ] as const;
@@ -42,8 +40,6 @@ export const managementAssetStatusSchema = z.enum(managementAssetStatusValues);
 
 export const managementAssetVersionStatusValues = [
   "rascunho",
-  "em_revisao",
-  "pronto_para_publicar",
   "publicado",
   "substituido",
 ] as const;
@@ -77,7 +73,6 @@ export const managementAssetDocumentSchema = managementAssetSchema.extend({
   versionId: idSchema,
   operationalOwner: z.string().min(1),
   lastEditedBy: z.string().min(1).nullable().default(null),
-  reviewCycle: z.string().min(1),
   content: richTextDocumentSchema,
 });
 
@@ -109,7 +104,6 @@ export const legacySopSectionSchema = z.object({
 export const legacySopDocumentContentSchema = z.object({
   version: z.string().min(1).optional(),
   operationalOwner: z.string().min(1).optional(),
-  reviewCycle: z.string().min(1).optional(),
   sections: z.array(legacySopSectionSchema).min(1),
 });
 
@@ -126,11 +120,6 @@ export const adminManagementAssetListItemSchema = z.object({
   publishedVersionNumber: z.string().nullable(),
   specialistId: z.string().nullable(),
   ownerLabel: z.string().nullable(),
-  reviewCycle: z.string().nullable(),
-  review: z.object({
-    status: z.enum(["sem_publicacao", "sem_periodicidade", "sob_demanda", "em_dia", "vencida", "arquivado"]),
-    nextReviewDate: z.iso.date().nullable(),
-  }),
   updatedAt: isoDateTimeSchema,
 });
 
@@ -141,7 +130,6 @@ export const adminManagementAssetVersionSchema = z.object({
   changeNote: z.string().nullable(),
   createdAt: isoDateTimeSchema,
   updatedAt: isoDateTimeSchema,
-  reviewedAt: isoDateTimeSchema.nullable(),
   publishedAt: isoDateTimeSchema.nullable(),
   indexStatus: z.enum(["pendente", "processando", "pronto", "erro"]),
   indexError: z.string().nullable(),
@@ -162,7 +150,6 @@ export const adminManagementAssetDetailSchema = z.object({
   summary: z.string(),
   category: z.string().nullable(),
   ownerLabel: z.string().nullable(),
-  reviewCycle: z.string().nullable(),
   specialistId: z.string().nullable(),
   status: managementAssetStatusSchema,
   archivedAt: isoDateTimeSchema.nullable(),
@@ -189,10 +176,17 @@ export const createManagementAssetInputSchema = z.object({
   summary: trimmedText(10, 600),
   category: trimmedText(2, 80).nullable(),
   ownerLabel: trimmedText(2, 120),
-  reviewCycle: trimmedText(2, 80),
   specialistId: z.string().trim().min(1).nullable(),
   templateId: z.string().trim().min(1).nullable(),
 });
+
+export const quickCreateManagementAssetInputSchema = z.object({
+  organizationId: idSchema,
+  type: editableManagementAssetTypeSchema,
+  category: trimmedText(2, 80).nullable(),
+}).strict();
+
+export type QuickCreateManagementAssetInput = z.infer<typeof quickCreateManagementAssetInputSchema>;
 
 export const updateManagementAssetInputSchema = z.object({
   expectedRevision: managementAssetRevisionSchema,
@@ -200,7 +194,6 @@ export const updateManagementAssetInputSchema = z.object({
   summary: trimmedText(10, 600),
   category: trimmedText(2, 80).nullable(),
   ownerLabel: trimmedText(2, 120),
-  reviewCycle: trimmedText(2, 80),
   specialistId: z.string().trim().min(1).nullable(),
   changeNote: z.string().trim().max(600).nullable(),
   content: richTextDocumentSchema.nullable(),
@@ -217,7 +210,6 @@ export const managementAssetBulkUpdateSchema = managementAssetBulkSelectionSchem
     specialistId: z.string().trim().min(1).nullable().optional(),
     category: trimmedText(2, 80).nullable().optional(),
     ownerLabel: trimmedText(2, 120).optional(),
-    reviewCycle: trimmedText(2, 80).optional(),
   }).strict().refine((changes) => Object.values(changes).some((value) => value !== undefined), "Escolha pelo menos um campo."),
 });
 
@@ -226,9 +218,6 @@ export type ManagementAssetBulkUpdate = z.infer<typeof managementAssetBulkUpdate
 
 export const managementAssetTransitionValues = [
   "abrir_rascunho",
-  "enviar_para_revisao",
-  "aprovar_revisao",
-  "devolver_para_rascunho",
   "publicar",
   "arquivar",
   "restaurar",

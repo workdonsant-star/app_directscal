@@ -22,3 +22,5 @@ Página autenticada que concentra os dados empresariais da conta cliente.
 - O CTA `Salvar alterações` fica na topbar, imediatamente antes do sino; mensagens de retorno permanecem no formulário.
 
 - Navegação contextual: `/configuracoes` abre Setores e lideranças, `?secao=empresa` abre os dados oficiais/comerciais e `?secao=slack` abre a conexão. Valores desconhecidos abrem setores; retornos OAuth `?slack=...` abrem Slack. Cada seção renderiza apenas seus controles e ações. Raízes não usam breadcrumb; Empresa e Slack possuem h1 próprio. Novas opções devem ser adicionadas à navegação contextual e à seleção explícita da página.
+
+A página só consulta as dependências da seção visível: Empresa não aguarda diretório de setores/Slack; Setores consulta estrutura; Slack consulta instalação. Busca de perfil e parâmetros começa em paralelo.

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getAnswerProviderConfig } from "@/lib/agent/config";
+import { getActiveAgentProvider } from "@/lib/data/agent-provider-data-source";
 import { getRequiredServerEnv } from "@/lib/env";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
@@ -28,14 +28,14 @@ export function normalizeQuestion(text: string) {
     .trim();
 }
 
-async function judgeSameQuestions(model: string, question: string, previous: string[]) {
+async function judgeSameQuestions(model: string, apiKey: string | null, question: string, previous: string[]) {
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-goog-api-key": getRequiredServerEnv("GEMINI_API_KEY"),
+        "x-goog-api-key": apiKey || getRequiredServerEnv("GEMINI_API_KEY"),
       },
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: JUDGE_SYSTEM_PROMPT }] },
@@ -114,11 +114,11 @@ export async function countPreviousAsks(input: {
     previous.flatMap((item, index) => (normalizeQuestion(item) === normalized ? [index] : [])),
   );
 
-  const { provider, model } = getAnswerProviderConfig();
+  const { provider, model, apiKey } = await getActiveAgentProvider();
 
   if (provider === "gemini" && model) {
     try {
-      for (const index of await judgeSameQuestions(model, input.question, previous)) {
+      for (const index of await judgeSameQuestions(model, apiKey, input.question, previous)) {
         matches.add(index);
       }
     } catch (error) {

@@ -1,4 +1,5 @@
 "use client";
+import { useAppRuntime } from "@/components/app-runtime";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { localRoutineInstant } from "@/lib/data/routine-calendar";
 const date = (iso: string) => new Date(iso).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" });
 type Decision = { item: RoutineReviewCycle; attempt: string };
 export function RoutineReviewPanel({ companyId, initial, checkedAt }: { companyId: string; initial: RoutineReviewCycle[]; checkedAt: string }) {
+  const runtime = useAppRuntime();
   const [items, setItems] = useState(initial), [at, setAt] = useState(checkedAt);
   const [all, setAll] = useState(false), [pending, setPending] = useState(false);
   const [decision, setDecision] = useState<Decision | null>(null);
@@ -21,7 +23,7 @@ export function RoutineReviewPanel({ companyId, initial, checkedAt }: { companyI
   const rows = items.map(item => ({ item, state: getRoutineReviewState(item, new Date(at)) })).filter(row => all || row.state.alerts.length);
   const state = decision ? getRoutineReviewState(decision.item, new Date(at)) : null;
   async function refresh() {
-    const response = await fetch(endpoint, { cache: "no-store" }); const body = await response.json();
+    const response = await runtime.request(endpoint, { cache: "no-store" }); const body = await response.json();
     if (!response.ok) throw new Error(body.message ?? "Não foi possível atualizar a fila.");
     setItems(body.items); setAt(new Date().toISOString());
   }
@@ -48,7 +50,7 @@ export function RoutineReviewPanel({ companyId, initial, checkedAt }: { companyI
     if (!input.success) { setError("Revise o registro de origem, a justificativa e os campos da decisão."); return; }
     setPending(true); let committed = false;
     try {
-      const response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input.data) }); const body = await response.json();
+      const response = await runtime.request(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input.data) }); const body = await response.json();
       if (!response.ok) throw new Error(body.message ?? "Não foi possível salvar a decisão.");
       committed = true; setDecision(null); setNotice("Decisão registrada. O histórico e o prazo original da oportunidade foram preservados."); await refresh();
     } catch (cause) { setError(committed ? "A decisão foi gravada, mas a fila não carregou. Atualize os dados para conferir." : cause instanceof Error ? cause.message : "Não foi possível salvar. Seu texto foi mantido."); }

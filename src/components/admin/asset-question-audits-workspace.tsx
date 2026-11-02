@@ -1,5 +1,7 @@
 "use client";
 
+import { useAppRuntime } from "@/components/app-runtime";
+
 import { ThumbsDown, ThumbsUp } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -53,6 +55,7 @@ export function AssetQuestionAuditsWorkspace({
   embedded?: boolean;
   company: { id: string; name: string };
 }) {
+  const runtime = useAppRuntime();
   const [filter, setFilter] = useState<Filter>("lacunas");
   const gaps = useMemo(() => audits.filter(audit => isGap(audit) && operations.reviews.filter(item => item.auditId === audit.id).sort((a, b) => a.sequence - b.sequence).at(-1)?.status !== "resolvida"), [audits, operations.reviews]);
   const visible = filter === "lacunas" ? gaps : audits;
@@ -84,9 +87,7 @@ export function AssetQuestionAuditsWorkspace({
       <AppTopbar
         breadcrumb={[
           { label: "Empresas", href: "/admin/empresas" },
-          { label: company.name, href: `/admin/empresas/${company.id}` },
-          { label: "Criação dos ativos", href: `/admin/empresas/${company.id}/criacao-dos-ativos` },
-          { label: "Perguntas ao agente" },
+          { label: company.name },
         ]}
         actions={actions}
       />
@@ -107,7 +108,7 @@ export function AssetQuestionAuditsWorkspace({
             <p className="font-medium">Saúde operacional · consulta em {formatDateTime(operations.health.capturedAt)}</p>
             <p className="tabular-nums text-muted-foreground">Últimos 30 dias: {operations.health.queries30Days} consultas, {operations.health.queryErrors30Days} erros. Fila atual do Slack: {operations.health.slackFailures} falhas, {operations.health.slackUncertain} envios incertos e {operations.health.slackOverdue} reservas ou entregas em atraso.</p>
             <p className="text-xs text-muted-foreground">Alertas são atualizados ao abrir ou recarregar a página. Não representam monitoramento contínuo ou aviso externo.</p>
-            <Link href={`/admin/empresas/${company.id}/rotinas`} className="inline-block underline underline-offset-4">Abrir supervisão e recuperação das rotinas</Link>
+            <Link href={runtime.href(`/admin/empresas/${company.id}/rotinas`)} className="inline-block underline underline-offset-4">Abrir supervisão e recuperação das rotinas</Link>
           </section>
           {visible.length === 0 ? (
             <div className="rounded-lg bg-card px-6 py-12 text-center">

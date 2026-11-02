@@ -10,19 +10,23 @@ import {
 import { getAdminDeliveryDraft } from "@/lib/data/admin-delivery-data-source";
 import { getAdminDiagnosticReports } from "@/lib/data/omdx-data-source";
 import { getOrganizationSpecialistAssignment } from "@/lib/data/admin-company-operations-data-source";
+import { requireAdminPageSession } from "@/lib/data/admin-page-data";
 
 /**
  * Contexto compartilhado pelo layout e pelas etapas de `/admin/entregas/[id]`.
  * O `cache` do React deduplica a leitura dentro da mesma requisição.
  */
 export const loadAdminDeliveryContext = cache(async (id: string) => {
+  await requireAdminPageSession();
   const reports = await getAdminDiagnosticReports();
   const report = reports.find((item) => item.diagnostic.id === id);
 
   if (!report) return null;
 
-  const publication = await getAdminDeliveryDraft(id);
-  const specialists = await getSpecialists();
+  const [publication, specialists] = await Promise.all([
+    getAdminDeliveryDraft(id),
+    getSpecialists(),
+  ]);
   const principal = publication ? null : await getOrganizationSpecialistAssignment(report.diagnostic.organizationId);
   const defaultSpecialistId = specialists.find(item => item.id === principal?.specialistId && item.status === "ativo" && !item.archived && !item.deleted)?.id ?? null;
   const mappedDelivery = mapAdminDeliveryFromReport(report);
@@ -47,6 +51,7 @@ export const loadAdminDeliveryContext = cache(async (id: string) => {
     }));
 
   return {
+    specialistDirectory: specialists.filter((item) => !item.deleted),
     analysis: getAdminDeliveryAnalysisFromReport(report),
     company: {
       id: `company_${report.diagnostic.organizationId}`,

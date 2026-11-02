@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
-import { ManagementAssetsWorkspace } from "@/components/admin/management-assets-workspace";
-import { getSpecialists } from "@/lib/data/person-profiles-data-source";
+import { CompanyFilesWorkspace } from "@/components/admin/company-files-workspace";
+import { listCustomerDocuments } from "@/lib/data/customer-documents-data-source";
+import { getAssetNavigationPreferences } from "@/lib/data/asset-navigation-data-source";
+import { getManagementAssetCategoryFolders } from "@/lib/data/management-asset-categories";
 import {
   listAdminManagementAssets,
   getAdminManagementAssetCompany,
 } from "@/lib/data/management-assets-admin-data-source";
-import { managementAssetTemplates } from "@/lib/data/management-asset-templates";
 
 export const metadata: Metadata = {
   title: "Ativos de gestão — Admin Directscal",
@@ -21,26 +22,14 @@ export default async function AdminManagementAssetsPage({ params }: { params: Pr
   const { id } = await params;
   const company = await getAdminManagementAssetCompany(id);
   if (!company) notFound();
-  const assets = await listAdminManagementAssets(company.organizationId);
+  const [assets, preferences, documents] = await Promise.all([
+    listAdminManagementAssets(company.organizationId),
+    getAssetNavigationPreferences(company.organizationId),
+    listCustomerDocuments([company.organizationId]),
+  ]);
+  const folders = getManagementAssetCategoryFolders(assets, preferences.categories);
 
   return (
-    <ManagementAssetsWorkspace
-      assets={assets}
-      company={company}
-      specialists={(await getSpecialists())
-        .filter((specialist) => specialist.status === "ativo")
-        .map((specialist) => ({ id: specialist.id, name: specialist.name }))}
-      templates={managementAssetTemplates.map((template) => ({
-        id: template.id,
-        type: template.type,
-        label: template.label,
-        description: template.description,
-        title: template.title,
-        summary: template.summary,
-        category: template.category,
-        ownerLabel: template.ownerLabel,
-        reviewCycle: template.reviewCycle,
-      }))}
-    />
+    <CompanyFilesWorkspace company={company} assets={assets} documents={documents} folders={folders} showActionPoints />
   );
 }

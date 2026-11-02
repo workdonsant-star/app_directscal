@@ -354,6 +354,27 @@ async function getLatestLeadByOrganization(
   return data;
 }
 
+export async function getSidebarCompanyName(
+  user: AuthUser,
+  organizationId: string | null,
+): Promise<string> {
+  const supabase = maybeCreateSupabaseAdminClient();
+  if (!isUuid(user.id) || !supabase) return user.company;
+
+  const [userLead, organizationLead] = await Promise.all([
+    getLatestLeadByUser(supabase, user.id),
+    organizationId ? getLatestLeadByOrganization(supabase, organizationId) : null,
+  ]);
+  const lead = userLead ?? organizationLead;
+  if (!lead) return user.company;
+
+  const values = jsonToStringRecord(lead.field_values);
+  return formatCompanyDisplayName(valueOrNull(values.nome_fantasia))
+    ?? valueOrNull(values.razao_social)
+    ?? valueOrNull(lead.company_name)
+    ?? user.company;
+}
+
 export async function getProfileSettingsData(
   user: AuthUser,
 ): Promise<ProfileSettingsData> {
@@ -363,22 +384,20 @@ export async function getProfileSettingsData(
     return buildProfileSettingsData({ user });
   }
 
-  let lead = await getLatestLeadByUser(supabase, user.id);
+  const [userLead, primaryOrganizationId, organizationPerson] = await Promise.all([
+    getLatestLeadByUser(supabase, user.id),
+    getPrimaryOrganizationId(supabase, user.id),
+    getOrganizationPersonByUser(supabase, user.id),
+  ]);
   const organizationId =
-    lead?.organization_id ??
-    (await getPrimaryOrganizationId(supabase, user.id));
-  const organization = organizationId
-    ? await getOrganization(supabase, organizationId)
-    : null;
-
-  if (!lead && organizationId) {
-    lead = await getLatestLeadByOrganization(supabase, organizationId);
-  }
-
-  const organizationPerson = await getOrganizationPersonByUser(
-    supabase,
-    user.id,
-  );
+    userLead?.organization_id ?? primaryOrganizationId;
+  const [organization, organizationLead] = await Promise.all([
+    organizationId ? getOrganization(supabase, organizationId) : Promise.resolve(null),
+    !userLead && organizationId
+      ? getLatestLeadByOrganization(supabase, organizationId)
+      : Promise.resolve(null),
+  ]);
+  const lead = userLead ?? organizationLead;
 
   const profile = buildProfileSettingsData({ lead, organization, user });
 

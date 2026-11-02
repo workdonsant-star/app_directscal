@@ -12,6 +12,7 @@ import {
 import { type ChangeEvent, type FormEvent, useRef, useState, useEffect } from "react";
 
 import { AvatarCropDialog } from "@/components/profile/avatar-crop-dialog";
+import { useAppRuntime } from "@/components/app-runtime";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { AppTopbarActionsPortal } from "@/components/app-topbar-actions-portal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -69,6 +70,7 @@ function getInitials(name: string) {
 }
 
 export function AdminSpecialistsWorkspace({ initialSpecialists }: { initialSpecialists: (AdminSpecialist & { archived: boolean })[] }) {
+  const runtime = useAppRuntime();
   const [specialists, setSpecialists] = useState(initialSpecialists);
   const [saving, setSaving] = useState(false);
   const [cropSource, setCropSource] = useState<string | null>(null);
@@ -92,7 +94,7 @@ export function AdminSpecialistsWorkspace({ initialSpecialists }: { initialSpeci
   );
 
   async function reload() {
-    const response = await fetch("/api/admin/specialists", { cache: "no-store" });
+    const response = await runtime.request("/api/admin/specialists", { cache: "no-store" });
     if (!response.ok) throw new Error("Não foi possível carregar os especialistas.");
     const result = await response.json();
     setSpecialists(result.specialists);
@@ -108,7 +110,7 @@ export function AdminSpecialistsWorkspace({ initialSpecialists }: { initialSpeci
     if (saving) return false;
     setSaving(true);
     try {
-      const response = await fetch("/api/admin/specialists", { method: creating ? "POST" : "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      const response = await runtime.request("/api/admin/specialists", { method: creating ? "POST" : "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       if (!response.ok) throw new Error((await response.json()).message);
       await reload();
       setFeedback("Alterações salvas.");
@@ -187,14 +189,9 @@ export function AdminSpecialistsWorkspace({ initialSpecialists }: { initialSpeci
         </Button>
       </AppTopbarActionsPortal>
 
-      <section aria-labelledby="specialists-title" className="space-y-1">
-        <h1 id="specialists-title" className="text-ui-page">
-          Especialistas
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Organize quem pode receber empresas e preparar entregas para os clientes.
-        </p>
-      </section>
+      <h1 id="specialists-title" className="text-ui-page">
+        {showArchived ? "Especialistas arquivados" : "Especialistas"}
+      </h1>
 
       {feedback ? (
         <p
@@ -205,18 +202,8 @@ export function AdminSpecialistsWorkspace({ initialSpecialists }: { initialSpeci
         </p>
       ) : null}
 
-      <section className="flex flex-col gap-4" aria-labelledby="specialist-list-title">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-1">
-            <h2 id="specialist-list-title" className="text-ui-section">
-              {showArchived ? "Especialistas arquivados" : "Equipe de análise"}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {showArchived
-                ? "Profissionais removidos da operação, disponíveis para restauração ou exclusão."
-                : "Profissionais internos e a capacidade operacional atualmente atribuída."}
-            </p>
-          </div>
+      <section className="flex flex-col gap-4" aria-labelledby="specialists-title">
+        <div className="flex justify-end">
           <Button
             type="button"
             size="sm"

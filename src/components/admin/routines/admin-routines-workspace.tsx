@@ -1,10 +1,12 @@
 "use client";
+import { useAppRuntime } from "@/components/app-runtime";
 
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { AppPage } from "@/components/app-page";
 import { AppTopbar } from "@/components/app-topbar";
+import { AdminCompanyTabs } from "@/components/admin/admin-company-tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -19,7 +21,7 @@ import type { RoutineReviewCycle } from "@/lib/data/routine-supervision";
 import type { RoutineContactPolicy } from "@/lib/contracts/routine-contacts";
 import { RoutineChoice, RoutineEditor } from "./routine-editor";
 import type { AdminRoutineWorkspace, AdminRoutineWrite, RoutineAction, RoutineRevision } from "@/lib/contracts/admin-adherence";
-import type { SlackWorkspaceUser } from "@/lib/integrations/slack-format";
+import type { RoutineDirectoryUser } from "@/lib/contracts/routine-directory";
 
 const date = (value: string) => new Date(value).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" });
 const cadenceLabels: Record<string, string> = { diaria: "Diária, de segunda a sexta", semanal: "Semanal", quinzenal: "Quinzenal", mensal: "Mensal", trimestral: "Trimestral", semestral: "Semestral", anual: "Anual" };
@@ -27,6 +29,7 @@ const cadenceLabels: Record<string, string> = { diaria: "Diária, de segunda a s
 type Decision = { id: string; operation: "situacao"; rule: RoutineRevision; expectedEventId: string | null; action: "pausar" | "retomar" } | { id: string; operation: "transferir"; action: RoutineAction; expectedRules: { routineId: string; ruleId: string }[] };
 
 export function AdminRoutinesWorkspace({ initial, initialPolicy = null, initialReview = [], initialBaselines = [], checkedAt }: { initial: AdminRoutineWorkspace; initialPolicy?: RoutineContactPolicy | null; initialReview?: RoutineReviewCycle[]; initialBaselines?: ResultBaseline[]; checkedAt: string }) {
+  const runtime = useAppRuntime();
   const [policy, setPolicy] = useState(initialPolicy);
   const [policyOpen, setPolicyOpen] = useState(false);
   const [policyPending, setPolicyPending] = useState(false);
@@ -37,7 +40,7 @@ export function AdminRoutinesWorkspace({ initial, initialPolicy = null, initialR
   const [editor, setEditor] = useState<{ rule: RoutineRevision | null } | null>(null);
   const [history, setHistory] = useState<RoutineRevision | null>(null);
   const [decision, setDecision] = useState<Decision | null>(null);
-  const [users, setUsers] = useState<SlackWorkspaceUser[]>([]);
+  const [users, setUsers] = useState<RoutineDirectoryUser[]>([]);
   const directoryRequest = useRef(0);
   const [directoryPending, setDirectoryPending] = useState(false);
   const [directoryError, setDirectoryError] = useState<string | null>(null);
@@ -63,14 +66,14 @@ export function AdminRoutinesWorkspace({ initial, initialPolicy = null, initialR
     const request = ++directoryRequest.current;
     setDirectoryPending(true); setDirectoryError(null); setUsers([]);
     try {
-      const response = await fetch(`${endpoint}?directory=1`, { cache: "no-store" }); const result = await response.json();
+      const response = await runtime.request(`${endpoint}?directory=1`, { cache: "no-store" }); const result = await response.json();
       if (!response.ok) throw new Error(result.message ?? "Não foi possível listar as pessoas.");
       if (request === directoryRequest.current) setUsers(result.users);
     } catch (cause) { if (request === directoryRequest.current) setDirectoryError(cause instanceof Error ? cause.message : "Não foi possível listar as pessoas."); }
     finally { if (request === directoryRequest.current) setDirectoryPending(false); }
   }
   async function refresh() {
-    const response = await fetch(endpoint, { cache: "no-store" }); const result = await response.json();
+    const response = await runtime.request(endpoint, { cache: "no-store" }); const result = await response.json();
     if (!response.ok) throw new Error(result.message ?? "Não foi possível atualizar a lista.");
     setData(result.workspace);
     setNeedsRefresh(false);
@@ -86,7 +89,7 @@ export function AdminRoutinesWorkspace({ initial, initialPolicy = null, initialR
     if (mutationsBlocked) return;
     setPending(true); setError(null); setNotice(null); let committed = false;
     try {
-      const response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) });
+      const response = await runtime.request(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) });
       const result = await response.json(); if (!response.ok) throw new Error(result.message ?? "Não foi possível salvar.");
       committed = true; setNeedsRefresh(true); setEditor(null); setDecision(null); setNotice(input.operation === "salvar" ? "Acordo da rotina salvo." : input.operation === "transferir" ? "Responsável e acordos transferidos. O histórico anterior foi mantido." : input.action === "pausar" ? "Rotina pausada. Os ciclos anteriores foram mantidos." : "Rotina retomada.");
       await refresh();
@@ -107,17 +110,18 @@ export function AdminRoutinesWorkspace({ initial, initialPolicy = null, initialR
   ].sort((a, b) => b.at.localeCompare(a.at)) : [];
 
   return <>
-    <AppTopbar breadcrumb={[{ label: "Empresas", href: "/admin/empresas" }, { label: data.companyName, href: `/admin/empresas/${data.companyId}` }, { label: "Rotinas" }]} actions={<Button onClick={() => openEditor(null)} disabled={mutationsBlocked || missingRequirements.length > 0}><Plus aria-hidden="true" />Nova rotina</Button>} />
+    <AppTopbar breadcrumb={[{ label: "Empresas", href: "/admin/empresas" }, { label: data.companyName }]} actions={<Button onClick={() => openEditor(null)} disabled={mutationsBlocked || missingRequirements.length > 0}><Plus aria-hidden="true" />Nova rotina</Button>} />
     <AppPage className="gap-6">
-      <section className="space-y-2"><h1 className="text-ui-page">Rotinas de {data.companyName}</h1><p className="max-w-3xl text-sm text-muted-foreground">Defina o acordo de execução, vincule sua origem e acompanhe responsáveis e revisões.</p>
+      <section className="space-y-2"><h1 className="text-ui-page">{data.companyName}</h1><p className="max-w-3xl text-sm text-muted-foreground">Acordos de execução, responsáveis e revisões.</p>
         <p className="text-sm text-muted-foreground tabular-nums">{rules.length} rotinas · {rules.length - paused} ativas · {paused} pausadas</p></section>
+      <AdminCompanyTabs companyId={data.companyId} active="routines" hasOrganization />
       {missingRequirements.length > 0 ? <p className="text-sm text-muted-foreground">Para criar uma rotina, esta empresa precisa de {missingRequirements.join(", ")}.</p> : null}
       {needsRefresh ? <p role="status" className="text-sm text-muted-foreground">Atualize os dados para liberar novas alterações nas rotinas.</p> : null}
       {notice ? <p role="status" className="text-sm">{notice}</p> : null}
       {error && !editor && !decision ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
       <div className="flex flex-wrap items-center gap-3"><Button variant="outline" onClick={() => setPolicyOpen(true)}>Configurar acompanhamento</Button><span className="text-sm text-muted-foreground">{policy?.enabled ? "Contatos autorizados" : "Contatos desativados"}</span></div>
       <div className="flex flex-wrap items-center justify-between gap-3"><Input aria-label="Buscar rotinas" placeholder="Buscar rotina ou setor" value={search} onChange={event => setSearch(event.target.value)} className="max-w-sm" /><Button variant="outline" disabled={pending || refreshing} onClick={() => void reload()}>{refreshing ? "Atualizando…" : "Atualizar dados"}</Button></div>
-      {!rules.length ? <section className="space-y-2 py-8"><h2 className="text-ui-section">Nenhuma rotina configurada</h2><p className="max-w-2xl text-sm text-muted-foreground">Crie um acordo a partir de um action point publicado. É necessário ter um ativo publicado e um setor ativo nesta empresa.</p><Button nativeButton={false} variant="link" render={<Link href={`/admin/empresas/${data.companyId}`} />}>Voltar à operação da empresa</Button></section> : <Table variant="operational"><TableHeader><TableRow><TableHead>Rotina</TableHead><TableHead>Responsável</TableHead><TableHead>Setor</TableHead><TableHead>Regra</TableHead><TableHead>Situação</TableHead><TableHead><span className="sr-only">Ações</span></TableHead></TableRow></TableHeader><TableBody>
+      {!rules.length ? <section className="space-y-2 py-8"><h2 className="text-ui-section">Nenhuma rotina configurada</h2><p className="max-w-2xl text-sm text-muted-foreground">Crie um acordo a partir de um action point publicado. É necessário ter um ativo publicado e um setor ativo nesta empresa.</p><Button nativeButton={false} variant="link" render={<Link href={runtime.href(`/admin/empresas/${data.companyId}/operacao`)} />}>Voltar à operação da empresa</Button></section> : <Table variant="operational"><TableHeader><TableRow><TableHead>Rotina</TableHead><TableHead>Responsável</TableHead><TableHead>Setor</TableHead><TableHead>Regra</TableHead><TableHead>Situação</TableHead><TableHead><span className="sr-only">Ações</span></TableHead></TableRow></TableHeader><TableBody>
         {rows.map(rule => { const action = actionFor(rule); const event = currentEvent(rule.routineId); const isPaused = event?.action === "pausar"; return <TableRow key={rule.routineId}>
           <TableCell><span className="block font-medium">{rule.title}</span><span className="block text-xs text-muted-foreground">{action?.diagnosticName ?? "Diagnóstico de origem"} · Revisão {rule.revision}</span></TableCell>
           <TableCell>{action?.assignment?.name ?? "Não disponível"}</TableCell><TableCell>{data.sectors.find(sector => sector.id === rule.sectorId)?.name ?? "Setor inativo"}</TableCell><TableCell>{rule.schedule.kind === "periodica" ? cadenceLabels[rule.schedule.cadence] : `Por evento: ${rule.schedule.eventKey}`}</TableCell><TableCell>{!action ? "Origem indisponível" : isPaused ? "Pausada" : "Ativa"}</TableCell>

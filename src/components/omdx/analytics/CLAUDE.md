@@ -23,6 +23,10 @@ Ordem visual: veredito; Dimensões gerenciais e Percepção por camada lado a la
 
 `AnalyticsOverview` monta a página a partir de `buildAnalyticsOverview()` (`src/lib/data/omdx-analytics-overview.ts`). Os componentes só aplicam apresentação.
 
+O admin reutiliza `AnalyticsOverview` em `/admin/empresas/[id]` com dados da organização da URL. `showActionPointsLink={false}` evita o link para a rota de cliente, inacessível ao superadmin.
+
+Na visão administrativa da empresa, `concise` mantém gráficos, tabelas, legendas e estados vazios, mas omite explicações introdutórias redundantes. O cliente e os exemplos usam a apresentação completa por padrão.
+
 ## Convenções
 
 - Descrições dos gráficos em `AnalyticsCard` usam `text-balance` (`text-wrap: balance`), alinhadas à esquerda, para distribuir o texto de modo equilibrado entre as linhas, como o Balance do Figma. Não limitar a largura a 60%; essa tentativa foi substituída após esclarecimento do usuário. Títulos e área de plotagem preservam sua largura.
@@ -49,3 +53,5 @@ Ordem visual: veredito; Dimensões gerenciais e Percepção por camada lado a la
 Desde 19/10/2026, o Analytics operacional não usa impacto ilustrativo: prioridades/notas reais permanecem e contagens/aderência/progresso sem evidência mostram Sem base. Apenas AnalyticsExampleDashboard passa illustrativeImpact. A separação de identidade app/Slack segue pendente em A09.
 
 `/demo` também opta explicitamente pelo cenário ilustrativo. `AnalyticsOverview.actionPointsHref` permite manter a navegação dentro da demo; o padrão operacional continua `/action-points`.
+
+`AnalyticsOverview` aceita `hideHeader` para omitir título e filtro quando a página já mostra o filtro em outro lugar (na demo, na linha das abas da empresa). O padrão continua exibindo o cabeçalho.

@@ -22,7 +22,7 @@ function assetsLabel(count: number) {
   return `${count} ${count === 1 ? "ativo" : "ativos"}`;
 }
 
-export function AnalyticsLeverTable({ levers, illustrative = false, actionPointsHref = "/action-points" }: { levers: AnalyticsLever[]; illustrative?: boolean; actionPointsHref?: string }) {
+export function AnalyticsLeverTable({ levers, illustrative = false, actionPointsHref = "/action-points", showActionPointsLink = true, concise = false }: { levers: AnalyticsLever[]; illustrative?: boolean; actionPointsHref?: string; showActionPointsLink?: boolean; concise?: boolean }) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -31,13 +31,13 @@ export function AnalyticsLeverTable({ levers, illustrative = false, actionPoints
             <h3 className="text-ui-title text-foreground">Dimensões para aprofundar</h3>
             {illustrative && <IllustrativeTag />}
           </div>
-          <p className="text-xs text-muted-foreground">
+          {!concise ? <p className="text-xs text-muted-foreground">
             {illustrative ? "Notas vêm da pesquisa. Os dados de execução são ilustrativos." : "As menores notas e diferenças de percepção orientam a análise. A prioridade de intervenção é confirmada pelo consultor."}
-          </p>
+          </p> : null}
         </div>
-        <Button nativeButton={false} render={<Link href={actionPointsHref} />} size="sm" variant="outline">
+        {showActionPointsLink ? <Button nativeButton={false} render={<Link href={actionPointsHref} />} size="sm" variant="outline">
           Abrir action points
-        </Button>
+        </Button> : null}
       </div>
 
       {levers.length === 0 ? (

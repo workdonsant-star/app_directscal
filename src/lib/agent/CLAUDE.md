@@ -17,9 +17,12 @@ Pergunta → embedding da pergunta (opcional) → busca híbrida filtrada pela o
 
 ## Arquivos
 
-- `config.ts` lê `ASSET_AGENT_PROVIDER`, `ASSET_AGENT_MODEL`, `ASSET_EMBEDDING_PROVIDER`, `ASSET_EMBEDDING_MODEL` e `OLLAMA_BASE_URL`. Sem configuração, o modo é `extractive` (trechos citados, sem IA) e a busca é só textual.
+- `follow-up/classification.ts` aplica a classificação determinística por critério a fatos extraídos, entrega e prazo. É um domínio novo para Action Points e ainda não está ligado ao agente de consulta ou aos ciclos de produção.
+
+- `config.ts` lê `ASSET_AGENT_PROVIDER`, `ASSET_AGENT_MODEL`, `ASSET_EMBEDDING_PROVIDER`, `ASSET_EMBEDDING_MODEL` e `OLLAMA_BASE_URL`. O provedor selecionado no painel global prevalece para o agente de consulta; sem seleção, essas variáveis continuam valendo. Sem configuração, o modo é `extractive` (trechos citados, sem IA) e a busca é só textual.
 - `answer-policy.ts` é puro e testado: limiar de evidência, prompt do sistema, contrato JSON da resposta, mapeamento de rótulos para citações e modo extrativo.
-- `answer-providers.ts` implementa Anthropic (SDK oficial, structured outputs, `effort: "low"` e `fallbacks: "default"` nos modelos que aceitam), Gemini (REST com `responseJsonSchema`, `thinkingLevel: "low"` nos modelos Gemini 3 e uma nova tentativa em 429/503; o padrão é `gemini-3.5-flash-lite`, porque o `gemini-2.5-flash` não aceita mais contas novas) e Ollama (`/api/chat` com `format`).
+- `answer-providers.ts` implementa Anthropic (SDK oficial, structured outputs, `effort: "low"` e `fallbacks: "default"` nos modelos que aceitam), OpenAI (Responses API com JSON Schema e `store: false`), Gemini (REST com `responseJsonSchema`, `thinkingLevel: "low"` nos modelos Gemini 3 e uma nova tentativa em 429/503; o padrão é `gemini-3.5-flash-lite`) e Ollama (`/api/chat` com `format`).
+- `agent-provider-data-source.ts` cifra chaves globais com AES-256-GCM derivado de `AUTH_SECRET`, lê configuração privada e valida chave/modelo no endpoint de metadados do provedor. Nunca devolver o segredo ao navegador; girar `AUTH_SECRET` exige cadastrar novamente as chaves salvas.
 - `embeddings.ts` gera vetores de 768 dimensões via Gemini (`outputDimensionality`) ou Ollama (`nomic-embed-text`, com prefixos de tarefa). O vetor é gravado com a chave `provedor:modelo`; a busca só compara vetores do mesmo modelo.
 - `asset-question-service.ts` expõe `answerAssetQuestion()` e `recordAssetAnswerFeedback()`.
 
@@ -32,7 +35,7 @@ Pergunta → embedding da pergunta (opcional) → busca híbrida filtrada pela o
 - Trocar de provedor é configuração, não código. Novos provedores entram em `answer-providers.ts` com o mesmo contrato `GroundedAnswer`.
 - Planos gratuitos (Gemini) podem usar os dados enviados para melhorar o produto do provedor: use apenas conteúdo fictício nesses testes. Dados reais de cliente exigem plano pago com cláusula de não uso para treino.
 - Mudou prompt, limiar ou provedor: rode `npm run eval:agent` (ver `tests/eval/`) e compare com a meta de 85%.
-- `repeat-questions.ts` conta quantas vezes a mesma pessoa (`external_user_id`) já fez a mesma pergunta nos últimos 30 dias, a partir de `asset_question_audits`. Texto normalizado igual sempre conta; com `ASSET_AGENT_PROVIDER=gemini`, o Gemini julga o sentido (timeout de 8 s, cai no texto se falhar). Embeddings não são usados aqui porque não separam assuntos vizinhos.
+- `repeat-questions.ts` conta quantas vezes a mesma pessoa (`external_user_id`) já fez a mesma pergunta nos últimos 30 dias, a partir de `asset_question_audits`. Texto normalizado igual sempre conta; quando o motor ativo é Gemini, ele julga o sentido (timeout de 8 s, cai no texto se falhar). Embeddings não são usados aqui porque não separam assuntos vizinhos.
 
 
 A17: needsQuestionContext recusa perguntas genéricas sem processo/atividade e sem histórico antes de buscar fontes ou chamar o modelo. Pergunta específica e continuação com histórico seguem o fluxo normal. Prompt proíbe inferir responsabilidade por ato específico a partir de coordenação geral. Avaliação inicial interrompida aos vinte minutos, com falhas de provedor/contexto; nova rodada v2 registra cada resposta, usa duas consultas simultâneas e permite 45 minutos. Mudança de expectativa amb-04 é correção explícita do conjunto: SOP não atribui kickoff/ata, portanto deve recusar. Não comparar percentuais entre conjuntos sem essa ressalva.

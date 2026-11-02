@@ -23,9 +23,7 @@ describe.runIf(process.env.ASSET_EVAL_ISOLATED === "true")("avaliação isolada 
    check((await client.from("organizations").insert([{ id: organizationId, name: "Fixture avaliação do agente" }, { id: otherId, name: "Fixture isolamento do agente" }])).error);
    check((await client.from("organization_members").insert({ organization_id: organizationId, user_id: actorId, role: "superadmin" })).error);
    for (const template of managementAssetTemplates.filter(item => item.type === "sop" && item.title)) {
-    const id = await createManagementAsset(actorId, { organizationId, type: "sop", title: template.title!, summary: template.summary!, category: template.category ?? "Operação", ownerLabel: template.ownerLabel ?? "Fixture", reviewCycle: template.reviewCycle ?? "Semestral", specialistId: null, templateId: template.id });
-    await transitionManagementAsset(actorId, id, "enviar_para_revisao");
-    await transitionManagementAsset(actorId, id, "aprovar_revisao");
+    const id = await createManagementAsset(actorId, { organizationId, type: "sop", title: template.title!, summary: template.summary!, category: template.category ?? "Operação", ownerLabel: template.ownerLabel ?? "Fixture", specialistId: null, templateId: template.id });
     const publication = await transitionManagementAsset(actorId, id, "publicar");
     console.log(`Fixture publicada: ${template.title} · ${publication.notice}`);
    }

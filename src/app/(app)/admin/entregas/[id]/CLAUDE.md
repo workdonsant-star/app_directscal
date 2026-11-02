@@ -6,12 +6,14 @@ Ambiente interno para interpretar dados consolidados, escrever o relatório, sel
 
 - A entrega reúne relatório e action points em um único ciclo de publicação.
 - Scores e gráficos são somente leitura; o especialista edita apenas a camada analítica.
-- Cada etapa é uma rota (`dados`, `relatorio`, `action-points`, `ativos`, `publicar`) dentro do `layout.tsx`, que mantém o rascunho e a navegação lateral. O PDF fica em `relatorio/pdf`.
-- A etapa Dados reutiliza a visão analítica do overview do cliente e acrescenta aprofundamento selecionável por dimensão, com critérios, camadas, gap e leitura editável do especialista.
-- A etapa Dados usa a apresentação destilada do dashboard: contexto e atribuição ficam no cabeçalho e na lateral, KPIs repetidos são omitidos e os gráficos recebem títulos objetivos. A análise por dimensão usa navegação horizontal e conteúdo sem card externo.
-- O cabeçalho permite alternar entre diagnósticos da mesma empresa e baixar o PDF do relatório selecionado por uma rota exclusiva do superadmin.
+- `/dados` é um redirect legado para `/relatorio`. O layout conserva o rascunho; o relatório não usa a navegação lateral nem o cabeçalho operacional.
+- O relatório reúne gráficos calculados da coleta e campos vazios para a análise do especialista. O único controle da página é Salvar rascunho, após os campos. Publicação, seletor de diagnóstico, download, checklist e prévia ficam fora dessa superfície.
+- Action points, ativos e publicação mantêm rotas próprias. O PDF fica em `relatorio/pdf`.
 - Action points do catálogo são sugestões. Somente itens selecionados entram na publicação.
 - Relatório usa seções estruturadas para manter consistência entre especialistas e permitir exportação futura.
 - Dados, scores e gráficos vêm do diagnóstico real consolidado no Supabase.
 - Edição, leituras por dimensão, seleção de action points, atribuição e publicação são persistidas em `public.admin_deliveries`.
 - Somente a ação explícita de publicação libera a listagem, leitura e download para os membros autorizados da empresa.
+- Em Ativos, `Novo ativo` pede categoria e tipo; a escolha do tipo cria a versão inicial pelo modelo padrão e abre o editor, também nesta rota de entrega.
+
+O layout injeta SpecialistsProvider com o diretório real já lido no contexto da entrega. Provider do rascunho e shell compartilham os mesmos especialistas, sem duas consultas posteriores à montagem.

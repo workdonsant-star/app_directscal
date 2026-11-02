@@ -22,7 +22,7 @@ Esta pasta concentra o fluxo de autenticação do app. Google OAuth via Auth.js/
 - O cookie mockado `directscal_session` guarda apenas um identificador mínimo e sustenta o fallback demo por e-mail/senha fora de produção.
 - `directscal_session` só pode ser aceito quando `AUTH_ENABLE_DEV_PASSWORD_LOGIN=true`; não use esse cookie como fallback silencioso para sessão real.
 - Senhas mockadas existem apenas para o acesso de demonstração e não representam segurança real.
-- Usuários com role `superadmin` devem ir para `/admin/operacao` após autenticação.
+- Usuários com role `superadmin` devem ir para `/admin/empresas` após autenticação.
 - `superadmin` é uma identidade exclusivamente administrativa: não recebe `supabaseAccessToken` de cliente, não acessa organizações/diagnósticos pela camada Maturidade e deve permanecer em `/admin/*` + `/api/admin/*`.
 - Para diagnósticos, `cliente` vê e gerencia todos os registros da empresa; `admin` vê os que criou e aqueles em que foi atribuído como liderança. O criador pode gerenciar, mas somente `cliente` vê o link de Fundador.
 - A decisão pura de acesso fica em `diagnostic-access.ts`; verificações server-side que consultam o banco ficam em `authorization.ts`.
@@ -30,6 +30,9 @@ Esta pasta concentra o fluxo de autenticação do app. Google OAuth via Auth.js/
 - `supabase-auth.ts` é a ponte entre Auth.js e membership real no Supabase; preserve essa fronteira ao ajustar roles.
 
 - getCurrentAuthSession hidrata nome e avatar a partir do banco em cada request. account_profiles prevalece sobre o JWT e sobre futuras atualizações Google. Autorização permanece na sessão, nunca no perfil editável.
+
+- Na revalidação do JWT, versão da sessão e membership atual são consultados em paralelo por serem independentes. A sessão só é aceita após ambas concluírem e a versão coincidir; não persistir cache entre requests para esses dados.
+- Ao resolver um usuário por ID, leia o registro de identidade e os memberships em paralelo; a organização continua dependente da seleção do papel atual. O caminho de busca apenas por e-mail conserva a ordem necessária para descobrir o ID.
 
 Sessões temporárias de aquisição e convite são promovidas pelo callback JWT para sessão regular assim que existe membership no banco. A promoção limpa ambos os flags antes de acessar o onboarding, evitando o ciclo `/omdx` → `/onboarding` → `/entrar` → `/omdx`; sessões ainda sem membership mantêm o intent temporário.
 

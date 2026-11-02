@@ -6,6 +6,10 @@ Antes de editar, releia o **AGENTS.md**, `src/components/CLAUDE.md` e `src/lib/C
 
 Esta pasta implementa as listagens de SOPs, Playbooks, Governança e Matriz RACI publicadas para a empresa do cliente, a leitura individual dos ativos textuais e o editor de texto usado pela operação Directscal.
 
+As páginas de categoria também listam arquivos PDF/DOCX enviados pelo superadmin para a mesma pasta. O link baixa pelo servidor após conferir o vínculo à empresa; pastas vazias continuam visíveis.
+
+`CustomerDocumentDownloadLink` usa o runtime compartilhado para baixar arquivos privados. No produto, a requisição passa pela rota autenticada; na demo, o runtime responde com os bytes locais do IndexedDB.
+
 ## Convenções locais
 
 - As listagens por categoria e os acessos legados por tipo compartilham `ManagementAssetsLibrary` e seguem o frame Figma `217:2` como padrão visual: filtros na topbar, cabeçalho livre no fluxo da página e grid responsivo de cards.
@@ -22,7 +26,7 @@ Esta pasta implementa as listagens de SOPs, Playbooks, Governança e Matriz RACI
 - Na leitura e nas prévias de SOPs, parágrafos iniciados por `Informação:` (com ou sem o símbolo introdutório) usam fundo azul sutil, enquanto `Atenção:` usa fundo amarelo sutil. Ambos têm 20px de respiro e raio de 10px; outros tipos de ativo preservam a renderização textual padrão.
 - `RichTextEditor` (client) usa Tiptap com vocabulário restrito: Título de seção (H2), Subtítulo (H3), parágrafo, negrito, itálico, link (http, https, mailto), listas, destaque e tabela simples sem mescla visual. Listas, destaques e células aceitam só parágrafos e listas; conteúdo colado fora disso é descartado. Não adicione marcas de cor, tamanho ou alinhamento.
 - O JSON do editor é validado por `richTextDocumentSchema` no servidor. `tests/unit/fixtures/tiptap-editor-output.json` guarda uma saída real do editor; atualize o fixture se mudar extensões.
-- O detalhe do ativo segue o frame `191:3421`: índice lateral de 220px, 40px de distância até o artigo de 768px, cabeçalho com categoria, metadados em cinco colunas no desktop amplo (líder responsável, versão, revisão, atualizado em e editado por), três em larguras intermediárias e duas no mobile e seções com divisórias sutis.
+- O detalhe do ativo segue o frame `191:3421`: índice lateral de 220px, 40px de distância até o artigo de 768px, cabeçalho com categoria, metadados de líder responsável, versão, atualização e editor, com duas colunas no mobile e seções com divisórias sutis.
 - Use apenas tokens do sistema e primitives existentes; não introduza cores próprias para categorias.
 - O estado vazio inicial é diferente do estado sem resultados causado pelos filtros.
 
@@ -59,6 +63,7 @@ Os cards das bibliotecas preservam `bg-sidebar` no claro e usam `dark:bg-card` n
 - Dono cliente com sessão definitiva pode selecionar ativos individualmente ou todos os resultados filtrados somente na Tabela. Quadro não apresenta checkboxes nem ações em lote. Seleção e campos de alteração são limpos ao alternar modos ou mudar busca/categoria. Barra contextual acima da tabela, no fluxo da página para não cobrir linhas após mover o seletor à topbar, oferece Manter tipo/categoria e Aplicar alterações. Categorias vêm de todas as pastas publicadas da sidebar, incluindo padrões vazios, nunca de lista livre. PATCH /api/management-assets/bulk persiste atomicamente; falha preserva seleção. Sucesso atualiza shell/lista e abre a pasta de destino quando há mudança de categoria, evitando página inexistente ao esvaziar uma categoria adicional. Sem edição para admin/superadmin/intents temporários. Limite de 1.000 ativos por lote.
 
 - Checkboxes aparecem no hover da linha/cabeçalho ou no foco por teclado; os marcados e o estado parcial permanecem visíveis. Em dispositivos de ponteiro coarse ficam visíveis para permitir toque. Selecionar todos fica apenas no cabeçalho da tabela, sem controle duplicado. Erros e prévia da categoria ficam dentro da barra flutuante.
+- `AssetCheckbox` concentra esse comportamento de seleção e é compartilhado com a tabela administrativa de ativos.
 
 - Seletores ocupam uma margem visual de 32px à esquerda, fora da superfície da tabela: sem fundo de cabeçalho nem divisórias nessa coluna. Ativo começa no alinhamento normal da página, com cantos esquerdos do cabeçalho preservados. A margem acompanha a altura real de cada linha e fica dentro do mesmo scroll horizontal.
 

@@ -174,15 +174,15 @@ Rotas atuais:
 - `/ativos-de-gestao/matriz-raci` → biblioteca de matrizes RACI.
 - `/assistente` → WorkFlow: conversa com o agente de consulta dos ativos publicados, com fontes citadas e avaliação útil/não útil.
 - `/sops` → redirect legado para `/omdx`.
-- `/admin` → redireciona para `/admin/operacao`.
+- `/admin` → redireciona para `/admin/empresas`.
 - `/admin/operacao` → central interna com fila de entregas.
 - `/admin/especialistas` → cadastro persistido de especialistas Directscal.
-- `/admin/ativos` → ativos de gestão por empresa; `/admin/ativos/[id]` é o workspace editorial (editor, revisão, publicação, versões) e `/admin/ativos/perguntas` lista lacunas do agente.
+- `/admin/ativos` → ativos de gestão por empresa; `/admin/ativos/[id]` é o workspace editorial (editor, publicação direta do rascunho e versões) e `/admin/ativos/perguntas` lista lacunas do agente.
 - `/admin/modulos` → rota legada do catálogo de módulos, fora da navegação principal.
 - `/admin/campanhas` → campanhas, links e campos de aquisição.
 - `/admin/leads` → leads capturados por links de aquisição.
-- `/admin/empresas` → empresas derivadas dos leads.
-- `/admin/empresas/[id]` → detalhe operacional, especialista e entregas da empresa.
+- `/admin/empresas` → empresas com conta criada no sistema; leads sem organização não aparecem na lista.
+- `/admin/empresas/[id]` → visão geral da empresa, com acesso aos ativos de gestão exclusivos dela.
 - `/admin/entregas/[id]` → workspace frontend-only de análise, relatório, action points e publicação.
 - Contas `superadmin` ficam restritas a `/admin/*` e `/api/admin/*`; não acessam páginas, downloads, APIs ou dados RLS da aplicação do cliente.
 - `/a/[slug]` → início público de aquisição por campanha.

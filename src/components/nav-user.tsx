@@ -8,11 +8,14 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { useAppRuntime } from "@/components/app-runtime";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -22,7 +25,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { ChevronsUpDownIcon, LogOutIcon, Moon, Sun, UserRound } from "lucide-react";
+import { ChevronsUpDownIcon, LogOutIcon, Monitor, Moon, Sun, UserRound } from "lucide-react";
 
 function getInitials(name: string) {
   return name
@@ -54,21 +57,17 @@ export function NavUser({
     return () => { window.removeEventListener("focus", refresh); window.clearInterval(timer); };
   }, [router]);
   const { isMobile } = useSidebar();
-  const { resolvedTheme, setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const mounted = useSyncExternalStore(
     () => () => {},
     () => true,
     () => false,
   );
-  const isDark = mounted && resolvedTheme === "dark";
+  const selectedTheme = mounted ? theme : undefined;
   const displayName = user.name;
   const displayAvatar = user.avatar;
   const displayInitials = getInitials(displayName) || user.initials;
-
-  function handleThemeToggle() {
-    setTheme(isDark ? "light" : "dark");
-  }
 
   async function handleSignOut() {
     setIsSigningOut(true);
@@ -126,21 +125,14 @@ export function NavUser({
                 <DropdownMenuSeparator />
               </>
             ) : null}
-            <div className="flex justify-start px-1 py-1">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                aria-label={isDark ? "Desativar dark mode" : "Ativar dark mode"}
-                onClick={handleThemeToggle}
-              >
-                {isDark ? (
-                  <Moon className="size-4" />
-                ) : (
-                  <Sun className="size-4" />
-                )}
-              </Button>
-            </div>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Tema</DropdownMenuLabel>
+              <DropdownMenuRadioGroup value={selectedTheme} onValueChange={setTheme}>
+                <DropdownMenuRadioItem value="system"><Monitor aria-hidden="true" />Sistema</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="light"><Sun aria-hidden="true" />Claro</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="dark"><Moon aria-hidden="true" />Escuro</DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               disabled={isSigningOut}

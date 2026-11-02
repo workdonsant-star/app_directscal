@@ -1,4 +1,4 @@
-import { Download, RefreshCcw } from "lucide-react";
+import { Download } from "lucide-react";
 
 import { DocumentTableOfContents } from "@/components/document-table-of-contents";
 import { RichTextView } from "@/components/management-assets/rich-text-view";
@@ -75,7 +75,7 @@ export function ManagementAssetDocumentView({
           </p>
         </header>
 
-        <dl className="grid grid-cols-2 gap-4 border-b py-5 sm:grid-cols-3 xl:grid-cols-[1fr_0.4fr_0.9fr_1.2fr_1fr]">
+        <dl className="grid grid-cols-2 gap-4 border-b py-5 sm:grid-cols-4">
           <div className="min-w-0">
             <dt className="font-label text-doc-label text-muted-foreground">
               Líder responsável
@@ -89,13 +89,6 @@ export function ManagementAssetDocumentView({
             <dd className="mt-2 text-sm font-medium tabular-nums">
               {asset.versionNumber}
             </dd>
-          </div>
-          <div className="min-w-0">
-            <dt className="flex items-center gap-2 font-label text-doc-label text-muted-foreground">
-              <RefreshCcw aria-hidden="true" className="size-3.5" />
-              Revisão
-            </dt>
-            <dd className="mt-2 text-sm font-medium">{asset.reviewCycle}</dd>
           </div>
           <div className="min-w-0">
             <dt className="font-label text-doc-label text-muted-foreground">

@@ -8,6 +8,8 @@ Don confirmou que os Action Points são iniciativas e atividades que a lideranç
 
 ### Mecanismo proposto para implementação
 
+Arquitetura proposta para este mecanismo (chamadas de IA, prompt em camadas, estado por critério e encaixe no código atual): `docs/arquitetura-agente-action-points.md`.
+
 1. Preparar o contexto do Action Point com responsável, estágio (implantação ou prática recorrente), ativo publicado e versão, objetivo, critérios observáveis, evidência esperada e indicador. Toda exigência extraída deve apontar ao trecho de origem. Contexto ausente ou contraditório vira pendência da operação, sem inventar critério.
 2. Produzir uma prévia do acompanhamento para revisão da operação. A extração do modelo é proposta; não muda automaticamente frequência, prazo, responsabilidade ou regra de cálculo já acordados. A primeira versão pode usar o único ativo vinculado pelo contrato atual; múltiplos ativos exigem evolução explícita do vínculo.
 3. Na janela acordada, formular uma pergunta curta sobre o período ou marco pertinente, considerando o último relato confirmado e bloqueios conhecidos. A conversa deve perguntar apenas o que falta, sem repetir informação já respondida.

@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
 
 import { ManagementAssetsWorkspace } from "@/components/admin/management-assets-workspace";
+import { getAssetNavigationPreferences } from "@/lib/data/asset-navigation-data-source";
+import { getManagementAssetCategoryFolders } from "@/lib/data/management-asset-categories";
 import { loadAdminDeliveryContext } from "@/lib/data/admin-delivery-workspace-data";
 import { listAdminManagementAssets } from "@/lib/data/management-assets-admin-data-source";
-import { managementAssetTemplates } from "@/lib/data/management-asset-templates";
 
 export default async function AdminDeliveryAssetsPage({
   params,
@@ -15,14 +16,17 @@ export default async function AdminDeliveryAssetsPage({
 
   if (!context) notFound();
 
-  const assets = await listAdminManagementAssets(context.company.organizationId);
+  const [assets, preferences] = await Promise.all([
+    listAdminManagementAssets(context.company.organizationId),
+    getAssetNavigationPreferences(context.company.organizationId),
+  ]);
 
   return (
     <ManagementAssetsWorkspace
       assets={assets}
       company={context.company}
       specialists={context.specialists}
-      templates={managementAssetTemplates}
+      categories={getManagementAssetCategoryFolders(assets, preferences.categories).map((category) => category.title).filter((title) => title !== "Sem categoria")}
       embedded
       deliveryId={id}
     />

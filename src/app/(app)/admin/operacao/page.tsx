@@ -5,7 +5,9 @@ import { AppPage } from "@/components/app-page";
 import { AppTopbar } from "@/components/app-topbar";
 import { mapAdminDeliveryFromReport } from "@/lib/data/admin-operations-data-source";
 import { getOrganizationOperations } from "@/lib/data/admin-company-operations-data-source";
-import { getCurrentAuthSession } from "@/lib/auth/session";
+import { requireAdminPageSession } from "@/lib/data/admin-page-data";
+import { getSpecialists } from "@/lib/data/person-profiles-data-source";
+import { SpecialistsProvider } from "@/components/admin/use-specialists";
 import { getAdminDiagnosticReports } from "@/lib/data/omdx-data-source";
 
 export const metadata: Metadata = {
@@ -13,8 +15,11 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminOperationsPage() {
-  const reports = await getAdminDiagnosticReports();
-  const session = await getCurrentAuthSession();
+  const session = await requireAdminPageSession();
+  const [reports, specialists] = await Promise.all([
+    getAdminDiagnosticReports(),
+    getSpecialists(),
+  ]);
   const organizationIds = [...new Set(reports.map(report => report.diagnostic.organizationId))];
   const operations = session?.user.role === "superadmin"
     ? await Promise.all(organizationIds.map(id => getOrganizationOperations(id, session.user.id))) : [];
@@ -36,7 +41,9 @@ export default async function AdminOperationsPage() {
     <>
       <AppTopbar />
       <AppPage>
-        <AdminOperationsWorkspace deliveries={deliveries} />
+        <SpecialistsProvider initialSpecialists={specialists.filter((item) => !item.deleted)}>
+          <AdminOperationsWorkspace deliveries={deliveries} />
+        </SpecialistsProvider>
       </AppPage>
     </>
   );

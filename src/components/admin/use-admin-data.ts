@@ -1,47 +1,50 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAppRuntime } from "@/components/app-runtime";
 
 import {
   adminUpdatedEventName,
-  getAdminDataServerSnapshot,
   type AdminDataSnapshot,
-} from "@/lib/data/admin-data-source";
+} from "@/lib/data/admin-snapshot";
 
-export function useAdminData() {
-  return useAdminDataSnapshot();
-}
-
-export function useAdminDataSnapshot(initialSnapshot?: AdminDataSnapshot) {
-  const [snapshot, setSnapshot] = useState<AdminDataSnapshot>(
-    () => initialSnapshot ?? getAdminDataServerSnapshot(),
-  );
+export function useAdminDataSnapshot(initialSnapshot: AdminDataSnapshot) {
+  const runtime = useAppRuntime();
+  const [state, setState] = useState({ source: initialSnapshot, snapshot: initialSnapshot });
+  if (state.source !== initialSnapshot) {
+    setState({ source: initialSnapshot, snapshot: initialSnapshot });
+  }
 
   useEffect(() => {
     let active = true;
+    let latestRequest = 0;
 
     async function loadSnapshot() {
-      const response = await fetch("/api/admin/acquisition", {
-        cache: "no-store",
-      });
+      const request = ++latestRequest;
+      try {
+        const response = await runtime.request("/api/admin/acquisition", {
+          cache: "no-store",
+        });
 
-      if (!response.ok) return;
+        if (!response.ok) return;
 
-      const data = (await response.json()) as AdminDataSnapshot;
+        const data = (await response.json()) as AdminDataSnapshot;
 
-      if (active) setSnapshot(data);
+        if (active && request === latestRequest) {
+          setState({ source: initialSnapshot, snapshot: data });
+        }
+      } catch {
+        // Conserva o último snapshot confirmado se a atualização falhar.
+      }
     }
 
-    if (!initialSnapshot) {
-      loadSnapshot();
-    }
     window.addEventListener(adminUpdatedEventName, loadSnapshot);
 
     return () => {
       active = false;
       window.removeEventListener(adminUpdatedEventName, loadSnapshot);
     };
-  }, [initialSnapshot]);
+  }, [initialSnapshot, runtime]);
 
-  return snapshot;
+  return state.snapshot;
 }

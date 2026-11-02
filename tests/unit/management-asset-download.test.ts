@@ -34,7 +34,7 @@ describe("download do ativo publicado", () => {
     expect((await GET(request, context())).status).toBe(404);
   });
   it.each(["sop", "playbook", "governanca", "raci"])("baixa %s com nome seguro e sem cache", async (type) => {
-    vi.mocked(getManagementAssetDocument).mockResolvedValue({ title: 'Gestão / "Equipe"\r\n', type, summary: "Descrição", operationalOwner: "Liderança", versionNumber: "1.0", reviewCycle: "Trimestral", author: { name: "Directscal" }, updatedAt: "2026-10-09T12:00:00Z", content: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Conteúdo publicado." }] }] } } as NonNullable<Awaited<ReturnType<typeof getManagementAssetDocument>>>);
+    vi.mocked(getManagementAssetDocument).mockResolvedValue({ title: 'Gestão / "Equipe"\r\n', type, summary: "Descrição", operationalOwner: "Liderança", versionNumber: "1.0", author: { name: "Directscal" }, updatedAt: "2026-10-09T12:00:00Z", content: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Conteúdo publicado." }] }] } } as unknown as NonNullable<Awaited<ReturnType<typeof getManagementAssetDocument>>>);
     const response = await GET(request, context(type));
     expect(response.status).toBe(200);
     expect(getManagementAssetDocument).toHaveBeenCalledWith(type, "test");

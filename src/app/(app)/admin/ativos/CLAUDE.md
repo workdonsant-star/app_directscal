@@ -1,3 +1,3 @@
 # `/admin/ativos` — Compatibilidade
 
-Estas rotas redirecionam para `/admin/operacao/criacao-dos-ativos`, incluindo o editor por ID e as perguntas ao agente. O fluxo e sua documentação ficam em `../operacao/criacao-dos-ativos/`. Não reintroduzir uma entrada independente na sidebar.
+A raiz `/admin/ativos` redireciona para `/admin/empresas`. IDs antigos ainda passam pela rota legada em Operação para chegar à instância proprietária. O fluxo de criação começa na empresa escolhida, sem entrada independente de ativos na sidebar.

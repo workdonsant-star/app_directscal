@@ -11,6 +11,7 @@ Rotas autenticadas das bibliotecas de SOPs, Playbooks, Governança e Matriz RACI
 - Os detalhes oferecem Baixar MD abaixo do sumário lateral (acima do artigo em larguras sem sumário). `/download/[type]/[id]` gera o arquivo no servidor com autorização explícita e as mesmas regras de leitura publicada da biblioteca. Ver `download/CLAUDE.md`.
 
 - `/ativos-de-gestao` mostra pastas por categoria com a contagem de ativos publicados.
+- A contagem e a leitura incluem arquivos PDF/DOCX enviados pelo superadmin. Downloads usam `/api/customer-documents/[id]` com autorização por organização e bucket privado.
 - As quatro bibliotecas usam `ManagementAssetsPage` e recebem dados de `management-assets-data-source.ts`.
 - SOPs, Playbooks, Governança e Matriz RACI possuem leitura individual em `/ativos-de-gestao/<tipo>/[id]`, todas via `ManagementAssetReaderPage`. Matriz RACI usa o documento RichText publicado, incluindo tabelas.
 - Todos os tipos são agrupados pela categoria cadastrada. Ativos sem classificação aparecem em Sem categoria.

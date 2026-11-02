@@ -40,13 +40,12 @@ for (const theme of ["light", "dark"] as const) {
       await expect(page.getByText("Diagnóstico encerrado de teste", { exact: true })).toBeVisible();
       await page.screenshot({ path: testInfo.outputPath(`company-${theme}.png`), fullPage: true });
     });
-    test("fila preserva prazo ausente e filtra revisão vencida", async ({ page }, testInfo) => {
+    test("lista somente estados de rascunho, publicação e arquivo", async ({ page }, testInfo) => {
       await page.goto("/c2-review-fixture?view=assets");
-      await expect(page.getByText("Definir periodicidade")).toBeVisible();
-      await page.getByRole("tab", { name: /Revisão vencida/ }).click();
-      await expect(page.getByText("SOP sem periodicidade", { exact: true })).toHaveCount(0);
-      await expect(page.getByRole("link", { name: "Matriz de responsabilidades C2" })).toBeVisible();
-      await expect(page.getByText("Operações", { exact: true })).toBeVisible();
+      await expect(page.getByRole("tab", { name: /Em revisão|Revisão vencida/ })).toHaveCount(0);
+      await page.getByRole("tab", { name: /Publicado/ }).click();
+      await expect(page.getByText("SOP de processos", { exact: true })).toBeVisible();
+      await expect(page.getByText("Matriz de responsabilidades C2", { exact: true })).toBeVisible();
       await page.screenshot({ path: testInfo.outputPath(`assets-${theme}.png`), fullPage: true });
     });
     test("RACI conserva conteúdo editável depois de falha", async ({ page }, testInfo) => {

@@ -249,29 +249,39 @@ async function listCampaigns(supabase: Supabase) {
 
 export async function getAdminAcquisitionSnapshot(): Promise<AdminDataSnapshot> {
   const supabase = createSupabaseAdminClient();
-  const campaigns = await listCampaigns(supabase);
+  const [
+    campaigns,
+    { data: organizationRows, error: organizationsError },
+    { data: customerMembershipRows, error: customerMembershipsError },
+    { data: accessRows, error: accessError },
+    { data: leadRows, error: leadsError },
+  ] = await Promise.all([
+    listCampaigns(supabase),
+    supabase
+      .from("organizations")
+      .select("id,name,employee_count,created_at,updated_at")
+      .or("domain.is.null,domain.neq.global-admin.directscal.invalid")
+      .order("name", { ascending: true }),
+    supabase
+      .from("organization_members")
+      .select("organization_id")
+      .eq("role", "cliente"),
+    supabase
+      .from("organization_module_access")
+      .select("organization_id,module_id,enabled,updated_at"),
+    supabase
+      .from("acquisition_leads")
+      .select("*")
+      .order("created_at", { ascending: false }),
+  ]);
   const campaignsById = new Map(campaigns.map((campaign) => [campaign.id, campaign]));
 
-  const { data: organizationRows, error: organizationsError } = await supabase
-    .from("organizations")
-    .select("id,name,employee_count,created_at,updated_at")
-    .or("domain.is.null,domain.neq.global-admin.directscal.invalid")
-    .order("name", { ascending: true });
-
   assertNoSupabaseError(organizationsError);
-
-  const { data: accessRows, error: accessError } = await supabase
-    .from("organization_module_access")
-    .select("organization_id,module_id,enabled,updated_at");
+  assertNoSupabaseError(customerMembershipsError);
 
   if (accessError && !isMissingModuleAccessTableError(accessError)) {
     assertNoSupabaseError(accessError);
   }
-
-  const { data: leadRows, error: leadsError } = await supabase
-    .from("acquisition_leads")
-    .select("*")
-    .order("created_at", { ascending: false });
 
   assertNoSupabaseError(leadsError);
 
@@ -287,12 +297,17 @@ export async function getAdminAcquisitionSnapshot(): Promise<AdminDataSnapshot> 
     enabled: row.enabled,
     updatedAt: row.updated_at,
   }));
+  const customerOrganizationIds = new Set(
+    (customerMembershipRows ?? []).map((row) => row.organization_id),
+  );
 
   return buildAdminDataSnapshot({
     accessRecords,
     campaigns,
     leads,
-    organizations: ((organizationRows ?? []) as OrganizationRow[]).map(
+    organizations: ((organizationRows ?? []) as OrganizationRow[])
+      .filter((organization) => customerOrganizationIds.has(organization.id))
+      .map(
       (organization) => ({
         id: organization.id,
         name: organization.name,

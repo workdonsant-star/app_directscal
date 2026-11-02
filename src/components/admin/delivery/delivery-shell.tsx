@@ -1,5 +1,7 @@
 "use client";
 
+import { useAppRuntime } from "@/components/app-runtime";
+
 import { useSpecialists } from "@/components/admin/use-specialists";
 
 import { Check, Circle, Download, Save, Send } from "lucide-react";
@@ -22,13 +24,12 @@ import {
 
 import { cn } from "@/lib/utils";
 
-type StepKey = "dados" | "relatorio" | "action-points" | "ativos" | "publicar";
+type StepKey = "relatorio" | "action-points" | "ativos" | "publicar";
 
 const stepGroups: Array<{
   label: string;
   steps: Array<{ key: StepKey; label: string }>;
 }> = [
-  { label: "Analisar", steps: [{ key: "dados", label: "Dados" }] },
   {
     label: "Produzir",
     steps: [
@@ -49,10 +50,11 @@ function ReadinessItem({
   href: string;
   children: string;
 }) {
+  const runtime = useAppRuntime();
   return (
     <li>
       <Link
-        href={href}
+        href={runtime.href(href)}
         className="flex items-center gap-2 rounded-sm text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {complete ? (
@@ -74,12 +76,14 @@ function ReadinessItem({
 
 export function DeliveryShell({ children }: { children: ReactNode }) {
   const { specialists: adminSpecialists } = useSpecialists();
+  const runtime = useAppRuntime();
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = runtime.pathname(usePathname());
   const draft = useDeliveryDraft();
   const { delivery } = draft;
   const basePath = `/admin/entregas/${delivery.id}`;
   const inAssets = pathname.startsWith(`${basePath}/ativos`);
+  const inReport = pathname === `${basePath}/relatorio`;
 
   const averageGap = draft.analysis.dimensions.length
     ? draft.analysis.dimensions.reduce((total, dimension) => total + dimension.gap, 0) /
@@ -119,12 +123,14 @@ export function DeliveryShell({ children }: { children: ReactNode }) {
     return null;
   }
 
+  if (inReport) return <div className="min-w-0">{children}</div>;
+
   return (
     <div className="flex w-full flex-col gap-6">
       {!inAssets ? (
         <AppTopbarActionsPortal>
           <div className="flex items-center gap-2">
-            <Button nativeButton={false} variant="outline" render={<Link href={`${basePath}/publicar`} />}>
+            <Button nativeButton={false} variant="outline" render={<Link href={runtime.href(`${basePath}/publicar`)} />}>
               Pré-visualizar
             </Button>
             <Button
@@ -171,7 +177,7 @@ export function DeliveryShell({ children }: { children: ReactNode }) {
               items={reportOptions}
               onValueChange={(value) => {
                 if (typeof value === "string" && value !== delivery.id) {
-                  router.push(`/admin/entregas/${value}/dados`);
+                  router.push(runtime.href(`/admin/entregas/${value}/dados`));
                 }
               }}
             >
@@ -190,7 +196,7 @@ export function DeliveryShell({ children }: { children: ReactNode }) {
           <Button
             nativeButton={false}
             variant="outline"
-            render={<a href={`${basePath}/relatorio/pdf`} />}
+            render={<a href={runtime.href(`${basePath}/relatorio/pdf`)} />}
           >
             <Download aria-hidden="true" />
             Baixar relatório
@@ -220,7 +226,7 @@ export function DeliveryShell({ children }: { children: ReactNode }) {
                     return (
                       <li key={step.key}>
                         <Link
-                          href={href}
+                          href={runtime.href(href)}
                           aria-current={active ? "page" : undefined}
                           className={cn(
                             "flex h-8 items-center justify-between gap-2 rounded-md px-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -269,7 +275,7 @@ export function DeliveryShell({ children }: { children: ReactNode }) {
               Para publicar
             </h2>
             <ul className="space-y-2.5 px-2">
-              <ReadinessItem complete={draft.specialistComplete} href={`${basePath}/publicar`}>
+              <ReadinessItem complete={draft.specialistComplete} href={runtime.href(`${basePath}/publicar`)}>
                 Especialista atribuído
               </ReadinessItem>
               <ReadinessItem complete={draft.reportComplete} href={`${basePath}/relatorio`}>

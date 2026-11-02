@@ -1,14 +1,16 @@
 # `/admin/empresas` — Empresas
 
-Lista empresas derivadas dos leads capturados.
+Lista empresas que possuem conta cliente criada no sistema.
 
 ## Convenções locais
 
-- Empresas são agrupadas por nome a partir dos leads.
+- A página exige sessão definitiva de superadmin antes de carregar o snapshot real no servidor. Organizações são identificadas por ID e precisam ter membership `cliente`; a organização técnica e leads sem conta ficam fora da lista.
+- `AdminCompaniesTable` recebe `initialSnapshot` obrigatório: nunca renderizar organizações seed enquanto o banco carrega. A primeira listagem já contém somente os registros persistidos.
+- `loading.tsx` mostra skeletons sem nomes ou ações; `error.tsx` permite repetir a leitura sem apresentar empresas fictícias. A exclusão conserva confirmação e atualização pela API existente.
 - Não há cadastro manual de empresa nesta etapa.
 - A tabela deve permanecer densa e orientada a operação.
 - Cada empresa abre um detalhe próprio em `/admin/empresas/[id]`.
-- A listagem antecipa especialista e estado da entrega atual sem esconder a aquisição existente.
+- A listagem tem busca por nome e seleção para exclusão. Toda a linha abre o detalhe da empresa pelo link no nome, exceto o checkbox, que continua reservado à seleção em lote. Não há coluna ou botão de acesso. Histórico de aquisição não aparece como coluna principal.
 
 ## Produção de ativos na instância
 

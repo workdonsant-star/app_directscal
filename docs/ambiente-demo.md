@@ -6,7 +6,7 @@ Link principal: https://app.directscal.com/demo. Origem independente: https://di
 
 A primeira entrega recriou uma sidebar e algumas telas, gerando divergências. A correção remove essas versões e usa AppSidebar, NavUser, AppTopbar, AppPage e os componentes originais das áreas. A versão operacional consultada usa o commit 7a4854a, deployment dpl_5oK6jQy5wVeR3bGVx97Bi1NXnhUd.
 
-A sidebar conserva os ícones, grupos, perfil, pastas e seis dimensões do produto. Configurações troca a navegação pelas seções contextuais originais. Não há mistura da administração DirectScal na sidebar do cliente. Um controle Demo na topbar oferece reinício e acesso ao agente.
+A sidebar conserva os ícones, grupos, perfil, pastas e seis dimensões do produto. Configurações troca a navegação pelas seções contextuais originais. Não há mistura da administração DirectScal na sidebar do cliente. O controle Demo na topbar alterna entre visão do cliente e visão fictícia de superadmin, além de oferecer reinício e acesso ao agente. A visão de superadmin usa a sidebar administrativa, a central de apresentação, a tabela real de empresas, o workspace real de especialistas, o Analytics real e a aba Operação real no detalhe da Vertex Logistics. O adapter local atende cadastro/edição de especialistas, atribuição principal e exclusão fictícia da empresa. Entregas Slack mostram uma lista fictícia vazia, sem transporte. A Operação global continua ilustrativa; as abas de Ativos de gestão e Rotinas do detalhe ainda não reproduzem o workspace administrativo. A demo não abre o painel real.
 
 ## Conteúdo e operações
 
@@ -36,7 +36,7 @@ O provider AppRuntime altera apenas URLs, fonte de requisições e saída. Compo
 
 Estado em directscal:presentation:v1, no navegador. Recarregar preserva; reiniciar restaura o cenário e remove apenas os marcadores de resposta dos tokens fictícios enviados. Coletas históricas permanecem fixas; respostas da coleta aberta não alteram relatórios encerrados. Downloads dos ativos exportam o catálogo inicial; edições locais podem ser apresentadas na leitura, sem substituir a fixture do arquivo.
 
-Esta demo cobre apresentação da interface de cliente. Não comprova homologação dos serviços operacionais nem oferece a administração global.
+Esta demo cobre as interfaces fictícias de cliente e superadmin. Não comprova homologação dos serviços operacionais nem oferece a administração global real.
 
 ## Distribuição
 
@@ -62,3 +62,13 @@ assetPrefix /demo-static separa JavaScript, CSS e fontes. Logos, ícones e avata
 O bloco do especialista na demo usa somente nome, cargo e link textual de contato. Avatar, cidade, fundo de card e CTA destacado foram removidos apenas na opção compact da apresentação. Conferido nos temas claro/escuro em desktop e 375px. Componentes operacionais mantêm o padrão completo.
 
 Publicação do repositório: dpl_9rc3NJTSu75DYHUyerWxX8dggf5o READY. As duas regras foram publicadas após teste em staging: relatório, /demo, logo SVG e JavaScript retornaram 200, enquanto /entrar continuou operacional. O endereço final foi verificado no navegador em app.directscal.com/demo/relatorios/analytics-example-1. Requisições Python diretas ao domínio principal são bloqueadas pela camada Cloudflare com 1010; essa configuração não foi alterada. A prova do endereço final é de navegador, separada dos testes HTTP em staging.
+
+## Contexto de superadmin nas áreas da empresa
+
+As abas Ativos de gestão e Rotinas permanecem em /demo/admin/empresas/demo-vertex, com os mesmos componentes administrativos do produto. O editor tem versões, prévia, publicação local, arquivamento e edição de metadados em massa. Rotinas mostra acordos, histórico e responsáveis do diretório fictício. Entregas abrem o workspace administrativo, com Dados, Relatório, Action points, Criação dos ativos e Publicação. Os links dos ativos mais consultados no Analytics também abrem o editor administrativo. A troca para cliente continua explícita.
+
+Estado local reiniciável inclui ativos administrativos, acordos, políticas e rascunhos de entrega. Nenhuma ação envia Slack ou consulta serviços operacionais. Downloads continuam limitados ao catálogo fixo de fixtures; a simulação não comprova implantação ou homologação. O domínio puro de entregas foi separado dos seeds da operação para preservar o pacote isolado.
+
+## Action points criados pelo consultor
+
+Na visão de superadmin, a Vertex tem a aba Action points ao lado de Visão geral e Arquivos. O consultor cadastra cada action point em um painel lateral com título, ativo de gestão vinculado (obrigatório), líder escolhido no diretório Slack fictício, prazo, motivo, o que fazer e o papel do ativo na continuidade. Os dados ficam só no navegador e voltam aos dois exemplos ao reiniciar a demo. A tela de Action Points do cliente ainda não mostra esses registros.

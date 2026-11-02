@@ -6,7 +6,7 @@ import { useMemo, useState } from "react";
 
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { CampaignEditorDrawer } from "@/components/admin/campaign-editor-drawer";
-import { useAdminData } from "@/components/admin/use-admin-data";
+import { useAdminDataSnapshot } from "@/components/admin/use-admin-data";
 import { KpiCard } from "@/components/kpi-card";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +17,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { createAcquisitionCampaignDraft } from "@/lib/data/admin-data-source";
+import {
+  createAcquisitionCampaignDraft,
+  type AdminDataSnapshot,
+} from "@/lib/data/admin-data-source";
 import type { AcquisitionCampaign } from "@/lib/types";
 
 function formatDate(iso: string) {
@@ -36,8 +39,12 @@ function conversionRate(leads: number, visits: number) {
   })}%`;
 }
 
-export function AdminCampaignsWorkspace() {
-  const { campaigns, leads, modules } = useAdminData();
+export function AdminCampaignsWorkspace({
+  initialSnapshot,
+}: {
+  initialSnapshot: AdminDataSnapshot;
+}) {
+  const { campaigns, leads, modules } = useAdminDataSnapshot(initialSnapshot);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const [selectedCampaign, setSelectedCampaign] =
     useState<AcquisitionCampaign | null>(null);
@@ -156,6 +163,13 @@ export function AdminCampaignsWorkspace() {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {campaigns.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-muted-foreground text-center">
+                    Nenhuma campanha cadastrada.
+                  </TableCell>
+                </TableRow>
+              )}
               {campaigns.map((campaign) => {
                 const leadsCount = campaignLeadCounts[campaign.id] ?? 0;
                 const copied = copiedSlug === campaign.slug;

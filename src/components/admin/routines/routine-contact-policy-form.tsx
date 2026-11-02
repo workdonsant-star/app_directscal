@@ -1,4 +1,5 @@
 "use client";
+import { useAppRuntime } from "@/components/app-runtime";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,7 @@ import { routineContactPolicyInputSchema, type RoutineContactPolicy } from "@/li
 const zones = [{ value: "America/Sao_Paulo", label: "São Paulo / Brasília" }, { value: "America/Manaus", label: "Manaus" }, { value: "America/Rio_Branco", label: "Rio Branco" }, { value: "America/Fortaleza", label: "Fortaleza" }];
 const days = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
 export function RoutineContactPolicyForm({ companyId, sectors, initial, onSaved, onPending }: { companyId: string; sectors: { id: string; name: string }[]; initial: RoutineContactPolicy | null; onSaved: (policy: RoutineContactPolicy) => void; onPending: (pending: boolean) => void }) {
+  const runtime = useAppRuntime();
   const [attempt] = useState(() => crypto.randomUUID());
   const [enabled, setEnabled] = useState(initial?.enabled ?? false);
   const [selected, setSelected] = useState(initial?.sectorIds.filter(id => sectors.some(sector => sector.id === id)) ?? []);
@@ -27,10 +29,10 @@ export function RoutineContactPolicyForm({ companyId, sectors, initial, onSaved,
     setPending(true); onPending(true); let committed = false;
     try {
       const endpoint = `/api/admin/companies/${companyId}/routine-contact-policy`;
-      const response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(parsed.data) });
+      const response = await runtime.request(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(parsed.data) });
       const body = await response.json(); if (!response.ok) throw new Error(body.message ?? "Não foi possível salvar a configuração.");
       committed = true;
-      const fresh = await fetch(endpoint, { cache: "no-store" }); const result = await fresh.json();
+      const fresh = await runtime.request(endpoint, { cache: "no-store" }); const result = await fresh.json();
       if (!fresh.ok || !result.policy) throw new Error("Configuração salva. Reabra para conferir o estado atual.");
       onSaved(result.policy);
     } catch (error) { setError(committed ? "A configuração foi gravada. Reabra para conferir o estado atual antes de salvar novamente." : error instanceof Error ? error.message : "Não foi possível salvar. Seus campos foram mantidos."); }

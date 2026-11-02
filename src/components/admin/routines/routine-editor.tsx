@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { AdminRoutineWorkspace, AdminRoutineWrite, RoutineRevision } from "@/lib/contracts/admin-adherence";
-import type { SlackWorkspaceUser } from "@/lib/integrations/slack-format";
+import type { RoutineDirectoryUser } from "@/lib/contracts/routine-directory";
 
 type Choice = { value: string; label: string };
 export function RoutineChoice({ label, value, items, onChange, disabled }: { label: string; value: string; items: Choice[]; onChange: (value: string) => void; disabled?: boolean }) {
@@ -17,7 +17,7 @@ export function RoutineChoice({ label, value, items, onChange, disabled }: { lab
 
 const cadences = [{ value: "diaria", label: "Diária, de segunda a sexta" }, { value: "semanal", label: "Semanal" }, { value: "quinzenal", label: "Quinzenal" }, { value: "mensal", label: "Mensal" }, { value: "trimestral", label: "Trimestral" }, { value: "semestral", label: "Semestral" }, { value: "anual", label: "Anual" }];
 
-export function RoutineEditor({ data, rule, users, directoryUnavailable = false, pending, error, onSave, onCancel }: { data: AdminRoutineWorkspace; rule: RoutineRevision | null; users: SlackWorkspaceUser[]; directoryUnavailable?: boolean; pending: boolean; error: string | null; onSave: (input: AdminRoutineWrite) => void; onCancel: () => void }) {
+export function RoutineEditor({ data, rule, users, directoryUnavailable = false, pending, error, onSave, onCancel }: { data: AdminRoutineWorkspace; rule: RoutineRevision | null; users: RoutineDirectoryUser[]; directoryUnavailable?: boolean; pending: boolean; error: string | null; onSave: (input: AdminRoutineWrite) => void; onCancel: () => void }) {
   const [attemptId] = useState(() => crypto.randomUUID());
   const [routineId] = useState(() => rule?.routineId ?? crypto.randomUUID());
   const [actionKey, setActionKey] = useState(rule ? `${rule.diagnosticId}:${rule.actionPointId}` : "");

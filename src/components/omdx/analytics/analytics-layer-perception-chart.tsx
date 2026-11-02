@@ -18,16 +18,18 @@ function position(value: number) {
 export function AnalyticsLayerPerceptionChart({
   rows,
   gapCutoff,
+  concise = false,
 }: {
   rows: AnalyticsLayerPerception[];
   gapCutoff: number;
+  concise?: boolean;
 }) {
   const hasLayers = rows.some((row) => row.gap !== null);
 
   return (
     <AnalyticsCard
       className="flex-1"
-      description={`Distância entre Fundador, Liderança e Time em cada dimensão. Acima de ${formatScore(gapCutoff)} ponto, a percepção diverge.`}
+      description={concise ? undefined : `Distância entre Fundador, Liderança e Time em cada dimensão. Acima de ${formatScore(gapCutoff)} ponto, a percepção diverge.`}
       title="Percepção por camada"
     >
       {!hasLayers ? (

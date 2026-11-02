@@ -22,5 +22,5 @@ export default async function AdminDeliveryIndexPage({
     publicacao: "publicar",
   };
 
-  redirect(`${base}/${(query.aba && legacyTabs[query.aba]) || "dados"}`);
+  redirect(`${base}/${(query.aba && legacyTabs[query.aba]) || "relatorio"}`);
 }

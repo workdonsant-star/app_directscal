@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { useAdminData } from "@/components/admin/use-admin-data";
+import { useAdminDataSnapshot } from "@/components/admin/use-admin-data";
+import type { AdminDataSnapshot } from "@/lib/data/admin-data-source";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -30,8 +31,8 @@ const leadStatusLabel: Record<AcquisitionLeadStatus, string> = {
   pending_company: "Empresa pendente",
 };
 
-export function AdminLeadsTable() {
-  const { leads } = useAdminData();
+export function AdminLeadsTable({ initialSnapshot }: { initialSnapshot: AdminDataSnapshot }) {
+  const { leads } = useAdminDataSnapshot(initialSnapshot);
   const router = useRouter();
 
   return (

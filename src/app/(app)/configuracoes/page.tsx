@@ -38,19 +38,20 @@ export default async function SettingsPage({
     redirect(session.user.role === "superadmin" ? "/admin/operacao" : "/omdx");
   }
 
-  const profile = await getProfileSettingsData(session.user);
-  const [sectors, slackConnection, { slack, secao }] = await Promise.all([
-    getOrganizationStructure(profile.organizationId),
-    getSlackInstallationForOrganization(profile.organizationId).catch((error: unknown) => {
-      console.error("[slack] installation lookup failed", error);
-      return null;
-    }),
+  const [profile, { slack, secao }] = await Promise.all([
+    getProfileSettingsData(session.user),
     searchParams,
   ]);
-
   const section = secao === "empresa" || secao === "slack"
     ? secao
     : slack ? "slack" : "setores";
+  const [sectors, slackConnection] = await Promise.all([
+    section === "setores" ? getOrganizationStructure(profile.organizationId) : [],
+    section === "slack" ? getSlackInstallationForOrganization(profile.organizationId).catch((error: unknown) => {
+      console.error("[slack] installation lookup failed", error);
+      return null;
+    }) : null,
+  ]);
 
   return (
     <>

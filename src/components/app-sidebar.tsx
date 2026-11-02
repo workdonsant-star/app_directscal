@@ -6,7 +6,6 @@ import {
   Blocks,
   Building2,
   ChartNoAxesColumn,
-  ClipboardCheck,
   Eye,
   Flag,
   Megaphone,
@@ -61,38 +60,6 @@ const data = {
     { title: "Diagnósticos", url: "/relatorios", icon: ChartNoAxesColumn },
     { title: "Action Points", url: "/action-points", icon: ListChecks },
   ],
-  admin: [
-    {
-      title: "Operação",
-      url: "/admin/operacao",
-      icon: ClipboardCheck,
-      requiresAcquisition: false,
-    },
-    {
-      title: "Especialistas",
-      url: "/admin/especialistas",
-      icon: UserRoundCheck,
-      requiresAcquisition: false,
-    },
-    {
-      title: "Empresas",
-      url: "/admin/empresas",
-      icon: Building2,
-      requiresAcquisition: true,
-    },
-    {
-      title: "Leads",
-      url: "/admin/leads",
-      icon: Users,
-      requiresAcquisition: true,
-    },
-    {
-      title: "Campanhas",
-      url: "/admin/campanhas",
-      icon: Megaphone,
-      requiresAcquisition: true,
-    },
-  ],
   insights: [
     { name: "Cultura", url: "/insights/cultura", icon: Sprout },
     { name: "Visão", url: "/insights/visao", icon: Eye },
@@ -140,6 +107,7 @@ export function AppSidebar({
   initiativeScope,
   assetNavigationPreferences = { order: [], icons: {} },
   managementAssetCategories = getManagementAssetCategoryFolders([]),
+  demoMode = false,
   acquisitionEnabled = false,
   enabledModuleIds,
   user = data.user,
@@ -147,6 +115,7 @@ export function AppSidebar({
   initiativeScope?: string;
   assetNavigationPreferences?: AssetNavigationPreferences;
   managementAssetCategories?: ManagementAssetCategoryFolder[];
+  demoMode?: boolean;
   acquisitionEnabled?: boolean;
   enabledModuleIds?: string[];
   user?: {
@@ -226,13 +195,44 @@ export function AppSidebar({
             pathname.startsWith("/configuracoes/"),
         },
       ];
-  const adminItems = acquisitionEnabled
-    ? data.admin
-    : data.admin.filter((item) => !item.requiresAcquisition);
-  const admin = adminItems.map((item) => ({
-    ...item,
-    isActive: pathname === item.url || pathname.startsWith(`${item.url}/`),
-  }));
+  const adminGroups = [
+    {
+      label: "Empresas",
+      items: [{
+        title: "Empresas cadastradas",
+        url: "/admin/empresas",
+        icon: Building2,
+        isActive: pathname === "/admin/empresas" || pathname.startsWith("/admin/empresas/"),
+      }],
+    },
+    {
+      label: "Equipe",
+      items: [{
+        title: "Especialistas",
+        url: "/admin/especialistas",
+        icon: UserRoundCheck,
+        isActive: pathname === "/admin/especialistas" || pathname.startsWith("/admin/especialistas/"),
+      }],
+    },
+    ...(demoMode || user.role === "superadmin" ? [{
+      label: "Agentes",
+      items: [{
+        title: "Motores de IA",
+        url: "/admin/motores-de-ia",
+        icon: Plug,
+        isActive: pathname === "/admin/motores-de-ia",
+      }],
+    }] : []),
+    ...(acquisitionEnabled ? [{
+      label: "Aquisição",
+      items: [{
+        title: "Campanhas",
+        url: "/admin/campanhas",
+        icon: Megaphone,
+        isActive: pathname === "/admin/campanhas" || pathname.startsWith("/admin/campanhas/"),
+      }],
+    }] : []),
+  ];
 
   return (
     <Sidebar
@@ -244,11 +244,14 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         {isAdmin ? (
-          <NavMain
-            label="Administração"
-            items={admin}
-            onNavigate={closeCompactSidebar}
-          />
+          adminGroups.map((group) => (
+            <NavMain
+              key={group.label}
+              label={group.label}
+              items={group.items}
+              onNavigate={closeCompactSidebar}
+            />
+          ))
         ) : isSettings ? (
           <Suspense fallback={null}>
             <SettingsNavigation onNavigate={closeCompactSidebar} />
@@ -263,7 +266,7 @@ export function AppSidebar({
             <ManagementAssetNavigation
               key={`${initiativeScope ?? user.id}:${JSON.stringify(assetNavigationPreferences)}`}
               initialPreferences={assetNavigationPreferences}
-              canManage={user.role === "cliente"}
+              canManage={false}
               folders={managementAssetCategories}
               onNavigate={closeCompactSidebar}
             />

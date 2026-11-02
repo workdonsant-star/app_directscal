@@ -18,18 +18,20 @@ export function AnalyticsQuestionTable({
   rows,
   total,
   gapCutoff,
+  concise = false,
 }: {
   rows: AnalyticsQuestionRow[];
   total: number;
   gapCutoff: number;
+  concise?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
         <h3 className="text-ui-title text-foreground">Perguntas para aprofundar</h3>
-        <p className="text-xs text-muted-foreground">
+        {!concise ? <p className="text-xs text-muted-foreground">
           {rows.length} perguntas de menor nota entre {total}. A divergência é a distância entre a maior e a menor média de camada; os resultados orientam a investigação do consultor.
-        </p>
+        </p> : null}
       </div>
 
       {rows.length === 0 ? (

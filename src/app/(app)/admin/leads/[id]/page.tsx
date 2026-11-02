@@ -5,6 +5,7 @@ import { AdminLeadDetail } from "@/components/admin/admin-lead-detail";
 import { AppPage } from "@/components/app-page";
 import { AppTopbar } from "@/components/app-topbar";
 import { isFeatureAcquisitionEnabled } from "@/lib/env";
+import { getAdminPageSnapshot } from "@/lib/data/admin-page-data";
 
 export const metadata: Metadata = {
   title: "Detalhe do lead — Admin Directscal",
@@ -24,6 +25,8 @@ export default async function AdminLeadDetailPage({
   }
 
   const { id } = await params;
+  const initialSnapshot = await getAdminPageSnapshot();
+  if (!initialSnapshot.leads.some((lead) => lead.id === id)) notFound();
 
   return (
     <>
@@ -36,7 +39,7 @@ export default async function AdminLeadDetailPage({
 
       <AppPage>
         <div className="w-full">
-          <AdminLeadDetail leadId={id} />
+          <AdminLeadDetail leadId={id} initialSnapshot={initialSnapshot} />
         </div>
       </AppPage>
     </>

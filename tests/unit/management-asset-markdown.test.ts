@@ -4,7 +4,7 @@ import { buildManagementAssetMarkdown } from "@/lib/data/management-asset-markdo
 
 const paragraph = (text: string): RichTextParagraph => ({ type: "paragraph", content: [{ type: "text", text }] });
 function exportBlocks(content: RichTextBlock[]) {
-  return buildManagementAssetMarkdown({ title: "Operação", summary: "Resumo", type: "sop", category: null, operationalOwner: "Liderança", versionNumber: "1", reviewCycle: "Mensal", author: { name: "Directscal" }, updatedAt: "2026-10-09T12:00:00Z", content: { type: "doc", content } } as ManagementAssetDocument);
+  return buildManagementAssetMarkdown({ title: "Operação", summary: "Resumo", type: "sop", category: null, operationalOwner: "Liderança", versionNumber: "1", author: { name: "Directscal" }, updatedAt: "2026-10-09T12:00:00Z", content: { type: "doc", content } } as unknown as ManagementAssetDocument);
 }
 
 describe("exportação Markdown dos ativos", () => {
@@ -15,6 +15,7 @@ describe("exportação Markdown dos ativos", () => {
       paragraph("<script> *literal*"),
     ]);
     expect(result).toContain("# Operação");
+    expect(result).not.toContain("Revisão");
     expect(result).toContain("## Objetivo");
     expect(result).toContain(" _**Forte**_   \n[Fonte](<https://example.com/a%28b%29>)");
     expect(result).toContain("&lt;script&gt; \\*literal\\*");

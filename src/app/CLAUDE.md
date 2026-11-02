@@ -85,7 +85,7 @@ src/app/
 - **Metadata** vem de `export const metadata` em `layout.tsx` e `page.tsx`.
 - O favicon atual é `public/favicon.png`, registrado no metadata global.
 - **Fontes** declaradas no root `layout.tsx` via `next/font/google` e expostas como variáveis CSS (`--font-funnel-sans`, `--font-plus-jakarta-sans`, `--font-jetbrains-mono`). Títulos semânticos usam Plus Jakarta Sans; corpo e UI usam Funnel Sans. Tamanhos usam os tokens `ui-*` e `doc-*` de `docs/tokens-de-tipografia.md`.
-- **Dark mode** controlado por `next-themes` (atributo `class` em `<html>`). Default: `system`, com `enableSystem`; o usuário pode alternar manualmente claro/escuro pelo dropdown do usuário.
+- **Dark mode** controlado por `next-themes` (atributo `class` em `<html>`). Default: `system`, com `enableSystem`; o usuário pode escolher Sistema, Claro ou Escuro pelo dropdown e voltar ao acompanhamento automático do dispositivo.
 
 ## globals.css — regras
 
@@ -139,6 +139,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/r/[token]/obrigado` | `r/[token]/obrigado/` | Página pública de agradecimento após resposta registrada ou navegador já marcado. |
 | `/admin` | `(app)/admin/` | Redireciona para `/admin/operacao`. |
 | `/admin/operacao` | `(app)/admin/operacao/` | Superadmin: indicadores e fila de entregas. |
+| `/admin/demo` | `(app)/admin/demo/` | Superadmin: entrada e atalhos para a demo pública isolada. |
 | `/admin/especialistas` | `(app)/admin/especialistas/` | Superadmin: equipe interna e cadastro persistido. |
 | `/admin/modulos` | `(app)/admin/modulos/` | Rota legada do catálogo de módulos. |
 | `/admin/campanhas` | `(app)/admin/campanhas/` | Superadmin: campanhas, links e campos de aquisição. |
@@ -181,7 +182,7 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - `/omdx/membros-da-operacao` redireciona para `/omdx/diagnosticos` e não renderiza breadcrumb.
 - `/admin/operacao`, `/admin/especialistas`, `/admin/modulos`, `/admin/campanhas`, `/admin/leads` e `/admin/empresas` são raízes sem breadcrumb.
 - `/admin/leads/[id]` usa `Leads / Detalhe`.
-- `/admin/empresas/[id]` usa `Empresas / Detalhe`.
+- As rotas de `/admin/empresas/[id]`, incluindo abas, editor de ativos e perguntas, usam `Empresas / Nome da empresa`.
 - `/admin/entregas/[id]` usa `Operação / Empresa`.
 - Futuras rotas de acompanhamento e resultado começam o breadcrumb pela raiz imediata `Pesquisas`.
 - Criação e configuração não devem abrir páginas próprias; acontecem em drawer dentro de `/omdx/diagnosticos`.
@@ -273,3 +274,5 @@ C2: /docs é o guia do cliente com nomes atuais; /admin/guia é o guia da opera�
 
 
 `GET /api/auth/site-profile` devolve somente nome/foto da sessão definitiva ao Website, com CORS restrito aos dois domínios oficiais e sem cache. Não compartilha tokens. Ver `api/auth/site-profile/CLAUDE.md`.
+
+A demo espelha os workspaces administrativos de ativos, rotinas e entrega em suas próprias rotas /demo/admin; não encaminha as abas da empresa para telas do cliente. As páginas operacionais conservam autorização e transporte padrão; ver demo/CLAUDE.md.

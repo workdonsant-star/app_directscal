@@ -14,6 +14,12 @@ export type Database = {
   }
   app_private: {
     Tables: {
+      agent_provider_connections: {
+        Row: { provider: "anthropic" | "openai" | "gemini"; model: string; sealed_key: Json | null; selected: boolean; updated_by: string | null; updated_at: string }
+        Insert: { provider: "anthropic" | "openai" | "gemini"; model: string; sealed_key?: Json | null; selected?: boolean; updated_by?: string | null; updated_at?: string }
+        Update: { model?: string; sealed_key?: Json | null; selected?: boolean; updated_by?: string | null; updated_at?: string }
+        Relationships: []
+      }
       slack_identity_challenges: {
         Row: { id: string; organization_id: string; user_id: string; code_hash: string; created_at: string; expires_at: string; revoked_at: string | null; consumed_at: string | null; proof_job_id: string | null; slack_team_id: string | null; slack_user_id: string | null }
         Insert: never
@@ -248,6 +254,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      save_agent_provider_connection: {
+        Args: { p_actor_user_id: string; p_provider: string; p_model: string; p_sealed_key: Json | null; p_select: boolean }
+        Returns: undefined
+      }
       delete_admin_companies: {
         Args: { p_actor_user_id: string; p_organization_ids: string[]; p_confirmation: string }
         Returns: Json
@@ -410,6 +420,10 @@ export type Database = {
       }
       save_management_asset_category: {
         Args: { p_organization_id: string; p_actor_user_id: string; p_key: string | null; p_title: string; p_previous_title: string | null }
+        Returns: Json
+      }
+      admin_create_customer_document_category: {
+        Args: { p_organization_id: string; p_actor_user_id: string; p_title: string }
         Returns: Json
       }
       update_customer_assets_metadata: {
@@ -597,6 +611,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      customer_documents: {
+        Row: { id: string; organization_id: string; kind: "asset" | "report"; category_key: string | null; title: string; file_name: string; storage_path: string; mime_type: string; byte_size: number; created_by: string | null; published_at: string }
+        Insert: { id?: string; organization_id: string; kind: "asset" | "report"; category_key?: string | null; title: string; file_name: string; storage_path: string; mime_type: string; byte_size: number; created_by?: string | null; published_at?: string }
+        Update: never
+        Relationships: []
+      }
       organization_asset_navigation: {
         Row: { organization_id: string; preferences: Json; updated_by: string | null; updated_at: string }
         Insert: { organization_id: string; preferences?: Json; updated_by?: string | null; updated_at?: string }

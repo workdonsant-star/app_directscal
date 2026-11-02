@@ -1,5 +1,7 @@
 "use client";
 
+import { useAppRuntime } from "@/components/app-runtime";
+
 import { useSpecialists } from "@/components/admin/use-specialists";
 
 import { useRouter } from "next/navigation";
@@ -13,7 +15,6 @@ import {
 } from "react";
 
 import {
-  buildInitialDimensionReading,
   buildInitialReport,
   reportFields,
 } from "@/components/admin/delivery/delivery-draft";
@@ -26,7 +27,7 @@ import type {
 import {
   type AdminDeliveryAnalysis,
   adminActionPointTemplates,
-} from "@/lib/data/admin-operations-data-source";
+} from "@/lib/data/admin-delivery-domain";
 
 export type DeliveryOption = {
   closedAt: string;
@@ -88,13 +89,14 @@ export function DeliveryDraftProvider({
   publication: AdminDeliveryPublication | null;
 }) {
   const { getSpecialist: getAdminSpecialist } = useSpecialists();
+  const runtime = useAppRuntime();
   const router = useRouter();
   const [status, setStatus] = useState<AdminDeliveryStatus>(delivery.status);
   const [specialistId, setSpecialistId] = useState(
     delivery.specialistId ?? "unassigned",
   );
   const [report, setReport] = useState(
-    () => publication?.report ?? buildInitialReport(delivery.companyName),
+    () => publication?.report ?? buildInitialReport(),
   );
   const [selectedActionPointIds, setSelectedActionPointIds] = useState(
     () =>
@@ -106,12 +108,6 @@ export function DeliveryDraftProvider({
   const [dimensionReadings, setDimensionReadings] = useState<
     Record<string, string>
   >(() => ({
-    ...Object.fromEntries(
-      analysis.dimensions.map((dimension) => [
-        dimension.id,
-        buildInitialDimensionReading(dimension),
-      ]),
-    ),
     ...publication?.dimensionReadings,
   }));
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -140,7 +136,7 @@ export function DeliveryDraftProvider({
     const submittedContent = content;
 
     try {
-      const response = await fetch(`/api/admin/deliveries/${delivery.id}`, {
+      const response = await runtime.request(`/api/admin/deliveries/${delivery.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

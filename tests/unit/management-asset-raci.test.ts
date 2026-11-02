@@ -1,13 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { createManagementAssetInputSchema, editableManagementAssetTypeValues, richTextDocumentSchema } from "@/lib/contracts";
+import { createManagementAssetInputSchema, managementAssetTransitionInputSchema, quickCreateManagementAssetInputSchema, editableManagementAssetTypeValues, richTextDocumentSchema } from "@/lib/contracts";
 import { getManagementAssetTemplate, managementAssetTemplates } from "@/lib/data/management-asset-templates";
 import { buildManagementAssetChunks } from "@/lib/data/management-asset-indexer";
 import { legacySopContentToRichText } from "@/lib/data/rich-text";
 
 describe("produção editorial dos quatro tipos", () => {
   it("aceita RACI na criação e oferece modelo do mesmo tipo", () => {
-    expect(createManagementAssetInputSchema.safeParse({ organizationId: "00000000-0000-4000-8000-000000000001", type: "raci", title: "Matriz de decisões", summary: "Responsabilidades da operação", category: null, ownerLabel: "Operações", reviewCycle: "Semestral", specialistId: null, templateId: "estrutura-raci" }).success).toBe(true);
+    expect(createManagementAssetInputSchema.safeParse({ organizationId: "00000000-0000-4000-8000-000000000001", type: "raci", title: "Matriz de decisões", summary: "Responsabilidades da operação", category: null, ownerLabel: "Operações", specialistId: null, templateId: "estrutura-raci" }).success).toBe(true);
     expect(getManagementAssetTemplate("estrutura-raci")?.type).toBe("raci");
+  });
+  it("aceita publicação direta e recusa a antiga etapa editorial", () => {
+    expect(managementAssetTransitionInputSchema.safeParse({ action: "publicar" }).success).toBe(true);
+    expect(managementAssetTransitionInputSchema.safeParse({ action: "enviar_para_revisao" }).success).toBe(false);
+    expect(managementAssetTransitionInputSchema.safeParse({ action: "aprovar_revisao" }).success).toBe(false);
+  });
+  it("aceita somente categoria e tipo na criação rápida", () => {
+    const input = { organizationId: "00000000-0000-4000-8000-000000000001", type: "sop", category: "Comercial" };
+    expect(quickCreateManagementAssetInputSchema.safeParse(input).success).toBe(true);
+    expect(quickCreateManagementAssetInputSchema.safeParse({ ...input, title: "Não permitido" }).success).toBe(false);
   });
   it("cada tipo tem ponto de partida validável e pesquisável", () => {
     for (const type of editableManagementAssetTypeValues) {

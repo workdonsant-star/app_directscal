@@ -27,16 +27,13 @@ const anthropicModelsWithEffortAndFallback = new Set([
   "claude-fable-5-1",
 ]);
 
-let anthropicClient: Anthropic | null = null;
-
-function getAnthropicClient() {
-  anthropicClient ??= new Anthropic({
-    apiKey: getRequiredServerEnv("ANTHROPIC_API_KEY"),
+function getAnthropicClient(apiKey?: string | null) {
+  return new Anthropic({
+    apiKey: apiKey || getRequiredServerEnv("ANTHROPIC_API_KEY"),
     timeout: REQUEST_TIMEOUT_MS,
     maxRetries: 1,
   });
 
-  return anthropicClient;
 }
 
 async function answerWithAnthropic(
@@ -44,8 +41,9 @@ async function answerWithAnthropic(
   question: string,
   evidence: EvidenceSource[],
   history: ConversationTurn[],
+  apiKey?: string | null,
 ): Promise<GroundedAnswer> {
-  const client = getAnthropicClient();
+  const client = getAnthropicClient(apiKey);
   const messages: Anthropic.MessageParam[] = [
     { role: "user", content: buildAnswerUserMessage(question, evidence, history) },
   ];
@@ -104,6 +102,7 @@ async function answerWithGemini(
   question: string,
   evidence: EvidenceSource[],
   history: ConversationTurn[],
+  apiKey?: string | null,
 ): Promise<GroundedAnswer> {
   const response = await fetchGeminiWithRetry(
     `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
@@ -111,7 +110,7 @@ async function answerWithGemini(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-goog-api-key": getRequiredServerEnv("GEMINI_API_KEY"),
+        "x-goog-api-key": apiKey || getRequiredServerEnv("GEMINI_API_KEY"),
       },
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: ANSWER_SYSTEM_PROMPT }] },
@@ -151,6 +150,41 @@ async function answerWithGemini(
   return groundedAnswerSchema.parse(JSON.parse(text ?? ""));
 }
 
+async function answerWithOpenAI(
+  model: string,
+  question: string,
+  evidence: EvidenceSource[],
+  history: ConversationTurn[],
+  apiKey?: string | null,
+): Promise<GroundedAnswer> {
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey || getRequiredServerEnv("OPENAI_API_KEY")}`,
+    },
+    body: JSON.stringify({
+      model,
+      instructions: ANSWER_SYSTEM_PROMPT,
+      input: buildAnswerUserMessage(question, evidence, history),
+      store: false,
+      text: { format: { type: "json_schema", name: "grounded_answer", strict: true, schema: groundedAnswerJsonSchema } },
+    }),
+    cache: "no-store",
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  });
+  if (!response.ok) throw new Error(`OpenAI falhou com status ${response.status}.`);
+  const payload = await response.json() as {
+    status?: string;
+    output?: Array<{ type?: string; content?: Array<{ type?: string; text?: string }> }>;
+  };
+  if (payload.status !== "completed") throw new Error("OpenAI não concluiu a resposta.");
+  const text = payload.output?.flatMap(item => item.content ?? [])
+    .filter(item => item.type === "output_text")
+    .map(item => item.text ?? "").join("");
+  return groundedAnswerSchema.parse(JSON.parse(text ?? ""));
+}
+
 async function answerWithOllama(
   model: string,
   question: string,
@@ -183,17 +217,20 @@ async function answerWithOllama(
 }
 
 export async function generateGroundedAnswer(
-  provider: "anthropic" | "gemini" | "ollama",
+  provider: "anthropic" | "gemini" | "openai" | "ollama",
   model: string,
   question: string,
   evidence: EvidenceSource[],
   history: ConversationTurn[] = [],
+  apiKey?: string | null,
 ) {
   switch (provider) {
     case "anthropic":
-      return answerWithAnthropic(model, question, evidence, history);
+      return answerWithAnthropic(model, question, evidence, history, apiKey);
     case "gemini":
-      return answerWithGemini(model, question, evidence, history);
+      return answerWithGemini(model, question, evidence, history, apiKey);
+    case "openai":
+      return answerWithOpenAI(model, question, evidence, history, apiKey);
     case "ollama":
       return answerWithOllama(model, question, evidence, history);
   }

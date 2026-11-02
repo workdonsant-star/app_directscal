@@ -2,6 +2,8 @@
 
 Scripts SQL usam fixtures fictícias em uma transação seguida de ROLLBACK. Não chamam Slack, não enviam convites e não mudam contas reais. Uma exceção interrompe o teste; sucesso exige chegar ao SELECT final. Rodar somente após aplicar a migração correspondente. Asserções cobrem autorização, atomicidade, isolamento por empresa e compatibilidade dos diagnósticos.
 
+`management-asset-direct-publish.sql` verifica publicação direta de rascunho, atualização administrativa sem periodicidade, compatibilidade de versão legada aberta, publicação pelo dono sem aprovação, índice vigente e grants. Usa apenas fixtures fictícias e ROLLBACK; executar após `20261029210000_direct_management_asset_publishing.sql`.
+
 
 customer-management-asset-update.sql cria apenas ativo fictício em transação com ROLLBACK, usando membership de dono existente como contexto. Verifica v1 preservada/v2 publicada, editor, índice, isolamento, conflito de versão, rascunho aberto e rollback de publicação inválida. Executado no OMDx em 17/10/2026 sem persistir fixtures.
 

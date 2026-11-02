@@ -1759,6 +1759,8 @@ export const getDiagnosticReport = cache(async function getDiagnosticReport(
 export async function getAdminDiagnosticReports(
   diagnosticId?: string,
   generatedAt = new Date().toISOString(),
+  organizationId?: string,
+  includeOpen = false,
 ): Promise<DiagnosticReport[]> {
   const session = await getCurrentAuthSession();
 
@@ -1768,11 +1770,17 @@ export async function getAdminDiagnosticReports(
   let diagnosticsQuery = supabase
     .from("diagnostics")
     .select(diagnosticSelectColumns)
-    .eq("status", "encerrado")
     .order("closed_at", { ascending: false });
+
+  if (!includeOpen) {
+    diagnosticsQuery = diagnosticsQuery.eq("status", "encerrado");
+  }
 
   if (diagnosticId) {
     diagnosticsQuery = diagnosticsQuery.eq("id", diagnosticId);
+  }
+  if (organizationId) {
+    diagnosticsQuery = diagnosticsQuery.eq("organization_id", organizationId);
   }
 
   const { data: diagnosticRows, error: diagnosticsError } =

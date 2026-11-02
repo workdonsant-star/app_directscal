@@ -1,9 +1,11 @@
 "use client";
 
+import { AdminCompanyTabs } from "@/components/admin/admin-company-tabs";
+import { useAppRuntime } from "@/components/app-runtime";
 import { useSpecialists } from "@/components/admin/use-specialists";
 import { SlackDeliveriesPanel } from "@/components/admin/slack-deliveries-panel";
 
-import { ArrowRight, Building2, CalendarDays, UserRoundCheck } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -12,7 +14,6 @@ import { AdminDeliveryStatusBadge } from "@/components/admin/admin-delivery-stat
 import { AppTopbarActionsPortal } from "@/components/app-topbar-actions-portal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -28,7 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { AdminCompanyContext } from "@/lib/data/admin-company-operations-data-source";
+import type { AdminCompanyContext } from "@/lib/data/admin-snapshot";
 
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   day: "2-digit",
@@ -38,7 +39,8 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
 
 export function AdminCompanyDetail({ context }: { context: AdminCompanyContext }) {
   const router = useRouter();
-  const { specialists: adminSpecialists, getSpecialist: getAdminSpecialist } = useSpecialists();
+  const runtime = useAppRuntime();
+  const { specialists: adminSpecialists } = useSpecialists();
   const { company, modules, operations } = context;
   const initialSpecialistId = operations.assignment.specialistId ?? "unassigned";
   const [specialistId, setSpecialistId] = useState(initialSpecialistId);
@@ -48,9 +50,6 @@ export function AdminCompanyDetail({ context }: { context: AdminCompanyContext }
   const [saveError, setSaveError] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState(operations.assignment.updatedAt);
 
-  const assignedSpecialist = getAdminSpecialist(
-    savedSpecialistId === "unassigned" ? null : savedSpecialistId,
-  );
   const activeSpecialists = adminSpecialists.filter(
     (specialist) => specialist.status === "ativo" && !specialist.archived,
   );
@@ -67,7 +66,7 @@ export function AdminCompanyDetail({ context }: { context: AdminCompanyContext }
     setSaveError(null);
     setFeedback(null);
     try {
-      const response = await fetch(`/api/admin/companies/${company.id}`, {
+      const response = await runtime.request(`/api/admin/companies/${company.id}`, {
         method: "PATCH", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ specialistId: specialistId === "unassigned" ? null : specialistId, expectedUpdatedAt: updatedAt }),
       });
@@ -94,24 +93,12 @@ export function AdminCompanyDetail({ context }: { context: AdminCompanyContext }
         </Button>
       </AppTopbarActionsPortal>
 
-      <section className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div className="space-y-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-ui-page">{company.name}</h1>
-            <Badge variant="outline">Cliente ativo</Badge>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Atribuição, acessos e histórico de entregas da empresa.
-          </p>
-        </div>
-        <Button
-          nativeButton={false}
-          variant="outline"
-          render={<Link href="/admin/empresas" />}
-        >
-          Voltar para empresas
-        </Button>
-      </section>
+      <header className="space-y-1">
+        <h1 className="text-ui-page">{company.name}</h1>
+        <p className="text-sm text-muted-foreground">Atribuição, diagnósticos encerrados e entregas.</p>
+      </header>
+
+      <AdminCompanyTabs companyId={company.id} active="operation" hasOrganization={Boolean(company.organizationId)} />
 
       {feedback ? (
         <p
@@ -122,83 +109,6 @@ export function AdminCompanyDetail({ context }: { context: AdminCompanyContext }
         </p>
       ) : null}
       {saveError ? <p role="alert" className="text-sm text-destructive">{saveError}</p> : null}
-
-      {company.organizationId ? (
-        <section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" aria-labelledby="company-assets-title">
-          <div className="space-y-1">
-            <h2 id="company-assets-title" className="text-ui-section">Criação dos ativos</h2>
-            <p className="text-sm text-muted-foreground">Produção, revisão e publicação dos ativos de gestão desta empresa.</p>
-          </div>
-          <Button nativeButton={false} variant="outline" render={<Link href={`/admin/empresas/${company.id}/criacao-dos-ativos`} />}>
-            Abrir criação dos ativos
-            <ArrowRight aria-hidden="true" />
-          </Button>
-        </section>
-      ) : null}
-
-      {company.organizationId ? (
-        <section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" aria-labelledby="company-routines-title">
-          <div className="space-y-1">
-            <h2 id="company-routines-title" className="text-ui-section">Operação das rotinas</h2>
-            <p className="text-sm text-muted-foreground">Acordos, responsáveis, origem e histórico dos action points publicados.</p>
-          </div>
-          <Button nativeButton={false} variant="outline" render={<Link href={`/admin/empresas/${company.id}/rotinas`} />}>
-            Abrir rotinas <ArrowRight aria-hidden="true" />
-          </Button>
-        </section>
-      ) : null}
-
-      <section className="grid gap-4 lg:grid-cols-3" aria-label="Resumo da empresa">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 aria-hidden="true" className="size-4 text-muted-foreground" />
-              Estrutura
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-1">
-            <p className="text-2xl font-bold tabular-nums">
-              {company.companySize ??
-                (company.employeeCount
-                  ? `${company.employeeCount.toLocaleString("pt-BR")} pessoas`
-                  : "Não informado")}
-            </p>
-            <p className="text-sm text-muted-foreground">Porte registrado</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserRoundCheck aria-hidden="true" className="size-4 text-muted-foreground" />
-              Especialista responsável
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-1">
-            <p className="text-base font-bold">
-              {assignedSpecialist?.name ?? "Não atribuído"}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {assignedSpecialist?.title ?? "Atribuição necessária"}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CalendarDays aria-hidden="true" className="size-4 text-muted-foreground" />
-              Entregas
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-1">
-            <p className="text-2xl font-bold tabular-nums">
-              {operations.deliveries.length}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {operations.deliveries.filter(item => item.status !== "publicada").length} em preparação
-            </p>
-          </CardContent>
-        </Card>
-      </section>
 
       <section
         className="grid gap-5 rounded-lg bg-card p-4 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.7fr)]"
@@ -245,7 +155,7 @@ export function AdminCompanyDetail({ context }: { context: AdminCompanyContext }
       <section className="flex flex-col gap-4" aria-labelledby="company-deliveries-title">
         <div className="space-y-1">
           <h2 id="company-deliveries-title" className="text-ui-section">
-            Entregas da empresa
+            Diagnósticos encerrados
           </h2>
           <p className="text-sm text-muted-foreground">
             Diagnósticos encerrados e o estado da preparação para o cliente.
@@ -284,7 +194,7 @@ export function AdminCompanyDetail({ context }: { context: AdminCompanyContext }
                       variant="ghost"
                       size="icon-sm"
                       aria-label={`Abrir ${delivery.diagnosticName}`}
-                      render={<Link href={`/admin/entregas/${delivery.id}`} />}
+                      render={<Link href={runtime.href(`/admin/entregas/${delivery.id}`)} />}
                     >
                       <ArrowRight aria-hidden="true" />
                     </Button> : <span className="text-xs text-muted-foreground">Sem base para análise</span>}
@@ -294,7 +204,7 @@ export function AdminCompanyDetail({ context }: { context: AdminCompanyContext }
               {operations.deliveries.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="py-12 text-center text-sm text-muted-foreground">
-                    Nenhuma entrega encerrada para esta empresa.
+                    Nenhum diagnóstico encerrado para esta empresa.
                   </TableCell>
                 </TableRow>
               ) : null}
@@ -305,7 +215,7 @@ export function AdminCompanyDetail({ context }: { context: AdminCompanyContext }
 
       {company.organizationId ? <SlackDeliveriesPanel key={company.id} companyId={company.id} /> : null}
 
-      <Link href="/admin/guia" className="w-fit text-sm underline underline-offset-4">Guia de operação</Link>
+      <Link href={runtime.href("/admin/guia")} className="w-fit text-sm underline underline-offset-4">Guia de operação</Link>
 
       <section className="flex flex-col gap-4" aria-labelledby="company-access-title">
         <div className="space-y-1">

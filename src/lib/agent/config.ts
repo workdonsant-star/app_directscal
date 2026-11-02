@@ -2,13 +2,14 @@
 // provedor de IA, o agente responde em modo extrativo (trechos citados);
 // sem provedor de embeddings, a busca usa somente o índice textual.
 
-export type AnswerProviderId = "anthropic" | "gemini" | "ollama" | "extractive";
+export type AnswerProviderId = "anthropic" | "openai" | "gemini" | "ollama" | "extractive";
 export type EmbeddingProviderId = "gemini" | "ollama" | "none";
 
 export const EMBEDDING_DIMENSIONS = 768;
 
 const defaultAnswerModels: Record<Exclude<AnswerProviderId, "extractive">, string> = {
   anthropic: "claude-opus-5-5",
+  openai: "gpt-6-luna",
   gemini: "gemini-3.5-flash-lite",
   ollama: "qwen2.5:7b",
 };
@@ -31,6 +32,7 @@ export function getAnswerProviderConfig(): { provider: AnswerProviderId; model: 
   const provider =
     readEnum(process.env.ASSET_AGENT_PROVIDER, [
       "anthropic",
+      "openai",
       "gemini",
       "ollama",
       "extractive",

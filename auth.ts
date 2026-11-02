@@ -404,11 +404,16 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       }
 
       if (supabaseAdapterConfig && typeof token.userId === "string") {
-        const version = await getUserSessionVersion(token.userId);
+        const currentUserPromise = !account && token.acquisition !== true && token.leadershipInvitation !== true
+          ? resolveSupabaseAuthUser(token.userId, typeof token.email === "string" ? token.email : null)
+          : Promise.resolve(null);
+        const [version, current] = await Promise.all([
+          getUserSessionVersion(token.userId),
+          currentUserPromise,
+        ]);
         if (account) token.securityVersion = version;
         else if ((token.securityVersion ?? "initial") !== version) return null;
         if (!account && token.acquisition !== true && token.leadershipInvitation !== true) {
-          const current = await resolveSupabaseAuthUser(token.userId, typeof token.email === "string" ? token.email : null);
           if (!current) return null;
           writeTokenUser({ token, user: current });
         }

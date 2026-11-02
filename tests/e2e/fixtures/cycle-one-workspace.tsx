@@ -1,5 +1,7 @@
 "use client";
 
+import { SpecialistsProvider } from "@/components/admin/use-specialists";
+
 import { useState, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
 import { PublicResponseForm } from "@/components/omdx/public-response-form";
@@ -12,7 +14,6 @@ import { DeliveryShell } from "@/components/admin/delivery/delivery-shell";
 import { DeliveryReportStep } from "@/components/admin/delivery/delivery-report-step";
 import { DeliveryPublishStep } from "@/components/admin/delivery/delivery-publish-step";
 import { DeliveryActionPointsStep } from "@/components/admin/delivery/delivery-action-points-step";
-import { buildInitialReport } from "@/components/admin/delivery/delivery-draft";
 import { buildAnalyticsExampleReports } from "@/lib/data/analytics-example";
 import { buildOmdxOverviewComparisonFromReports } from "@/lib/data/omdx-overview-analytics";
 import { selectCollectionForOverview } from "@/lib/data/collection-comparison";
@@ -28,7 +29,14 @@ const delivery = { ...mapAdminDeliveryFromReport(report), specialistId: "special
 const publication: AdminDeliveryPublication = {
  diagnosticId: delivery.id, organizationId: report.diagnostic.organizationId,
  specialistId: "specialist_fixture", status: "publicada",
- report: buildInitialReport("Empresa fictícia C1"), dimensionReadings: {},
+ report: {
+  executiveSummary: "Síntese editorial da empresa fictícia para a entrega já publicada.",
+  generalReading: "Leitura editorial da percepção registrada na coleta fictícia.",
+  vulnerabilities: "Fragilidades observadas nos resultados da coleta fictícia.",
+  structuralCauses: "Causas examinadas pela especialista na entrega fictícia.",
+  recommendations: "Recomendações propostas para a operação da empresa fictícia.",
+  conclusion: "Conclusão da análise publicada para a empresa fictícia.",
+ }, dimensionReadings: {},
  selectedActionPointIds: [adminActionPointTemplates[0].id],
  publishedAt: "2026-10-24T12:00:00Z", updatedAt: "2026-10-24T12:00:00Z",
 };
@@ -38,6 +46,7 @@ const workspace: GanttWorkspaceData = {
  tasks: [{ id: "root", title: "Ações", owner: "", blocker: "", status: "planejado", progress: 0, start: "2026-10-24", end: "2026-11-24", subitems: [{ id: adminActionPointTemplates[0].id, title: adminActionPointTemplates[0].title, owner: "", blocker: "", status: "planejado", progress: 0, start: "2026-10-24", end: "2026-11-24", actionPoint: { dimensionId: "processos", dimensionName: "Processos", problem: "Leitura confirmada da coleta fictícia", recommendedAction: adminActionPointTemplates[0].description, owner: "Liderança", involved: [], suggestedDeadline: adminActionPointTemplates[0].deadline, expectedImpact: "Previsibilidade", successIndicator: "Processos documentados", priority: "Alta", score: 3, gap: null } }] }],
 };
 
+const specialists = [{ id: "specialist_fixture", name: "Consultor de teste", email: "fixture@example.invalid", title: "Consultor", location: "São Paulo", status: "ativo" as const, archived: false, companyCount: 1, activeDeliveryCount: 1, createdAt: "2026-10-24T12:00:00Z" }];
 const subscribe = () => () => {};
 
 export function CycleOneWorkspace() {
@@ -47,7 +56,7 @@ export function CycleOneWorkspace() {
  const current = selectCollectionForOverview(reports, params.get("diagnostico") ?? undefined)!;
  const comparison = buildOmdxOverviewComparisonFromReports(reports, current.diagnostic.id);
  const view = params.get("view");
- return <main data-hydrated={hydrated} className="min-h-screen bg-background p-8 text-foreground">
+ return <SpecialistsProvider initialSpecialists={specialists}><main data-hydrated={hydrated} className="min-h-screen bg-background p-8 text-foreground">
   <p className="mb-5 text-xs text-muted-foreground">Verificação local com dados fictícios · APIs interceptadas nos testes · não comprova operação</p>
   {view === "analytics" ? <AnalyticsOverview {...comparison} diagnosticOptions={reports.map(item => item.diagnostic)} selectedDiagnostic={current.diagnostic.id} processUsage={null} />
    : view === "response" ? <PublicResponseForm questionOrderSeed="c1-fixture" workspace={respondent} />
@@ -57,5 +66,5 @@ export function CycleOneWorkspace() {
    <DeliveryDraftProvider analysis={getAdminDeliveryAnalysisFromReport(report)} delivery={params.get("new") === "true" ? { ...delivery, status: "em_analise" } : delivery} deliveryOptions={[{ id: delivery.id, diagnosticName: delivery.diagnosticName, closedAt: delivery.closedAt }]} publication={params.get("new") === "true" ? null : publication}>
     <DeliveryShell>{step === "preview" ? <DeliveryPublishStep /> : step === "actions" ? <DeliveryActionPointsStep /> : <DeliveryReportStep />}</DeliveryShell>
    </DeliveryDraftProvider></>}
- </main>;
+ </main></SpecialistsProvider>;
 }

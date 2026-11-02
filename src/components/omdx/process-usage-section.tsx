@@ -122,7 +122,7 @@ function ChartCard({
   children,
 }: {
   title: string;
-  description: string;
+  description?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -131,7 +131,7 @@ function ChartCard({
         <CardTitle className="text-ui-title text-card-foreground">
           {title}
         </CardTitle>
-        <p className="text-xs text-balance text-muted-foreground">{description}</p>
+        {description ? <p className="text-xs text-balance text-muted-foreground">{description}</p> : null}
       </CardHeader>
       <CardContent className="px-0">{children}</CardContent>
     </Card>
@@ -425,8 +425,10 @@ function ProcessRanking({
 
 export function ProcessUsageSection({
   analytics,
+  concise = false,
 }: {
   analytics: ProcessUsageAnalytics;
+  concise?: boolean;
 }) {
   const { periodDays } = analytics;
   const hasHistory = analytics.weekly.some(
@@ -443,11 +445,11 @@ export function ProcessUsageSection({
         <h3 id="process-usage-title" className="text-ui-title text-foreground">
           Consultas aos ativos de gestão
         </h3>
-        <p className="text-xs text-muted-foreground">
+        {!concise ? <p className="text-xs text-muted-foreground">
           Como o time consulta SOPs, playbooks e governança no WorkFlow e no
           Slack, nos últimos {periodDays} dias. Mostra adoção e clareza dos
           ativos publicados. Consulta, execução relatada e execução validada são medidas distintas.
-        </p>
+        </p> : null}
       </header>
 
       {hasHistory ? (
@@ -456,13 +458,13 @@ export function ProcessUsageSection({
           <div className="grid gap-4 xl:grid-cols-2">
             <ChartCard
               title="Perguntas por semana"
-              description="Respondidas com fonte e sem resposta publicada, nas últimas oito semanas."
+              description={concise ? undefined : "Respondidas com fonte e sem resposta publicada, nas últimas oito semanas."}
             >
               <WeeklyQuestionsChart weeks={analytics.weekly} />
             </ChartCard>
             <ChartCard
               title="Processos mais consultados"
-              description={`Ativos citados nas respostas dos últimos ${periodDays} dias. Muitas avaliações negativas indicam um processo a revisar.`}
+              description={concise ? undefined : `Ativos citados nas respostas dos últimos ${periodDays} dias. Muitas avaliações negativas indicam um processo a revisar.`}
             >
               <ProcessRanking
                 processes={analytics.processes}

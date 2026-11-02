@@ -10,9 +10,9 @@ import {
   type AdminManagementAssetDetail,
   type AdminManagementAssetListItem,
   type CreateManagementAssetInput,
+  type QuickCreateManagementAssetInput,
   type ManagementAssetStatus,
   type ManagementAssetTransition,
-  type ManagementAssetVersionStatus,
   type ManagementAssetBulkSelection,
   type ManagementAssetBulkUpdate,
   type RichTextDocument,
@@ -24,7 +24,6 @@ import {
   getChunkEmbeddingText,
 } from "@/lib/data/management-asset-indexer";
 import { getManagementAssetTemplate } from "@/lib/data/management-asset-templates";
-import { getManagementAssetReview } from "@/lib/data/management-asset-review";
 import {
   isRichTextEmpty,
   legacySopContentToRichText,
@@ -64,18 +63,12 @@ function contentToJson(content: RichTextDocument) {
   return content as unknown as Json;
 }
 
-// O estado do ativo comunica o que o cliente enxerga. Antes da primeira
-// publicação, ele espelha o estado editorial do rascunho.
+// O estado do ativo comunica o que o cliente enxerga.
 function deriveAssetStatus(
   asset: Pick<AssetRow, "archived_at" | "current_published_version_id">,
-  draftStatus: ManagementAssetVersionStatus | null,
 ): ManagementAssetStatus {
   if (asset.archived_at) return "arquivado";
   if (asset.current_published_version_id) return "publicado";
-  if (draftStatus === "em_revisao" || draftStatus === "pronto_para_publicar") {
-    return draftStatus;
-  }
-
   return "rascunho";
 }
 
@@ -153,7 +146,6 @@ export async function listAdminManagementAssets(organizationId?: string): Promis
   const publishedVersionById = new Map(
     (publishedVersions.data ?? []).map((version) => [version.id, version]),
   );
-  const now = new Date();
 
   return assets.map((asset) => {
     const draft = draftByAsset.get(asset.id) ?? null;
@@ -170,15 +162,13 @@ export async function listAdminManagementAssets(organizationId?: string): Promis
       type: asset.type,
       title: asset.title,
       category: asset.category,
-      status: deriveAssetStatus(asset, draft?.review_status ?? null),
-      draftStatus: draft?.review_status ?? null,
+      status: deriveAssetStatus(asset),
+      draftStatus: draft ? "rascunho" : null,
       publishedVersionNumber: asset.current_published_version_id
         ? (publishedVersionById.get(asset.current_published_version_id)?.version_number ?? null)
         : null,
       specialistId: asset.assigned_specialist_id,
       ownerLabel: asset.owner_label,
-      reviewCycle: asset.review_cycle,
-      review: getManagementAssetReview({ publishedAt: publishedVersionById.get(asset.current_published_version_id ?? "")?.published_at ?? null, reviewCycle: asset.review_cycle, archivedAt: asset.archived_at }, now),
       updatedAt: toIso(lastChange),
     });
   });
@@ -218,11 +208,10 @@ function mapVersion(row: VersionRow) {
   return {
     id: row.id,
     versionNumber: row.version_number,
-    status: row.review_status,
+    status: row.published_at === null ? "rascunho" : row.review_status,
     changeNote: row.change_note,
     createdAt: toIso(row.created_at),
     updatedAt: toIso(row.updated_at),
-    reviewedAt: toIsoOrNull(row.reviewed_at),
     publishedAt: toIsoOrNull(row.published_at),
     indexStatus: row.index_status,
     indexError: row.index_error,
@@ -273,9 +262,8 @@ export async function getAdminManagementAssetDetail(
     summary: asset.description ?? "",
     category: asset.category,
     ownerLabel: asset.owner_label,
-    reviewCycle: asset.review_cycle,
     specialistId: asset.assigned_specialist_id,
-    status: deriveAssetStatus(asset, draft?.review_status ?? null),
+    status: deriveAssetStatus(asset),
     archivedAt: toIsoOrNull(asset.archived_at),
     updatedAt: toIso(asset.updated_at),
     revision: { assetUpdatedAt: asset.updated_at, draftId: draft?.id ?? null, draftUpdatedAt: draft?.updated_at ?? null },
@@ -317,7 +305,6 @@ export async function updateManagementAssetsInBulk(input: ManagementAssetBulkUpd
   if (input.changes.specialistId !== undefined) changes.assigned_specialist_id = input.changes.specialistId;
   if (input.changes.category !== undefined) changes.category = input.changes.category;
   if (input.changes.ownerLabel !== undefined) changes.owner_label = input.changes.ownerLabel;
-  if (input.changes.reviewCycle !== undefined) changes.review_cycle = input.changes.reviewCycle;
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase.from("management_assets").update(changes)
     .eq("organization_id", input.organizationId).in("id", input.assetIds)
@@ -386,7 +373,6 @@ export async function createManagementAsset(
       description: input.summary,
       category: input.category,
       owner_label: input.ownerLabel,
-      review_cycle: input.reviewCycle,
       assigned_specialist_id: input.specialistId,
       created_by_user_id: actorUserId,
       status: "rascunho",
@@ -418,21 +404,43 @@ export async function createManagementAsset(
   return asset.id;
 }
 
-async function syncUnpublishedAssetStatus(asset: AssetRow) {
-  if (asset.current_published_version_id || asset.archived_at) return;
+const initialAssetSummary = "Resumo a definir.";
+const initialAssetOwner = "Responsável a definir";
+const initialTemplateByType = {
+  sop: "estrutura-sop",
+  playbook: "estrutura-playbook",
+  governanca: "estrutura-governanca",
+  raci: "estrutura-raci",
+} as const;
+const initialTitleByType = {
+  sop: "Novo SOP",
+  playbook: "Novo Playbook",
+  governanca: "Nova Governança",
+  raci: "Nova matriz RACI",
+} as const;
 
-  const versions = await getVersionRows(asset.id);
-  const draft = versions.find((version) => version.published_at === null);
-  const status = deriveAssetStatus(asset, draft?.review_status ?? null);
+export async function createQuickManagementAsset(
+  actorUserId: string,
+  input: QuickCreateManagementAssetInput,
+) {
+  const template = getManagementAssetTemplate(initialTemplateByType[input.type]);
+  if (!template) throw new ManagementAssetError("Modelo inicial indisponível.", 500);
 
-  if (status !== asset.status) {
-    const supabase = createSupabaseAdminClient();
-    const { error } = await supabase
-      .from("management_assets")
-      .update({ status })
-      .eq("id", asset.id);
+  return createManagementAsset(actorUserId, {
+    organizationId: input.organizationId,
+    type: input.type,
+    title: initialTitleByType[input.type],
+    summary: initialAssetSummary,
+    category: input.category,
+    ownerLabel: initialAssetOwner,
+    specialistId: null,
+    templateId: template.id,
+  });
+}
 
-    if (error) throw error;
+function requireCompletedAssetMetadata(asset: AssetRow) {
+  if (asset.title === initialTitleByType[asset.type as keyof typeof initialTitleByType] || !asset.description?.trim() || asset.description === initialAssetSummary || !asset.owner_label?.trim() || asset.owner_label === initialAssetOwner) {
+    throw new ManagementAssetError("Preencha título, resumo e líder responsável antes de publicar.");
   }
 }
 
@@ -494,27 +502,6 @@ export async function updateManagementAsset(
     if (error.code === "PT400") throw new ManagementAssetError("Revise os dados e o especialista do ativo.", 400);
     throw new ManagementAssetError("Não foi possível salvar o ativo. Seu texto permanece no editor.", 500);
   }
-}
-
-async function setDraftStatus(
-  draft: VersionRow,
-  from: ManagementAssetVersionStatus[],
-  to: ManagementAssetVersionStatus,
-  extra: Database["public"]["Tables"]["management_asset_versions"]["Update"] = {},
-) {
-  if (!from.includes(draft.review_status)) {
-    throw new ManagementAssetError("Esta ação não está disponível no estado atual.", 409);
-  }
-
-  const supabase = createSupabaseAdminClient();
-  const { error } = await supabase
-    .from("management_asset_versions")
-    .update({ review_status: to, ...extra })
-    .eq("id", draft.id)
-    .eq("review_status", draft.review_status)
-    .is("published_at", null);
-
-  if (error) throw error;
 }
 
 async function buildChunkPayload(title: string, content: RichTextDocument) {
@@ -651,40 +638,9 @@ export async function transitionManagementAsset(
       await createDraftFromPublished(actorUserId, asset, versions);
       return { notice: "Nova versão aberta em rascunho." };
     }
-    case "enviar_para_revisao": {
-      requireActive();
-      const current = requireDraft();
-      const content = parseStoredAssetContent(current.content);
-
-      if (!content || isRichTextEmpty(content)) {
-        throw new ManagementAssetError("Escreva o conteúdo antes de enviar para revisão.");
-      }
-
-      await setDraftStatus(current, ["rascunho"], "em_revisao");
-      await syncUnpublishedAssetStatus(asset);
-      return { notice: "Rascunho enviado para revisão." };
-    }
-    case "aprovar_revisao": {
-      requireActive();
-      await setDraftStatus(requireDraft(), ["em_revisao"], "pronto_para_publicar", {
-        reviewed_by_user_id: actorUserId,
-        reviewed_at: new Date().toISOString(),
-      });
-      await syncUnpublishedAssetStatus(asset);
-      return { notice: "Revisão concluída. A versão está pronta para publicar." };
-    }
-    case "devolver_para_rascunho": {
-      await setDraftStatus(
-        requireDraft(),
-        ["em_revisao", "pronto_para_publicar"],
-        "rascunho",
-        { reviewed_by_user_id: null, reviewed_at: null },
-      );
-      await syncUnpublishedAssetStatus(asset);
-      return { notice: "Versão devolvida para rascunho." };
-    }
     case "publicar": {
       requireActive();
+      requireCompletedAssetMetadata(asset);
       const { embeddingError } = await publishDraft(actorUserId, asset, requireDraft());
       return {
         notice: embeddingError
@@ -708,7 +664,7 @@ export async function transitionManagementAsset(
         .from("management_assets")
         .update({
           archived_at: null,
-          status: deriveAssetStatus(restored, draft?.review_status ?? null),
+          status: deriveAssetStatus(restored),
         })
         .eq("id", asset.id);
       if (error) throw error;

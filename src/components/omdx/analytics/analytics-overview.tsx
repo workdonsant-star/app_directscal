@@ -24,6 +24,10 @@ type AnalyticsOverviewProps = {
   selectedDiagnostic: string;
   illustrativeImpact?: boolean;
   actionPointsHref?: string;
+  showActionPointsLink?: boolean;
+  concise?: boolean;
+  /** Esconde título e filtro quando a página já os mostra (ex.: filtro na linha das abas). */
+  hideHeader?: boolean;
 };
 
 export function AnalyticsOverview({
@@ -34,6 +38,9 @@ export function AnalyticsOverview({
   selectedDiagnostic,
   illustrativeImpact = false,
   actionPointsHref,
+  showActionPointsLink = true,
+  concise = false,
+  hideHeader = false,
 }: AnalyticsOverviewProps) {
   const overview = buildAnalyticsOverview({ analytics, comparison, processUsage, illustrativeImpact });
   const diagnostic = diagnosticOptions.find(item => item.id === selectedDiagnostic);
@@ -47,12 +54,12 @@ export function AnalyticsOverview({
 
   return (
     <div className="flex w-full flex-col gap-10">
-      <header className="flex flex-wrap items-start justify-between gap-4">
+      {hideHeader ? null : <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex max-w-3xl flex-col gap-1">
-          <h1 className="text-ui-section text-foreground">Percepção e acompanhamento</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-ui-section text-foreground">{concise ? "Pesquisa" : "Percepção e acompanhamento"}</h1>
+          {!concise ? <p className="text-sm text-muted-foreground">
             Resultados da pesquisa na escala de 1 a 5, separados das consultas aos ativos e da execução.
-          </p>
+          </p> : null}
         </div>
         <OverviewDiagnosticFilter
           diagnostics={diagnosticOptions}
@@ -60,7 +67,7 @@ export function AnalyticsOverview({
           value={selectedDiagnostic}
           allowAll={illustrativeImpact}
         />
-      </header>
+      </header>}
 
       <AnalyticsLevel id="nivel-veredito" title="Leitura da coleta">
         <CollectionReading score={overview.verdict?.maturity ?? null} responses={responses} />
@@ -69,31 +76,32 @@ export function AnalyticsOverview({
       <div className="grid gap-10 xl:grid-cols-2 xl:gap-4">
         <AnalyticsLevel id="nivel-gap" title="Onde está o gap">
           <AnalyticsDimensionGapChart
+            concise={concise}
             dimensions={overview.dimensions}
             referenceLabel={comparison?.referenceLabel ?? null}
             target={illustrativeImpact ? maturityCutoff : null}
           />
         </AnalyticsLevel>
         <AnalyticsLevel id="nivel-camadas" title="Quem vê diferente">
-          <AnalyticsLayerPerceptionChart gapCutoff={gapCutoff} rows={overview.layers} />
+          <AnalyticsLayerPerceptionChart gapCutoff={gapCutoff} rows={overview.layers} concise={concise} />
         </AnalyticsLevel>
       </div>
 
       <AnalyticsLevel id="nivel-alavancas" title="O que atacar e como está andando">
-        <AnalyticsLeverTable levers={overview.levers} illustrative={illustrativeImpact} actionPointsHref={actionPointsHref ?? (diagnostic ? `/action-points?diagnostico=${encodeURIComponent(diagnostic.id)}` : "/action-points")} />
+        <AnalyticsLeverTable levers={overview.levers} illustrative={illustrativeImpact} actionPointsHref={actionPointsHref ?? (diagnostic ? `/action-points?diagnostico=${encodeURIComponent(diagnostic.id)}` : "/action-points")} showActionPointsLink={showActionPointsLink} concise={concise} />
       </AnalyticsLevel>
 
       <AnalyticsLevel id="nivel-perguntas" title="Onde dói, pergunta a pergunta">
-        <AnalyticsQuestionTable gapCutoff={gapCutoff} rows={overview.questions} total={overview.questionTotal} />
+        <AnalyticsQuestionTable gapCutoff={gapCutoff} rows={overview.questions} total={overview.questionTotal} concise={concise} />
       </AnalyticsLevel>
 
       <AnalyticsLevel id="nivel-execucao" title="Consultas e execução">
         <div className="flex flex-col gap-8">
-          {processUsage ? <ProcessUsageSection analytics={processUsage} /> : <p className="text-sm text-muted-foreground">Consultas aos ativos: sem dados disponíveis.</p>}
-          <section className="space-y-2">
+          {processUsage ? <ProcessUsageSection analytics={processUsage} concise={concise} /> : <p className="text-sm text-muted-foreground">Consultas aos ativos: sem dados disponíveis.</p>}
+          {!concise ? <section className="space-y-2">
             <h2 className="text-ui-title">Execução das rotinas e resultados</h2>
             <p className="text-sm text-muted-foreground">Sem medição consolidada neste painel. Consulte os relatos e as validações em Action Points. Consultar um ativo não comprova execução nem altera a nota da pesquisa.</p>
-          </section>
+          </section> : null}
         </div>
       </AnalyticsLevel>
     </div>

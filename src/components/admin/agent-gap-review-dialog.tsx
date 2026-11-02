@@ -1,4 +1,5 @@
 "use client";
+import { useAppRuntime } from "@/components/app-runtime";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { agentGapInputSchema, type AgentOperations } from "@/lib/contracts/agent
 export const gapStatusLabels = { aberta: "Aberta", em_andamento: "Em andamento", resolvida: "Resolvida" };
 const date = (value: string) => new Date(value).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
 export function AgentGapReviewDialog({ audit, operations, companyId }: { audit: AdminAssetQuestionAudit; operations: AgentOperations; companyId: string }) {
+  const runtime = useAppRuntime();
   const router = useRouter();
   const history = operations.reviews.filter(item => item.auditId === audit.id).sort((a, b) => a.sequence - b.sequence);
   const latest = history.at(-1);
@@ -28,7 +30,7 @@ export function AgentGapReviewDialog({ audit, operations, companyId }: { audit: 
     if (!parsed.success) { setError("Revise responsável, justificativa, prazo e link HTTPS de evidência. Para resolver, responsável e evidência são obrigatórios."); return; }
     setPending(true);
     try {
-      const response = await fetch(`/api/admin/companies/${companyId}/agent-operations`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(parsed.data) });
+      const response = await runtime.request(`/api/admin/companies/${companyId}/agent-operations`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(parsed.data) });
       const body = await response.json(); if (!response.ok) throw new Error(body.message ?? "Não foi possível salvar.");
       setOpen(false); setNotice("Revisão registrada. Atualizando o histórico."); router.refresh();
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Não foi possível salvar. Seu texto foi mantido."); }

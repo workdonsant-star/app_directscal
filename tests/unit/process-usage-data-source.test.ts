@@ -11,7 +11,7 @@ import { getCurrentAuthSession } from "@/lib/auth/session";
 import { getAccessibleOrganizationIdsForUser } from "@/lib/auth/authorization";
 import { getSlackSectorLeaders } from "@/lib/data/slack-leadership-data-source";
 import { getVerifiedSlackIdentities } from "@/lib/data/slack-identity-data-source";
-import { getProcessUsageOverview } from "@/lib/data/process-usage-data-source";
+import { getAdminProcessUsageOverview, getProcessUsageOverview } from "@/lib/data/process-usage-data-source";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 const filters = vi.fn();
@@ -50,6 +50,20 @@ beforeEach(() => {
 });
 
 describe("fonte de uso por empresa", () => {
+  it("permite leitura administrativa somente do escopo solicitado por superadmin", async () => {
+    vi.mocked(getCurrentAuthSession).mockResolvedValue({ user: { id: "global", role: "superadmin" } } as Awaited<ReturnType<typeof getCurrentAuthSession>>);
+    const result = await getAdminProcessUsageOverview("empresa-alvo");
+    expect(result?.totals.askers).toBe(1);
+    expect(getAccessibleOrganizationIdsForUser).not.toHaveBeenCalled();
+    for (const table of ["organization_people", "operational_members", "asset_question_audits", "asset_answer_feedback"]) {
+      expect(filters).toHaveBeenCalledWith(table, "organization_id", "empresa-alvo");
+    }
+    vi.mocked(getCurrentAuthSession).mockResolvedValue({ user: { id: "owner", role: "cliente" } } as Awaited<ReturnType<typeof getCurrentAuthSession>>);
+    filters.mockClear();
+    expect(await getAdminProcessUsageOverview("outra-empresa")).toBeNull();
+    expect(filters).not.toHaveBeenCalled();
+  });
+
   it("inclui líder só do Slack uma vez e usa o mesmo escopo em todas as leituras", async () => {
     const result = await getProcessUsageOverview();
     expect(result?.totals).toMatchObject({ teamSize: 1, askers: 1 });

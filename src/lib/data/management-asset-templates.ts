@@ -15,7 +15,6 @@ export type ManagementAssetTemplate = {
   summary: string | null;
   category: string | null;
   ownerLabel: string | null;
-  reviewCycle: string | null;
   content: LegacySopDocumentContent;
 };
 
@@ -23,7 +22,6 @@ const sopDocumentDetails: Record<string, LegacySopDocumentContent> = {
   "sop-geracao-papeis-atribuicoes": {
     version: "1.0",
     operationalOwner: "DirectScal",
-    reviewCycle: "Semestral",
     sections: [
       {
         id: "objetivo",
@@ -272,7 +270,6 @@ const sopDocumentDetails: Record<string, LegacySopDocumentContent> = {
   "sop-onboarding-clientes": {
     version: "1.3",
     operationalOwner: "Customer Success",
-    reviewCycle: "Semestral",
     sections: [
       {
         id: "objetivo",
@@ -360,7 +357,6 @@ const sopDocumentDetails: Record<string, LegacySopDocumentContent> = {
   "sop-aprovacao-campanhas": {
     version: "1.1",
     operationalOwner: "Marketing",
-    reviewCycle: "Trimestral",
     sections: [
       {
         id: "objetivo",
@@ -430,7 +426,6 @@ const sopDocumentDetails: Record<string, LegacySopDocumentContent> = {
   "sop-fechamento-financeiro": {
     version: "2.0",
     operationalOwner: "Financeiro",
-    reviewCycle: "Anual",
     sections: [
       {
         id: "objetivo",
@@ -521,7 +516,6 @@ export const managementAssetTemplates: ManagementAssetTemplate[] = [
     summary: null,
     category: null,
     ownerLabel: null,
-    reviewCycle: "Semestral",
     content: {
       sections: [
         { id: "escopo", title: "Escopo", blocks: [{ type: "paragraph", text: "Defina o processo, as atividades e as decisões cobertas por esta matriz." }] },
@@ -545,7 +539,6 @@ export const managementAssetTemplates: ManagementAssetTemplate[] = [
     summary: null,
     category: null,
     ownerLabel: null,
-    reviewCycle: "Semestral",
     content: emptySections([
       "Objetivo",
       "Quando aplicar",
@@ -564,7 +557,6 @@ export const managementAssetTemplates: ManagementAssetTemplate[] = [
     summary: null,
     category: null,
     ownerLabel: null,
-    reviewCycle: "Semestral",
     content: emptySections([
       "Objetivo",
       "Quando usar",
@@ -582,7 +574,6 @@ export const managementAssetTemplates: ManagementAssetTemplate[] = [
     summary: null,
     category: null,
     ownerLabel: null,
-    reviewCycle: "Anual",
     content: emptySections([
       "Propósito",
       "Participantes",
@@ -602,7 +593,6 @@ export const managementAssetTemplates: ManagementAssetTemplate[] = [
       "Define o fluxo para transformar o entendimento do líder em um documento validado de papel e atribuições por nível.",
     category: "Estruturação",
     ownerLabel: "DirectScal",
-    reviewCycle: "Semestral",
     content: sopDocumentDetails["sop-geracao-papeis-atribuicoes"],
   },
   {
@@ -615,7 +605,6 @@ export const managementAssetTemplates: ManagementAssetTemplate[] = [
       "Padroniza a entrada do cliente, a coleta de acessos e a reunião inicial da operação.",
     category: "Atendimento",
     ownerLabel: "Customer Success",
-    reviewCycle: "Semestral",
     content: sopDocumentDetails["sop-onboarding-clientes"],
   },
   {
@@ -628,7 +617,6 @@ export const managementAssetTemplates: ManagementAssetTemplate[] = [
       "Define entradas, responsáveis e critérios de pronto antes da ativação de uma campanha.",
     category: "Marketing",
     ownerLabel: "Marketing",
-    reviewCycle: "Trimestral",
     content: sopDocumentDetails["sop-aprovacao-campanhas"],
   },
   {
@@ -641,7 +629,6 @@ export const managementAssetTemplates: ManagementAssetTemplate[] = [
       "Organiza conciliação, validações e prazos para o fechamento financeiro da empresa.",
     category: "Financeiro",
     ownerLabel: "Financeiro",
-    reviewCycle: "Anual",
     content: sopDocumentDetails["sop-fechamento-financeiro"],
   },
 ];

@@ -1,3 +1,6 @@
+"use client";
+
+import { useAppRuntime } from "@/components/app-runtime";
 import Link from "next/link";
 import { DocumentTableOfContents } from "@/components/document-table-of-contents";
 
@@ -20,9 +23,9 @@ const customerSections: GuideSection[] = [
     "Baixar Action Points fica na barra superior da página. O download reúne as ações publicadas da coleta selecionada.",
   ], links: [{ label: "Abrir Diagnósticos", href: "/relatorios" }, { label: "Abrir Action Points", href: "/action-points" }] },
   { id: "ativos", title: "Usar e manter os ativos de gestão", steps: [
-    "Abra uma pasta em Ativos de gestão e selecione o documento. Confira líder responsável, versão, ciclo de revisão e data de atualização. Baixar MD exporta o conteúdo publicado.",
-    "Uma revisão vencida indica manutenção pendente; o documento permanece disponível até ser atualizado ou arquivado pela operação.",
-    "O dono da empresa pode usar Editar ativo. Nesse caminho, Salvar atualização publica uma nova versão imediatamente. Para revisão editorial antes da publicação, solicite a alteração à operação DirectScal.",
+    "Abra uma pasta em Ativos de gestão e selecione o documento. Confira líder responsável, versão e data de atualização. Baixar MD exporta o conteúdo publicado.",
+    "Um documento publicado permanece disponível até ser atualizado ou arquivado pela operação.",
+    "O dono da empresa pode usar Editar ativo. Nesse caminho, Salvar atualização publica uma nova versão imediatamente. A operação Directscal também pode editar o rascunho e publicá-lo diretamente.",
   ], links: [{ label: "Abrir Ativos de gestão", href: "/ativos-de-gestao" }] },
   { id: "consulta", title: "Tirar dúvidas no app e no Slack", steps: [
     "No documento, use Consultar agente. Escreva uma pergunta específica, com o nome do processo e a dúvida. O agente consulta os ativos publicados para sua empresa.",
@@ -43,17 +46,17 @@ const operationSections: GuideSection[] = [
     "Salvar rascunho preserva a versão que o cliente já recebeu. Revise a prévia e publique quando relatório, ações e especialista estiverem corretos. Para corrigir uma entrega publicada, edite, confira e publique novamente.",
     "No contexto autorizado do cliente, confira o relatório, seus dois PDFs e as ações da mesma coleta. Atribuição de responsável e prazo acordado são acompanhamentos próprios das ações.",
   ], links: [{ label: "Abrir Operação", href: "/admin/operacao" }] },
-  { id: "publicacao", title: "Criar, revisar e publicar um ativo", steps: [
-    "No detalhe da empresa, abra Criação dos ativos. Use Criar ativo, escolha SOP, Playbook, Governança ou Matriz RACI e um modelo ou documento em branco.",
-    "Preencha título, resumo, conteúdo, líder responsável e ciclo de revisão. Na RACI, confira as atividades e as responsabilidades de executar, aprovar, consultar e informar.",
-    "Salve a versão, envie para revisão, aprove a revisão e publique. Somente a versão publicada vigente fica disponível ao cliente e à consulta do agente.",
-    "Ao alterar um ativo já publicado, salve o rascunho e confira que a versão anterior continua pública. Publique a revisão para disponibilizar a nova instrução. Se houver conflito, preserve sua redação e confira a versão mais recente antes de reaplicar a alteração.",
-    "Use Revisão vencida na lista para localizar manutenção pendente e conferir responsável e prazo. Sem periodicidade definida não há prazo calculado. Arquivar retira o ativo da consulta vigente e preserva o histórico; Restaurar ativo recupera o documento conforme seu estado editorial. Ativos ligados a rotinas devem ser arquivados, sem exclusão definitiva.",
+  { id: "publicacao", title: "Criar e publicar um ativo", steps: [
+    "No detalhe da empresa, abra Criação dos ativos. Use Novo ativo, escolha a categoria e clique em SOP, Playbook, Governança ou Matriz RACI. O modelo padrão abre direto no editor.",
+    "Edite título e conteúdo. Preencha resumo e líder responsável na lateral. Na RACI, confira as atividades e as responsabilidades de executar, aprovar, consultar e informar.",
+    "As alterações são salvas durante a edição. Publique o rascunho quando estiver completo. Somente a versão publicada vigente fica disponível ao cliente e à consulta do agente.",
+    "Ao alterar um ativo já publicado, salve o rascunho e confira que a versão anterior continua pública. Publique a nova versão para disponibilizar a instrução. Se houver conflito, preserve sua redação e confira a versão mais recente antes de reaplicar a alteração.",
+    "Arquivar retira o ativo da consulta vigente e preserva o histórico; Restaurar ativo recupera o documento conforme seu estado. Ativos ligados a rotinas devem ser arquivados, sem exclusão definitiva.",
   ] },
   { id: "qualidade", title: "Conferir a consulta e corrigir orientações", steps: [
     "Depois de publicar, teste uma pergunta específica no app com uma conta cliente autorizada. Confira resposta, fonte e versão; depois repita no Slack de teste conectado à mesma empresa.",
     "Pergunte também algo ausente no acervo: o agente deve reconhecer que não encontrou orientação suficiente. Falha técnica não conta como recusa correta.",
-    "Na área de Perguntas dos ativos, revise lacunas e avaliações. Corrija o documento, passe pela revisão editorial, publique e repita a pergunta. Não corrija só a resposta isolada se a orientação publicada estiver errada.",
+    "Na área de Perguntas dos ativos, examine lacunas e avaliações. Corrija o documento, publique e repita a pergunta. Não corrija só a resposta isolada se a orientação publicada estiver errada.",
   ] },
   { id: "falhas", title: "Tratar uma falha no Slack", steps: [
     "No detalhe da empresa, abra Entregas no Slack e use Consultar entregas. A lista mostra metadados, estado, tentativas e confirmação, sem expor o texto das conversas.",
@@ -65,6 +68,7 @@ const operationSections: GuideSection[] = [
 ];
 
 export function ProductGuide({ audience }: { audience: "customer" | "operation" }) {
+  const runtime = useAppRuntime();
   const sections = audience === "operation" ? operationSections : customerSections;
   return <div className="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-[220px_minmax(0,760px)]">
     <aside className="hidden lg:block"><div className="sticky top-8"><DocumentTableOfContents ariaLabel="Nesta página" items={sections.map(section => ({ href: `#${section.id}`, label: section.title }))} /></div></aside>
@@ -74,7 +78,7 @@ export function ProductGuide({ audience }: { audience: "customer" | "operation" 
       {sections.map(section => <section key={section.id} id={section.id} className="scroll-mt-8 border-b py-8 last:border-0">
         <h2 className="text-ui-section">{section.title}</h2>
         <ol className="mt-4 list-decimal space-y-3 pl-5 text-sm leading-7 text-muted-foreground">{section.steps.map(step => <li key={step}>{step}</li>)}</ol>
-        {section.links ? <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2">{section.links.map(link => <Link className="rounded-sm text-sm underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-ring" key={link.href} href={link.href}>{link.label}</Link>)}</div> : null}
+        {section.links ? <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2">{section.links.map(link => <Link className="rounded-sm text-sm underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-ring" key={link.href} href={runtime.href(link.href)}>{link.label}</Link>)}</div> : null}
       </section>)}
     </article>
   </div>;

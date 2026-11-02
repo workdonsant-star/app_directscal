@@ -22,7 +22,7 @@ Não há exclusão/retencão automática nova; a política permanece dependente 
 
 1. Abrir a empresa e Perguntas ao agente. Separar erro técnico, falta de regra publicada e resposta não útil.
 2. Atribuir operador global com prazo e justificativa. Não alterar a avaliação original para retirar uma lacuna da fila.
-3. Para conteúdo: revisar a publicação vigente, publicar pela revisão editorial e repetir a pergunta. Para busca: conferir índice e reindexar quando necessário. Fechar somente com link de evidência verificável.
+3. Para conteúdo: conferir a publicação vigente, corrigir o rascunho, publicar diretamente e repetir a pergunta. Para busca: conferir índice e reindexar quando necessário. Fechar somente com link de evidência verificável.
 4. Para falha Slack: abrir recuperação no workspace de rotinas, conferir estado/versão. Falha confirmada pode ser retomada; envio incerto exige conferir mensagem no Slack antes de qualquer decisão. Nunca repetir cegamente um envio incerto.
 5. Para silêncio/bloqueio/evidência: usar supervisão A07; prazo de retorno não altera o prazo original da oportunidade nem o denominador.
 6. Sem alertas externos configurados, uma pessoa precisa assumir a consulta periódica da fila. Definir responsável e SLA operacional no aceite; não declarar que o sistema está sendo monitorado continuamente.

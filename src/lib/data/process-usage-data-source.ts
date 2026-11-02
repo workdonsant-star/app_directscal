@@ -67,6 +67,17 @@ export async function getProcessUsageOverview() {
 
   if (!organizationId) return null;
 
+  return loadProcessUsageOverview(organizationId);
+}
+
+export async function getAdminProcessUsageOverview(organizationId: string) {
+  const session = await getCurrentAuthSession();
+  if (!session || session.user.role !== "superadmin") return null;
+  return loadProcessUsageOverview(organizationId);
+}
+
+async function loadProcessUsageOverview(organizationId: string) {
+
   const lookbackDays = Math.max(2 * PROCESS_USAGE_PERIOD_DAYS, PROCESS_USAGE_WEEKS * 7);
   const now = new Date();
   const since = new Date(now.getTime() - lookbackDays * DAY_MS).toISOString();

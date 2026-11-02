@@ -1,12 +1,20 @@
 # Testes unitários
 
-`demo.test.ts` valida ligação entre ativos/rotinas e os quatro tipos, fonte/recusa do agente, reentrada do estado local, proteção das coletas encerradas e revisão única. Não chama serviços externos.
+`demo.test.ts` valida ligação entre ativos/rotinas e os quatro tipos, fonte/recusa do agente, reentrada do estado local, proteção das coletas encerradas, revisão única e roteamento isolado entre as visões de cliente e superadmin. Não chama serviços externos.
+
+`agent-openai-provider.test.ts` valida a chamada estruturada ao endpoint Responses da OpenAI com fonte fictícia, segredo somente no header e `store: false`; o transporte é substituído e não usa uma chave real.
+
+`admin-action-points-view.test.ts` verifica agrupamento das ações publicadas por responsável e uso da revisão vigente da rotina sem confundir Action Points de diagnósticos diferentes.
+
+`action-point-follow-up-classification.test.ts` cobre silêncio após prazo e entrega, falha de transporte, resposta vaga/contraditória, cumprimento parcial, falta de evidência e atendimento. A regra ainda não recebe respostas reais do Slack.
 
 Vitest em ambiente Node, com alias `@/` configurado na raiz. Teste regras de domínio e contratos com dados fictícios, sem acessar serviços externos. Para mudanças localizadas, rode o arquivo específico. Os testes de categorias garantem agrupamento por categoria, normalização e conservação de todos os ativos.
 
 C1: collection-comparison verifica seleção da coleta por data original, IDs de pergunta independentes, mudança de texto/conjunto/empresa e exclusão de referências incompatíveis sem mutar o histórico.
 
 `management-asset-download.test.ts` verifica o handler de Markdown com sessão e data-source substituídos: exige autenticação, bloqueia superadmin antes da leitura, recusa tipo/ativo indisponível e valida attachment sem cache com nome seguro para os quatro tipos. O corpo Markdown é gerado pelo helper real; seus casos de formatação têm testes separados.
+
+`customer-document-download.test.ts` verifica que arquivos privados enviados pela operação exigem sessão e membership da mesma empresa antes de baixar; confirma attachment sem cache, sem expor o caminho do bucket.
 
 `management-asset-markdown.test.ts` verifica metadados, títulos, marcas combinadas, links com parênteses, texto literal, listas aninhadas com início personalizado, destaques e tabelas com quebras, barras e ausência de cabeçalho.
 
@@ -66,7 +74,7 @@ A09: `process-usage-population.test.ts` cobre liderança Slack única entre seto
 
 A11: company-specialist-assignment.test.ts cobre sessão/papel, payload estrito, empresa/ator confiáveis, remoção, conflitos e falhas sem vazamento. published-specialist-contact.test.ts cobre seleção do contato publicado, campos mínimos e ausência de identidade/telefone/experiência fixos. Complemento SQL verifica persistência real e isolamento.
 
-A12: `management-asset-raci.test.ts` cobre criação/modelo RACI e recusa de tipo incompatível. `management-asset-review.test.ts` cobre prazo inclusivo em São Paulo, fim de mês, ano bissexto e ausência explícita de prazo; não representa homologação visual da fila administrativa.
+A12: `management-asset-raci.test.ts` cobre criação/modelo RACI e recusa de tipo incompatível. A publicação direta do rascunho substituiu a etapa de revisão dos ativos.
 
 A03: asset-adherence.test.ts separa leitura/relato/validação/resultado, exceção aprovada/recusada, duplicação, limites de período, fatos futuros e agregados. asset-adherence-data-source.test.ts verifica escopo/ator, leitura de 1.001 ciclos sem truncar base, inconsistências e falhas sem detalhes sensíveis. Não realiza chamadas externas.
 
@@ -118,3 +126,17 @@ A suíte demo também cobre URLs escopadas, recusa de destinos externos/IDs desc
 
 
 `superadmin-provisioning.test.ts` confere que o login conserva o membership global existente sem recriar a organização original por domínio após exclusão.
+
+`admin-campaigns-loading.test.ts` verifica HTML inicial com campanha persistida, ausência de seeds durante a renderização, vazio real, feature flag, autorização antes da leitura privilegiada e falha sem fallback fictício. Não escreve no banco.
+
+O mesmo teste cobre Empresas: HTML inicial com apenas organizações persistidas, ausência das empresas seed e de leads sem conta, vazio sem seleção, entrada mesmo com a aquisição desativada e autorização antes da leitura.
+
+`admin-acquisition-snapshot.test.ts` verifica leituras independentes sem bloqueio por campanhas lentas, recusa de snapshot parcial em erro, seleção de organizações com membership cliente e compatibilidade com a tabela opcional de acessos ausente.
+
+`process-usage-data-source.test.ts` também cobre a leitura administrativa do espelho de Analytics: somente superadmin recebe dados, e todas as tabelas usam a organização solicitada; cliente não acessa esse caminho.
+
+A regressão de carregamento também cobre Leads (lista e detalhe), Módulos e ausência de organizações seed quando a fonte é omitida. `shared-loading.test.ts` verifica diretório de especialistas no HTML inicial e iniciativas sem exemplos antes de hidratar. `settings-loading.test.ts` garante que Empresa não espera consultas de setores/Slack e que cada seção busca somente seus dados. Os testes usam substitutos, sem acesso externo.
+
+A suíte demo verifica também edição/publicação administrativa preservando versão anterior, conflito de revisão, criação dos quatro tipos, metadados em massa, recusa de empresa/ativo externo, proteção de vínculos históricos, pausa/retomada e captura de baseline após reentrada. Roteamento e downloads de entregas permanecem na demo.
+
+A suíte demo cobre reentrada de action points pontuais antigos e novos sem prazo, recorrentes com e sem encerramento, preservando as demais alterações do cenário.

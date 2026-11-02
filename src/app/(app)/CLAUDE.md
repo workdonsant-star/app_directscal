@@ -15,3 +15,9 @@ SidebarInset usa `overflow-clip` explícito, sem criar área de rolagem program�
 - `organization_asset_navigation` persiste ordem e ícones por empresa com RLS e grants somente service_role. `asset-navigation` define payload estrito e catálogo fechado; layout lê pela empresa da sessão, PUT /api/settings/asset-navigation exige dono cliente e ignora qualquer tentativa de escolher organização no payload. Sem localStorage nem modificação de documentos/categorias.
 
 - Layout incorpora categories persistidas às pastas dos ativos, inclusive vazias. Chaves estáveis conservam endereço e preferências depois de renomear.
+- Após o gate de onboarding, nome da empresa para a sidebar, metadados dos ativos publicados e preferências de navegação são lidos em paralelo. O perfil completo fica nas páginas próprias; o redirect de autorização continua antes dessas leituras.
+- O layout externo renderiza um fallback neutro via Suspense enquanto o layout interno valida sessão, onboarding e navegação. O fallback não contém dados de usuário nem conteúdo protegido; somente o layout interno renderiza `children` depois da autorização.
+
+## Carregamento compartilhado
+
+`loading.tsx` oferece skeleton neutro nas rotas autenticadas sem fallback específico; nunca representa dados já carregados. `error.tsx` oferece nova tentativa sem detalhes internos. Layouts com leituras próprias ainda precisam concluir sua autorização; este fallback não promete tempo de carregamento fixo.

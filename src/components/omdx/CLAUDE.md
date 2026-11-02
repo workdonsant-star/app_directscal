@@ -58,6 +58,7 @@ Maturidade avalia maturidade operacional em **6 dimensões** (Cultura, Visão, C
 ## Convenções de domínio
 
 - Descrições de cabeçalho dos cards de gráficos do Analytics, incluindo Perguntas por semana e Processos mais consultados, usam `text-balance` para equilibrar o comprimento das linhas. O limite anterior de 60% foi removido; o objetivo é balancear as quebras, como no Figma.
+- `ProcessUsageSection` aceita `concise` na visão administrativa da empresa para omitir parágrafos introdutórios dos gráficos, preservando dados, títulos e estados vazios.
 
 - **Linguagem visível ao usuário** segue o vocabulário Directscal: "estruturação", "operação", "diagnóstico", "alavancagem", "modelo", "escala". **Nunca** "transformação digital", "DNA", "jornada", "incrível".
 - **Sentence case** em títulos, botões e labels. Sem ponto de exclamação.

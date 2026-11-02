@@ -2,6 +2,8 @@
 
 Lista e cadastro de profissionais internos que podem receber empresas e preparar relatórios e action points.
 
+A lista mostra um único título, `Especialistas` (ou `Especialistas arquivados` ao alternar), seguido do controle de arquivados e da tabela. Não repetir a finalidade da área em subtítulo ou em uma seção `Equipe de análise`.
+
 ## Convenções locais
 
 - Especialista é um papel interno e não deve receber o papel técnico `superadmin`.

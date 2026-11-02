@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { AppTopbarActionsPortal } from "@/components/app-topbar-actions-portal";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -181,7 +182,7 @@ export function InitiativeForm({
 }
 
 export function InitiativesWorkspace({ scope }: { scope: string }) {
-  const { initiatives, save } = useInitiatives(scope);
+  const { initiatives, save, isLoaded } = useInitiatives(scope);
   const [creating, setCreating] = useState(false);
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState("");
@@ -202,6 +203,11 @@ export function InitiativesWorkspace({ scope }: { scope: string }) {
       .toLocaleLowerCase("pt-BR")
       .includes(query.toLocaleLowerCase("pt-BR")),
   );
+  if (!isLoaded) {
+    return <div role="status" aria-label="Carregando iniciativas" className="space-y-4">
+      <Skeleton className="h-7 w-48" /><Skeleton className="h-11 w-full" /><Skeleton className="h-28 w-full" />
+    </div>;
+  }
   return (
     <section className="space-y-6">
       <AppTopbarActionsPortal>

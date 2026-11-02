@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 export function AdminModulesWorkspace({
   initialSnapshot,
 }: {
-  initialSnapshot?: AdminDataSnapshot;
+  initialSnapshot: AdminDataSnapshot;
 }) {
   const { campaigns, companies, leads, modules } =
     useAdminDataSnapshot(initialSnapshot);

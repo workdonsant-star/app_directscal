@@ -14,7 +14,8 @@ Contém configuração local e migrations SQL para a base Supabase de produção
 - `app_private.is_org_member()` e `app_private.can_access_diagnostic()` devem negar identidades que possuam papel `superadmin`; esse papel usa apenas policies e handlers administrativos explícitos.
 - Seeds do Maturidade v1 são imutáveis; mudanças futuras criam nova versão de template.
 - Campos adicionais do onboarding de aquisição ficam em `acquisition_campaign_fields` e suas respostas em `acquisition_leads.field_values`; não criar coluna dedicada para cada campo configurável.
-- Ativos de gestão: `management_asset_versions.review_status` guarda o estado editorial da versão; `management_assets.status` comunica o que o cliente enxerga. Um trigger impede alterar versões publicadas, e um índice único parcial garante um único rascunho por ativo.
+- Ativos de gestão: `management_asset_versions.review_status` é o nome legado da coluna que guarda rascunho/publicado/substituído; não há etapa de revisão. `management_assets.status` comunica o que o cliente enxerga. Um trigger impede alterar versões publicadas, e um índice único parcial garante um único rascunho por ativo.
+- `20261029210000_direct_management_asset_publishing.sql` permite publicar diretamente um rascunho e deixa de exigir o ciclo de revisão no salvamento administrativo. Normaliza versões abertas dos antigos estados editoriais para rascunho sem alterar conteúdo; os valores legados do enum e a coluna `review_cycle` permanecem apenas para compatibilidade histórica. Aplicada ao OMDx em 29/10/2026; o teste conectado `management-asset-direct-publish.sql` passou com ROLLBACK, e a leitura posterior confirmou as funções novas, ausência de fixtures e de versões abertas nos estados antigos.
 - A busca dos ativos usa a configuração `public.pt_unaccent` (português sem acentos) e vetores `extensions.vector(768)` com o modelo gravado em `embedding_model`. `search_management_asset_chunks_for_organization` só é executável pela service role e filtra a organização antes do ranking.
 - `app_private.slack_installations` guarda o token do bot por workspace e nunca recebe grant para `anon` ou `authenticated`.
 
@@ -81,3 +82,9 @@ A nova migração passou no teste transacional PGlite com fixtures, incluindo ex
 
 
 Atualização de 29/10/2026: após a aplicação manual da segunda migração, o teste atualizado foi executado diretamente no OMDx e passou com ROLLBACK. Confirma exclusão da empresa do ator global, preservação do superadmin no registro interno, contas exclusivas/compartilhadas, cascatas, sessões e proteção do registro técnico. O erro PT409 relatado antes vinha do teste antigo (array[v_org,v_global], que esperava PT403), incompatível com a nova regra. A nova regra está validada no banco; a exclusão real pela interface permanece com o operador.
+
+# Arquivos prontos da empresa
+
+`20261031230000_customer_uploaded_documents.sql` cria o bucket privado `customer-documents`, a tabela `customer_documents` com RLS e sem grants para cliente, e uma função privada para a operação criar categorias no registro existente. Aplicada ao OMDx em 01/11/2026 (versão remota `20261101162707`); tabela, função, bucket privado e grants conferidos por consulta. O endpoint de download verifica membership no servidor; não criar política pública no bucket.
+
+`20261101165000_agent_provider_connections.sql` cria `app_private.agent_provider_connections` para Anthropic, OpenAI e Gemini e a RPC invoker de seleção atômica por superadmin. Chaves chegam cifradas do servidor; banco nunca recebe segredo bruto. RLS ativo, sem grants para cliente, leitura/escrita só pela service role. Aplicada ao OMDx em 01/11/2026; tabela, função e grants conferidos. Trocar `AUTH_SECRET` exige recadastrar chaves salvas pelo painel.

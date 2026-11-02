@@ -20,8 +20,8 @@ test("superadmin remains inside the administrative surface", async ({ page }) =>
   });
   await page.goto("/omdx");
 
-  await expect(page).toHaveURL(/\/admin\/operacao$/);
-  await expect(page.locator('a[href="/admin/operacao"]').first()).toBeVisible();
+  await expect(page).toHaveURL(/\/admin\/empresas$/);
+  await expect(page.locator('a[href="/admin/empresas"]').first()).toBeVisible();
   await expect(
     page.locator('a[href="/admin/campanhas"]').first(),
   ).toBeVisible();
@@ -36,7 +36,7 @@ test("superadmin remains inside the administrative surface", async ({ page }) =>
 
   for (const customerPath of ["/docs", "/action-points", "/insights", "/perfil"]) {
     await page.goto(customerPath);
-    await expect(page).toHaveURL(/\/admin\/operacao$/);
+    await expect(page).toHaveURL(/\/admin\/empresas$/);
   }
 
   await page.evaluate(() => window.localStorage.setItem("theme", "dark"));
@@ -58,7 +58,7 @@ test("client sidebar exposes the current navigation without requiring seeded con
   await expect(page.getByRole("link", { name: "Analytics", exact: true })).toHaveAttribute("href", "/omdx");
   await expect(page.getByRole("link", { name: "Action Points", exact: true })).toHaveAttribute("href", "/action-points");
   await expect(page.getByText("Ativos de gestão", { exact: true })).toBeVisible();
-  await expect(page.locator('a[href="/admin/operacao"]')).toHaveCount(0);
+  await expect(page.locator('a[href="/admin/empresas"]')).toHaveCount(0);
   // Bibliotecas por tipo continuam acessíveis por URL, sem duplicá-las na sidebar.
   await expect(page.getByRole("link", { name: "SOPs", exact: true })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Playbooks", exact: true })).toHaveCount(0);

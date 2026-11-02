@@ -37,4 +37,11 @@ export function demoDimension(dimensionId: DimensionId, selected = "todos") {
   questionResults: dimension.questions.map(q => dimensionQuestionResultSchema.parse({ ...q, gap: Math.max(...Object.values(q.layerScores).filter((v): v is number => v !== null)) - Math.min(...Object.values(q.layerScores).filter((v): v is number => v !== null)), classification: classifyScore(q.score), priorityIndex: Math.round((5 - q.score) * 20) })),
  };
 }
-export function demoFolders(state: DemoState) { return getManagementAssetCategoryFolders(state.assets ?? demoAssets, state.navigation.categories); }
+export function demoFolders(state: DemoState) {
+ const categories = state.navigation.categories;
+ const registered = getManagementAssetCategoryFolders([], categories);
+ return getManagementAssetCategoryFolders([
+  ...(state.assets ?? demoAssets),
+  ...(state.uploadedDocuments ?? []).filter(document => document.kind === "asset").map(document => ({ category: registered.find(folder => folder.key === document.categoryKey)?.title ?? null })),
+ ], categories);
+}

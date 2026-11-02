@@ -1,5 +1,7 @@
 "use client";
 
+import { useAppRuntime } from "@/components/app-runtime";
+
 import { useSpecialists } from "@/components/admin/use-specialists";
 
 import { ArrowRight, FileText, UserRoundCheck } from "lucide-react";
@@ -48,6 +50,7 @@ export function AdminOperationsWorkspace({
   deliveries: AdminDelivery[];
 }) {
   const { specialists: adminSpecialists, getSpecialist: getAdminSpecialist } = useSpecialists();
+  const runtime = useAppRuntime();
   const router = useRouter();
   const companyOptions = Array.from(
     new Map(
@@ -150,7 +153,7 @@ export function AdminOperationsWorkspace({
           <Button
             nativeButton={false}
             variant="outline"
-            render={<Link href="/admin/especialistas" />}
+            render={<Link href={runtime.href("/admin/especialistas")} />}
           >
             <UserRoundCheck aria-hidden="true" />
             Ver especialistas
@@ -179,7 +182,7 @@ export function AdminOperationsWorkspace({
                   <TableRow key={delivery.id}>
                     <TableCell>
                       <Link
-                        href={`/admin/entregas/${delivery.id}`}
+                        href={runtime.href(`/admin/entregas/${delivery.id}`)}
                         className="group block rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                       >
                         <span className="block font-medium text-foreground group-hover:underline group-hover:underline-offset-4">
@@ -208,7 +211,7 @@ export function AdminOperationsWorkspace({
                         variant="ghost"
                         size="icon-sm"
                         aria-label={`Abrir entrega de ${delivery.companyName}`}
-                        render={<Link href={`/admin/entregas/${delivery.id}`} />}
+                        render={<Link href={runtime.href(`/admin/entregas/${delivery.id}`)} />}
                       >
                         <ArrowRight aria-hidden="true" />
                       </Button>
@@ -309,7 +312,7 @@ export function AdminOperationsWorkspace({
             <Button
               type="button"
               disabled={!selectedDiagnosticId}
-              onClick={() => router.push(`/admin/entregas/${selectedDiagnosticId}`)}
+              onClick={() => router.push(runtime.href(`/admin/entregas/${selectedDiagnosticId}`))}
             >
               Continuar
             </Button>

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { AppPage } from "@/components/app-page";
 import { AppTopbar } from "@/components/app-topbar";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogClose,
@@ -26,7 +27,7 @@ export function InitiativeProjectPage({
   scope: string;
   userName: string;
 }) {
-  const { initiatives, save } = useInitiatives(scope);
+  const { initiatives, save, isLoaded } = useInitiatives(scope);
   const initiative = initiatives.find((item) => item.id === id);
   const [editing, setEditing] = useState(false);
   const [notice, setNotice] = useState("");
@@ -52,7 +53,11 @@ export function InitiativeProjectPage({
         ]}
       />
       <AppPage>
-        {initiative ? (
+        {!isLoaded ? (
+          <div role="status" aria-label="Carregando iniciativa" className="space-y-4">
+            <Skeleton className="h-7 w-48" /><Skeleton className="h-40 w-full" />
+          </div>
+        ) : initiative ? (
           <ProjectWorkspace
             key={`${scope}:${id}`}
             initiative={initiative}

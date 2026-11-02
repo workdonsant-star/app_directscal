@@ -1,5 +1,4 @@
 import { expect, test } from "@playwright/test";
-import { buildInitialReport } from "../../src/components/admin/delivery/delivery-draft";
 
 test.skip(process.env.DIRECTSCAL_C1_UI_FIXTURE !== "true", "Requer rota temporária documentada em fixtures/CLAUDE.md; esta suíte não comprova persistência ou autenticação.");
 
@@ -29,19 +28,17 @@ for (const theme of ["light", "dark"] as const) {
    await expect(page.locator("a").filter({ hasText: "Abrir action points" })).toHaveAttribute("href", "/action-points?diagnostico=analytics-example-0");
    await page.screenshot({ path: testInfo.outputPath(`analytics-${theme}.png`), fullPage: true });
   });
-  test("entrega nova permite editar ou descartar o texto inicial", async ({ page }) => {
+  test("entrega nova começa vazia e exige análise do especialista", async ({ page }) => {
    await page.goto("/c1-review-fixture?new=true");
    await expect(page.locator("main")).toHaveAttribute("data-hydrated", "true");
    const summary = page.getByLabel("Resumo executivo", { exact: true });
-   const initial = await summary.inputValue();
-   expect(initial.length).toBeGreaterThan(20);
-   await summary.fill("");
+   await expect(summary).toHaveValue("");
+   await expect(page.getByRole("img", { name: "Pontuação por dimensão" })).toBeVisible();
    await expect(page.getByRole("button", { name: "Publicar entrega", exact: true })).toBeDisabled();
    await summary.fill("Análise escrita pelo consultor após conferir os dados desta coleta.");
-   await expect(page.getByRole("button", { name: "Publicar entrega", exact: true })).toBeEnabled();
+   await expect(page.getByRole("button", { name: "Publicar entrega", exact: true })).toBeDisabled();
    await page.getByRole("button", { name: "Fixture: prévia" }).click();
    await expect(page.getByText("Análise escrita pelo consultor após conferir os dados desta coleta.", { exact: true })).toBeVisible();
-   await expect(page.getByText(initial, { exact: true })).toHaveCount(0);
   });
   test("editor preserva texto após falha, mostra prévia completa e permite republicar", async ({ page }, testInfo) => {
    let failure = true;
@@ -80,7 +77,7 @@ for (const theme of ["light", "dark"] as const) {
   test("relatório nativo conserva as seis seções editoriais", async ({ page }, testInfo) => {
    await page.goto("/c1-review-fixture?view=report");
    await expect(page.getByRole("article")).toBeVisible();
-   for (const text of Object.values(buildInitialReport("Empresa fictícia C1"))) {
+   for (const text of Object.values({ executiveSummary: "Síntese editorial da empresa fictícia para a entrega já publicada.", generalReading: "Leitura editorial da percepção registrada na coleta fictícia.", vulnerabilities: "Fragilidades observadas nos resultados da coleta fictícia.", structuralCauses: "Causas examinadas pela especialista na entrega fictícia.", recommendations: "Recomendações propostas para a operação da empresa fictícia.", conclusion: "Conclusão da análise publicada para a empresa fictícia." })) {
     await expect(page.getByText(text, { exact: true }).first()).toBeVisible();
    }
    await page.screenshot({ path: testInfo.outputPath(`report-${theme}.png`), fullPage: true });

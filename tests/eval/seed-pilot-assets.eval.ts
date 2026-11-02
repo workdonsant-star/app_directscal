@@ -33,13 +33,10 @@ describe.runIf(Boolean(organizationId && actorUserId && allowSeed))("seed do pil
         summary: template.summary,
         category: template.category ?? "Operação",
         ownerLabel: template.ownerLabel ?? "Directscal",
-        reviewCycle: template.reviewCycle ?? "Semestral",
         specialistId: null,
         templateId: template.id,
       });
 
-      await transitionManagementAsset(actorUserId!, assetId, "enviar_para_revisao");
-      await transitionManagementAsset(actorUserId!, assetId, "aprovar_revisao");
       const { notice } = await transitionManagementAsset(actorUserId!, assetId, "publicar");
 
       console.log(`Publicado: ${template.title} — ${notice}`);

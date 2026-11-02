@@ -65,7 +65,7 @@ export function useInitiatives(scope: string) {
         return null;
       }
     },
-    () => null,
+    () => undefined,
   );
   let parsed: { success: boolean; data?: Initiative[] } | null = null;
   try {
@@ -73,9 +73,11 @@ export function useInitiatives(scope: string) {
   } catch {
     /* Dados locais inválidos usam a lista inicial. */
   }
-  const initiatives =
+  const isLoaded = raw !== undefined;
+  const initiatives = !isLoaded ? [] :
     parsed?.success && parsed.data ? parsed.data : initialInitiatives;
   function save(next: Initiative[]) {
+    if (!isLoaded) return false;
     try {
       localStorage.setItem(
         key(scope),
@@ -87,5 +89,5 @@ export function useInitiatives(scope: string) {
       return false;
     }
   }
-  return { initiatives, save };
+  return { initiatives, save, isLoaded };
 }

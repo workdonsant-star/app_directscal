@@ -18,10 +18,12 @@ export function AnalyticsDimensionGapChart({
   dimensions,
   target,
   referenceLabel,
+  concise = false,
 }: {
   dimensions: AnalyticsDimensionGap[];
   target: number | null;
   referenceLabel: string | null;
+  concise?: boolean;
 }) {
   const hasHistory = dimensions.some((item) => item.previous !== null);
   const hasProgress = dimensions.some(item => item.progress !== null && item.progress !== 0);
@@ -29,7 +31,7 @@ export function AnalyticsDimensionGapChart({
   return (
     <AnalyticsCard
       className="flex-1"
-      description="Percepções por dimensão, da menor para a maior nota. As respostas usam a escala de 1 a 5; a barra começa em zero para comparação visual."
+      description={concise ? undefined : "Percepções por dimensão, da menor para a maior nota. As respostas usam a escala de 1 a 5; a barra começa em zero para comparação visual."}
       title="Dimensões gerenciais"
     >
       {dimensions.length === 0 ? (

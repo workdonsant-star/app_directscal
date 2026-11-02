@@ -1,4 +1,5 @@
 "use client";
+import { useAppRuntime } from "@/components/app-runtime";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ function localValue(date: Date, timeZone: string) {
   return `${value("year")}-${value("month")}-${value("day")}T${value("hour")}:${value("minute")}:${value("second")}`;
 }
 export function RoutineEventForm({ companyId, rule, policy, onSaved, onPending }: { companyId: string; rule: RoutineRevision; policy: RoutineContactPolicy; onSaved: () => void; onPending: (pending: boolean) => void }) {
+  const runtime = useAppRuntime();
   const [attempt] = useState(() => crypto.randomUUID());
   const [source, setSource] = useState(""); const [reference, setReference] = useState(""); const [description, setDescription] = useState("");
   const [happened, setHappened] = useState(() => localValue(new Date(), policy.timeZone));
@@ -21,7 +23,7 @@ export function RoutineEventForm({ companyId, rule, policy, onSaved, onPending }
     if (!parsed.success) { setError(parsed.error.issues[0]?.message ?? "Revise a ocorrência."); return; }
     setPending(true); onPending(true);
     try {
-      const response = await fetch(`/api/admin/companies/${companyId}/routine-events`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(parsed.data) });
+      const response = await runtime.request(`/api/admin/companies/${companyId}/routine-events`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(parsed.data) });
       const body = await response.json(); if (!response.ok) throw new Error(body.message ?? "Não foi possível registrar a ocorrência.");
       onSaved();
     } catch (error) { setError(error instanceof Error ? error.message : "Não foi possível registrar. Seus campos foram mantidos."); }

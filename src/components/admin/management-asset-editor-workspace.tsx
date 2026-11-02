@@ -1,18 +1,17 @@
 "use client";
 
+import { useAppRuntime } from "@/components/app-runtime";
+
 import {
   Archive,
   ArchiveRestore,
-  CheckCheck,
   FilePen,
   RefreshCw,
   Save,
-  Send,
-  Undo2,
   UploadCloud,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ManagementAssetStatusBadge } from "@/components/admin/management-asset-status-badge";
 import { AppPage } from "@/components/app-page";
@@ -46,13 +45,14 @@ type MetaState = {
   summary: string;
   category: string;
   ownerLabel: string;
-  reviewCycle: string;
   specialistId: string;
   changeNote: string;
 };
 
-const reviewCycles = ["Mensal", "Trimestral", "Semestral", "Anual", "Sob demanda"];
 const noSpecialist = "sem-especialista";
+const initialTitles = ["Novo SOP", "Novo Playbook", "Nova Governança", "Nova matriz RACI"];
+const initialSummary = "Resumo a definir.";
+const initialOwner = "Responsável a definir";
 
 const textareaClassName =
   "min-h-20 w-full resize-y rounded-lg border border-transparent bg-input px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-60 dark:bg-input/30";
@@ -63,7 +63,6 @@ function metaFromAsset(asset: AdminManagementAssetDetail): MetaState {
     summary: asset.summary,
     category: asset.category ?? "",
     ownerLabel: asset.ownerLabel ?? "",
-    reviewCycle: asset.reviewCycle ?? "Semestral",
     specialistId: asset.specialistId ?? noSpecialist,
     changeNote: asset.draft?.changeNote ?? "",
   };
@@ -100,19 +99,44 @@ function Field({
   );
 }
 
+async function request(
+  transport: (url: string, init?: RequestInit) => Promise<Response>,
+  url: string,
+  init: RequestInit,
+): Promise<{ asset: AdminManagementAssetDetail; notice?: string }> {
+  const response = await transport(url, {
+    ...init,
+    headers: { "Content-Type": "application/json" },
+  });
+  const data = (await response.json().catch(() => ({}))) as {
+    asset?: AdminManagementAssetDetail;
+    notice?: string;
+    message?: string;
+  };
+
+  if (!response.ok || !data.asset) {
+    throw new Error(data.message ?? "Não foi possível concluir a ação.");
+  }
+
+  return { asset: data.asset, notice: data.notice };
+}
+
 export function ManagementAssetEditorWorkspace({
   initialAsset,
   embedded = false,
   deliveryId,
   specialists,
+  companyId,
 }: {
   initialAsset: AdminManagementAssetDetail;
   embedded?: boolean;
   deliveryId?: string;
   specialists: Option[];
+  companyId?: string;
 }) {
+  const runtime = useAppRuntime();
   const [asset, setAsset] = useState(initialAsset);
-  const companyPath = `/admin/empresas/company_${asset.organizationId}`;
+  const companyPath = `/admin/empresas/${companyId ?? `company_${asset.organizationId}`}`;
   const assetsPath = `${companyPath}/criacao-dos-ativos`;
   const [meta, setMeta] = useState<MetaState>(() => metaFromAsset(initialAsset));
   const [content, setContent] = useState<RichTextDocument | null>(
@@ -126,8 +150,11 @@ export function ManagementAssetEditorWorkspace({
   );
   const [view, setView] = useState<View>(initialAsset.draft ? "editar" : "publicada");
   const [confirmArchive, setConfirmArchive] = useState(false);
+  const [autoSaveFailed, setAutoSaveFailed] = useState(false);
+  const editGeneration = useRef(0);
 
   const draft = asset.draft;
+  const initialDraft = !asset.published && draft?.versionNumber === "1";
   const archived = asset.status === "arquivado";
   const canEditContent = Boolean(draft && draft.status === "rascunho" && !archived);
   const dirty = metaDirty || contentDirty;
@@ -144,45 +171,27 @@ export function ManagementAssetEditorWorkspace({
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
 
-  function applyServerAsset(next: AdminManagementAssetDetail) {
+  const applyServerAsset = useCallback((next: AdminManagementAssetDetail) => {
     setAsset(next);
     setMeta(metaFromAsset(next));
     setContent(next.draft?.content ?? null);
     setMetaDirty(false);
     setContentDirty(false);
-    if (!next.draft && view === "editar") setView("publicada");
-  }
+    if (!next.draft) setView((current) => current === "editar" ? "publicada" : current);
+  }, []);
 
   function updateMeta<K extends keyof MetaState>(field: K, value: MetaState[K]) {
+    editGeneration.current += 1;
     setMeta((current) => ({ ...current, [field]: value }));
     setMetaDirty(true);
+    setAutoSaveFailed(false);
   }
 
-  async function request(
-    url: string,
-    init: RequestInit,
-  ): Promise<{ asset: AdminManagementAssetDetail; notice?: string }> {
-    const response = await fetch(url, {
-      ...init,
-      headers: { "Content-Type": "application/json" },
-    });
-    const data = (await response.json().catch(() => ({}))) as {
-      asset?: AdminManagementAssetDetail;
-      notice?: string;
-      message?: string;
-    };
-
-    if (!response.ok || !data.asset) {
-      throw new Error(data.message ?? "Não foi possível concluir a ação.");
-    }
-
-    return { asset: data.asset, notice: data.notice };
-  }
-
-  async function save(): Promise<boolean> {
+  const save = useCallback(async (silent = false): Promise<boolean> => {
+    const generation = editGeneration.current;
     try {
       setPending("salvar");
-      const { asset: next } = await request(`/api/admin/management-assets/${asset.id}`, {
+      const { asset: next } = await request(runtime.request, `/api/admin/management-assets/${asset.id}`, {
         method: "PATCH",
         body: JSON.stringify({
           expectedRevision: asset.revision,
@@ -190,16 +199,21 @@ export function ManagementAssetEditorWorkspace({
           summary: meta.summary.trim(),
           category: meta.category.trim() || null,
           ownerLabel: meta.ownerLabel.trim(),
-          reviewCycle: meta.reviewCycle,
           specialistId: meta.specialistId === noSpecialist ? null : meta.specialistId,
           changeNote: meta.changeNote.trim() || null,
           content: canEditContent && contentDirty ? content : null,
         }),
       });
-      applyServerAsset(next);
-      setNotice({ tone: "ok", text: "Alterações salvas." });
-      return true;
+      if (generation === editGeneration.current) {
+        applyServerAsset(next);
+      } else {
+        setAsset(next);
+      }
+      if (!silent) setNotice({ tone: "ok", text: "Alterações salvas." });
+      setAutoSaveFailed(false);
+      return generation === editGeneration.current;
     } catch (error) {
+      setAutoSaveFailed(true);
       setNotice({
         tone: "error",
         text: error instanceof Error ? error.message : "Não foi possível salvar.",
@@ -208,7 +222,13 @@ export function ManagementAssetEditorWorkspace({
     } finally {
       setPending(null);
     }
-  }
+  }, [asset.id, asset.revision, meta, content, canEditContent, contentDirty, applyServerAsset, runtime]);
+
+  useEffect(() => {
+    if (!dirty || archived || pending !== null || autoSaveFailed) return;
+    const timer = window.setTimeout(() => { void save(true); }, 1000);
+    return () => window.clearTimeout(timer);
+  }, [dirty, archived, pending, autoSaveFailed, save]);
 
   async function transition(action: ManagementAssetTransition) {
     if (dirty && !archived) {
@@ -219,6 +239,7 @@ export function ManagementAssetEditorWorkspace({
     try {
       setPending(action);
       const { asset: next, notice: message } = await request(
+        runtime.request,
         `/api/admin/management-assets/${asset.id}/transition`,
         { method: "POST", body: JSON.stringify({ action }) },
       );
@@ -244,13 +265,6 @@ export function ManagementAssetEditorWorkspace({
     if (!draft) {
       return { action: "abrir_rascunho" as const, label: "Editar como nova versão", icon: FilePen };
     }
-    if (draft.status === "rascunho") {
-      return { action: "enviar_para_revisao" as const, label: "Enviar para revisão", icon: Send };
-    }
-    if (draft.status === "em_revisao") {
-      return { action: "aprovar_revisao" as const, label: "Aprovar revisão", icon: CheckCheck };
-    }
-
     return {
       action: "publicar" as const,
       label: `Publicar versão ${draft.versionNumber}`,
@@ -258,8 +272,6 @@ export function ManagementAssetEditorWorkspace({
     };
   }, [archived, draft]);
   const PrimaryIcon = primaryAction.icon;
-  const canReturnToDraft =
-    draft && (draft.status === "em_revisao" || draft.status === "pronto_para_publicar");
 
   const views: Array<{ value: View; label: string; disabled: boolean }> = [
     { value: "editar", label: draft ? `Versão ${draft.versionNumber}` : "Rascunho", disabled: !draft },
@@ -275,24 +287,11 @@ export function ManagementAssetEditorWorkspace({
   const actions = (
           <div className="flex items-center gap-2">
             {!archived ? (
-              <Button
-                variant="outline"
-                onClick={save}
-                disabled={!dirty || pending !== null}
-              >
-                <Save className="size-4" />
-                {pending === "salvar" ? "Salvando" : contentDirty && draft ? `Salvar versão ${draft.versionNumber}` : "Salvar alterações"}
-              </Button>
-            ) : null}
-            {canReturnToDraft ? (
-              <Button
-                variant="outline"
-                onClick={() => transition("devolver_para_rascunho")}
-                disabled={pending !== null}
-              >
-                <Undo2 className="size-4" />
-                Devolver para rascunho
-              </Button>
+              autoSaveFailed ? (
+                <Button variant="outline" onClick={() => { setAutoSaveFailed(false); void save(); }} disabled={pending !== null}>
+                  <Save className="size-4" /> Tentar salvar
+                </Button>
+              ) : <span role="status" className="text-xs text-muted-foreground">{pending === "salvar" ? "Salvando…" : dirty ? "Alterações pendentes" : "Salvo automaticamente"}</span>
             ) : null}
             <Button
               onClick={() => transition(primaryAction.action)}
@@ -310,9 +309,7 @@ export function ManagementAssetEditorWorkspace({
       <AppTopbar
         breadcrumb={[
           { label: "Empresas", href: "/admin/empresas" },
-          { label: asset.organizationName, href: companyPath },
-          { label: "Criação dos ativos", href: assetsPath },
-          { label: asset.title },
+          { label: asset.organizationName },
         ]}
         actions={actions}
       />
@@ -322,19 +319,23 @@ export function ManagementAssetEditorWorkspace({
         <div className="grid w-full gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
           <div className="flex min-w-0 flex-col gap-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div className="min-w-0 space-y-1">
-                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                  <span>{managementAssetTypeLabels[asset.type]}</span>
-                  <span aria-hidden="true">·</span>
-                  <span>{asset.organizationName}</span>
-                  <ManagementAssetStatusBadge status={asset.status} />
-                  {asset.published && draft ? (
-                    <ManagementAssetStatusBadge status={draft.status} />
-                  ) : null}
-                </div>
-                <h1 className="text-ui-page truncate">
-                  {meta.title || asset.title}
-                </h1>
+              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+                {view === "editar" && !archived ? (
+                  <h1 className="min-w-0 flex-1">
+                    <Input
+                      aria-label="Título do ativo"
+                      value={initialDraft && initialTitles.includes(meta.title) ? "" : meta.title}
+                      placeholder={`Título ${asset.type === "raci" ? "da matriz RACI" : `do ${managementAssetTypeLabels[asset.type]}`}`}
+                      maxLength={240}
+                      className="h-auto rounded-none border-0 bg-transparent px-0 py-0 font-heading text-ui-page focus-visible:border-0 focus-visible:ring-0 md:text-ui-page"
+                      onChange={(event) => updateMeta("title", event.target.value)}
+                    />
+                  </h1>
+                ) : <h1 className="min-w-0 flex-1 truncate text-ui-page">{meta.title || asset.title}</h1>}
+                <ManagementAssetStatusBadge status={asset.status} />
+                {asset.published && draft ? (
+                  <ManagementAssetStatusBadge status={draft.status} />
+                ) : null}
               </div>
               <Tabs value={view} onValueChange={(value) => setView(value as View)}>
                 <TabsList>
@@ -367,7 +368,7 @@ export function ManagementAssetEditorWorkspace({
                   <p className="text-sm text-muted-foreground">
                     {archived
                       ? "Ativo arquivado. Restaure para voltar a editar."
-                      : "O conteúdo fica bloqueado durante a revisão. Devolva para rascunho para editar."}
+                      : "O conteúdo desta versão está indisponível para edição."}
                   </p>
                 ) : null}
                 <RichTextEditor
@@ -376,8 +377,11 @@ export function ManagementAssetEditorWorkspace({
                   editable={canEditContent}
                   ariaLabel={`Conteúdo de ${asset.title}`}
                   onChange={(next) => {
+                    if (JSON.stringify(next) === JSON.stringify(content)) return;
+                    editGeneration.current += 1;
                     setContent(next);
                     setContentDirty(true);
+                    setAutoSaveFailed(false);
                   }}
                 />
               </>
@@ -413,59 +417,22 @@ export function ManagementAssetEditorWorkspace({
               <h2 id="asset-meta-title" className="text-sm font-medium">
                 Dados do ativo
               </h2>
-              <Field id="meta-title" label="Título">
-                <Input
-                  id="meta-title"
-                  value={meta.title}
-                  disabled={archived}
-                  onChange={(event) => updateMeta("title", event.target.value)}
-                />
-              </Field>
               <Field id="meta-summary" label="Resumo">
                 <textarea
                   id="meta-summary"
-                  value={meta.summary}
+                  value={initialDraft && meta.summary === initialSummary ? "" : meta.summary}
+                  placeholder="Resuma em uma frase para a biblioteca e o agente."
                   rows={3}
                   disabled={archived}
                   className={textareaClassName}
                   onChange={(event) => updateMeta("summary", event.target.value)}
                 />
               </Field>
-              <div className="grid grid-cols-2 gap-3">
-                <Field id="meta-category" label="Categoria">
-                  <Input
-                    id="meta-category"
-                    value={meta.category}
-                    disabled={archived}
-                    onChange={(event) => updateMeta("category", event.target.value)}
-                  />
-                </Field>
-                <Field id="meta-review" label="Revisão">
-                  <Select
-                    value={meta.reviewCycle}
-                    disabled={archived}
-                    items={reviewCycles.map((cycle) => ({ value: cycle, label: cycle }))}
-                    onValueChange={(value) => {
-                      if (typeof value === "string") updateMeta("reviewCycle", value);
-                    }}
-                  >
-                    <SelectTrigger id="meta-review" className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {reviewCycles.map((cycle) => (
-                        <SelectItem key={cycle} value={cycle}>
-                          {cycle}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-              </div>
               <Field id="meta-owner" label="Líder responsável">
                 <Input
                   id="meta-owner"
-                  value={meta.ownerLabel}
+                  value={initialDraft && meta.ownerLabel === initialOwner ? "" : meta.ownerLabel}
+                  placeholder="Pessoa ou área responsável"
                   disabled={archived}
                   onChange={(event) => updateMeta("ownerLabel", event.target.value)}
                 />
@@ -620,7 +587,7 @@ export function ManagementAssetEditorWorkspace({
             ) : null}
 
             <Link
-              href={deliveryId ? `/admin/entregas/${deliveryId}/ativos/perguntas` : `${assetsPath}/perguntas`}
+              href={runtime.href(deliveryId ? `/admin/entregas/${deliveryId}/ativos/perguntas` : `${assetsPath}/perguntas`)}
               className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
             >
               Ver perguntas feitas ao agente

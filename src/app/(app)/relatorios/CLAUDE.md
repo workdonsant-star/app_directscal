@@ -5,6 +5,7 @@ Esta rota autenticada é a entrada de `Relatórios` na seção `Documentos` da s
 ## Estado atual
 
 - Lista somente diagnósticos autorizados, com base de respostas para análise e entrega publicada pela operação Directscal.
+- Também lista PDFs de relatório enviados diretamente pelo superadmin para a empresa. Esses arquivos são baixados pela rota autorizada `/api/customer-documents/[id]` e não dependem de uma entrega gerada pelo app.
 - Cada relatório aparece em um card clicável com o título obrigatório do diagnóstico, avatar e nome do responsável pela criação, além da data de encerramento ou última atualização.
 - Os cards formam uma grade responsiva e abrem a leitura em `/relatorios/[id]`.
 - A página inclui um estado vazio quando ainda não existe relatório disponível.
