@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
+import { getUserAccessSnapshot } from "@/lib/auth/access-snapshot";
 import { getAccessibleOrganizationIdsForUser } from "@/lib/auth/authorization";
 import type { AuthSession } from "@/lib/contracts";
 import { getOrganizationStructure } from "@/lib/data/organization-structure-data-source";
@@ -12,17 +13,31 @@ export const getClientOnboardingForUser = cache(async (userId: string) => {
   const access = await getAccessibleOrganizationIdsForUser(userId);
   if (access.isSuperadmin || !access.primaryOrganizationId) return null;
   const organizationId = access.primaryOrganizationId;
+  const { completed, slackConnected } = await getOnboardingState(userId, organizationId);
+  return {
+    organizationId,
+    completed,
+    requiresOnboarding: !completed && !slackConnected,
+  };
+});
+
+// Reaproveita o snapshot de acesso do request quando ele cobre a mesma empresa.
+async function getOnboardingState(userId: string, organizationId: string) {
+  const snapshot = await getUserAccessSnapshot(userId);
+  if (snapshot && snapshot.memberships[0]?.organization_id === organizationId) {
+    return {
+      completed: snapshot.onboardingCompleted,
+      slackConnected: snapshot.onboardingCompleted ? false : snapshot.slackConnected,
+    };
+  }
   const { data, error } = await createSupabaseAdminClient()
     .schema("app_private").from("client_onboarding_completions")
     .select("completed_at").eq("organization_id", organizationId).maybeSingle();
   if (error) throw new Error("Não foi possível consultar a configuração inicial da empresa.");
-  const slackConnected = data ? false : Boolean(await getSlackInstallationForOrganization(organizationId));
-  return {
-    organizationId,
-    completed: Boolean(data),
-    requiresOnboarding: !data && !slackConnected,
-  };
-});
+  const completed = Boolean(data);
+  const slackConnected = completed ? false : Boolean(await getSlackInstallationForOrganization(organizationId));
+  return { completed, slackConnected };
+}
 
 export async function getClientOnboardingWorkspace(organizationId: string) {
   const [connection, sectors, sectorCount] = await Promise.all([

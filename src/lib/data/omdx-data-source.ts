@@ -1,4 +1,3 @@
-import { getAccountProfile } from "@/lib/data/person-profiles-data-source";
 import { selectCollectionForOverview } from "@/lib/data/collection-comparison";
 import { cache } from "react";
 
@@ -381,62 +380,42 @@ async function loadDiagnosticAccessMetadata(
     ),
   ];
 
-  const [viewerMembershipsResult, scopesResult, peopleResult, sectorsResult] =
-    await Promise.all([
-      supabase
-        .from("organization_members")
-        .select("id,organization_id,user_id,role,created_at,updated_at")
-        .eq("user_id", userId)
-        .in("organization_id", organizationIds)
-        .returns<OrganizationMemberRow[]>(),
-      supabase
-        .from("diagnostic_sector_scopes")
-        .select("id,organization_id,diagnostic_id,sector_id,created_at")
-        .in("diagnostic_id", diagnosticIds)
-        .returns<DiagnosticSectorScopeRow[]>(),
-      supabase
-        .from("organization_people")
-        .select(
-          "id,organization_id,auth_user_id,email,normalized_email,name,avatar_url,position,status,verified_at,created_at,updated_at",
-        )
-        .in("organization_id", organizationIds)
-        .returns<OrganizationPersonRow[]>(),
-      supabase
-        .from("organization_sectors")
-        .select(
-          "id,organization_id,name,normalized_name,active,created_at,updated_at",
-        )
-        .in("organization_id", organizationIds)
-        .returns<OrganizationSectorRow[]>(),
-    ]);
-
-  if (viewerMembershipsResult.error) throw viewerMembershipsResult.error;
-  if (scopesResult.error) throw scopesResult.error;
-  if (peopleResult.error) throw peopleResult.error;
-  if (sectorsResult.error) throw sectorsResult.error;
-
-  const scopeIds = scopesResult.data.map((scope) => scope.id);
-  const assignmentsResult =
-    scopeIds.length > 0
-      ? await supabase
-          .from("diagnostic_leader_assignments")
-          .select(
-            "id,organization_id,diagnostic_sector_scope_id,person_id,assigned_by_user_id,created_at",
-          )
-          .in("diagnostic_sector_scope_id", scopeIds)
-          .returns<DiagnosticLeaderAssignmentRow[]>()
-      : { data: [] as DiagnosticLeaderAssignmentRow[], error: null };
-
-  if (assignmentsResult.error) throw assignmentsResult.error;
-
-  const slackAssignmentsResult = scopeIds.length
-    ? await supabase.schema("app_private").from("diagnostic_slack_leader_assignments")
-      .select("diagnostic_sector_scope_id,slack_leader_id").in("diagnostic_sector_scope_id", scopeIds)
+  // Tudo o que depende só dos diagnósticos sai em uma rodada; as atribuições,
+  // que dependem dos escopos, em uma segunda.
+  const [
+    viewerMembershipsResult,
+    scopesResult,
+    peopleResult,
+    sectorsResult,
+    creatorUsersResult,
+    creatorMembershipsResult,
+    creatorProfilesResult,
+  ] = await Promise.all([
+    supabase
+      .from("organization_members")
+      .select("id,organization_id,user_id,role,created_at,updated_at")
+      .eq("user_id", userId)
       .in("organization_id", organizationIds)
-    : { data: [], error: null };
-  if (slackAssignmentsResult.error) throw slackAssignmentsResult.error;
-
-  const [creatorUsersResult, creatorMembershipsResult] = await Promise.all([
+      .returns<OrganizationMemberRow[]>(),
+    supabase
+      .from("diagnostic_sector_scopes")
+      .select("id,organization_id,diagnostic_id,sector_id,created_at")
+      .in("diagnostic_id", diagnosticIds)
+      .returns<DiagnosticSectorScopeRow[]>(),
+    supabase
+      .from("organization_people")
+      .select(
+        "id,organization_id,auth_user_id,email,normalized_email,name,avatar_url,position,status,verified_at,created_at,updated_at",
+      )
+      .in("organization_id", organizationIds)
+      .returns<OrganizationPersonRow[]>(),
+    supabase
+      .from("organization_sectors")
+      .select(
+        "id,organization_id,name,normalized_name,active,created_at,updated_at",
+      )
+      .in("organization_id", organizationIds)
+      .returns<OrganizationSectorRow[]>(),
     creatorIds.length > 0
       ? supabase
           .schema("next_auth")
@@ -453,10 +432,43 @@ async function loadDiagnosticAccessMetadata(
           .in("organization_id", organizationIds)
           .returns<OrganizationMemberRow[]>()
       : Promise.resolve({ data: [] as OrganizationMemberRow[], error: null }),
+    creatorIds.length > 0
+      ? supabase
+          .from("account_profiles")
+          .select("user_id,name,avatar_url")
+          .in("user_id", creatorIds)
+      : Promise.resolve({ data: [] as Array<{ user_id: string; name: string; avatar_url: string | null }>, error: null }),
   ]);
 
+  if (viewerMembershipsResult.error) throw viewerMembershipsResult.error;
+  if (scopesResult.error) throw scopesResult.error;
+  if (peopleResult.error) throw peopleResult.error;
+  if (sectorsResult.error) throw sectorsResult.error;
   if (creatorUsersResult.error) throw creatorUsersResult.error;
   if (creatorMembershipsResult.error) throw creatorMembershipsResult.error;
+  if (creatorProfilesResult.error) throw creatorProfilesResult.error;
+
+  const scopeIds = scopesResult.data.map((scope) => scope.id);
+  const [assignmentsResult, slackAssignmentsResult] = scopeIds.length > 0
+    ? await Promise.all([
+        supabase
+          .from("diagnostic_leader_assignments")
+          .select(
+            "id,organization_id,diagnostic_sector_scope_id,person_id,assigned_by_user_id,created_at",
+          )
+          .in("diagnostic_sector_scope_id", scopeIds)
+          .returns<DiagnosticLeaderAssignmentRow[]>(),
+        supabase.schema("app_private").from("diagnostic_slack_leader_assignments")
+          .select("diagnostic_sector_scope_id,slack_leader_id").in("diagnostic_sector_scope_id", scopeIds)
+          .in("organization_id", organizationIds),
+      ])
+    : [
+        { data: [] as DiagnosticLeaderAssignmentRow[], error: null },
+        { data: [] as Array<{ diagnostic_sector_scope_id: string; slack_leader_id: string }>, error: null },
+      ];
+
+  if (assignmentsResult.error) throw assignmentsResult.error;
+  if (slackAssignmentsResult.error) throw slackAssignmentsResult.error;
 
   const viewerRoleByOrganizationId = new Map(
     viewerMembershipsResult.data.map((membership) => [
@@ -470,11 +482,15 @@ async function loadDiagnosticAccessMetadata(
   const sectorsById = new Map(
     sectorsResult.data.map((sector) => [sector.id, sector]),
   );
+  // Mesma precedência de getAccountProfile: perfil persistido vence a conta Google.
+  const creatorProfilesById = new Map(
+    creatorProfilesResult.data.map((profile) => [profile.user_id, profile]),
+  );
   const creatorsById = new Map(
-    await Promise.all(creatorUsersResult.data.map(async (creator) => {
-      const profile = await getAccountProfile(creator.id);
-      return [creator.id, profile ? { ...creator, name: profile.name, image: profile.avatarUrl } : creator] as const;
-    })),
+    creatorUsersResult.data.map((creator) => {
+      const profile = creatorProfilesById.get(creator.id);
+      return [creator.id, profile ? { ...creator, name: profile.name, image: profile.avatar_url } : creator] as const;
+    }),
   );
   const creatorRoleByOrganizationAndUser = new Map(
     creatorMembershipsResult.data.map((membership) => [
@@ -572,29 +588,35 @@ async function loadDiagnosticAccessMetadata(
 
 const loadAuthorizedDiagnosticRows = cache(
   async function loadAuthorizedDiagnosticRows(userId: string, id = "") {
-    const organizationRows = await loadAuthorizedOrganizationRows(userId);
+    const access = await getAccessibleOrganizationIdsForUser(userId);
 
-    if (organizationRows.length === 0) {
+    if (access.organizationIds.length === 0) {
       return {
         diagnosticRows: [] as DiagnosticRow[],
-        organizationRows,
+        organizationRows: [] as OrganizationRow[],
         metadataByDiagnosticId: new Map<string, DiagnosticAccessMetadata>(),
       };
     }
 
-    const organizationIds = organizationRows.map((organization) => organization.id);
+    // Empresas e diagnósticos dependem só dos vínculos: buscados juntos.
     const supabase = getSupabase();
     let query = supabase
       .from("diagnostics")
       .select(diagnosticSelectColumns)
-      .in("organization_id", organizationIds)
+      .in("organization_id", access.organizationIds)
       .order("updated_at", { ascending: false });
 
     if (id) query = query.eq("id", id);
 
-    const { data, error } = await query.returns<DiagnosticRow[]>();
+    const [organizationRows, { data: diagnosticData, error }] = await Promise.all([
+      loadAuthorizedOrganizationRows(userId),
+      query.returns<DiagnosticRow[]>(),
+    ]);
 
     if (error) throw error;
+
+    const organizationIds = new Set(organizationRows.map((organization) => organization.id));
+    const data = diagnosticData.filter((diagnostic) => organizationIds.has(diagnostic.organization_id));
 
     const metadataByDiagnosticId = await loadDiagnosticAccessMetadata(
       data,
@@ -1574,6 +1596,16 @@ export const getDefaultDiagnosticTemplate = cache(
 export async function getDiagnosticTemplates(): Promise<DiagnosticTemplate[]> {
   return [await getDefaultDiagnosticTemplate()];
 }
+
+/**
+ * IDs dos diagnósticos que a sessão pode ver, antes de contar respostas ou
+ * montar relatórios. Permite iniciar leituras que dependem só dos IDs
+ * (links, entregas) em paralelo com o restante da página.
+ */
+export const getVisibleDiagnosticIds = cache(async function getVisibleDiagnosticIds(): Promise<string[]> {
+  const { diagnosticRows } = await loadAuthorizedDiagnostics();
+  return diagnosticRows.map((diagnostic) => diagnostic.id);
+});
 
 export const getDiagnostics = cache(async function getDiagnostics(): Promise<Diagnostic[]> {
   const { diagnosticRows, metadataByDiagnosticId, organizationRows } =

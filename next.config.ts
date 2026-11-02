@@ -13,6 +13,15 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+  // Cache do router no navegador (por aba, some ao recarregar). Voltar a uma
+  // página visitada há menos de 30 s, ou pré-carregada no hover há menos de
+  // 60 s, é instantâneo. Mutações que chamam router.refresh() limpam esse cache.
+  experimental: {
+    staleTimes: {
+      dynamic: 30,
+      static: 60,
+    },
+  },
   async headers() {
     return [
       {

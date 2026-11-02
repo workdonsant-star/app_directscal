@@ -41,3 +41,12 @@ A14: password-recovery/crypto implementam recuperação real somente de cliente/
 
 
 Provisionamento corporativo preserva um membership superadmin já existente e retorna sua identidade real antes de criar/atualizar organização por domínio. Assim o login não recria empresas apagadas após transferência do acesso global ao registro interno. A conta e o papel continuam sendo validados no banco; e-mail sozinho não restaura membership removido.
+
+## Snapshot de acesso por request
+
+`access-snapshot.ts` carrega em uma ida ao banco (`app_private.get_user_access_snapshot`) a versão de sessão, conta, vínculos, empresa da sessão, perfil, módulos, onboarding e conexão Slack da empresa principal. É memoizado só por request com `cache` do React; nada persiste entre requests. O callback JWT, `getCurrentAuthSession` (perfil), `getAccessibleOrganizationIdsForUser`, módulos de `getCurrentAppAccessContext` e `getClientOnboardingForUser` leem desse snapshot, então a revalidação de cada página deixa de repetir consultas em série.
+
+- `buildSupabaseAuthUser` (em `supabase-auth.ts`) é a regra única que monta o usuário da sessão a partir dos registros: papel superadmin primeiro, senão o vínculo mais antigo. RPC e caminho avulso usam a mesma função.
+- Sem a migração aplicada (erro `PGRST202`), o snapshot cai em duas rodadas paralelas de consultas e não tenta a RPC de novo no mesmo processo. Depois de aplicar a migração, reinicie o servidor (em produção, um novo deploy) para voltar à RPC.
+- Outros erros da RPC derrubam a sessão (`auth()` falha → `/entrar`), como antes; nunca liberar acesso por falha.
+- Login (callback com `account`) continua pelo caminho original. Sessões de aquisição/convite usam o snapshot só para a versão de sessão; a promoção segue em `resolveSupabaseAuthUser`.

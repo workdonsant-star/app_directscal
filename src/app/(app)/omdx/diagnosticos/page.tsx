@@ -6,6 +6,7 @@ import {
   getDefaultDiagnosticTemplate,
   getDiagnosticShareLinksByDiagnosticIds,
   getDiagnostics,
+  getVisibleDiagnosticIds,
 } from "@/lib/data/omdx-data-source";
 import { getOrganizationStructure } from "@/lib/data/organization-structure-data-source";
 import { getProfileSettingsData } from "@/lib/data/profile-data-source";
@@ -15,18 +16,15 @@ export const metadata: Metadata = {
 };
 
 export default async function DiagnosticsPage() {
-  const [session, template, diagnostics] = await Promise.all([
+  // Links e perfil da empresa não esperam a contagem de respostas.
+  const [session, template, diagnostics, shareLinksByDiagnosticId, companyProfile] = await Promise.all([
     getCurrentAuthSession(),
     getDefaultDiagnosticTemplate(),
     getDiagnostics(),
-  ]);
-  const [shareLinksByDiagnosticId, companyProfile] = await Promise.all([
-    getDiagnosticShareLinksByDiagnosticIds(
-      diagnostics.map((diagnostic) => diagnostic.id),
+    getVisibleDiagnosticIds().then(getDiagnosticShareLinksByDiagnosticIds),
+    getCurrentAuthSession().then((current) =>
+      current ? getProfileSettingsData(current.user).catch(() => null) : null,
     ),
-    session
-      ? getProfileSettingsData(session.user).catch(() => null)
-      : Promise.resolve(null),
   ]);
   const sectors = companyProfile?.organizationId
     ? await getOrganizationStructure(companyProfile.organizationId)

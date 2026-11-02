@@ -7,6 +7,7 @@ import { adminActionPointTemplates } from "@/lib/data/admin-operations-data-sour
 import {
   getDiagnosticActionPlan,
   getOmdxOverviewDiagnosticOptions,
+  getVisibleDiagnosticIds,
 } from "@/lib/data/omdx-data-source";
 
 export type PublishedActionPoints = {
@@ -25,10 +26,16 @@ const empty: PublishedActionPoints = {
  * publicadas e diagnósticos fora do escopo da sessão não aparecem.
  */
 export async function getPublishedActionPointsWorkspace(diagnosticId?: string): Promise<PublishedActionPoints> {
-  const diagnostics = await getOmdxOverviewDiagnosticOptions();
-  const publications = await getAdminDeliveryPublications(
+  // Entregas dependem só dos IDs visíveis: buscadas junto com os relatórios e
+  // recortadas depois pelos diagnósticos com relatório, como antes.
+  const [diagnostics, visiblePublications] = await Promise.all([
+    getOmdxOverviewDiagnosticOptions(),
+    getVisibleDiagnosticIds().then(getAdminDeliveryPublications),
+  ]);
+  const allowedIds = new Set(
     diagnostics.filter((diagnostic) => !diagnosticId || diagnostic.id === diagnosticId).map((diagnostic) => diagnostic.id),
   );
+  const publications = visiblePublications.filter((publication) => allowedIds.has(publication.diagnosticId));
   const latest = publications
     .filter(
       (publication) =>

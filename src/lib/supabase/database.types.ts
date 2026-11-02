@@ -285,6 +285,7 @@ export type Database = {
       save_routine_supervision: { Args: { p_organization_id: string; p_actor_user_id: string; p_input: Json }; Returns: string }
       enqueue_routine_reminders: { Args: Record<string, never>; Returns: Json }
       get_user_session_version: { Args: { p_user_id: string }; Returns: string }
+      get_user_access_snapshot: { Args: { p_user_id: string }; Returns: Json }
       start_customer_password_reset: { Args: { p_id: string; p_email: string; p_token_hash: string; p_sealed_token: Json }; Returns: string | null }
       claim_password_reset_delivery: { Args: { p_id?: string }; Returns: Json }
       finish_password_reset_delivery: { Args: { p_id: string; p_lease_id: string; p_message_id: string | null; p_retryable?: boolean; p_retry_after?: number }; Returns: undefined }

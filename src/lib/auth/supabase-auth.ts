@@ -22,12 +22,12 @@ type ProvisionUserInput = {
   name?: string | null;
 };
 
-type OrganizationMemberRow = {
+export type OrganizationMemberRow = {
   organization_id: string;
   role: AuthRole;
 };
 
-type OrganizationRow = {
+export type OrganizationRow = {
   employee_count: number;
   id: string;
   name: string;
@@ -517,14 +517,53 @@ export async function resolveSupabaseAuthUser(
 
   if (organizationError) throw organizationError;
 
+  return buildSupabaseAuthUser({
+    email: resolvedEmail,
+    image: resolvedImage,
+    memberships,
+    name: resolvedName,
+    organization,
+    userId: resolvedUserId,
+  });
+}
+
+/**
+ * Monta o usuário da sessão a partir dos registros já lidos. Compartilhado com o
+ * snapshot de acesso para que RPC e consultas avulsas apliquem a mesma regra.
+ */
+export function buildSupabaseAuthUser({
+  email,
+  image,
+  memberships,
+  name,
+  organization,
+  userId,
+}: {
+  email: string;
+  image: string | null;
+  memberships: OrganizationMemberRow[];
+  name: string | null;
+  organization: OrganizationRow | null;
+  userId: string;
+}): AuthUser | null {
+  const member =
+    memberships.find((membership) => membership.role === "superadmin") ??
+    memberships[0];
+
+  if (!member) return null;
+  if (!organization || organization.id !== member.organization_id) {
+    throw new Error("Empresa da sessão não encontrada.");
+  }
+
+  const normalizedEmail = normalizeEmail(email);
   const parsedUser = authUserSchema.safeParse({
     company: organization.name,
-    email: resolvedEmail,
-    id: resolvedUserId,
-    image: resolvedImage,
+    email: normalizedEmail,
+    id: userId,
+    image,
     name:
-      resolvedName?.trim() ||
-      resolveAuthUserFromEmail(resolvedEmail, undefined, resolvedUserId).name,
+      name?.trim() ||
+      resolveAuthUserFromEmail(normalizedEmail, undefined, userId).name,
     role: member.role,
   });
 

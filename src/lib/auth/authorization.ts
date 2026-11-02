@@ -1,6 +1,7 @@
 import { cache } from "react";
 
 import { getDiagnosticAccessDecision } from "@/lib/auth/diagnostic-access";
+import { getUserAccessSnapshot } from "@/lib/auth/access-snapshot";
 import { getCurrentAuthSession } from "@/lib/auth/session";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { adminModules } from "@/lib/mock-data";
@@ -52,15 +53,23 @@ export const getAccessibleOrganizationIdsForUser = cache(
       };
     }
 
-    const supabase = createSupabaseAdminClient();
-    const { data: memberships, error } = await supabase
-      .from("organization_members")
-      .select("organization_id,role")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: true })
-      .returns<OrganizationMembershipRow[]>();
+    const snapshot = await getUserAccessSnapshot(userId);
+    let memberships: OrganizationMembershipRow[];
 
-    if (error) throw error;
+    if (snapshot) {
+      memberships = snapshot.memberships;
+    } else {
+      const supabase = createSupabaseAdminClient();
+      const { data, error } = await supabase
+        .from("organization_members")
+        .select("organization_id,role")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: true })
+        .returns<OrganizationMembershipRow[]>();
+
+      if (error) throw error;
+      memberships = data;
+    }
 
     const isSuperadmin = memberships.some((item) => item.role === "superadmin");
 
@@ -258,6 +267,7 @@ async function getEnabledModuleIdsForAccess(
     isSuperadmin: boolean;
     organizationIds: string[];
   },
+  preloaded?: OrganizationModuleAccessRow[] | null,
 ) {
 
   if (access.isSuperadmin) return [];
@@ -265,6 +275,11 @@ async function getEnabledModuleIdsForAccess(
   if (access.organizationIds.length === 0) return [];
 
   const moduleIds = adminModules.map((module) => module.id);
+
+  if (preloaded !== undefined) {
+    return filterEnabledModuleIds(moduleIds, access.organizationIds, preloaded);
+  }
+
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("organization_module_access")
@@ -276,15 +291,23 @@ async function getEnabledModuleIdsForAccess(
   if (isMissingModuleAccessTableError(error)) return moduleIds;
   if (error) throw error;
 
+  return filterEnabledModuleIds(moduleIds, access.organizationIds, data ?? []);
+}
+
+/** `rows = null` significa tabela de módulos inexistente: todos liberados. */
+function filterEnabledModuleIds(
+  moduleIds: string[],
+  organizationIds: string[],
+  rows: OrganizationModuleAccessRow[] | null,
+) {
+  if (rows === null) return moduleIds;
+
   const explicitAccess = new Map(
-    (data ?? []).map((row) => [
-      `${row.organization_id}:${row.module_id}`,
-      row.enabled,
-    ]),
+    rows.map((row) => [`${row.organization_id}:${row.module_id}`, row.enabled]),
   );
 
   return moduleIds.filter((moduleId) =>
-    access.organizationIds.some(
+    organizationIds.some(
       (organizationId) =>
         explicitAccess.get(`${organizationId}:${moduleId}`) ?? true,
     ),
@@ -322,8 +345,14 @@ export const getCurrentAppAccessContext = cache(
       };
     }
 
-    const access = await getAccessibleOrganizationIdsForUser(session.user.id);
-    const enabledModuleIds = await getEnabledModuleIdsForAccess(access);
+    const [access, snapshot] = await Promise.all([
+      getAccessibleOrganizationIdsForUser(session.user.id),
+      getUserAccessSnapshot(session.user.id),
+    ]);
+    const enabledModuleIds = await getEnabledModuleIdsForAccess(
+      access,
+      snapshot ? snapshot.moduleAccess : undefined,
+    );
 
     return {
       access,

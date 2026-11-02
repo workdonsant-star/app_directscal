@@ -68,3 +68,5 @@ admin-company-deletion.sql passa a excluir também a empresa do ator global. Con
 
 
 Atualização de 29/10/2026: após a aplicação manual da segunda migração, o teste atualizado foi executado diretamente no OMDx e passou com ROLLBACK. Confirma exclusão da empresa do ator global, preservação do superadmin no registro interno, contas exclusivas/compartilhadas, cascatas, sessões e proteção do registro técnico. O erro PT409 relatado antes vinha do teste antigo (array[v_org,v_global], que esperava PT403), incompatível com a nova regra. A nova regra está validada no banco; a exclusão real pela interface permanece com o operador.
+
+`user-access-snapshot.sql` cria contas, empresas, vínculos, perfil, onboarding e instalações Slack fictícias e termina em ROLLBACK. Confere ordem dos vínculos, precedência do superadmin na empresa da sessão, empresa principal pelo vínculo mais antigo, perfil persistido, módulos, onboarding, instalação revogada versus ativa, conta inexistente e ausência de EXECUTE para anon/authenticated. Ainda não executado: depende da migração `20261102230000_user_access_snapshot.sql`.

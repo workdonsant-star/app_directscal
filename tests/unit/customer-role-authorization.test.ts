@@ -14,6 +14,8 @@ const supabaseMock = vi.hoisted(() => ({
   tablesRead: [] as string[],
 }));
 
+vi.mock("@/lib/auth/access-snapshot", () => ({ getUserAccessSnapshot: vi.fn(async () => null) }));
+
 vi.mock("@/lib/auth/session", () => ({
   getCurrentAuthSession: vi.fn(),
 }));

@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { cache } from "react";
 
 import { getAccountProfile } from "@/lib/data/person-profiles-data-source";
+import { getUserAccessSnapshot } from "@/lib/auth/access-snapshot";
 
 import { auth } from "../../../auth";
 import { isDevPasswordLoginEnabled } from "@/lib/auth/access-control";
@@ -14,6 +15,12 @@ import {
   authSessionCookieName,
   getAuthSessionFromCookie,
 } from "@/lib/auth/mock-auth";
+
+// O perfil chega no mesmo snapshot que o callback JWT já carregou neste request.
+async function getSessionProfile(userId: string) {
+  const snapshot = await getUserAccessSnapshot(userId);
+  return snapshot ? snapshot.profile : getAccountProfile(userId);
+}
 
 function toAuthSession(
   user: AuthUser,
@@ -41,7 +48,7 @@ export const getCurrentAuthSession = cache(async function getCurrentAuthSession(
 
     if (parsedUser.success) {
       return toAuthSession(
-        { ...parsedUser.data, ...(await getAccountProfile(parsedUser.data.id)) },
+        { ...parsedUser.data, ...(await getSessionProfile(parsedUser.data.id)) },
         session.expires,
         session.supabaseAccessToken,
         session.acquisition,

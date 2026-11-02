@@ -7,7 +7,9 @@ vi.mock("@/lib/auth/password-recovery", () => ({ getUserSessionVersion: vi.fn() 
 vi.mock("next-auth", () => ({ default: (config: NextAuthConfig) => { captured.config = config; return {}; } }));
 vi.mock("next/headers", () => ({ cookies: vi.fn() }));
 vi.mock("@auth/supabase-adapter", () => ({ SupabaseAdapter: vi.fn() }));
-vi.mock("@/lib/auth/supabase-auth", () => ({
+vi.mock("@/lib/auth/access-snapshot", () => ({ getUserAccessSnapshot: vi.fn() }));
+vi.mock("@/lib/auth/supabase-auth", async () => ({
+  buildSupabaseAuthUser: (await vi.importActual<typeof import("@/lib/auth/supabase-auth")>("@/lib/auth/supabase-auth")).buildSupabaseAuthUser,
   getSupabaseAdapterConfig: () => ({ url: "https://fixture.invalid", secret: "fixture" }),
   resolveSupabaseAuthUser: vi.fn(),
   attachSupabaseAccessTokenToSession: vi.fn(),
@@ -27,6 +29,7 @@ vi.mock("@/lib/data/organization-structure-data-source", () => ({ getLeadershipI
 import "../../auth";
 import { resolveSupabaseAuthUser } from "@/lib/auth/supabase-auth";
 import { getUserSessionVersion } from "@/lib/auth/password-recovery";
+import { getUserAccessSnapshot, type UserAccessSnapshot } from "@/lib/auth/access-snapshot";
 
 const user = { id: "user-test", email: "owner@example.com", name: "Dono", company: "Empresa", role: "cliente" as const };
 
@@ -40,6 +43,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(resolveSupabaseAuthUser).mockResolvedValue(user);
   vi.mocked(getUserSessionVersion).mockResolvedValue("initial");
+  vi.mocked(getUserAccessSnapshot).mockResolvedValue(null);
 });
 
 describe("sessão de e-mail e senha", () => {
@@ -91,5 +95,45 @@ describe("promoção da sessão temporária", () => {
   it("recusa token anterior à troca de senha ou remoção de acesso", async () => {
     vi.mocked(getUserSessionVersion).mockResolvedValue("00000000-0000-4000-8000-000000000001");
     expect(await refresh({ userId: user.id, email: user.email, role: "cliente", securityVersion: "initial" })).toBeNull();
+  });
+});
+
+describe("revalidação pelo snapshot de acesso", () => {
+  const userId = "11111111-1111-4111-8111-111111111111";
+  const organizationId = "22222222-2222-4222-8222-222222222222";
+  const snapshot: UserAccessSnapshot = {
+    sessionVersion: "initial",
+    user: { id: userId, email: "Owner@Example.com", name: "Dono", image: null },
+    memberships: [{ organization_id: organizationId, role: "cliente" }],
+    organization: { id: organizationId, name: "Empresa do snapshot", employee_count: 10 },
+    profile: null,
+    moduleAccess: [],
+    onboardingCompleted: true,
+    slackConnected: false,
+  };
+
+  it("usa conta, vínculo e empresa do snapshot sem consultas avulsas", async () => {
+    vi.mocked(getUserAccessSnapshot).mockResolvedValue(snapshot);
+    const result = await refresh({ userId, email: "owner@example.com", role: "cliente" });
+    expect(result).toMatchObject({ userId, company: "Empresa do snapshot", role: "cliente", email: "owner@example.com" });
+    expect(resolveSupabaseAuthUser).not.toHaveBeenCalled();
+    expect(getUserSessionVersion).not.toHaveBeenCalled();
+  });
+  it("recusa versão de sessão divergente", async () => {
+    vi.mocked(getUserAccessSnapshot).mockResolvedValue({ ...snapshot, sessionVersion: "00000000-0000-4000-8000-000000000001" });
+    expect(await refresh({ userId, email: "owner@example.com", securityVersion: "initial" })).toBeNull();
+  });
+  it("recusa acesso removido", async () => {
+    vi.mocked(getUserAccessSnapshot).mockResolvedValue({ ...snapshot, memberships: [], organization: null });
+    expect(await refresh({ userId, email: "owner@example.com" })).toBeNull();
+  });
+  it("prioriza o papel superadmin como o resolvedor avulso", async () => {
+    const globalOrg = "33333333-3333-4333-8333-333333333333";
+    vi.mocked(getUserAccessSnapshot).mockResolvedValue({
+      ...snapshot,
+      memberships: [...snapshot.memberships, { organization_id: globalOrg, role: "superadmin" }],
+      organization: { id: globalOrg, name: "Registro interno", employee_count: 1 },
+    });
+    expect(await refresh({ userId, email: "owner@example.com" })).toMatchObject({ role: "superadmin", company: "Registro interno" });
   });
 });

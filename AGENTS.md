@@ -319,3 +319,7 @@ A14: cadastro público cria organização isolada atomicamente; nome/domínio n�
 ## Exclusão integral de clientes
 
 O superadmin global pode excluir empresas mesmo com vínculos superadmin. A migração preserve_global_admin_company_deletion conserva somente os papéis globais já existentes em uma organização técnica de domínio reservado global-admin.directscal.invalid, fora da aquisição. Contas exclusivas de cliente e dados da empresa são removidos atomicamente; contas com referências externas permanecem. Somente o registro técnico é protegido. Login conserva membership global existente em vez de recriar empresa por domínio; rotação de sessão segue ativa e pode exigir novo login. Exige aplicação da nova migração no ambiente; ver supabase/CLAUDE.md para o estado da ativação.
+
+## Performance de navegação
+
+O tempo das páginas autenticadas vem de consultas ao Supabase em série (~300 ms cada a partir do Brasil). Sessão, vínculos, módulos, perfil, onboarding e Slack chegam juntos pelo snapshot de acesso por request (`src/lib/auth/access-snapshot.ts`, RPC `app_private.get_user_access_snapshot`). Antes de adicionar uma consulta ao layout ou à cadeia de sessão, verifique se o dado cabe no snapshot. A sidebar usa `IntentPrefetchLink` (pré-carrega a página inteira no hover) e `next.config.ts` define `experimental.staleTimes`. Cache persistente (`use cache`, CDN, `unstable_cache`) continua proibido para dados de sessão e de empresa.

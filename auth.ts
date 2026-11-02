@@ -21,6 +21,7 @@ import {
 import {
   attachSupabaseAccessTokenToSession,
   authenticateCustomerPasswordUser,
+  buildSupabaseAuthUser,
   authenticateSuperadminPasswordUser,
   checkUserHasActiveAccess,
   ensureSupabaseAuthUserProvisioned,
@@ -36,6 +37,7 @@ import {
 import { getLeadershipInvitationPreview } from "@/lib/data/organization-structure-data-source";
 import type { AuthRole, AuthUser } from "@/lib/contracts";
 import { getUserSessionVersion } from "@/lib/auth/password-recovery";
+import { getUserAccessSnapshot } from "@/lib/auth/access-snapshot";
 
 const supabaseAdapterConfig = getSupabaseAdapterConfig();
 
@@ -403,7 +405,29 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         }
       }
 
-      if (supabaseAdapterConfig && typeof token.userId === "string") {
+      // Revalidação a cada request: versão, conta e vínculos chegam juntos no
+      // snapshot memoizado, que o restante da página reutiliza.
+      const snapshot = supabaseAdapterConfig && !account && typeof token.userId === "string"
+        ? await getUserAccessSnapshot(token.userId)
+        : null;
+      if (snapshot && typeof token.userId === "string") {
+        if ((token.securityVersion ?? "initial") !== snapshot.sessionVersion) return null;
+        if (token.acquisition !== true && token.leadershipInvitation !== true) {
+          const email = snapshot.user?.email ?? (typeof token.email === "string" ? token.email : null);
+          const current = email
+            ? buildSupabaseAuthUser({
+                email,
+                image: snapshot.user?.image ?? null,
+                memberships: snapshot.memberships,
+                name: snapshot.user?.name ?? null,
+                organization: snapshot.organization,
+                userId: token.userId,
+              })
+            : null;
+          if (!current) return null;
+          writeTokenUser({ token, user: current });
+        }
+      } else if (supabaseAdapterConfig && typeof token.userId === "string") {
         const currentUserPromise = !account && token.acquisition !== true && token.leadershipInvitation !== true
           ? resolveSupabaseAuthUser(token.userId, typeof token.email === "string" ? token.email : null)
           : Promise.resolve(null);

@@ -140,3 +140,7 @@ A regressão de carregamento também cobre Leads (lista e detalhe), Módulos e a
 A suíte demo verifica também edição/publicação administrativa preservando versão anterior, conflito de revisão, criação dos quatro tipos, metadados em massa, recusa de empresa/ativo externo, proteção de vínculos históricos, pausa/retomada e captura de baseline após reentrada. Roteamento e downloads de entregas permanecem na demo.
 
 A suíte demo cobre reentrada de action points pontuais antigos e novos sem prazo, recorrentes com e sem encerramento, preservando as demais alterações do cenário.
+
+`access-snapshot.test.ts` verifica RPC única, perfil persistido sobre o Google, fallback quando a função não existe (sem reinsistir), propagação de outros erros e IDs fora do formato UUID. `auth-session-promotion.test.ts` cobre também a revalidação JWT pelo snapshot: sem consultas avulsas, versão divergente, acesso removido e precedência do superadmin.
+
+`omdx-diagnostic-visibility.test.ts` executa `getDiagnostics` e `getVisibleDiagnosticIds` com Supabase em memória: cliente vê todos, admin vê os próprios e os atribuídos por setor (painel e Slack), admin sem vínculo não vê nada, e o nome do criador segue o perfil persistido antes da conta Google.

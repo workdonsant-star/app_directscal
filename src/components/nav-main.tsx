@@ -2,6 +2,8 @@
 
 import { ChevronDown, type LucideIcon } from "lucide-react";
 import Link from "next/link";
+
+import { IntentPrefetchLink } from "@/components/intent-prefetch-link";
 import { useAppRuntime } from "@/components/app-runtime";
 import {
   Collapsible,
@@ -78,7 +80,7 @@ export function NavMain({
                 tooltip={item.disabled ? undefined : item.title}
                 disabled={item.disabled}
                 isActive={item.isActive}
-                render={item.url ? <Link href={href(item.url)} /> : undefined}
+                render={item.url ? <IntentPrefetchLink href={href(item.url)} /> : undefined}
                 onClick={item.url ? onNavigate : undefined}
                 type={item.url ? undefined : "button"}
               >

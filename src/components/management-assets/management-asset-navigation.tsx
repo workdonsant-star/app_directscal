@@ -2,6 +2,8 @@
 
 import { useRef, useState, type PointerEvent } from "react";
 import Link from "next/link";
+
+import { IntentPrefetchLink } from "@/components/intent-prefetch-link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAppRuntime } from "@/components/app-runtime";
 import { Icon, MoreHorizontal, Pencil, Plus, RotateCcw, Trash2, X, type IconNode } from "lucide-react";
@@ -251,7 +253,7 @@ export function ManagementAssetNavigation({ folders, initialPreferences, canMana
                   event.preventDefault(); move(index, event.key === "ArrowUp" ? -1 : 1);
                 }
               }} className={draggedKey === folder.key ? "rounded-md bg-muted ring-1 ring-foreground/30" : undefined}>
-              <SidebarMenuButton render={<Link href={runtime.href(folder.href)} />} tooltip={folder.title} isActive={isActive}
+              <SidebarMenuButton render={<IntentPrefetchLink href={runtime.href(folder.href)} />} tooltip={folder.title} isActive={isActive}
                 aria-current={isActive ? "page" : undefined} onClick={onNavigate} aria-describedby={canManage ? "asset-drag-instructions" : undefined} className={canManage ? "touch-none select-none pr-8 active:cursor-grabbing" : undefined}>
                 <CatalogIcon name={iconId} /><span>{folder.title}</span>
               </SidebarMenuButton>

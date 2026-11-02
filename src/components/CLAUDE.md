@@ -146,3 +146,5 @@ AppRuntimeProvider define uma fronteira opcional de URLs, pathname, requisiçõe
 `AppSidebar` mostra Motores de IA ao superadmin global e à apresentação isolada. O sistema real usa `/admin/motores-de-ia`; a demo mantém o catálogo fictício em `/demo/admin/motores-de-ia`.
 
 C2: help/ProductGuide reúne guias de uso e operação com links por público. O botão Alertas sem ação foi removido da topbar; não há fluxo de notificações implementado. Ações contextuais e utilities da demo permanecem.
+
+- `intent-prefetch-link.tsx` (`IntentPrefetchLink`) é o link dos itens da sidebar e das pastas de ativos. Sem intenção, segue o padrão do Next (prefetch até `loading.tsx`); após 120 ms de hover, foco ou toque, pré-carrega a página inteira. Combinado com `experimental.staleTimes` (`dynamic: 30`, `static: 60` em `next.config.ts`), voltar a uma página recente ou clicar após o hover não espera o servidor. Prefetch só existe em produção. Não usar `speculationrules` no app: ele prerenderiza o documento inteiro, roda sessão e banco a cada hover e ignora o router do Next.
