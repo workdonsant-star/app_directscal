@@ -2,6 +2,8 @@
 
 Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no servidor; superadmin e aquisição também usam Supabase via Route Handlers server-side. Perfil e Configurações compartilham a leitura server-side de identidade, organização e aquisição; as edições de nome e avatar do Perfil persistem em account_profiles.
 
+`manual-action-point-followups.ts` reconhece respostas de testes manuais de Action Points antes do fluxo de rotinas. Exige organização, workspace, pessoa, DM e thread da pergunta enviada; uma DM sem thread só é aceita quando há exatamente um ciclo enviado nas últimas 24 horas. Com vários ciclos, orienta responder na thread. Relatos vagos pedem detalhes e não geram proposta. Resumos propostos pelo motor de IA só aparecem para o cliente após confirmação da pessoa.
+
 `customer-documents-data-source.ts` guarda arquivos prontos enviados pelo superadmin em bucket privado e metadados por organização. Somente o superadmin cria pastas e publica/remove arquivos; leitura e download do cliente exigem membership da empresa. A pasta usa o registro de categorias da biblioteca existente. O envio publica imediatamente, sem rascunho.
 
 `agent-provider-data-source.ts` mantém as conexões globais Anthropic, OpenAI e Google Gemini em `app_private.agent_provider_connections`. Cifra chaves antes de persistir, devolve ao painel só presença/origem/modelo e seleciona um motor para as respostas do agente; variáveis de ambiente continuam como fallback. Salvar consulta metadados do modelo; Testar também gera uma resposta estruturada com fonte fictícia, sem documentos de cliente.

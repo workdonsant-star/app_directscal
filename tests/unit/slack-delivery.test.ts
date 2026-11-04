@@ -3,6 +3,7 @@ vi.mock("server-only", () => ({}));
 vi.mock("@/lib/integrations/slack-delivery-store", () => ({ claimSlackDelivery: vi.fn(), transitionSlackDelivery: vi.fn() }));
 vi.mock("@/lib/integrations/routine-contacts", () => ({ deferRoutineContact: vi.fn(), getRoutineContactDisposition: vi.fn(), prepareRoutineContact: vi.fn() }));
 vi.mock("@/lib/integrations/routine-replies", () => ({ prepareRoutineReply: vi.fn() }));
+vi.mock("@/lib/data/manual-action-point-followups", () => ({ prepareManualActionPointReply: vi.fn() }));
 vi.mock("@/lib/data/slack-identity-data-source", () => ({ completeSlackIdentity: vi.fn() }));
 vi.mock("@/lib/integrations/slack-question-service", () => ({ prepareSlackQuestion: vi.fn() }));
 vi.mock("@/lib/integrations/slack", async importOriginal => ({ ...await importOriginal<typeof import("@/lib/integrations/slack")>(), getSlackInstallation: vi.fn(), getSlackWorkspaceUser: vi.fn(), postSlackMessage: vi.fn() }));
@@ -13,6 +14,7 @@ import { getSlackInstallation, getSlackWorkspaceUser, postSlackMessage, SlackDel
 import { deferRoutineContact, getRoutineContactDisposition, prepareRoutineContact } from "@/lib/integrations/routine-contacts";
 import { processSlackDelivery } from "@/lib/integrations/slack-delivery";
 import { prepareRoutineReply } from "@/lib/integrations/routine-replies";
+import { prepareManualActionPointReply } from "@/lib/data/manual-action-point-followups";
 
 const job = { id: "job", event_id: "evento", organization_id: "org", team_id: "T1", lease_id: "lease", attempts: 1, reply: null, question: { kind: "direct" as const, teamId: "T1", userId: "U1", channel: "D1", ts: "123.456", text: "Qual é a prática?" } };
 beforeEach(() => {
@@ -26,6 +28,7 @@ beforeEach(() => {
   vi.mocked(getRoutineContactDisposition).mockResolvedValue({ disposition: "enviar", title: "Rotina", expectation: "Conferir", successIndicator: "Registro", assetTitle: "Ativo", assetVersion: "1", opensAt: "2026-10-20T12:00:00Z", dueAt: "2026-10-20T20:00:00Z", cycleId: "00000000-0000-4000-8000-000000000001" });
   vi.mocked(prepareRoutineContact).mockResolvedValue({ text: "Pergunta da rotina", channel: "D1" });
   vi.mocked(prepareRoutineReply).mockResolvedValue(null);
+  vi.mocked(prepareManualActionPointReply).mockResolvedValue(null);
 });
 describe("entrega durável Slack", () => {
   it("não processa evento sem posse do lease", async () => {
@@ -105,6 +108,12 @@ describe("entrega durável Slack", () => {
     await processSlackDelivery();
     expect(prepareSlackQuestion).not.toHaveBeenCalled();
     expect(postSlackMessage).toHaveBeenCalledWith("ficticio", expect.objectContaining({ text: "Confirme o registro da rotina" }));
+  });
+  it("encaminha o relato manual antes da consulta aos ativos", async () => {
+    vi.mocked(prepareManualActionPointReply).mockResolvedValue({ text: "Resumo proposto do Action Point" });
+    await processSlackDelivery();
+    expect(prepareSlackQuestion).not.toHaveBeenCalled();
+    expect(postSlackMessage).toHaveBeenCalledWith("ficticio", expect.objectContaining({ text: "Resumo proposto do Action Point" }));
   });
   it("envia contato de rotina somente em DM após revalidar regra e pessoa", async () => {
     vi.mocked(claimSlackDelivery).mockResolvedValue({ ...job, question: { kind: "rotina", teamId: "T1", userId: "U1", channel: "pendente", ts: "0.0", cycleId: "00000000-0000-4000-8000-000000000001" } });

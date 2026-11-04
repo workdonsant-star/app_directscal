@@ -7,6 +7,7 @@ import { prepareSlackQuestion } from "@/lib/integrations/slack-question-service"
 import type { Json } from "@/lib/supabase/database.types";
 import { deferRoutineContact, getRoutineContactDisposition, prepareRoutineContact } from "@/lib/integrations/routine-contacts";
 import { prepareRoutineReply } from "@/lib/integrations/routine-replies";
+import { prepareManualActionPointReply } from "@/lib/data/manual-action-point-followups";
 
 export async function processSlackDelivery(id?: string) {
   const job = await claimSlackDelivery(id);
@@ -36,7 +37,7 @@ export async function processSlackDelivery(id?: string) {
         prepared = { text: confirmed ? "Sua identidade no app e no Slack foi confirmada. Volte ao perfil e verifique a confirmação." : "Não foi possível confirmar este código. Gere um novo no seu perfil e envie nesta conversa privada. Um vínculo anterior precisa ser desvinculado pelo próprio perfil." };
       } else {
         if (job.question.kind === "rotina") throw new Error("Contato sem contexto.");
-        prepared = await prepareRoutineReply(job, installation) ?? await prepareSlackQuestion(job.question, installation);
+        prepared = await prepareManualActionPointReply(job, installation) ?? await prepareRoutineReply(job, installation) ?? await prepareSlackQuestion(job.question, installation);
       }
       if (!prepared) { await transition("ignorar"); return true; }
       reply = slackReplySchema.parse(prepared);

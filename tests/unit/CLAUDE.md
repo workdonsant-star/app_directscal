@@ -8,6 +8,8 @@
 
 `admin-action-points-view.test.ts` verifica agrupamento das ações publicadas por responsável e uso da revisão vigente da rotina sem confundir Action Points de diagnósticos diferentes.
 
+`manual-action-point-followups.test.ts` cobre DM com um ciclo recente, múltiplos ciclos e resposta vaga sem registro. `slack-delivery.test.ts` verifica a prioridade do acompanhamento manual sobre a consulta a ativos. Ambos usam substitutos e não enviam mensagens ao Slack.
+
 `action-point-follow-up-classification.test.ts` cobre silêncio após prazo e entrega, falha de transporte, resposta vaga/contraditória, cumprimento parcial, falta de evidência e atendimento. A regra ainda não recebe respostas reais do Slack.
 
 Vitest em ambiente Node, com alias `@/` configurado na raiz. Teste regras de domínio e contratos com dados fictícios, sem acessar serviços externos. Para mudanças localizadas, rode o arquivo específico. Os testes de categorias garantem agrupamento por categoria, normalização e conservação de todos os ativos.
