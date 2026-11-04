@@ -11,6 +11,8 @@ Esta pasta contém integrações server-only que traduzem eventos externos para 
 - Mantenha o provedor como canal de entrada e saída; a fonte de verdade continua sendo o DirectScal/Supabase.
 - Respostas devem citar ativo, seção e versão ou recusar quando não houver evidência.
 
+O worker de entrega durável consulta primeiro `prepareManualActionPointReply` para respostas de Action Points manuais, depois o fluxo de rotinas e, por último, a consulta a ativos. Cada resposta manual deve permanecer vinculada ao ciclo, à pessoa e à thread corretos; não inferir execução a partir de mensagem vaga.
+
 ## Slack
 
 - `slack-format.ts` é puro e testado: assinatura `v0`, `state` assinado do OAuth (HMAC com `AUTH_SECRET`, validade de 10 minutos), limpeza de menções e mensagem em Block Kit com fontes e botões de avaliação.
