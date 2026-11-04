@@ -13,6 +13,8 @@ import { getCurrentAuthSession } from "@/lib/auth/session";
 import { getPublishedActionPointsWorkspace } from "@/lib/data/published-action-points";
 import { getActionPointExecution } from "@/lib/data/action-point-execution-data-source";
 import { buildPublishedActionPointsBoard } from "@/lib/data/published-action-points-board";
+import { getCustomerCompanyActionPoints } from "@/lib/data/customer-company-action-points";
+import { buildManualActionPointsBoard } from "@/lib/data/manual-action-points-board";
 
 export const metadata: Metadata = {
   title: "Action Points — Directscal",
@@ -32,7 +34,10 @@ export default async function ActionPointsPage({ searchParams }: {
   }
 
   const selected = (await searchParams)?.diagnostico;
-  const { workspace, organizationId } = await getPublishedActionPointsWorkspace(selected);
+  const [{ workspace, organizationId }, manual] = await Promise.all([
+    getPublishedActionPointsWorkspace(selected),
+    selected ? Promise.resolve([]) : getCustomerCompanyActionPoints(session),
+  ]);
   const [execution, agreements, records] = workspace.source && organizationId
     ? await Promise.all([
       getActionPointExecution({ diagnosticId: workspace.source.diagnosticId, organizationId }),
@@ -47,12 +52,13 @@ export default async function ActionPointsPage({ searchParams }: {
       <AppTopbar actions={workspace.source ? <ActionPointsDownload diagnosticId={workspace.source.diagnosticId} /> : undefined} />
 
       <AppPage>
-        {workspace.source ? <><ActionPointsPeopleView board={board} /><RoutineAgreements agreements={agreements} records={records} /></> : (
+        {manual.length ? <ActionPointsPeopleView board={buildManualActionPointsBoard(manual)} manual /> : null}
+        {workspace.source ? <div className={manual.length ? "mt-12" : undefined}><ActionPointsPeopleView board={board} nested={manual.length > 0} /><RoutineAgreements agreements={agreements} records={records} /></div> : manual.length === 0 ? (
           <div className="py-10">
             <h1 className="text-ui-page">Action points</h1>
-            <p className="mt-2 text-sm text-muted-foreground">Nenhum action point publicado para esta coleta.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Nenhum action point disponível para esta empresa.</p>
           </div>
-        )}
+        ) : null}
       </AppPage>
     </>
   );

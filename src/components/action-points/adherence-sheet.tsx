@@ -23,6 +23,27 @@ export type AdherenceSelection = {
   actionPoint: AdherenceActionPoint;
 };
 
+function ManualDetails({ category, ap }: { category: AdherenceCategory; ap: AdherenceActionPoint }) {
+  const details = ap.manualDetails;
+  if (!details) return null;
+  const deadline = details.deadline ? details.deadline.split("-").reverse().join("/") : ap.frequency === "Pontual" ? "Sem prazo" : "Sem encerramento";
+  return <>
+    <SheetHeader className="shrink-0 gap-3 px-6 pt-[43px] pb-5">
+      <div className="flex flex-wrap items-center gap-4 pr-8 text-xs text-muted-foreground"><span>{ap.checkIns.length ? "Relato recebido" : "Não iniciado"}</span><span className="inline-flex items-center gap-1.5"><Clock className="size-3.5" aria-hidden="true" />{ap.frequency}</span></div>
+      <SheetTitle className="max-w-[371px] pr-2 text-ui-section text-balance">{ap.name}</SheetTitle>
+      <SheetDescription className="max-w-[531px] text-sm leading-5">{details.action}</SheetDescription>
+    </SheetHeader>
+    <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 pb-6 text-sm">
+      <dl className="grid grid-cols-2 gap-4"><div><dt className="text-xs text-muted-foreground">Responsável</dt><dd>{category.leader?.name ?? "Sem responsável"}</dd></div><div><dt className="text-xs text-muted-foreground">Prazo</dt><dd className="tabular-nums">{deadline}</dd></div></dl>
+      <div><h3 className="font-medium">Ativo de gestão</h3><p className="mt-1 text-muted-foreground">{category.name}{details.assetAvailable ? "" : " · Indisponível"}</p></div>
+      <div><h3 className="font-medium">Por que existe</h3><p className="mt-1 whitespace-pre-wrap text-muted-foreground">{details.reason}</p></div>
+      <div><h3 className="font-medium">O que fazer</h3><p className="mt-1 whitespace-pre-wrap text-muted-foreground">{details.action}</p></div>
+      <div><h3 className="font-medium">Papel do ativo na continuidade</h3><p className="mt-1 whitespace-pre-wrap text-muted-foreground">{details.continuity}</p></div>
+      {ap.checkIns.length ? <div><h3 className="font-medium">Relatos confirmados</h3><ul className="mt-2 space-y-3">{ap.checkIns.map((checkIn, index) => <li key={`${checkIn.when}:${index}`} className="border-l-2 border-border pl-3"><p className="whitespace-pre-wrap">{checkIn.message}</p><p className="mt-1 text-xs text-muted-foreground">{checkIn.when} · {checkIn.context}</p></li>)}</ul></div> : <p className="text-xs text-muted-foreground">Ainda não há relatos confirmados para esta ação.</p>}
+    </div>
+  </>;
+}
+
 export function AdherenceSheet({
   selection,
   onClose,
@@ -36,7 +57,7 @@ export function AdherenceSheet({
   return (
     <Sheet open={open} onOpenChange={(next) => !next && onClose()}>
       <SheetContent className="gap-0 data-[side=right]:w-full data-[side=right]:sm:w-[640px] data-[side=right]:sm:max-w-[min(640px,100vw)]">
-        {selection && category && ap && (
+        {selection && category && ap && (ap.manualDetails ? <ManualDetails category={category} ap={ap} /> : (
           <>
             <SheetHeader className="shrink-0 gap-3 px-6 pt-[43px] pb-5">
               <div className="flex flex-wrap items-center gap-4 pr-8 text-xs text-muted-foreground">
@@ -111,7 +132,7 @@ export function AdherenceSheet({
               )}
             </div>
           </>
-        )}
+        ))}
       </SheetContent>
     </Sheet>
   );

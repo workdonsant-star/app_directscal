@@ -39,3 +39,7 @@ A06: routine-replies intercepta relatos explícitos em DM antes do modelo, reval
 
 
 A07: contato preparado distingue o lembrete único do contato inicial. Mesmas guardas, horário e cotas de A05. Antes de enviar, relato/intervenção/proposta cancela cobrança; conversa recente adia por 24h. A DM de lembrete preserva a referência do mesmo ciclo e não cria oportunidade. Nenhum aviso automático é enviado ao gestor: o escalonamento ocorre na fila interna da empresa.
+
+## Thread do teste manual
+
+slack-delivery.ts verifica primeiro se a resposta privada pertence a um ciclo manual confirmado no mesmo canal, workspace, pessoa e organização. Sem vínculo, mantém o fluxo de rotina ou consulta.

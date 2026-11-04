@@ -250,3 +250,7 @@ admin-delivery-domain.ts concentra o catálogo de action points e a conversão/a
 ## Rodadas de consulta no Maturidade
 
 Cada ida ao Supabase custa ~300 ms; o que importa é quantas rodadas ficam em série. `loadAuthorizedDiagnosticRows` busca empresas e diagnósticos juntos (ambos dependem só dos vínculos). `loadDiagnosticAccessMetadata` lê numa rodada vínculo do leitor, escopos, pessoas, setores, contas, vínculos e perfis dos criadores (`account_profiles` em lote, mesma precedência de `getAccountProfile`), e numa segunda as atribuições por escopo (painel e Slack juntas). `getVisibleDiagnosticIds` expõe os IDs autorizados antes da contagem de respostas e dos relatórios: `/omdx/diagnosticos` usa para buscar links em paralelo, e `published-action-points.ts` para buscar entregas junto com os relatórios, recortando depois pelos diagnósticos com relatório. As regras de visibilidade não mudaram; `omdx-diagnostic-visibility.test.ts` cobre cliente, admin atribuído e admin sem vínculo.
+
+## Acompanhamento manual de Action Points
+
+admin-company-action-points.ts valida ativo publicado, pessoa ativa no Slack e versão esperada. customer-company-action-points.ts filtra por membership antes da leitura. manual-action-point-followups.ts persiste o envio antes do Slack, evita repetição incerta e vincula respostas apenas à thread, pessoa e empresa corretas. A IA propõe um resumo; o cliente vê somente relatos confirmados pelo líder. Nenhum relato marca conclusão verificada.

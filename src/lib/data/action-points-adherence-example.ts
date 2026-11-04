@@ -59,6 +59,7 @@ export type AdherenceActionPoint = {
   description?: string;
   implementation?: { stage: string; dueOn: string | null; progress: number | null; suggestedDeadline: string };
   checkIns: AdherenceCheckIn[];
+  manualDetails?: { assetAvailable: boolean; deadline: string | null; reason: string; action: string; continuity: string };
 };
 
 // Categoria = um ativo de gestão. Reúne os action points que o mantêm vivo.

@@ -192,3 +192,7 @@ C1/A01: Sem medição é uma ausência de base, separada da situação Sem respo
 C1: o detalhe recebe a descrição recomendada da ação publicada, idêntica à fonte do PDF de Action Points. A leitura do consultor permanece separada como contexto; exemplos sem descrição mantêm o resumo existente.
 
 O detalhe operacional também mostra responsável, etapa, prazo acordado e andamento da implantação. Prazo sugerido da publicação permanece identificado como sugestão; percentual de implantação não representa execução recorrente. Sem atribuição, prazo/andamento são ausentes, nunca zero inventado.
+
+## Cadastro manual
+
+A lista por pessoa e o detalhe exibem resumos confirmados pelo líder sem convertê-los em aderência, execução comprovada ou saúde positiva. Sem relato confirmado, mostram ausência de medição.
