@@ -126,11 +126,12 @@ function CascadingCell({ children, first = false, last, frame, content }: {
   );
 }
 
-function CascadingActionPoints({ id, items, onSelect, reducedMotion }: {
+function CascadingActionPoints({ id, items, onSelect, reducedMotion, manual = false }: {
   id: string;
   items: AdherenceSelection[];
   onSelect: (selection: AdherenceSelection) => void;
   reducedMotion: boolean;
+  manual?: boolean;
 }) {
   const isPresent = useIsPresent();
   const step = reducedMotion ? 0 : 0.04;
@@ -156,10 +157,10 @@ function CascadingActionPoints({ id, items, onSelect, reducedMotion }: {
             <CascadingCell first last={last} frame={frame} content={content}>
               <button type="button" onClick={() => onSelect(selection)} className="w-fit rounded-sm text-left text-sm leading-5 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{ap.name}</button>
             </CascadingCell>
-            <CascadingCell last={last} frame={frame} content={content}><CycleCell ap={ap} /></CascadingCell>
-            <CascadingCell last={last} frame={frame} content={content}><HealthLabel health={ap.health} /></CascadingCell>
+            <CascadingCell last={last} frame={frame} content={content}>{manual ? <span className="text-sm text-muted-foreground">Sem medição</span> : <CycleCell ap={ap} />}</CascadingCell>
+            <CascadingCell last={last} frame={frame} content={content}>{manual ? <span className="text-sm text-muted-foreground">{ap.checkIns.length ? "Relato recebido" : "Não iniciado"}</span> : <HealthLabel health={ap.health} />}</CascadingCell>
             <CascadingCell last={last} frame={frame} content={content}>
-              <span className="text-sm text-muted-foreground">{checkInAgeHours(ap.lastCheckIn) === null ? "—" : ap.lastCheckIn}</span>
+              <span className="text-sm text-muted-foreground">{manual ? ap.lastCheckIn : checkInAgeHours(ap.lastCheckIn) === null ? "—" : ap.lastCheckIn}</span>
             </CascadingCell>
           </TableRow>
         );
@@ -215,7 +216,7 @@ function AdherenceSummary({ average, dist, total, measured = true, operational =
   );
 }
 
-export function ActionPointsPeopleView({ board }: { board: AdherenceBoard }) {
+export function ActionPointsPeopleView({ board, nested = false, manual = false }: { board: AdherenceBoard; nested?: boolean; manual?: boolean }) {
   const reducedMotion = Boolean(useReducedMotion());
   const [opened, setOpened] = useState<Set<string>>(new Set());
   const [selection, setSelection] = useState<AdherenceSelection | null>(null);
@@ -243,15 +244,15 @@ export function ActionPointsPeopleView({ board }: { board: AdherenceBoard }) {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-ui-page">Action points</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{board.source ? `${allPoints.length} ${allPoints.length === 1 ? "action point publicado" : "action points publicados"} · ${board.source.name}` : headline}</p>
+        {nested ? <h2 className="text-ui-section">Da entrega publicada</h2> : <h1 className="text-ui-page">Action points</h1>}
+        <p className="mt-1 text-sm text-muted-foreground">{manual ? `${allPoints.length} ${allPoints.length === 1 ? "action point" : "action points"} · ${allPoints.some(point => point.checkIns.length) ? "Relatos confirmados disponíveis" : "Sem relatos confirmados"}` : board.source ? `${allPoints.length} ${allPoints.length === 1 ? "action point publicado" : "action points publicados"} · ${board.source.name}` : headline}</p>
       </div>
 
-      <AdherenceSummary average={averageAdherence(allPoints)} dist={totalDist} total={allPoints.length} measured={!board.source} operational={Boolean(board.source)} />
+      {manual ? <section aria-label="Acompanhamento" className="grid gap-6 rounded-xl bg-card p-5 sm:grid-cols-[minmax(0,200px)_minmax(0,1fr)] sm:items-center"><div><p className="font-label text-ui-label text-muted-foreground">Acompanhamento</p><p className="mt-2 text-ui-kpi tabular-nums">—</p><p className="mt-2 text-xs text-muted-foreground">Sem medição recorrente</p></div><p className="text-sm text-muted-foreground"><span className="font-medium tabular-nums text-foreground">{allPoints.length}</span> {allPoints.length === 1 ? "action point definido" : "action points definidos"} pela Directscal</p></section> : <AdherenceSummary average={averageAdherence(allPoints)} dist={totalDist} total={allPoints.length} measured={!board.source} operational={Boolean(board.source)} />}
 
-      <Table variant="operational" aria-label="Aderência por liderança" className="table-fixed [&_tbody_tr:has([aria-expanded])]:bg-transparent">
+      <Table variant="operational" aria-label={manual ? "Action points por liderança" : "Aderência por liderança"} className="table-fixed [&_tbody_tr:has([aria-expanded])]:bg-transparent">
         <colgroup><col className="w-[40%]" /><col className="w-[26%]" /><col className="w-[18%]" /><col className="w-[16%]" /></colgroup>
-        <TableHeader><TableRow><TableHead>Liderança</TableHead><TableHead>{board.source ? "Execução relatada" : "Aderência"}</TableHead><TableHead>Situação</TableHead><TableHead>Último relato</TableHead></TableRow></TableHeader>
+        <TableHeader><TableRow><TableHead>Liderança</TableHead><TableHead>{manual ? "Acompanhamento" : board.source ? "Execução relatada" : "Aderência"}</TableHead><TableHead>Situação</TableHead><TableHead>Último relato</TableHead></TableRow></TableHeader>
         {groups.map((group, index) => {
           const expanded = opened.has(group.key);
           return <Fragment key={group.key}>
@@ -260,15 +261,15 @@ export function ActionPointsPeopleView({ board }: { board: AdherenceBoard }) {
                 <TableCell>
                   <button type="button" aria-expanded={expanded} aria-controls={`person-${index}`} onClick={() => toggle(group.key)} className="flex min-w-0 items-center gap-3 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     <ChevronRight className={cn("size-4 shrink-0 text-muted-foreground transition-transform duration-[180ms]", expanded && "rotate-90")} aria-hidden="true" />
-                    <Avatar className="size-8 shrink-0"><AvatarImage src={group.leader?.avatarUrl ?? (board.source ? undefined : adherenceLeaderPhotos[group.name])} alt="" /><AvatarFallback>{group.leader ? group.name.split(" ").map(n => n[0]).join("") : "?"}</AvatarFallback></Avatar>
+                    <Avatar className="size-8 shrink-0"><AvatarImage src={group.leader?.avatarUrl ?? (board.source || manual ? undefined : adherenceLeaderPhotos[group.name])} alt="" /><AvatarFallback>{group.leader ? group.name.split(" ").map(n => n[0]).join("") : "?"}</AvatarFallback></Avatar>
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-medium">{group.name}</span>
                       <span className="block truncate text-xs text-muted-foreground">{group.leader?.sector ?? "Atribuição pendente"} · {group.points.length} {group.points.length === 1 ? "action point" : "action points"}</span>
                     </span>
                   </button>
                 </TableCell>
-                <TableCell><AdherenceBar value={group.average} health={group.health} showTarget={!board.source} /></TableCell>
-                <TableCell><DistributionDots dist={group.dist} /></TableCell>
+                <TableCell>{manual ? <span className="text-sm text-muted-foreground">Sem medição</span> : <AdherenceBar value={group.average} health={group.health} showTarget={!board.source} />}</TableCell>
+                <TableCell>{manual ? <span className="text-sm text-muted-foreground">Não iniciado</span> : <DistributionDots dist={group.dist} />}</TableCell>
                 <TableCell><span className="text-sm text-muted-foreground">{group.lastCheckIn}</span></TableCell>
               </TableRow>
             </TableBody>
@@ -279,13 +280,14 @@ export function ActionPointsPeopleView({ board }: { board: AdherenceBoard }) {
                 items={group.categories.flatMap(category => category.actionPoints.map(actionPoint => ({ category, actionPoint })))}
                 onSelect={setSelection}
                 reducedMotion={reducedMotion}
+                manual={manual}
               />}
             </AnimatePresence>
           </Fragment>;
         })}
       </Table>
 
-      <p className="max-w-[90ch] text-xs leading-5 text-muted-foreground">{board.source ? "Execução relatada soma as oportunidades registradas com prazo vencido nos últimos 30 dias. Exceções aprovadas ficam fora da base; solicitações ainda não revisadas permanecem. São considerados somente os registros disponíveis ao seu acesso. Ausência de resposta não comprova falha. Validação de evidência, leitura e progresso de implantação são acompanhamentos distintos." : <>Aderência é a média dos ciclos cumpridos no período, com o mesmo peso por action point. Consistente a partir de {ADHERENCE_TARGET}%, atenção de 50% a {ADHERENCE_TARGET - 1}%, em risco abaixo de 50%. Itens por ocorrência, sem responsável ou aguardando resposta ficam fora da média. A aderência reflete o relato do líder.</>}</p>
+      <p className="max-w-[90ch] text-xs leading-5 text-muted-foreground">{manual ? "Os relatos confirmados pelo líder mostram o que foi declarado no Slack. Eles não comprovam sozinhos a execução nem formam uma métrica de aderência." : board.source ? "Execução relatada soma as oportunidades registradas com prazo vencido nos últimos 30 dias. Exceções aprovadas ficam fora da base; solicitações ainda não revisadas permanecem. São considerados somente os registros disponíveis ao seu acesso. Ausência de resposta não comprova falha. Validação de evidência, leitura e progresso de implantação são acompanhamentos distintos." : <>Aderência é a média dos ciclos cumpridos no período, com o mesmo peso por action point. Consistente a partir de {ADHERENCE_TARGET}%, atenção de 50% a {ADHERENCE_TARGET - 1}%, em risco abaixo de 50%. Itens por ocorrência, sem responsável ou aguardando resposta ficam fora da média. A aderência reflete o relato do líder.</>}</p>
       <AdherenceSheet selection={selection} onClose={() => setSelection(null)} />
     </div>
   );

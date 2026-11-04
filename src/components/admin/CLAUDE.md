@@ -114,3 +114,7 @@ Todos os consumidores de `useAdminDataSnapshot` exigem snapshot do servidor: Cam
 Listagem/editor/perguntas de ativos, revisão de lacunas, operação e navegação usam useAppRuntime para requisições e URLs. O runtime padrão conserva o backend administrativo; a demo mantém estado local. O editor aceita companyId explícito para conservar a empresa do breadcrumb (o fallback operacional continua company_organizationId). Regras editoriais e componentes visuais permanecem compartilhados.
 
 `AdminCompanyTabs` aceita `actions` opcional para mostrar as ações da aba ativa na mesma linha das abas, à direita. `CompanyFilesWorkspace` só usa isso com `actionsInTabs` (repassado como `renderTabs` a `CustomerDocumentsWorkspace`, que então omite o título Arquivos). Sem essas props, o app operacional mantém o layout anterior; hoje só a demo as liga.
+
+## Teste manual do agente de Action Points
+
+A aba da empresa permite cadastrar Action Points com ativo publicado e líder do Slack. Enviar pergunta no Slack inicia um ciclo explícito; mostra propostas e relatos confirmados, sem publicar métricas de execução.

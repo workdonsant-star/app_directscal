@@ -20,3 +20,7 @@ A15 substitui o descarte por recibo no handler de eventos: persiste pergunta ele
 
 
 A06: interactions também recebe Confirmar registro/Cancelar de proposta. Assinatura precede parse; DM e proposta UUID viram comando reservado na fila antes do 200, ou 503 quando persistência falha. O mesmo worker resolve a confirmação e prepara o aviso. Cliques repetidos não duplicam fatos. Feedback existente permanece separado; não usamos response_url para executar registros.
+
+## Respostas ao teste manual
+
+Uma resposta na thread de um Action Point gera proposta de resumo. O líder confirma com confirmar <referência> ou corrige com corrigir <referência>: <relato completo>. A autoria confirmada não valida a execução.

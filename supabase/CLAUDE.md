@@ -91,3 +91,7 @@ Atualização de 29/10/2026: após a aplicação manual da segunda migração, o
 `20261101165000_agent_provider_connections.sql` cria `app_private.agent_provider_connections` para Anthropic, OpenAI e Gemini e a RPC invoker de seleção atômica por superadmin. Chaves chegam cifradas do servidor; banco nunca recebe segredo bruto. RLS ativo, sem grants para cliente, leitura/escrita só pela service role. Aplicada ao OMDx em 01/11/2026; tabela, função e grants conferidos. Trocar `AUTH_SECRET` exige recadastrar chaves salvas pelo painel.
 
 `20261102230000_user_access_snapshot.sql` cria `app_private.get_user_access_snapshot(uuid)`: leitura única (security invoker, search_path vazio, EXECUTE só service_role) de versão de sessão, conta, vínculos, empresa da sessão (superadmin primeiro), perfil, módulos, onboarding e instalação Slack não revogada da empresa principal. Não grava nada nem decide autorização. O app funciona sem ela (fallback em consultas paralelas). **Pendente de aplicação no OMDx**; depois de aplicar, rodar `supabase/tests/user-access-snapshot.sql` e reiniciar/redeployar o app.
+
+## Action Points manuais
+
+As migrações 20261104203000, 20261104211000, 20261104212000 e 20261104213000 adicionam cadastro, ciclos e propostas privadas com RLS. O service role altera somente os campos de confirmação da proposta; envios incertos não recebem retry automático. Todas foram aplicadas ao OMDx em 04/11/2026; nenhum ciclo foi iniciado nessa aplicação.

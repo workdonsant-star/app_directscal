@@ -14,6 +14,24 @@ export type Database = {
   }
   app_private: {
     Tables: {
+      manual_action_point_followups: {
+        Row: { id: string; action_point_id: string; organization_id: string; asset_version_id: string; slack_team_id: string; slack_user_id: string; title: string; action: string; question: string; status: "preparado" | "enviando" | "enviado" | "respondido" | "falhou" | "incerto"; channel_id: string | null; message_ts: string | null; error_code: string | null; started_by: string; created_at: string; updated_at: string }
+        Insert: { id: string; action_point_id: string; organization_id: string; asset_version_id: string; slack_team_id: string; slack_user_id: string; title: string; action: string; question: string; status: "preparado" | "enviando" | "enviado" | "respondido" | "falhou" | "incerto"; channel_id?: string | null; message_ts?: string | null; error_code?: string | null; started_by: string; created_at?: string; updated_at?: string }
+        Update: { status?: "preparado" | "enviando" | "enviado" | "respondido" | "falhou" | "incerto"; channel_id?: string | null; message_ts?: string | null; error_code?: string | null; updated_at?: string }
+        Relationships: []
+      }
+      manual_action_point_reports: {
+        Row: { id: string; followup_id: string; organization_id: string; slack_event_job_id: string; status: "executado_relato" | "parcial" | "nao_executado" | "bloqueado" | "duvida" | "inconclusivo"; summary: string; evidence: string | null; registered_at: string; confirmed_at: string | null; confirmation_job_id: string | null }
+        Insert: { followup_id: string; organization_id: string; slack_event_job_id: string; status: "executado_relato" | "parcial" | "nao_executado" | "bloqueado" | "duvida" | "inconclusivo"; summary: string; evidence?: string | null }
+        Update: { confirmed_at?: string | null; confirmation_job_id?: string | null }
+        Relationships: []
+      }
+      admin_company_action_points: {
+        Row: { id: string; organization_id: string; asset_id: string; asset_version_id: string; slack_team_id: string; slack_user_id: string; title: string; deadline: string | null; frequency: "diaria" | "semanal" | "quinzenal" | "mensal" | null; reason: string; action: string; continuity: string; created_by: string; updated_by: string; created_at: string; updated_at: string }
+        Insert: { id?: string; organization_id: string; asset_id: string; asset_version_id: string; slack_team_id: string; slack_user_id: string; title: string; deadline?: string | null; frequency?: "diaria" | "semanal" | "quinzenal" | "mensal" | null; reason: string; action: string; continuity: string; created_by: string; updated_by: string; created_at?: string; updated_at?: string }
+        Update: { asset_id?: string; asset_version_id?: string; slack_team_id?: string; slack_user_id?: string; title?: string; deadline?: string | null; frequency?: "diaria" | "semanal" | "quinzenal" | "mensal" | null; reason?: string; action?: string; continuity?: string; updated_by?: string; updated_at?: string }
+        Relationships: []
+      }
       agent_provider_connections: {
         Row: { provider: "anthropic" | "openai" | "gemini"; model: string; sealed_key: Json | null; selected: boolean; updated_by: string | null; updated_at: string }
         Insert: { provider: "anthropic" | "openai" | "gemini"; model: string; sealed_key?: Json | null; selected?: boolean; updated_by?: string | null; updated_at?: string }
