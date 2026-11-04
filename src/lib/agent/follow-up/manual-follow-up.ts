@@ -8,7 +8,8 @@ export const manualFollowupReportSchema = z.object({
 export type ManualFollowupReport = z.infer<typeof manualFollowupReportSchema>;
 
 export function isVagueManualFollowupReply(reply: string) {
-  return /^(?:eu\s+)?(?:fiz|conclu[ií]|terminei|executei)\s+(?:tudo|todas?)(?:\s*[,.;]\s*(?:n[aã]o\s+tenho|sem)\s+(?:nenhum|qualquer)?\s*(?:impedimento|bloqueio)s?)?\s*[.!]?$/i.test(reply.trim());
+  const normalized = reply.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[,.;!?]+/g, " ").replace(/\s+/g, " ").trim();
+  return /^(?:eu )?(?:fiz|conclui|terminei|executei) (?:tudo|todas?)(?:(?: e)? (?:nao tenho|sem) (?:nenhum |qualquer )?(?:impedimento|bloqueio|problema)s?)?$/.test(normalized);
 }
 
 export function buildManualFollowupQuestion(input: { title: string; action: string; assetTitle: string; runId: string }) {

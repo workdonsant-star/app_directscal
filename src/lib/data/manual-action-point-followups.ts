@@ -8,7 +8,7 @@ import { escapeSlackText } from "@/lib/integrations/slack-format";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 const reportLabels = { executado_relato: "execução relatada", parcial: "avanço parcial", nao_executado: "não execução relatada", bloqueado: "bloqueio", duvida: "dúvida", inconclusivo: "relato inconclusivo" };
-const decisionPattern = /^(confirmar|corrigir)\s+([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\s*:\s*([\s\S]+))?$/i;
+const decisionPattern = /^(confirmar|corrigir)(?:\s+([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}))?(?:\s*:\s*([\s\S]+))?$/i;
 
 export async function prepareManualActionPointReply(job: SlackDeliveryJob, installation: SlackInstallation): Promise<SlackReply | null> {
   if (job.question.kind !== "direct") return null;
@@ -36,10 +36,12 @@ export async function prepareManualActionPointReply(job: SlackDeliveryJob, insta
   const decision = job.question.text.trim().match(decisionPattern);
   let replyText = job.question.text;
   if (decision) {
-    const latest = await reports.select("id,confirmed_at").eq("followup_id", run.id).order("registered_at", { ascending: false }).limit(1).maybeSingle();
+    const latest = await reports.select("id,status,confirmed_at").eq("followup_id", run.id).order("registered_at", { ascending: false }).limit(1).maybeSingle();
     if (latest.error) throw new Error("Não foi possível verificar o resumo anterior.");
-    if (!latest.data || latest.data.id !== decision[2]) return { text: "Essa proposta não é a mais recente deste acompanhamento. Revise o último resumo na thread antes de confirmar." };
+    if (!latest.data) return { text: "Ainda não há um resumo para confirmar. Conte o que foi executado, o que falta e qualquer bloqueio." };
+    if (decision[2] && latest.data.id !== decision[2]) return { text: "Essa proposta não é a mais recente deste acompanhamento. Revise o último resumo na thread antes de confirmar." };
     if (decision[1].toLowerCase() === "confirmar") {
+      if (latest.data.status === "inconclusivo") return { text: "Esse relato ainda não descreve o que foi executado. Conte quais partes da ação você realizou, quando fez isso e se existe algum registro para consultar." };
       if (latest.data.confirmed_at) {
         await db.from("manual_action_point_followups").update({ status: "respondido", updated_at: new Date().toISOString() }).eq("id", run.id).eq("status", "enviado");
         return { text: "Esse resumo já foi confirmado. Nenhum novo registro foi criado." };
@@ -58,6 +60,7 @@ export async function prepareManualActionPointReply(job: SlackDeliveryJob, insta
   const prior = await reports.select("id,status,summary,evidence").eq("slack_event_job_id", job.id).maybeSingle();
   if (prior.error) throw new Error("Não foi possível verificar o relato anterior.");
   const report = prior.data ?? await extractManualFollowupReport(run.title, run.action, replyText);
+  if (report.status === "inconclusivo") return { text: `Ainda preciso de detalhes sobre ${escapeSlackText(run.title)}: quais partes da ação você executou, quando fez isso e se existe algum registro para consultar?` };
   let reportId = prior.data?.id;
   if (!prior.data) {
     const inserted = await reports.insert({ followup_id: run.id, organization_id: run.organization_id, slack_event_job_id: job.id, status: report.status, summary: report.summary, evidence: report.evidence }).select("id").maybeSingle();

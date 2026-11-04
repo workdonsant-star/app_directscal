@@ -8,7 +8,7 @@
 
 `admin-action-points-view.test.ts` verifica agrupamento das ações publicadas por responsável e uso da revisão vigente da rotina sem confundir Action Points de diagnósticos diferentes.
 
-`manual-action-point-followups.test.ts` cobre DM com um ciclo recente, múltiplos ciclos e resposta vaga sem registro. `slack-delivery.test.ts` verifica a prioridade do acompanhamento manual sobre a consulta a ativos. Ambos usam substitutos e não enviam mensagens ao Slack.
+`manual-action-point-followups.test.ts` cobre DM com um ciclo recente, múltiplos ciclos, resposta vaga com “sem impedimento”, confirmação curta da proposta mais recente e recusa de proposta inconclusiva sem criar outro resumo. `slack-delivery.test.ts` verifica a prioridade do acompanhamento manual sobre a consulta a ativos. Ambos usam substitutos e não enviam mensagens ao Slack.
 
 `action-point-follow-up-classification.test.ts` cobre silêncio após prazo e entrega, falha de transporte, resposta vaga/contraditória, cumprimento parcial, falta de evidência e atendimento. A regra ainda não recebe respostas reais do Slack.
 
