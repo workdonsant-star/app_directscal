@@ -1,9 +1,9 @@
 import "server-only";
 
-import { isSelfReportedComplete } from "@/lib/agent/follow-up/manual-follow-up";
+import { buildManualFollowupHistory, contradictsReportedCompletion, isSelfReportedComplete } from "@/lib/agent/follow-up/manual-follow-up";
 import { extractManualFollowupReport } from "@/lib/agent/follow-up/manual-follow-up-provider";
 import type { SlackDeliveryJob, SlackReply } from "@/lib/contracts/slack-delivery";
-import { getSlackWorkspaceUser, type SlackInstallation } from "@/lib/integrations/slack";
+import { fetchSlackActionPointThread, getSlackBotUserId, getSlackWorkspaceUser, type SlackInstallation } from "@/lib/integrations/slack";
 import { escapeSlackText } from "@/lib/integrations/slack-format";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
@@ -22,11 +22,9 @@ export async function prepareManualActionPointReply(job: SlackDeliveryJob, insta
   if (job.question.threadTs && job.question.threadTs !== job.question.ts) {
     ({ data: run, error } = await base().eq("message_ts", job.question.threadTs).in("status", ["enviado", "respondido"]).maybeSingle());
   } else {
-    // Uma resposta direta só tem contexto seguro se houver um único teste recente aberto.
     const recent = await base().eq("status", "enviado").gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()).order("created_at", { ascending: false }).limit(2);
-    error = recent.error;
-    if (recent.data?.length === 2) return { text: "Há mais de um Action Point aguardando resposta. Abra a pergunta desejada e responda na thread daquela mensagem para vincular seu relato." };
-    run = recent.data?.[0] ?? null;
+    if (recent.error) throw new Error("Não foi possível identificar o acompanhamento.");
+    return recent.data?.length ? { text: "Para registrar o andamento de um Action Point, responda na thread da pergunta correspondente. Assim mantenho o contexto da ação correta." } : null;
   }
   if (error) throw new Error("Não foi possível identificar o acompanhamento.");
   if (!run) return null;
@@ -56,30 +54,45 @@ export async function prepareManualActionPointReply(job: SlackDeliveryJob, insta
     if (!decision[3]?.trim()) return { text: `Para corrigir, envie corrigir ${latest.data.id}: seguido do relato completo corrigido.` };
     replyText = decision[3].trim();
   }
-  if (isSelfReportedComplete(replyText)) {
-    const existing = await reports.select("id,followup_id,status,confirmed_at").eq("slack_event_job_id", job.id).maybeSingle();
-    if (existing.error) throw new Error("Não foi possível verificar o relato anterior.");
-    if (existing.data && (existing.data.followup_id !== run.id || existing.data.status !== "executado_relato" || !existing.data.confirmed_at)) throw new Error("O relato anterior não corresponde a este acompanhamento.");
-    if (!existing.data) {
+  const prior = await reports.select("id,followup_id,status,summary,evidence,confirmed_at").eq("slack_event_job_id", job.id).maybeSingle();
+  if (prior.error) throw new Error("Não foi possível verificar o relato anterior.");
+  if (prior.data && prior.data.followup_id !== run.id) throw new Error("O relato anterior não corresponde a este acompanhamento.");
+  const directCompletion = isSelfReportedComplete(replyText);
+  const botUserId = !prior.data && !directCompletion ? await getSlackBotUserId(installation) : installation.botUserId;
+  const history = !prior.data && !directCompletion ? buildManualFollowupHistory(
+    await fetchSlackActionPointThread(installation.botToken, job.question.channel, run.message_ts!, job.question.ts),
+    { userId: job.question.userId, botUserId, currentTs: job.question.ts, rootTs: run.message_ts! },
+  ) : [];
+  const report = prior.data ?? (directCompletion
+    ? { status: "executado_relato" as const, summary: `Conclusão integral declarada pela pessoa responsável: ${replyText.trim()}`, evidence: null, supportingQuote: replyText.trim(), followUpQuestion: null }
+    : await extractManualFollowupReport({ title: run.title, action: run.action, question: run.question, history, reply: replyText }));
+  if (report.status === "inconclusivo") {
+    const proposed = "followUpQuestion" in report && report.followUpQuestion ? report.followUpQuestion : "O que ficou concluído ou pendente?";
+    const repeated = history.some(turn => turn.role === "assistant" && turn.text.toLocaleLowerCase("pt-BR").includes(proposed.toLocaleLowerCase("pt-BR")));
+    return { text: escapeSlackText(repeated ? "Para registrar sem repetir a pergunta: você concluiu a ação, fez apenas parte dela ou ficou impedido de executá-la?" : proposed) };
+  }
+  if (report.status === "executado_relato") {
+    if (!prior.data && contradictsReportedCompletion(replyText)) return { text: "Entendi que ainda há algo pendente. Qual parte da ação ficou sem concluir?" };
+    if (!prior.data && !("supportingQuote" in report && report.supportingQuote)) return { text: "Não consegui identificar uma declaração clara de conclusão. Você concluiu toda a ação ou ainda há algo pendente?" };
+    if (!prior.data) {
       const recorded = await reports.insert({
         followup_id: run.id, organization_id: run.organization_id, slack_event_job_id: job.id,
-        status: "executado_relato", summary: `Conclusão integral declarada pela pessoa responsável: ${replyText.trim()}`,
-        evidence: null, confirmed_at: new Date().toISOString(), confirmation_job_id: job.id,
+        status: "executado_relato", summary: report.summary, evidence: report.evidence,
+        confirmed_at: new Date().toISOString(), confirmation_job_id: job.id,
       }).select("id").maybeSingle();
       if (recorded.error?.code !== "23505" && recorded.error) throw new Error("Não foi possível registrar o relato.");
       if (!recorded.data) {
         const duplicate = await reports.select("id,followup_id,status,confirmed_at").eq("slack_event_job_id", job.id).maybeSingle();
         if (duplicate.error || duplicate.data?.followup_id !== run.id || duplicate.data.status !== "executado_relato" || !duplicate.data.confirmed_at) throw new Error("Não foi possível recuperar o relato.");
       }
+    } else if (!prior.data.confirmed_at) {
+      const confirmed = await reports.update({ confirmed_at: new Date().toISOString(), confirmation_job_id: job.id }).eq("id", prior.data.id).eq("followup_id", run.id).is("confirmed_at", null);
+      if (confirmed.error) throw new Error("Não foi possível confirmar o relato.");
     }
     const changed = await runs.update({ status: "respondido", updated_at: new Date().toISOString() }).eq("id", run.id).eq("status", "enviado");
     if (changed.error) throw new Error("Não foi possível atualizar o acompanhamento.");
     return { text: `Registrei sua conclusão de ${escapeSlackText(run.title)} como relato seu. A operação poderá revisar esse registro; ele não é uma verificação da execução.` };
   }
-  const prior = await reports.select("id,status,summary,evidence").eq("slack_event_job_id", job.id).maybeSingle();
-  if (prior.error) throw new Error("Não foi possível verificar o relato anterior.");
-  const report = prior.data ?? await extractManualFollowupReport(run.title, run.action, replyText);
-  if (report.status === "inconclusivo") return { text: `Ainda preciso de detalhes sobre ${escapeSlackText(run.title)}: quais partes da ação você executou, quando fez isso e se existe algum registro para consultar?` };
   let reportId = prior.data?.id;
   if (!prior.data) {
     const inserted = await reports.insert({ followup_id: run.id, organization_id: run.organization_id, slack_event_job_id: job.id, status: report.status, summary: report.summary, evidence: report.evidence }).select("id").maybeSingle();
