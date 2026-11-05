@@ -397,7 +397,7 @@ export async function fetchSlackActionPointThread(token: string, channel: string
   const messages: SlackConversationMessage[] = [];
   let cursor = "";
   for (let page = 0; page < 20; page += 1) {
-    const params = new URLSearchParams({ channel, ts: threadTs, latest: currentTs, limit: "50" });
+    const params = new URLSearchParams({ channel, ts: threadTs, latest: currentTs, limit: "15" });
     if (cursor) params.set("cursor", cursor);
     const response = await fetch(`https://slack.com/api/conversations.replies?${params}`, {
       headers: { Authorization: `Bearer ${token}` }, cache: "no-store",

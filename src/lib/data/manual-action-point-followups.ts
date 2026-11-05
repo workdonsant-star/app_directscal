@@ -58,14 +58,32 @@ export async function prepareManualActionPointReply(job: SlackDeliveryJob, insta
   if (prior.error) throw new Error("Não foi possível verificar o relato anterior.");
   if (prior.data && prior.data.followup_id !== run.id) throw new Error("O relato anterior não corresponde a este acompanhamento.");
   const directCompletion = isSelfReportedComplete(replyText);
-  const botUserId = !prior.data && !directCompletion ? await getSlackBotUserId(installation) : installation.botUserId;
-  const history = !prior.data && !directCompletion ? buildManualFollowupHistory(
-    await fetchSlackActionPointThread(installation.botToken, job.question.channel, run.message_ts!, job.question.ts),
-    { userId: job.question.userId, botUserId, currentTs: job.question.ts, rootTs: run.message_ts! },
-  ) : [];
+  let history: ReturnType<typeof buildManualFollowupHistory> = [];
+  let extracted: Awaited<ReturnType<typeof extractManualFollowupReport>> | null = null;
+  if (!prior.data && !directCompletion) {
+    try {
+      const botUserId = await getSlackBotUserId(installation);
+      history = buildManualFollowupHistory(
+        await fetchSlackActionPointThread(installation.botToken, job.question.channel, run.message_ts!, job.question.ts),
+        { userId: job.question.userId, botUserId, currentTs: job.question.ts, rootTs: run.message_ts! },
+      );
+    } catch (error) {
+      console.error("[manual-followup] thread read failed", error instanceof Error ? error.name : "unknown");
+      return { text: "Não consegui ler esta conversa agora. Nenhum relato foi registrado. Tente novamente nesta thread em alguns minutos." };
+    }
+    try {
+      extracted = await extractManualFollowupReport({ title: run.title, action: run.action, question: run.question, history, reply: replyText });
+    } catch (error) {
+      console.error("[manual-followup] analysis failed", error instanceof Error ? error.name : "unknown");
+      const missingModel = error instanceof Error && error.message === "Selecione um modelo de IA antes de registrar o relato.";
+      return { text: missingModel
+        ? "O motor de IA deste acompanhamento não está selecionado. Nenhum relato foi registrado; a operação precisa configurar o motor antes de continuar."
+        : "Não consegui analisar sua resposta agora. Nenhum relato foi registrado. Tente novamente nesta thread em alguns minutos." };
+    }
+  }
   const report = prior.data ?? (directCompletion
     ? { status: "executado_relato" as const, summary: `Conclusão integral declarada pela pessoa responsável: ${replyText.trim()}`, evidence: null, supportingQuote: replyText.trim(), followUpQuestion: null }
-    : await extractManualFollowupReport({ title: run.title, action: run.action, question: run.question, history, reply: replyText }));
+    : extracted!);
   if (report.status === "inconclusivo") {
     const proposed = "followUpQuestion" in report && report.followUpQuestion ? report.followUpQuestion : "O que ficou concluído ou pendente?";
     const repeated = history.some(turn => turn.role === "assistant" && turn.text.toLocaleLowerCase("pt-BR").includes(proposed.toLocaleLowerCase("pt-BR")));

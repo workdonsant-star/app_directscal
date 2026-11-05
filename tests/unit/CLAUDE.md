@@ -8,7 +8,7 @@
 
 `admin-action-points-view.test.ts` verifica agrupamento das ações publicadas por responsável e uso da revisão vigente da rotina sem confundir Action Points de diagnósticos diferentes.
 
-`manual-action-point-followups.test.ts` cobre escopo exato de thread/pessoa, DM solta sem vínculo, histórico isolado, registro direto e idempotente de conclusão, confirmação curta e pergunta de seguimento sem loop. `manual-follow-up-provider.test.ts` valida o prompt contextual e remove citação de suporte que só aparece na fala do bot. `slack-action-point-thread.test.ts` verifica canal, thread, corte temporal e paginação da leitura do Slack. `slack-delivery.test.ts` verifica a prioridade do acompanhamento manual sobre a consulta a ativos. Usam substitutos e não enviam mensagens ao Slack.
+`manual-action-point-followups.test.ts` cobre escopo exato de thread/pessoa, DM solta sem vínculo, histórico isolado, registro direto e idempotente de conclusão, confirmação curta, pergunta de seguimento sem loop e resposta explícita a falha de leitura/modelo. `manual-follow-up-provider.test.ts` valida o prompt contextual e remove citação de suporte que só aparece na fala do bot. `slack-action-point-thread.test.ts` verifica canal, thread, corte temporal e paginação da leitura do Slack. `slack-delivery.test.ts` verifica a prioridade do acompanhamento manual sobre a consulta a ativos. Usam substitutos e não enviam mensagens ao Slack.
 
 `action-point-follow-up-classification.test.ts` cobre silêncio após prazo e entrega, falha de transporte, resposta vaga/contraditória, cumprimento parcial, falta de evidência e atendimento. A regra ainda não recebe respostas reais do Slack.
 
