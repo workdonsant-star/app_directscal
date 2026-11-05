@@ -7,9 +7,9 @@ export const manualFollowupReportSchema = z.object({
 }).strict();
 export type ManualFollowupReport = z.infer<typeof manualFollowupReportSchema>;
 
-export function isVagueManualFollowupReply(reply: string) {
+export function isSelfReportedComplete(reply: string) {
   const normalized = reply.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[,.;!?]+/g, " ").replace(/\s+/g, " ").trim();
-  return /^(?:eu )?(?:fiz|conclui|terminei|executei) (?:tudo|todas?)(?:(?: e)? (?:nao tenho|sem) (?:nenhum |qualquer )?(?:impedimento|bloqueio|problema)s?)?$/.test(normalized);
+  return /^(?:sim )?(?:eu )?(?:fiz|conclui|terminei|executei) (?:tudo|todas?)(?:(?: e)? (?:nao tenho|sem) (?:nenhum |qualquer )?(?:impedimento|bloqueio|problema)s?)?(?: esta certo)?$/.test(normalized);
 }
 
 export function buildManualFollowupQuestion(input: { title: string; action: string; assetTitle: string; runId: string }) {

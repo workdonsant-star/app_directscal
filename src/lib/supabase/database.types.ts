@@ -22,7 +22,7 @@ export type Database = {
       }
       manual_action_point_reports: {
         Row: { id: string; followup_id: string; organization_id: string; slack_event_job_id: string; status: "executado_relato" | "parcial" | "nao_executado" | "bloqueado" | "duvida" | "inconclusivo"; summary: string; evidence: string | null; registered_at: string; confirmed_at: string | null; confirmation_job_id: string | null }
-        Insert: { followup_id: string; organization_id: string; slack_event_job_id: string; status: "executado_relato" | "parcial" | "nao_executado" | "bloqueado" | "duvida" | "inconclusivo"; summary: string; evidence?: string | null }
+        Insert: { followup_id: string; organization_id: string; slack_event_job_id: string; status: "executado_relato" | "parcial" | "nao_executado" | "bloqueado" | "duvida" | "inconclusivo"; summary: string; evidence?: string | null; confirmed_at?: string | null; confirmation_job_id?: string | null }
         Update: { confirmed_at?: string | null; confirmation_job_id?: string | null }
         Relationships: []
       }

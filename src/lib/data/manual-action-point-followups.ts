@@ -1,6 +1,6 @@
 import "server-only";
 
-import { isVagueManualFollowupReply } from "@/lib/agent/follow-up/manual-follow-up";
+import { isSelfReportedComplete } from "@/lib/agent/follow-up/manual-follow-up";
 import { extractManualFollowupReport } from "@/lib/agent/follow-up/manual-follow-up-provider";
 import type { SlackDeliveryJob, SlackReply } from "@/lib/contracts/slack-delivery";
 import { getSlackWorkspaceUser, type SlackInstallation } from "@/lib/integrations/slack";
@@ -56,7 +56,26 @@ export async function prepareManualActionPointReply(job: SlackDeliveryJob, insta
     if (!decision[3]?.trim()) return { text: `Para corrigir, envie corrigir ${latest.data.id}: seguido do relato completo corrigido.` };
     replyText = decision[3].trim();
   }
-  if (isVagueManualFollowupReply(replyText)) return { text: `Para registrar o relato de ${escapeSlackText(run.title)}, diga quais partes da ação você executou, quando fez isso e se existe algum registro para consultar. Uma afirmação geral ainda não permite resumir o andamento.` };
+  if (isSelfReportedComplete(replyText)) {
+    const existing = await reports.select("id,followup_id,status,confirmed_at").eq("slack_event_job_id", job.id).maybeSingle();
+    if (existing.error) throw new Error("Não foi possível verificar o relato anterior.");
+    if (existing.data && (existing.data.followup_id !== run.id || existing.data.status !== "executado_relato" || !existing.data.confirmed_at)) throw new Error("O relato anterior não corresponde a este acompanhamento.");
+    if (!existing.data) {
+      const recorded = await reports.insert({
+        followup_id: run.id, organization_id: run.organization_id, slack_event_job_id: job.id,
+        status: "executado_relato", summary: `Conclusão integral declarada pela pessoa responsável: ${replyText.trim()}`,
+        evidence: null, confirmed_at: new Date().toISOString(), confirmation_job_id: job.id,
+      }).select("id").maybeSingle();
+      if (recorded.error?.code !== "23505" && recorded.error) throw new Error("Não foi possível registrar o relato.");
+      if (!recorded.data) {
+        const duplicate = await reports.select("id,followup_id,status,confirmed_at").eq("slack_event_job_id", job.id).maybeSingle();
+        if (duplicate.error || duplicate.data?.followup_id !== run.id || duplicate.data.status !== "executado_relato" || !duplicate.data.confirmed_at) throw new Error("Não foi possível recuperar o relato.");
+      }
+    }
+    const changed = await runs.update({ status: "respondido", updated_at: new Date().toISOString() }).eq("id", run.id).eq("status", "enviado");
+    if (changed.error) throw new Error("Não foi possível atualizar o acompanhamento.");
+    return { text: `Registrei sua conclusão de ${escapeSlackText(run.title)} como relato seu. A operação poderá revisar esse registro; ele não é uma verificação da execução.` };
+  }
   const prior = await reports.select("id,status,summary,evidence").eq("slack_event_job_id", job.id).maybeSingle();
   if (prior.error) throw new Error("Não foi possível verificar o relato anterior.");
   const report = prior.data ?? await extractManualFollowupReport(run.title, run.action, replyText);
