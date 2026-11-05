@@ -156,4 +156,4 @@ A suíte demo cobre reentrada de action points pontuais antigos e novos sem praz
 `manual-follow-up-chat.test.ts` verifica o contexto enviado ao motor, citações e recusa sem fonte válida, com provedor substituído.
 `manual-action-point-chat-route.test.ts` verifica o roteamento de uma dúvida da thread com empresa, Action Point e versão publicados, sem escrita de relato.
 
-`manual-action-point-schedule.test.ts` verifica Brasília, tolerância, encerramento, quinzenal e primeira semana mensal; o teste de envio mantém o Slack substituído.
+`manual-action-point-cron-auth.test.ts` verifica assinatura, segredo e expiração; `manual-action-point-schedule.test.ts` verifica Brasília, tolerância, encerramento, quinzenal e primeira semana mensal; o teste de envio mantém o Slack substituído.

@@ -326,4 +326,4 @@ O tempo das páginas autenticadas vem de consultas ao Supabase em série (~300 m
 
 ## Action Points agendados
 
-O cadastro recorrente da aba administrativa da empresa exige dias da semana e horário de Brasília. `vercel.json` chama `GET /api/internal/manual-action-points` a cada cinco minutos; a rota exige `CRON_SECRET` de pelo menos 32 caracteres. O banco usa um slot único por ação/ocorrência; registros antigos sem programação não são enviados automaticamente.
+O cadastro recorrente da aba administrativa da empresa exige dias da semana e horário de Brasília. Supabase Cron chama `GET /api/internal/manual-action-points` a cada cinco minutos com assinatura HMAC baseada em `CRON_SECRET` e no segredo correspondente no Vault. O banco usa um slot único por ação/ocorrência; registros antigos sem programação não são enviados automaticamente.

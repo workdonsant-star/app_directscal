@@ -1,17 +1,14 @@
-import { timingSafeEqual } from "node:crypto";
 import { AdminCompanyActionPointError } from "@/lib/data/admin-company-action-points";
 import { startManualActionPointFollowup } from "@/lib/data/manual-action-point-followups";
 import { dueManualActionPointSlot } from "@/lib/data/manual-action-point-schedule";
+import { isAuthorizedManualActionPointCron } from "@/lib/data/manual-action-point-cron-auth";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
 
 export async function GET(request: Request) {
-  const secret = process.env.CRON_SECRET;
-  const supplied = Buffer.from(request.headers.get("authorization") ?? "");
-  const expected = Buffer.from(`Bearer ${secret ?? ""}`);
-  if (!secret || secret.length < 32 || supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) return Response.json({ ok: false }, { status: 401 });
+  if (!isAuthorizedManualActionPointCron(request.headers, process.env.CRON_SECRET)) return Response.json({ ok: false }, { status: 401 });
   const now = new Date();
   let sent = 0; let skipped = 0; let failed = 0;
   for (let offset = 0; ; offset += 500) {
