@@ -31,6 +31,12 @@ export function isSelfReportedComplete(reply: string) {
     || /^(?:eu )?fiz (?:ontem|hoje) (?:e )?(?:eu )?fiz todas as partes(?: sem (?:nenhum )?(?:impedimento|bloqueio))?$/.test(normalized);
 }
 
+export function isManualFollowupQuestion(reply: string) {
+  const text = reply.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  return /[?？]\s*$/.test(text)
+    || /^(?:o que|qual|quais|como|por que|porque|quando|onde|quem|me explica|me explique|me lembra|pode me explicar)\b/.test(text);
+}
+
 export function contradictsReportedCompletion(reply: string) {
   const normalized = reply.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   return /\b(?:nao fiz|nao executei|nao conclui|nao consegui|nao registrei|faltou|falta|pendente|ainda nao)\b/.test(normalized);
