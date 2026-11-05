@@ -116,3 +116,4 @@ Listagem/editor/perguntas de ativos, revisão de lacunas, operação e navegaç�
 `AdminCompanyTabs` aceita `actions` opcional para mostrar as ações da aba ativa na mesma linha das abas, à direita. `CompanyFilesWorkspace` só usa isso com `actionsInTabs` (repassado como `renderTabs` a `CustomerDocumentsWorkspace`, que então omite o título Arquivos). Sem essas props, o app operacional mantém o layout anterior; hoje só a demo as liga.
 
 O formulário `AdminCompanyActionPointForm` configura frequência, dias e horário de Brasília. Quinzenal alterna semanas a partir da data inicial; mensal usa os dias escolhidos na primeira semana do mês. A lista mostra a programação para revisão.
+O horário recorrente usa seletores de hora e minuto em intervalos de cinco minutos, alinhados ao Supabase Cron. Horários antigos fora dessa grade continuam visíveis na edição e exigem ajuste antes de salvar.
