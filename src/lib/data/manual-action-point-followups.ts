@@ -1,14 +1,88 @@
 import "server-only";
 
+import { randomUUID } from "node:crypto";
+import { generateManualFollowupQuestion } from "@/lib/agent/follow-up/manual-follow-up-question-provider";
+import { getActiveAgentProvider, verifyAgentProvider } from "@/lib/data/agent-provider-data-source";
+import { AdminCompanyActionPointError } from "@/lib/data/admin-company-action-points";
+import { routineOrganizationId } from "@/lib/data/admin-adherence-data-source";
+import { dueManualActionPointSlot } from "@/lib/data/manual-action-point-schedule";
+
 import { buildManualFollowupHistory, contradictsReportedCompletion, isManualFollowupQuestion, isSelfReportedComplete } from "@/lib/agent/follow-up/manual-follow-up";
+
 import { extractManualFollowupReport } from "@/lib/agent/follow-up/manual-follow-up-provider";
 import { answerManualFollowupQuestion } from "@/lib/agent/follow-up/manual-follow-up-chat";
 import { buildManagementAssetChunks } from "@/lib/data/management-asset-indexer";
 import { richTextDocumentSchema } from "@/lib/contracts/rich-text";
 import type { SlackDeliveryJob, SlackReply } from "@/lib/contracts/slack-delivery";
-import { fetchSlackActionPointThread, getSlackBotUserId, getSlackWorkspaceUser, type SlackInstallation } from "@/lib/integrations/slack";
+import { fetchSlackActionPointThread, getSlackBotTokenForOrganization, getSlackBotUserId, getSlackWorkspaceUser, openSlackDirectConversation, postSlackMessage, SlackDeliveryError, type SlackInstallation } from "@/lib/integrations/slack";
 import { escapeSlackText } from "@/lib/integrations/slack-format";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
+
+export async function startManualActionPointFollowup(companyId: string, actorId: string | null, actionPointId: string, scheduledSlot?: string) {
+  const organizationId = routineOrganizationId(companyId);
+  const db = createSupabaseAdminClient();
+  const { data: point, error } = await db.schema("app_private").from("admin_company_action_points").select("*").eq("organization_id", organizationId).eq("id", actionPointId).maybeSingle();
+  if (error) throw new AdminCompanyActionPointError("Não foi possível consultar o action point.", 500);
+  if (!point) throw new AdminCompanyActionPointError("Action point não encontrado.", 404);
+  if (scheduledSlot && dueManualActionPointSlot(point, new Date()) !== scheduledSlot) throw new AdminCompanyActionPointError("O horário deste action point mudou.", 409);
+  const [installation, asset, provider] = await Promise.all([
+    getSlackBotTokenForOrganization(organizationId),
+    db.from("management_assets").select("id,title,status,archived_at,current_published_version_id").eq("id", point.asset_id).eq("organization_id", organizationId).maybeSingle(),
+    getActiveAgentProvider(),
+  ]);
+  if (!installation || installation.teamId !== point.slack_team_id) throw new AdminCompanyActionPointError("Reconecte o Slack da empresa antes do teste.", 409);
+  if (!asset.data || asset.error || asset.data.status !== "publicado" || asset.data.archived_at || asset.data.current_published_version_id !== point.asset_version_id) throw new AdminCompanyActionPointError("O ativo publicado mudou. Revise o action point antes do teste.", 409);
+  if (!provider.apiKey || !provider.model || !["anthropic", "openai", "gemini"].includes(provider.provider)) throw new AdminCompanyActionPointError("Conecte e selecione um motor de IA antes do teste.", 409);
+  try { await verifyAgentProvider(provider.provider as "anthropic" | "openai" | "gemini", provider.model, provider.apiKey); }
+  catch { throw new AdminCompanyActionPointError("O motor de IA não respondeu ao teste de conexão. Revise a configuração antes de enviar.", 409); }
+  const person = await getSlackWorkspaceUser(installation.botToken, point.slack_user_id, true).catch(() => null);
+  if (!person) throw new AdminCompanyActionPointError("O líder não está ativo no Slack. Revise o cadastro.", 409);
+
+  const [uncertain, previous, scheduled] = await Promise.all([
+    db.schema("app_private").from("manual_action_point_followups").select("id").eq("action_point_id", point.id).eq("organization_id", organizationId).eq("status", "incerto").limit(1).maybeSingle(),
+    db.schema("app_private").from("manual_action_point_followups").select("question").eq("action_point_id", point.id).eq("organization_id", organizationId).in("status", ["enviado", "respondido"]).order("created_at", { ascending: false }).limit(5),
+    scheduledSlot ? db.schema("app_private").from("manual_action_point_followups").select("id").eq("action_point_id", point.id).eq("scheduled_slot", scheduledSlot).maybeSingle() : Promise.resolve({ data: null, error: null }),
+  ]);
+  if (uncertain.error || previous.error || scheduled.error) throw new AdminCompanyActionPointError("Não foi possível verificar os envios anteriores.", 500);
+  if (scheduled.data) throw new AdminCompanyActionPointError("Esta ocorrência já foi preparada.", 409);
+  if (uncertain.data) throw new AdminCompanyActionPointError("Há um envio incerto. Verifique a conversa no Slack antes de iniciar outro teste.", 409);
+
+  const id = randomUUID();
+  let question: string;
+  try {
+    question = await generateManualFollowupQuestion(provider, {
+      name: person.name.trim().split(/\s+/)[0], title: point.title, action: point.action,
+      previousQuestions: (previous.data ?? []).map(row => row.question),
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("O Gemini está temporariamente sobrecarregado.")) {
+      throw new AdminCompanyActionPointError(error.message, 500);
+    }
+    throw new AdminCompanyActionPointError("O motor de IA não conseguiu preparar a pergunta. Tente novamente antes de enviar.", 500);
+  }
+  const runs = db.schema("app_private").from("manual_action_point_followups");
+  const inserted = await runs.insert({ id, action_point_id: point.id, organization_id: organizationId, asset_version_id: point.asset_version_id, slack_team_id: point.slack_team_id, slack_user_id: point.slack_user_id, title: point.title, action: point.action, question, status: "preparado", scheduled_slot: scheduledSlot ?? null, started_by: scheduledSlot ? null : actorId });
+  if (inserted.error?.code === "23505") throw new AdminCompanyActionPointError("Já há um acompanhamento aberto para este action point.", 409);
+  if (inserted.error) throw new AdminCompanyActionPointError("Não foi possível preparar o acompanhamento.", 500);
+  const changed = await runs.update({ status: "enviando", updated_at: new Date().toISOString() }).eq("id", id).eq("status", "preparado").select("id").maybeSingle();
+  if (changed.error || !changed.data) throw new AdminCompanyActionPointError("Não foi possível reservar o envio.", 500);
+  let channel: string;
+  try { channel = await openSlackDirectConversation(installation.botToken, person.userId); }
+  catch {
+    await runs.update({ status: "falhou", error_code: "conversa_indisponivel", updated_at: new Date().toISOString() }).eq("id", id).eq("status", "enviando");
+    throw new AdminCompanyActionPointError("Não foi possível abrir a conversa privada com o líder.", 409);
+  }
+  try {
+    const sent = await postSlackMessage(installation.botToken, { channel, text: question, clientMsgId: id });
+    const saved = await runs.update({ status: "enviado", channel_id: sent.channel, message_ts: sent.ts, updated_at: new Date().toISOString() }).eq("id", id).eq("status", "enviando").select("id").maybeSingle();
+    if (saved.error || !saved.data) throw new Error("Envio confirmado sem persistência.");
+    return { id, status: "enviado" as const };
+  } catch (cause) {
+    const uncertain = !(cause instanceof SlackDeliveryError) || cause.uncertain;
+    await runs.update({ status: uncertain ? "incerto" : "falhou", error_code: cause instanceof SlackDeliveryError ? cause.code : "envio_sem_confirmacao", updated_at: new Date().toISOString() }).eq("id", id).eq("status", "enviando");
+    throw new AdminCompanyActionPointError(uncertain ? "O envio ficou incerto. Verifique a conversa no Slack antes de iniciar outro teste." : "O Slack recusou a mensagem. Verifique a conexão antes de iniciar outro teste.", 409);
+  }
+}
 
 const reportLabels = { executado_relato: "execução relatada", parcial: "avanço parcial", nao_executado: "não execução relatada", bloqueado: "bloqueio", duvida: "dúvida", inconclusivo: "relato inconclusivo" };
 const decisionPattern = /^(confirmar|corrigir)(?:\s+([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}))?(?:\s*:\s*([\s\S]+))?$/i;
