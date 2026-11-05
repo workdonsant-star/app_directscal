@@ -9,3 +9,5 @@ A07: routine-contacts agenda em sequência o lote de oportunidades e até 25 lem
 
 
 A14: password-resets exige PASSWORD_RESET_WORKER_SECRET dedicado >=32 caracteres com comparação constante. Processa uma entrega por chamada, reserva exclusiva, cinco tentativas e idempotência por solicitação. after() faz primeira tentativa; scheduler/monitoramento externo permanecem pendentes e não são criados por testes.
+
+`manual-action-points` é chamado pelo cron do Vercel e exige `CRON_SECRET`. Só considera horários configurados após a migração e não aceita empresa no request.

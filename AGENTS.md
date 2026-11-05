@@ -323,3 +323,7 @@ O superadmin global pode excluir empresas mesmo com vínculos superadmin. A migr
 ## Performance de navegação
 
 O tempo das páginas autenticadas vem de consultas ao Supabase em série (~300 ms cada a partir do Brasil). Sessão, vínculos, módulos, perfil, onboarding e Slack chegam juntos pelo snapshot de acesso por request (`src/lib/auth/access-snapshot.ts`, RPC `app_private.get_user_access_snapshot`). Antes de adicionar uma consulta ao layout ou à cadeia de sessão, verifique se o dado cabe no snapshot. A sidebar usa `IntentPrefetchLink` (pré-carrega a página inteira no hover) e `next.config.ts` define `experimental.staleTimes`. Cache persistente (`use cache`, CDN, `unstable_cache`) continua proibido para dados de sessão e de empresa.
+
+## Action Points agendados
+
+O cadastro recorrente da aba administrativa da empresa exige dias da semana e horário de Brasília. `vercel.json` chama `GET /api/internal/manual-action-points` a cada cinco minutos; a rota exige `CRON_SECRET` de pelo menos 32 caracteres. O banco usa um slot único por ação/ocorrência; registros antigos sem programação não são enviados automaticamente.

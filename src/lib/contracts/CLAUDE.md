@@ -98,3 +98,5 @@ routine-directory.ts define RoutineDirectoryUser, o DTO mínimo exibido no edito
 # Arquivos enviados
 
 `customer-documents.ts` define o DTO de metadados usado pelo produto e pela demo. O DTO nunca inclui o caminho privado do bucket nem o conteúdo do arquivo.
+
+`admin-company-action-points.ts` exige dias únicos, horário `HH:mm` e data inicial para recorrências; pontos pontuais não aceitam programação.

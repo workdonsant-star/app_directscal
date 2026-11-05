@@ -28,3 +28,5 @@ A17: companies/[id]/agent-operations POST grava revisão privada de lacuna com s
 
 
 A10: companies/[id]/result-baselines GET/POST exige superadmin definitivo; POST recebe somente ruleId. A RPC captura agregado da coleta encerrada e retorna a mesma base em reentrada. Sem score/ator/empresa fornecidos pelo navegador.
+
+`/companies/[id]/action-points` cadastra os pontos com agenda; POST não envia Slack. PUT mantém teste explícito e GET devolve ciclo e relatos.
