@@ -152,3 +152,6 @@ A suíte demo cobre reentrada de action points pontuais antigos e novos sem praz
 `access-snapshot.test.ts` verifica RPC única, perfil persistido sobre o Google, fallback quando a função não existe (sem reinsistir), propagação de outros erros e IDs fora do formato UUID. `auth-session-promotion.test.ts` cobre também a revalidação JWT pelo snapshot: sem consultas avulsas, versão divergente, acesso removido e precedência do superadmin.
 
 `omdx-diagnostic-visibility.test.ts` executa `getDiagnostics` e `getVisibleDiagnosticIds` com Supabase em memória: cliente vê todos, admin vê os próprios e os atribuídos por setor (painel e Slack), admin sem vínculo não vê nada, e o nome do criador segue o perfil persistido antes da conta Google.
+
+`manual-follow-up-chat.test.ts` verifica o contexto enviado ao motor, citações e recusa sem fonte válida, com provedor substituído.
+`manual-action-point-chat-route.test.ts` verifica o roteamento de uma dúvida da thread com empresa, Action Point e versão publicados, sem escrita de relato.

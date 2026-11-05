@@ -17,6 +17,7 @@ import { getOllamaBaseUrl } from "@/lib/agent/config";
 import { getRequiredServerEnv } from "@/lib/env";
 
 const REQUEST_TIMEOUT_MS = 45_000;
+type PromptOverride = { system: string; user: string };
 
 // Modelos que aceitam `effort` e o fallback do servidor em recusas. Para os
 // demais (por exemplo Haiku 4.5) a chamada segue sem esses parâmetros.
@@ -42,10 +43,11 @@ async function answerWithAnthropic(
   evidence: EvidenceSource[],
   history: ConversationTurn[],
   apiKey?: string | null,
+  prompt?: PromptOverride,
 ): Promise<GroundedAnswer> {
   const client = getAnthropicClient(apiKey);
   const messages: Anthropic.MessageParam[] = [
-    { role: "user", content: buildAnswerUserMessage(question, evidence, history) },
+    { role: "user", content: prompt?.user ?? buildAnswerUserMessage(question, evidence, history) },
   ];
 
   if (anthropicModelsWithEffortAndFallback.has(model)) {
@@ -54,7 +56,7 @@ async function answerWithAnthropic(
     const response = await client.beta.messages.parse({
       model,
       max_tokens: 8000,
-      system: ANSWER_SYSTEM_PROMPT,
+      system: prompt?.system ?? ANSWER_SYSTEM_PROMPT,
       messages,
       output_config: {
         effort: "low",
@@ -74,7 +76,7 @@ async function answerWithAnthropic(
   const response = await client.messages.parse({
     model,
     max_tokens: 4000,
-    system: ANSWER_SYSTEM_PROMPT,
+    system: prompt?.system ?? ANSWER_SYSTEM_PROMPT,
     messages,
     output_config: { format: zodOutputFormat(groundedAnswerSchema) },
   });
@@ -103,6 +105,7 @@ async function answerWithGemini(
   evidence: EvidenceSource[],
   history: ConversationTurn[],
   apiKey?: string | null,
+  prompt?: PromptOverride,
 ): Promise<GroundedAnswer> {
   const response = await fetchGeminiWithRetry(
     `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
@@ -113,11 +116,11 @@ async function answerWithGemini(
         "x-goog-api-key": apiKey || getRequiredServerEnv("GEMINI_API_KEY"),
       },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: ANSWER_SYSTEM_PROMPT }] },
+        systemInstruction: { parts: [{ text: prompt?.system ?? ANSWER_SYSTEM_PROMPT }] },
         contents: [
           {
             role: "user",
-            parts: [{ text: buildAnswerUserMessage(question, evidence, history) }],
+            parts: [{ text: prompt?.user ?? buildAnswerUserMessage(question, evidence, history) }],
           },
         ],
         generationConfig: {
@@ -156,6 +159,7 @@ async function answerWithOpenAI(
   evidence: EvidenceSource[],
   history: ConversationTurn[],
   apiKey?: string | null,
+  prompt?: PromptOverride,
 ): Promise<GroundedAnswer> {
   const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
@@ -165,8 +169,8 @@ async function answerWithOpenAI(
     },
     body: JSON.stringify({
       model,
-      instructions: ANSWER_SYSTEM_PROMPT,
-      input: buildAnswerUserMessage(question, evidence, history),
+      instructions: prompt?.system ?? ANSWER_SYSTEM_PROMPT,
+      input: prompt?.user ?? buildAnswerUserMessage(question, evidence, history),
       store: false,
       text: { format: { type: "json_schema", name: "grounded_answer", strict: true, schema: groundedAnswerJsonSchema } },
     }),
@@ -190,6 +194,7 @@ async function answerWithOllama(
   question: string,
   evidence: EvidenceSource[],
   history: ConversationTurn[],
+  prompt?: PromptOverride,
 ): Promise<GroundedAnswer> {
   const response = await fetch(`${getOllamaBaseUrl()}/api/chat`, {
     method: "POST",
@@ -200,8 +205,8 @@ async function answerWithOllama(
       format: groundedAnswerJsonSchema,
       options: { temperature: 0.1 },
       messages: [
-        { role: "system", content: ANSWER_SYSTEM_PROMPT },
-        { role: "user", content: buildAnswerUserMessage(question, evidence, history) },
+        { role: "system", content: prompt?.system ?? ANSWER_SYSTEM_PROMPT },
+        { role: "user", content: prompt?.user ?? buildAnswerUserMessage(question, evidence, history) },
       ],
     }),
     cache: "no-store",
@@ -223,15 +228,16 @@ export async function generateGroundedAnswer(
   evidence: EvidenceSource[],
   history: ConversationTurn[] = [],
   apiKey?: string | null,
+  prompt?: PromptOverride,
 ) {
   switch (provider) {
     case "anthropic":
-      return answerWithAnthropic(model, question, evidence, history, apiKey);
+      return answerWithAnthropic(model, question, evidence, history, apiKey, prompt);
     case "gemini":
-      return answerWithGemini(model, question, evidence, history, apiKey);
+      return answerWithGemini(model, question, evidence, history, apiKey, prompt);
     case "openai":
-      return answerWithOpenAI(model, question, evidence, history, apiKey);
+      return answerWithOpenAI(model, question, evidence, history, apiKey, prompt);
     case "ollama":
-      return answerWithOllama(model, question, evidence, history);
+      return answerWithOllama(model, question, evidence, history, prompt);
   }
 }
