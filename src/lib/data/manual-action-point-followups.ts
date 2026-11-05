@@ -7,7 +7,8 @@ import { AdminCompanyActionPointError } from "@/lib/data/admin-company-action-po
 import { routineOrganizationId } from "@/lib/data/admin-adherence-data-source";
 import { dueManualActionPointSlot } from "@/lib/data/manual-action-point-schedule";
 
-import { buildManualFollowupHistory, contradictsReportedCompletion, isSelfReportedComplete } from "@/lib/agent/follow-up/manual-follow-up";
+import { buildManualFollowupHistory, contradictsReportedCompletion, isManualFollowupQuestion, isSelfReportedComplete } from "@/lib/agent/follow-up/manual-follow-up";
+
 import { extractManualFollowupReport } from "@/lib/agent/follow-up/manual-follow-up-provider";
 import { answerManualFollowupQuestion } from "@/lib/agent/follow-up/manual-follow-up-chat";
 import { buildManagementAssetChunks } from "@/lib/data/management-asset-indexer";
@@ -133,7 +134,8 @@ export async function prepareManualActionPointReply(job: SlackDeliveryJob, insta
   const prior = await reports.select("id,followup_id,status,summary,evidence,confirmed_at").eq("slack_event_job_id", job.id).maybeSingle();
   if (prior.error) throw new Error("Não foi possível verificar o relato anterior.");
   if (prior.data && prior.data.followup_id !== run.id) throw new Error("O relato anterior não corresponde a este acompanhamento.");
-  const directCompletion = isSelfReportedComplete(replyText);
+  const directQuestion = !prior.data && isManualFollowupQuestion(replyText);
+  const directCompletion = !directQuestion && isSelfReportedComplete(replyText);
   let history: ReturnType<typeof buildManualFollowupHistory> = [];
   let extracted: Awaited<ReturnType<typeof extractManualFollowupReport>> | null = null;
   if (!prior.data && !directCompletion) {
@@ -147,17 +149,21 @@ export async function prepareManualActionPointReply(job: SlackDeliveryJob, insta
       console.error("[manual-followup] thread read failed", error instanceof Error ? error.name : "unknown");
       return { text: "Não consegui ler esta conversa agora. Nenhum relato foi registrado. Tente novamente nesta thread em alguns minutos." };
     }
-    try {
-      extracted = await extractManualFollowupReport({ title: run.title, action: run.action, question: run.question, history, reply: replyText });
-    } catch (error) {
-      console.error("[manual-followup] analysis failed", error instanceof Error ? error.name : "unknown");
-      const missingModel = error instanceof Error && error.message === "Selecione um modelo de IA antes de registrar o relato.";
-      return { text: missingModel
-        ? "O motor de IA deste acompanhamento não está selecionado. Nenhum relato foi registrado; a operação precisa configurar o motor antes de continuar."
-        : "Não consegui analisar sua resposta agora. Nenhum relato foi registrado. Tente novamente nesta thread em alguns minutos." };
+    if (!directQuestion) {
+      try {
+        extracted = await extractManualFollowupReport({ title: run.title, action: run.action, question: run.question, history, reply: replyText });
+      } catch (error) {
+        console.error("[manual-followup] analysis failed", error instanceof Error ? error.name : "unknown");
+        const missingModel = error instanceof Error && error.message === "Selecione um modelo de IA antes de registrar o relato.";
+        return { text: missingModel
+          ? "O motor de IA deste acompanhamento não está selecionado. Nenhum relato foi registrado; a operação precisa configurar o motor antes de continuar."
+          : "Não consegui analisar sua resposta agora. Nenhum relato foi registrado. Tente novamente nesta thread em alguns minutos." };
+      }
     }
   }
-  const report = prior.data ?? (directCompletion
+  const report = prior.data ?? (directQuestion
+    ? { status: "duvida" as const }
+    : directCompletion
     ? { status: "executado_relato" as const, summary: `Conclusão integral declarada pela pessoa responsável: ${replyText.trim()}`, evidence: null, supportingQuote: replyText.trim(), followUpQuestion: null }
     : extracted!);
   if (report.status === "duvida") {

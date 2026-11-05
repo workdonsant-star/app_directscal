@@ -154,6 +154,6 @@ A suíte demo cobre reentrada de action points pontuais antigos e novos sem praz
 `omdx-diagnostic-visibility.test.ts` executa `getDiagnostics` e `getVisibleDiagnosticIds` com Supabase em memória: cliente vê todos, admin vê os próprios e os atribuídos por setor (painel e Slack), admin sem vínculo não vê nada, e o nome do criador segue o perfil persistido antes da conta Google.
 
 `manual-follow-up-chat.test.ts` verifica o contexto enviado ao motor, citações e recusa sem fonte válida, com provedor substituído.
-`manual-action-point-chat-route.test.ts` verifica o roteamento de uma dúvida da thread com empresa, Action Point e versão publicados, sem escrita de relato.
+`manual-action-point-chat-route.test.ts` verifica o roteamento de uma dúvida explícita da thread com empresa, Action Point e versão publicados, mesmo com o classificador de relatos indisponível, sem escrita de relato.
 
 `manual-action-point-cron-auth.test.ts` verifica assinatura, segredo e expiração; `manual-action-point-schedule.test.ts` verifica Brasília, tolerância, encerramento, quinzenal e primeira semana mensal; o teste de envio mantém o Slack substituído.

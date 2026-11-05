@@ -36,17 +36,28 @@ vi.mock("@/lib/data/admin-adherence-data-source", () => ({ routineOrganizationId
 
 import { prepareManualActionPointReply } from "@/lib/data/manual-action-point-followups";
 import { answerManualFollowupQuestion } from "@/lib/agent/follow-up/manual-follow-up-chat";
+import { extractManualFollowupReport } from "@/lib/agent/follow-up/manual-follow-up-provider";
+import { isManualFollowupQuestion } from "@/lib/agent/follow-up/manual-follow-up";
 
-it("encaminha a dúvida ao chat com fontes da empresa e thread, sem registrar relato", async () => {
+it("responde à pergunta explícita mesmo se o classificador de relatos estiver indisponível", async () => {
   seen.filters = []; seen.writes = [];
-  const job = { id: "job-a", question: { kind: "direct", teamId: "T1", userId: "U1", channel: "D1", ts: "123.456", threadTs: "100.000", text: "Quais ações preciso fazer?" } } as SlackDeliveryJob;
+  vi.mocked(extractManualFollowupReport).mockRejectedValueOnce(new Error("Modelo indisponível"));
+  const job = { id: "job-a", question: { kind: "direct", teamId: "T1", userId: "U1", channel: "D1", ts: "123.456", threadTs: "100.000", text: "O que eu deveria fazer mesmo?" } } as SlackDeliveryJob;
   const installation = { teamId: "T1", organizationId: "org-a", botToken: "ficticio", botUserId: "B1" };
   const reply = await prepareManualActionPointReply(job, installation);
   expect(reply?.text).toContain("Revise as decisões abertas");
   expect(answerManualFollowupQuestion).toHaveBeenCalledWith(expect.objectContaining({
-    question: "Quais ações preciso fazer?", reason: "Evitar atrasos", assetVersion: "2",
+    question: "O que eu deveria fazer mesmo?", reason: "Evitar atrasos", assetVersion: "2",
     history: [{ role: "user", text: "Não entendi o prazo" }],
   }));
   expect(seen.filters).toEqual(expect.arrayContaining([["organization_id", "org-a"], ["asset_id", "asset-a"], ["version_id", "version-a"]]));
   expect(seen.writes).toEqual([]);
+  expect(extractManualFollowupReport).not.toHaveBeenCalled();
+});
+
+it("distingue perguntas diretas de relatos de execução", () => {
+  expect(isManualFollowupQuestion("O que eu deveria fazer mesmo?")).toBe(true);
+  expect(isManualFollowupQuestion("Como acompanho as decisões abertas")).toBe(true);
+  expect(isManualFollowupQuestion("Eu já fiz tudo")).toBe(false);
+  expect(isManualFollowupQuestion("Conferi as decisões, mas faltou registrar o prazo")).toBe(false);
 });
