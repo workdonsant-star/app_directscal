@@ -27,7 +27,8 @@ export function buildManualFollowupHistory(messages: SlackConversationMessage[],
 
 export function isSelfReportedComplete(reply: string) {
   const normalized = reply.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[,.;!?]+/g, " ").replace(/\s+/g, " ").trim();
-  return /^(?:sim )?(?:eu )?(?:fiz|conclui|terminei|executei) (?:tudo|todas?)(?:(?: e)? (?:nao tenho|sem) (?:nenhum |qualquer )?(?:impedimento|bloqueio|problema)s?)?(?: esta certo)?$/.test(normalized);
+  return /^(?:sim )?(?:eu )?(?:ja )?(?:fiz|conclui|terminei|executei) (?:tudo|todas?|todas as partes|todas as etapas|a acao|a atividade)(?:(?: e)? (?:nao tenho|sem) (?:nenhum |qualquer )?(?:impedimento|bloqueio|problema)s?)?(?: esta certo)?$/.test(normalized)
+    || /^(?:eu )?fiz (?:ontem|hoje) (?:e )?(?:eu )?fiz todas as partes(?: sem (?:nenhum )?(?:impedimento|bloqueio))?$/.test(normalized);
 }
 
 export function contradictsReportedCompletion(reply: string) {

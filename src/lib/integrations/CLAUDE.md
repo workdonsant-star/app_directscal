@@ -11,7 +11,7 @@ Esta pasta contém integrações server-only que traduzem eventos externos para 
 - Mantenha o provedor como canal de entrada e saída; a fonte de verdade continua sendo o DirectScal/Supabase.
 - Respostas devem citar ativo, seção e versão ou recusar quando não houver evidência.
 
-O worker de entrega durável consulta primeiro `prepareManualActionPointReply` para respostas de Action Points manuais, depois o fluxo de rotinas e, por último, a consulta a ativos. Cada resposta manual exige ciclo, pessoa e thread exatos; uma DM solta não herda contexto de Action Point. `fetchSlackActionPointThread` pagina somente a thread até antes da mensagem atual, com limite seguro de 20 páginas, para alimentar a IA com contexto isolado. Declaração inequívoca de conclusão pode ser registrada como relato da pessoa; não inferir execução verificada.
+O worker de entrega durável consulta primeiro `prepareManualActionPointReply` para respostas de Action Points manuais, depois o fluxo de rotinas e, por último, a consulta a ativos. Cada resposta manual exige ciclo, pessoa e thread exatos; uma DM solta não herda contexto de Action Point. `fetchSlackActionPointThread` pagina somente a thread até antes da mensagem atual, com até 15 mensagens por chamada e limite de 20 páginas, para alimentar a IA com contexto isolado. Declaração inequívoca de conclusão pode ser registrada como relato da pessoa mesmo se o modelo estiver indisponível; não inferir execução verificada.
 
 ## Slack
 

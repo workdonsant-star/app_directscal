@@ -41,7 +41,7 @@ import { buildManualFollowupHistory, isSelfReportedComplete, manualFollowupPromp
 const job = { id: "00000000-0000-4000-8000-000000000001", question: { kind: "direct", teamId: "T1", userId: "U1", channel: "D1", ts: "123.456", threadTs: "100.000", text: "Eu fiz tudo" } } as SlackDeliveryJob;
 const installation = { teamId: "T1", organizationId: "00000000-0000-4000-8000-000000000002", botToken: "ficticio", botUserId: "B1" };
 
-beforeEach(() => { fixtures.rows = []; fixtures.latestReport = null; fixtures.existingSelfReport = null; fixtures.seen = []; fixtures.updates = []; fixtures.inserts = []; vi.clearAllMocks(); vi.mocked(fetchSlackActionPointThread).mockResolvedValue([]); });
+beforeEach(() => { fixtures.rows = []; fixtures.latestReport = null; fixtures.existingSelfReport = null; fixtures.seen = []; fixtures.updates = []; fixtures.inserts = []; vi.clearAllMocks(); vi.mocked(extractManualFollowupReport).mockReset(); vi.mocked(fetchSlackActionPointThread).mockResolvedValue([]); });
 
 describe("resposta direta ao teste manual", () => {
   it("seleciona apenas mensagens da pessoa e do bot na thread antes da resposta atual", () => {
@@ -83,14 +83,37 @@ describe("resposta direta ao teste manual", () => {
     expect(fixtures.updates.map(([table]) => table)).toEqual(["manual_action_point_followups"]);
   });
 
-  it("aceita 'fiz tudo sem impedimento' e 'sim, fiz tudo' sem criar proposta inconclusiva", async () => {
+  it("aceita variações naturais de conclusão sem depender da IA", async () => {
     fixtures.rows = [{ id: "cycle-a", status: "enviado", title: "Matriz de decisões" }];
     vi.mocked(getSlackWorkspaceUser).mockResolvedValue({ userId: "U1", name: "Pessoa fictícia", avatarUrl: null });
-    for (const text of ["fiz tudo sem impedimento", "sim, fiz tudo", "executei tudo sem nenhum impedimento"]) {
+    for (const text of ["fiz tudo sem impedimento", "sim, fiz tudo", "executei tudo sem nenhum impedimento", "Ja fiz tudo", "Já fiz tudo sem impedimento", "Fiz ontem, eu fiz todas as partes"]) {
       const replyJob = { ...job, question: { ...job.question, text } } as SlackDeliveryJob;
       expect(await prepareManualActionPointReply(replyJob, installation)).toEqual({ text: expect.stringContaining("como relato seu") });
     }
     expect(extractManualFollowupReport).not.toHaveBeenCalled();
+  });
+
+  it("responde claramente quando a leitura do Slack falha", async () => {
+    fixtures.rows = [{ id: "cycle-a", status: "enviado", title: "Matriz de decisões" }];
+    vi.mocked(getSlackWorkspaceUser).mockResolvedValue({ userId: "U1", name: "Pessoa fictícia", avatarUrl: null });
+    vi.mocked(fetchSlackActionPointThread).mockRejectedValue(new Error("indisponível"));
+    const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
+    const replyJob = { ...job, question: { ...job.question, text: "Conferi as decisões" } } as SlackDeliveryJob;
+    expect(await prepareManualActionPointReply(replyJob, installation)).toEqual({ text: expect.stringContaining("Não consegui ler esta conversa") });
+    expect(fixtures.inserts).toEqual([]);
+    expect(extractManualFollowupReport).not.toHaveBeenCalled();
+    errorLog.mockRestore();
+  });
+
+  it("informa a falta de motor de IA sem deixar a thread silenciosa", async () => {
+    fixtures.rows = [{ id: "cycle-a", status: "enviado", title: "Matriz de decisões" }];
+    vi.mocked(getSlackWorkspaceUser).mockResolvedValue({ userId: "U1", name: "Pessoa fictícia", avatarUrl: null });
+    vi.mocked(extractManualFollowupReport).mockRejectedValue(new Error("Selecione um modelo de IA antes de registrar o relato."));
+    const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
+    const replyJob = { ...job, question: { ...job.question, text: "Conferi as decisões" } } as SlackDeliveryJob;
+    expect(await prepareManualActionPointReply(replyJob, installation)).toEqual({ text: expect.stringContaining("motor de IA deste acompanhamento não está selecionado") });
+    expect(fixtures.inserts).toEqual([]);
+    errorLog.mockRestore();
   });
 
   it("reutiliza o registro confirmado se o mesmo job for processado novamente", async () => {
@@ -152,7 +175,7 @@ describe("resposta direta ao teste manual", () => {
       { ts: "112.000", user: "B1", text: "Quando foi?" },
     ]);
     vi.mocked(extractManualFollowupReport).mockResolvedValue({ status: "executado_relato", summary: "A pessoa declarou que concluiu toda a ação ontem.", evidence: null, followUpQuestion: null, supportingQuote: "Já fiz tudo sem impedimento" });
-    const replyJob = { ...job, question: { ...job.question, text: "Fiz ontem, eu fiz todas as partes" } } as SlackDeliveryJob;
+    const replyJob = { ...job, question: { ...job.question, text: "Revisei a matriz ontem e encaminhei todas as decisões" } } as SlackDeliveryJob;
     expect(await prepareManualActionPointReply(replyJob, installation)).toEqual({ text: expect.stringContaining("como relato seu") });
     expect(fetchSlackActionPointThread).toHaveBeenCalledWith("ficticio", "D1", "100.000", "123.456");
     expect(extractManualFollowupReport).toHaveBeenCalledWith(expect.objectContaining({
