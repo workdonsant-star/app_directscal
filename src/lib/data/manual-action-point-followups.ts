@@ -2,6 +2,9 @@ import "server-only";
 
 import { buildManualFollowupHistory, contradictsReportedCompletion, isSelfReportedComplete } from "@/lib/agent/follow-up/manual-follow-up";
 import { extractManualFollowupReport } from "@/lib/agent/follow-up/manual-follow-up-provider";
+import { answerManualFollowupQuestion } from "@/lib/agent/follow-up/manual-follow-up-chat";
+import { buildManagementAssetChunks } from "@/lib/data/management-asset-indexer";
+import { richTextDocumentSchema } from "@/lib/contracts/rich-text";
 import type { SlackDeliveryJob, SlackReply } from "@/lib/contracts/slack-delivery";
 import { fetchSlackActionPointThread, getSlackBotUserId, getSlackWorkspaceUser, type SlackInstallation } from "@/lib/integrations/slack";
 import { escapeSlackText } from "@/lib/integrations/slack-format";
@@ -84,6 +87,37 @@ export async function prepareManualActionPointReply(job: SlackDeliveryJob, insta
   const report = prior.data ?? (directCompletion
     ? { status: "executado_relato" as const, summary: `Conclusão integral declarada pela pessoa responsável: ${replyText.trim()}`, evidence: null, supportingQuote: replyText.trim(), followUpQuestion: null }
     : extracted!);
+  if (report.status === "duvida") {
+    const point = await db.from("admin_company_action_points")
+      .select("reason,action,continuity,asset_id,asset_version_id")
+      .eq("id", run.action_point_id).eq("organization_id", run.organization_id).maybeSingle();
+    if (point.error) throw new Error("Não foi possível consultar o Action Point.");
+    if (!point.data || point.data.asset_version_id !== run.asset_version_id || point.data.action !== run.action) {
+      return { text: `O Action Point ${escapeSlackText(run.title)} mudou desde esta pergunta. Peça à operação o acordo atual antes de executar.` };
+    }
+    const publicDb = createSupabaseAdminClient();
+    const asset = await publicDb.from("management_assets")
+      .select("id,title,status,archived_at,current_published_version_id")
+      .eq("id", point.data.asset_id).eq("organization_id", run.organization_id).maybeSingle();
+    if (asset.error) throw new Error("Não foi possível consultar o ativo vinculado.");
+    if (!asset.data || asset.data.status !== "publicado" || asset.data.archived_at || asset.data.current_published_version_id !== run.asset_version_id) {
+      return { text: "O ativo vinculado mudou ou deixou de estar publicado. Peça à operação que revise este Action Point." };
+    }
+    const [version, chunks] = await Promise.all([
+      publicDb.from("management_asset_versions").select("id,version_number,review_status,content").eq("id", run.asset_version_id).eq("asset_id", asset.data.id).eq("organization_id", run.organization_id).maybeSingle(),
+      publicDb.from("management_asset_chunks").select("heading_path,content").eq("asset_id", asset.data.id).eq("version_id", run.asset_version_id).eq("organization_id", run.organization_id).order("ordinal", { ascending: true }).limit(12),
+    ]);
+    if (version.error || chunks.error) throw new Error("Não foi possível consultar a versão publicada do ativo.");
+    if (!version.data || version.data.review_status !== "publicado") return { text: "A versão vinculada do ativo não está disponível. Peça à operação que revise este Action Point." };
+    const document = richTextDocumentSchema.safeParse(version.data.content);
+    const sections = (chunks.data?.length ? chunks.data : document.success ? buildManagementAssetChunks({ title: asset.data.title, content: document.data }).map(chunk => ({ heading_path: chunk.headingPath, content: chunk.content })) : []).slice(0, 12);
+    if (!sections.length) return { text: "O ativo vinculado não tem conteúdo consultável. Peça à operação que revise este Action Point." };
+    return { text: await answerManualFollowupQuestion({
+      question: replyText, title: run.title, reason: point.data.reason, action: run.action, continuity: point.data.continuity,
+      assetTitle: asset.data.title, assetVersion: version.data.version_number, sections,
+      history: history.map(turn => ({ role: turn.role === "person" ? "user" as const : "assistant" as const, text: turn.text })),
+    }) };
+  }
   if (report.status === "inconclusivo") {
     const proposed = "followUpQuestion" in report && report.followUpQuestion ? report.followUpQuestion : "O que ficou concluído ou pendente?";
     const repeated = history.some(turn => turn.role === "assistant" && turn.text.toLocaleLowerCase("pt-BR").includes(proposed.toLocaleLowerCase("pt-BR")));

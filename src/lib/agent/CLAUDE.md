@@ -45,3 +45,5 @@ A17: instrução de segunda pessoa aplica-se a orientação de execução, não 
 
 
 A17 final: hasExplicitResponsibilityGap reconhece ausência explícita de ator com advérbios; teste/reprocessamento v3 confirma mudança apenas em amb-04 dentre cinquenta respostas guardadas. Não trata isso como verificação semântica geral nem nova rodada IA. Bruto v3=43/50; replay=44/50.
+
+`answer-providers.ts` aceita um prompt contextual para a conversa de Action Points sem alterar o prompt padrão de consulta aos ativos.

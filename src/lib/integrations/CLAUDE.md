@@ -41,3 +41,5 @@ A06: routine-replies intercepta relatos explícitos em DM antes do modelo, reval
 
 
 A07: contato preparado distingue o lembrete único do contato inicial. Mesmas guardas, horário e cotas de A05. Antes de enviar, relato/intervenção/proposta cancela cobrança; conversa recente adia por 24h. A DM de lembrete preserva a referência do mesmo ciclo e não cria oportunidade. Nenhum aviso automático é enviado ao gestor: o escalonamento ocorre na fila interna da empresa.
+
+Na thread de Action Point manual, uma dúvida usa a conversa contextual do motor selecionado com fonte do Action Point e do ativo vigente. Dúvidas não geram relato nem aprovação de execução.
