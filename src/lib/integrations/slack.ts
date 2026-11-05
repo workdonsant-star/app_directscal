@@ -392,6 +392,25 @@ export async function fetchSlackConversation(
   return threadTs ? messages : [...messages].reverse();
 }
 
+// Lê somente as mensagens anteriores ao evento atual na thread de um Action Point.
+export async function fetchSlackActionPointThread(token: string, channel: string, threadTs: string, currentTs: string): Promise<SlackConversationMessage[]> {
+  const messages: SlackConversationMessage[] = [];
+  let cursor = "";
+  for (let page = 0; page < 20; page += 1) {
+    const params = new URLSearchParams({ channel, ts: threadTs, latest: currentTs, limit: "50" });
+    if (cursor) params.set("cursor", cursor);
+    const response = await fetch(`https://slack.com/api/conversations.replies?${params}`, {
+      headers: { Authorization: `Bearer ${token}` }, cache: "no-store",
+    });
+    const payload = (await response.json()) as SlackApiResponse & { messages?: SlackConversationMessage[]; response_metadata?: { next_cursor?: string } };
+    if (!response.ok || !payload.ok) throw new Error(`Slack conversations.replies falhou: ${payload.error ?? response.status}`);
+    messages.push(...(payload.messages ?? []));
+    cursor = payload.response_metadata?.next_cursor ?? "";
+    if (!cursor) return messages;
+  }
+  throw new Error("A thread do Action Point excedeu o limite de leitura segura.");
+}
+
 async function readSlack<T extends SlackApiResponse>(
   token: string,
   method: string,
