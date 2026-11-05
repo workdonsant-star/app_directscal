@@ -10,6 +10,8 @@ Esta pasta concentra os clientes Supabase usados pelo servidor Next.js.
 - `createSupabaseAdminClient()` é server-only e deve ser usado apenas em Route Handlers, callbacks Auth.js e leituras administrativas controladas.
 - `createSupabaseRlsClient()` recebe o JWT assinado pela sessão Auth.js e respeita RLS.
 - Tipos de banco ficam em `database.types.ts` até serem substituídos por tipos gerados pelo Supabase CLI.
+- Os tipos privados de `manual_action_point_followups` e `manual_action_point_reports` descrevem as tabelas já aplicadas ao OMDx para reconhecer a resposta e guardar a proposta/confirmação do teste manual. Declaração inequívoca de conclusão pode nascer com `confirmed_at` e `confirmation_job_id` na inserção, identificando o próprio job como confirmação do relato.
+- `admin_company_action_points` descreve a tabela privada já aplicada no OMDx, consultada para contextualizar dúvidas na thread com motivo, ação e papel do ativo vinculado.
 
 - account_profiles e specialists têm RLS e acesso exclusivo por service role através de handlers autenticados; não conceder acesso direto aos clientes.
 

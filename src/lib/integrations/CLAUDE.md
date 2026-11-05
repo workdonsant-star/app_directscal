@@ -11,6 +11,8 @@ Esta pasta contém integrações server-only que traduzem eventos externos para 
 - Mantenha o provedor como canal de entrada e saída; a fonte de verdade continua sendo o DirectScal/Supabase.
 - Respostas devem citar ativo, seção e versão ou recusar quando não houver evidência.
 
+O worker de entrega durável consulta primeiro `prepareManualActionPointReply` para respostas de Action Points manuais, depois o fluxo de rotinas e, por último, a consulta a ativos. Cada resposta manual exige ciclo, pessoa e thread exatos; uma DM solta não herda contexto de Action Point. `fetchSlackActionPointThread` pagina somente a thread até antes da mensagem atual, com até 15 mensagens por chamada e limite de 20 páginas, para alimentar a IA com contexto isolado. Declaração inequívoca de conclusão pode ser registrada como relato da pessoa mesmo se o modelo estiver indisponível; não inferir execução verificada.
+
 ## Slack
 
 - `slack-format.ts` é puro e testado: assinatura `v0`, `state` assinado do OAuth (HMAC com `AUTH_SECRET`, validade de 10 minutos), limpeza de menções e mensagem em Block Kit com fontes e botões de avaliação.
@@ -42,3 +44,5 @@ A06: routine-replies intercepta relatos explícitos em DM antes do modelo, reval
 
 
 A07: contato preparado distingue o lembrete único do contato inicial. Mesmas guardas, horário e cotas de A05. Antes de enviar, relato/intervenção/proposta cancela cobrança; conversa recente adia por 24h. A DM de lembrete preserva a referência do mesmo ciclo e não cria oportunidade. Nenhum aviso automático é enviado ao gestor: o escalonamento ocorre na fila interna da empresa.
+
+Na thread de Action Point manual, uma dúvida usa a conversa contextual do motor selecionado com fonte do Action Point e do ativo vigente. Dúvidas não geram relato nem aprovação de execução.

@@ -104,3 +104,6 @@ routine-directory.ts define RoutineDirectoryUser, o DTO mínimo exibido no edito
 `admin-company-action-points.ts` valida os campos do formulário administrativo e o token de concorrência. O identificador da empresa e o ator nunca vêm do payload.
 Para recorrência, o contrato exige dias únicos da semana, horário `HH:mm` e data inicial. A API recusa programação incompleta e pontos pontuais com programação.
 O DTO administrativo inclui o último ciclo de teste e propostas/relatos de todos os ciclos; a confirmação do líder é campo separado. A classificação `executado_relato` não representa conclusão verificada.
+
+
+`admin-company-action-points.ts` exige dias únicos, horário `HH:mm` em intervalos de cinco minutos e data inicial para recorrências; pontos pontuais não aceitam programação.

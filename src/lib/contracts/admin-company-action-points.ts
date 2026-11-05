@@ -9,7 +9,7 @@ export const adminCompanyActionPointInputSchema = z.object({
   deadline: z.iso.date().nullable(),
   frequency: z.enum(["diaria", "semanal", "quinzenal", "mensal"]).nullable(),
   weekdays: z.array(z.number().int().min(0).max(6)).max(7),
-  sendTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).nullable(),
+  sendTime: z.string().regex(/^([01]\d|2[0-3]):[0-5][05]$/).nullable(),
   scheduleStartsOn: z.iso.date().nullable(),
   reason: z.string().trim().min(1).max(2000),
   action: z.string().trim().min(1).max(2000),

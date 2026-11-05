@@ -122,3 +122,6 @@ Listagem/editor/perguntas de ativos, revisão de lacunas, operação e navegaç�
 
 `AdminCompanyTabs` usa `showReport` no produto e na demo para a aba Diagnósticos. A aba reutiliza `CustomerDocumentsWorkspace` com `reportsOnly`: o superadmin envia um PDF final, que aparece na área Diagnósticos do cliente. O fluxo não usa editor ou rascunho.
 Na rota real, `AdminCompanyReportsWorkspace` é a fronteira de cliente que cria a função `renderTabs`; a página de servidor passa somente ID e documentos. Não passar funções do servidor como props para esse workspace.
+
+O formulário `AdminCompanyActionPointForm` configura frequência, dias e horário de Brasília. Quinzenal alterna semanas a partir da data inicial; mensal usa os dias escolhidos na primeira semana do mês. A lista mostra a programação para revisão.
+O horário recorrente usa seletores de hora e minuto em intervalos de cinco minutos, alinhados ao Supabase Cron. Horários antigos fora dessa grade continuam visíveis na edição e exigem ajuste antes de salvar.

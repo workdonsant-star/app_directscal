@@ -12,6 +12,8 @@ O mesmo teste cobre a apresentação de relato vindo do Slack sem converter `exe
 Também verifica que a pergunta enviada no mesmo ciclo aparece abaixo do resumo confirmado, sem a referência técnica.
 Com dois ciclos, verifica a leitura de baixo para cima (pergunta antiga → resposta antiga → pergunta recente → resposta recente) mesmo quando a consulta simulada retorna os relatos invertidos e conserva o timestamp mais novo para a tabela.
 
+`manual-action-point-followups.test.ts` cobre escopo exato de thread/pessoa, DM solta sem vínculo, histórico isolado, registro direto e idempotente de conclusão, confirmação curta, pergunta de seguimento sem loop e resposta explícita a falha de leitura/modelo. `manual-follow-up-provider.test.ts` valida o prompt contextual e remove citação de suporte que só aparece na fala do bot. `slack-action-point-thread.test.ts` verifica canal, thread, corte temporal e paginação da leitura do Slack. `slack-delivery.test.ts` verifica a prioridade do acompanhamento manual sobre a consulta a ativos. Usam substitutos e não enviam mensagens ao Slack.
+
 `action-point-follow-up-classification.test.ts` cobre silêncio após prazo e entrega, falha de transporte, resposta vaga/contraditória, cumprimento parcial, falta de evidência e atendimento. A regra ainda não recebe respostas reais do Slack.
 
 Vitest em ambiente Node, com alias `@/` configurado na raiz. Teste regras de domínio e contratos com dados fictícios, sem acessar serviços externos. Para mudanças localizadas, rode o arquivo específico. Os testes de categorias garantem agrupamento por categoria, normalização e conservação de todos os ativos.
@@ -166,3 +168,8 @@ O mesmo teste cobre 503 temporário do Gemini, última tentativa em `gemini-3.5-
 `manual-action-point-schedule.test.ts` verifica horário de Brasília, tolerância do cron, encerramento, alternância quinzenal e primeira semana mensal sem contato externo.
 `manual-action-point-cron-auth.test.ts` verifica assinatura, segredo e expiração sem contato externo.
 `agent-openai-provider.test.ts` verifica também que o prompt contextual de Action Point chega ao provedor sem armazenamento da conversa.
+
+`manual-follow-up-chat.test.ts` verifica o contexto enviado ao motor, citações e recusa sem fonte válida, com provedor substituído.
+`manual-action-point-chat-route.test.ts` verifica o roteamento de uma dúvida explícita da thread com empresa, Action Point e versão publicados, mesmo com o classificador de relatos indisponível, sem escrita de relato.
+
+`manual-action-point-cron-auth.test.ts` verifica assinatura, segredo e expiração; `manual-action-point-schedule.test.ts` verifica Brasília, tolerância, encerramento, quinzenal e primeira semana mensal; o teste de envio mantém o Slack substituído.

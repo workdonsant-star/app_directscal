@@ -106,3 +106,6 @@ Atualização de 29/10/2026: após a aplicação manual da segunda migração, o
 `20261104213000_manual_action_point_confirmation_grant.sql` permite ao service role atualizar somente os dois campos de confirmação; a proposta original permanece imutável.
 
 `20261104214500_manual_action_point_repeat_tests.sql` restringe o índice único aos estados `preparado` e `enviando`. Ciclos `enviado` coexistem para permitir novas perguntas de teste, com respostas isoladas por thread. O bloqueio de `incerto` permanece na data-source.
+
+
+As migrações `scheduled_manual_action_points` e `scheduled_manual_action_point_system_actor` foram aplicadas no OMDx em 05/11/2026. `supabase_manual_action_point_cron` ativa pg_cron/pg_net e agenda chamada assinada a cada cinco minutos; o segredo fica no Vault e a fila HTTP só recebe assinatura temporária. Aplicação desta última migração depende do deploy compatível. Elas adicionam dias/horário/início, slot único e autoria nula apenas para ocorrências automáticas; cadastros antigos continuam sem agenda até edição.
