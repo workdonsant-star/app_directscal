@@ -51,13 +51,17 @@ describe("buildAnalyticsOverview", () => {
     expect(buildOverview().overview.levers).toEqual(buildOverview().overview.levers);
   });
 
-  it("limita as perguntas ao top 5 pela menor nota", () => {
+  it("mantém todas as afirmações e classifica cada nota", () => {
     const { overview } = buildOverview();
     const scores = overview.questions.map((item) => item.score);
 
-    expect(overview.questions.length).toBeLessThanOrEqual(5);
+    expect(overview.questions.length).toBeGreaterThan(5);
     expect(scores).toEqual([...scores].sort((first, second) => first - second));
-    expect(overview.questionTotal).toBeGreaterThanOrEqual(overview.questions.length);
+    expect(overview.questionTotal).toBe(overview.questions.length);
+    expect(overview.questions.every((item) => item.classification)).toBe(true);
+    for (const dimension of ["Cultura", "Visão", "Comunicação", "Processos", "Liderança", "Performance"]) {
+      expect(overview.questions.filter((item) => item.dimension === dimension)).toHaveLength(5);
+    }
   });
 
   it("não inventa veredito sem dimensões consolidadas", () => {

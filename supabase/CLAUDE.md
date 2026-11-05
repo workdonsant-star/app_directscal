@@ -1,5 +1,11 @@
 # `supabase` — Migrations e configuração
 
+`20261105145200_scheduled_manual_action_points.sql` adiciona dias, horário e data inicial aos Action Points recorrentes, preservando os antigos sem agenda, e uma chave única por ocorrência. Aplicada ao OMDx em 05/11/2026; as três colunas, a coluna do slot e o índice único foram verificados. O cron ainda exige segredo e deploy.
+`20261105145908_scheduled_manual_action_point_system_actor.sql` permite autoria nula somente quando há `scheduled_slot`, distinguindo disparo do sistema de teste manual. Aplicada ao OMDx em 05/11/2026.
+`20261105160008_supabase_manual_action_point_cron.sql` ativa pg_cron/pg_net e agenda chamada HMAC a cada cinco minutos. O segredo fica no Vault; a fila HTTP recebe somente uma assinatura temporária. A aplicação depende do deploy compatível e ainda não foi feita.
+
+`20261104203000_admin_company_action_points.sql` cria o cadastro manual privado de Action Points por empresa. RLS está ativo e somente service role tem leitura/escrita; o cadastro não ativa o agente ou contato Slack. Aplicada ao OMDx em 04/11/2026; tabela vazia, RLS e grants conferidos por consulta. O app local ainda precisa de revisão visual autenticada.
+
 ## Propósito
 
 Contém configuração local e migrations SQL para a base Supabase de produção do Maturidade.
@@ -91,3 +97,12 @@ Atualização de 29/10/2026: após a aplicação manual da segunda migração, o
 `20261101165000_agent_provider_connections.sql` cria `app_private.agent_provider_connections` para Anthropic, OpenAI e Gemini e a RPC invoker de seleção atômica por superadmin. Chaves chegam cifradas do servidor; banco nunca recebe segredo bruto. RLS ativo, sem grants para cliente, leitura/escrita só pela service role. Aplicada ao OMDx em 01/11/2026; tabela, função e grants conferidos. Trocar `AUTH_SECRET` exige recadastrar chaves salvas pelo painel.
 
 `20261102230000_user_access_snapshot.sql` cria `app_private.get_user_access_snapshot(uuid)`: leitura única (security invoker, search_path vazio, EXECUTE só service_role) de versão de sessão, conta, vínculos, empresa da sessão (superadmin primeiro), perfil, módulos, onboarding e instalação Slack não revogada da empresa principal. Não grava nada nem decide autorização. O app funciona sem ela (fallback em consultas paralelas). **Pendente de aplicação no OMDx**; depois de aplicar, rodar `supabase/tests/user-access-snapshot.sql` e reiniciar/redeployar o app.
+# Acompanhamento de Action Points manuais
+
+`20261104211000_manual_action_point_followups.sql` adiciona ciclos de envio e relatos estruturados em `app_private`, com RLS ativo e acesso somente por service role. O índice parcial impede dois envios abertos por ação. O ciclo guarda snapshot da ação e da versão do ativo; o relatório é único por job do evento Slack. Envios incertos não recebem retry automático.
+
+`20261104212000_manual_action_point_report_confirmation.sql` adiciona confirmação de autoria do resumo por um segundo evento Slack. Propostas não confirmadas não aparecem como relatos do cliente.
+
+`20261104213000_manual_action_point_confirmation_grant.sql` permite ao service role atualizar somente os dois campos de confirmação; a proposta original permanece imutável.
+
+`20261104214500_manual_action_point_repeat_tests.sql` restringe o índice único aos estados `preparado` e `enviando`. Ciclos `enviado` coexistem para permitir novas perguntas de teste, com respostas isoladas por thread. O bloqueio de `incerto` permanece na data-source.

@@ -1,10 +1,25 @@
 # `src/lib/data` — Fonte de dados e regras
 
+O Analytics conserva todas as afirmações consolidadas por dimensão e calcula o status de cada linha pela nota agregada. A UI seleciona uma das seis dimensões; não há corte global de cinco menores notas.
+
 Esta pasta é a fronteira entre UI e dados. O core de Maturidade lê Supabase no servidor; superadmin e aquisição também usam Supabase via Route Handlers server-side. Perfil e Configurações compartilham a leitura server-side de identidade, organização e aquisição; as edições de nome e avatar do Perfil persistem em account_profiles.
+
+`manual-action-point-followups.ts` inicia um teste por ação manual, valida ativo, pessoa e motor de IA, persiste o envio antes de chamar o Slack e não repete envio incerto. Respostas na thread da pergunta são vinculadas pela empresa, canal, pessoa e timestamp. Uma resposta direta fora da thread só entra no acompanhamento se houver exatamente um ciclo enviado nas últimas 24 horas para a mesma pessoa e DM; com múltiplos ciclos, o bot pede a thread específica. A IA propõe classificação, resumo e referência citada; a mensagem literal da pessoa aparece ao cliente quando registrada, enquanto o líder pode confirmar ou corrigir o resumo. A trilha do cliente recompõe as mensagens vinculadas ao acompanhamento.
+Antes de preparar o envio manual, o mesmo fluxo lê até cinco perguntas já enviadas da própria empresa e ação e pede ao motor selecionado uma nova redação dirigida à pessoa pelo primeiro nome. Não grava nem envia uma pergunta se a geração falhar. A pergunta persistida continua sendo o texto exato entregue no Slack; o vínculo das respostas depende do ID do acompanhamento e do timestamp da thread, sem referência técnica no texto visível.
+
+Quando a extração classifica a mensagem como dúvida, o evento é registrado com `status = duvida` e o bot envia ao motor selecionado a ação, o motivo e o papel do ativo registrados no Action Point da mesma empresa, até 12 trechos da versão publicada vinculada e o contexto da thread ou da DM. A resposta é conversacional e cita as fontes usadas; a dúvida não gera proposta de confirmação. Se a ação combinada ou a versão do ativo mudou desde o envio, a resposta apresenta apenas a ação preservada no acompanhamento e orienta consultar a operação. O escopo de empresa, ativo e versão é validado antes de consultar o motor.
+
+`customer-company-action-points.ts` recompõe a trilha de cada acompanhamento enviado: pergunta inicial, mensagens recebidas na thread ou vinculadas a relatos e confirmações, e respostas do agente com entrega confirmada. Filtra empresa, workspace, pessoa e canal antes de atribuir mensagens. Exibe o texto literal; se o original estiver indisponível, informa a ausência sem inventar texto. Pergunta entregue sem nenhuma interação fica `Aguardando resposta` por 24 horas e depois `Não respondido`. Ciclos sem envio confirmado não geram mensagem do agente. Mensagens sem vínculo inequívoco com a thread ou com o relato não são atribuídas a uma ação.
+
+As mensagens são ordenadas por timestamp de envio/recebimento e apresentadas em ordem inversa: a interação mais recente fica no topo. A pergunta inicial aparece integralmente, inclusive as instruções e a referência enviadas no Slack. O timestamp mais novo alimenta “Último relato” na tabela.
 
 `customer-documents-data-source.ts` guarda arquivos prontos enviados pelo superadmin em bucket privado e metadados por organização. Somente o superadmin cria pastas e publica/remove arquivos; leitura e download do cliente exigem membership da empresa. A pasta usa o registro de categorias da biblioteca existente. O envio publica imediatamente, sem rascunho.
 
 `agent-provider-data-source.ts` mantém as conexões globais Anthropic, OpenAI e Google Gemini em `app_private.agent_provider_connections`. Cifra chaves antes de persistir, devolve ao painel só presença/origem/modelo e seleciona um motor para as respostas do agente; variáveis de ambiente continuam como fallback. Salvar consulta metadados do modelo; Testar também gera uma resposta estruturada com fonte fictícia, sem documentos de cliente.
+
+`diagnostic-generator-csv.ts` valida o CSV bruto de respostas usado pelo gerador administrativo e calcula médias por resposta, grupo, dimensão e pergunta, além de lacunas de base. Não envia respostas individuais a um provedor nem as grava no navegador ou no banco.
+
+`diagnostic-generator-report.ts` monta um rascunho editorial a partir dos agregados e do briefing. Identifica o que veio da pesquisa e o que foi informado pelo especialista; não transforma correlação ou diferença de percepção em causa confirmada. As seções permanecem editáveis antes da exportação.
 
 ## Regras
 
@@ -127,6 +142,10 @@ person-profiles-data-source.ts lê account_profiles (prioritário) ou next_auth.
 ## Execução dos action points
 
 `admin-action-points-view.ts` transforma o workspace administrativo de rotinas em grupos por responsável para a aba real da empresa. A chave de Action Point inclui diagnóstico e ID da ação; preserva todas as rotinas vinculadas e escolhe a revisão vigente de cada uma pelo número de revisão. Não grava dados nem duplica os acordos.
+`admin-company-action-points.ts` lê e salva o cadastro manual por empresa, separado das entregas. Ativo publicado e pessoa ativa no Slack são revalidados no servidor; edição exige `updatedAt` esperado. Os registros não geram contato nem alteram a publicação de uma entrega.
+`manual-action-point-schedule.ts` identifica apenas a ocorrência do horário local de Brasília, com tolerância de dez minutos para o cron. `manual-action-point-cron-auth.ts` valida a chamada assinada pelo Supabase Cron. O envio automático usa a mesma revalidação do teste manual; `scheduled_slot` único impede duplicação por concorrência. Mensal considera somente a primeira semana do mês. Falha antes do registro pode ser tentada novamente na janela; envio incerto não é repetido automaticamente.
+`customer-company-action-points.ts` lê os mesmos registros para o cliente, filtrando primeiro pelo membership atual de todas as organizações acessíveis. Resolve empresa, ativo e pessoa Slack no servidor; ausência de diretório não inventa nome. Ações manuais não carregam métricas da entrega.
+`manual-action-points-board.ts` adapta os registros reais ao componente de pessoas usado pela demo; sinaliza o detalhe manual, sem criar resultados, conversas ou percentuais.
 
 - `action-points-list.ts` (puro) junta a seleção publicada (`GanttTask[]`) às atribuições, marca atraso (prazo vencido e não concluído), define a cadência padrão por prioridade (Alta semanal; as demais quinzenal), traz o progresso e a última interação de cada ação (e a média e a mais recente por grupo) e agrupa por dimensão, responsável ou mês do prazo. Exporta também os rótulos de etapa e cadência e a formatação de datas sem deslocamento de fuso.
 - `action-point-execution.ts` (puro): `planActionPointUpdate()` decide o que gravar e que registros de histórico gerar, sempre como frase de ação iniciada por verbo (atribuição, etapa, prazo, andamento, nota com detalhe); concluir fecha o progresso em 100% quando não há outro valor informado;, valida que o prazo não é anterior ao início e exige responsável antes de etapa, prazo ou cadência.
@@ -173,10 +192,11 @@ A fonte demonstrativa de aderência inclui perguntas explícitas do agente e res
 Cada Action Point demonstrativo possui why com resumo do que a prática trata e de sua importância operacional na empresa. O texto alimenta a descrição do painel Figma 282:1322; não inventar resultados medidos ou contexto real do cliente.
 
 adherenceLeaderPhotos centraliza as fotos demonstrativas por autor, compartilhadas pela listagem e pela timeline de Action Points. Não representa fotos persistidas de usuários reais.
+As quatro entradas agora apontam para os retratos enviados em `public/demo/avatars/`; os dados operacionais de usuários continuam vindo das respectivas fontes reais.
 
 O histórico demonstrativo da daily (ap-001) contém 14 mensagens: sete perguntas e sete respostas, em ciclos do mais recente ao mais antigo. As dez entradas adicionais são exemplos de prioridades, bloqueios, dependências e encaminhamentos; não representam conversas reais do Slack.
 
-`omdx-analytics-overview.ts` (puro) monta a leitura do Analytics em seis níveis a partir de `OverviewAnalytics`, da comparação histórica e da aderência: veredito (maturidade média, variação em pontos, desalinhamento médio, dimensões com nota até 3,0, consenso, adoção), dimensões ordenadas, percepção por camada com gap ≥ `gapCutoff`, top 5 perguntas por menor nota agregadas por dimensão + texto e alavancas com a prioridade real. `QuestionResult` passou a expor `layerGap`; `maturityCutoff` e `gapCutoff` são exportados.
+`omdx-analytics-overview.ts` (puro) monta a leitura do Analytics em seis níveis a partir de `OverviewAnalytics`, da comparação histórica e da aderência: veredito (maturidade média, variação em pontos, desalinhamento médio, dimensões com nota até 3,0, consenso, adoção), dimensões ordenadas, percepção por camada com gap ≥ `gapCutoff`, todas as afirmações agregadas por dimensão + texto e alavancas com a prioridade real. `QuestionResult` passou a expor `layerGap`; `maturityCutoff` e `gapCutoff` são exportados.
 
 `omdx-impact-example.ts` é a fonte ilustrativa e determinística do impacto: as três dimensões mais críticas viram alavancas tratadas, com ativo e execução tirados da demonstração de Action Points (pesos por saúde), uso do ativo, nota estimada, confiança, quadrante de impacto, evolução em 30/60/90 dias e marcos. Não lê nem grava dados reais. Ver `docs/analytics-impacto.md`.
 
@@ -232,6 +252,8 @@ C1: buildPublishedActionPointsBoard conserva recommendedAction em description, a
 
 O DTO do painel conserva etapa, prazo e progresso da atribuição em implementation; valores ausentes permanecem nulos e separados da medição por oportunidades.
 
+Action Points manuais: `customer-company-action-points.ts` calcula `followupCounts` por ação a partir de perguntas com envio confirmado nos últimos 30 dias. Um relato confirmado entra na base imediatamente; uma pergunta sem confirmação entra após 24 horas. Somente `manual_action_point_reports.confirmed_at` com `executado_relato` conta como execução; `parcial` confirmado tem contador próprio. `manual-action-points-board.ts` expõe esses números à visão do cliente sem converter proposta não confirmada em execução.
+
 ## Exclusão integral de empresas
 
 `company-deletion-data-source.ts` chama delete_admin_companies em uma única transação e traduz autorização, proteção administrativa, empresa ausente e conflitos sem expor banco. Apaga dados empresariais e usuários exclusivos; preserva qualquer conta com referência de domínio fora do lote. A autorização é revalidada pela RPC; empresa de superadmin e processamento Slack ativo impedem todo o lote. Não usa remoções sequenciais via HTTP.
@@ -250,3 +272,5 @@ admin-delivery-domain.ts concentra o catálogo de action points e a conversão/a
 ## Rodadas de consulta no Maturidade
 
 Cada ida ao Supabase custa ~300 ms; o que importa é quantas rodadas ficam em série. `loadAuthorizedDiagnosticRows` busca empresas e diagnósticos juntos (ambos dependem só dos vínculos). `loadDiagnosticAccessMetadata` lê numa rodada vínculo do leitor, escopos, pessoas, setores, contas, vínculos e perfis dos criadores (`account_profiles` em lote, mesma precedência de `getAccountProfile`), e numa segunda as atribuições por escopo (painel e Slack juntas). `getVisibleDiagnosticIds` expõe os IDs autorizados antes da contagem de respostas e dos relatórios: `/omdx/diagnosticos` usa para buscar links em paralelo, e `published-action-points.ts` para buscar entregas junto com os relatórios, recortando depois pelos diagnósticos com relatório. As regras de visibilidade não mudaram; `omdx-diagnostic-visibility.test.ts` cobre cliente, admin atribuído e admin sem vínculo.
+
+`loadAdminDeliveryContext(id, includeOpen)` inclui pesquisas abertas somente quando a aba Relatório da empresa pede esse modo. O fluxo de entregas encerradas conserva o filtro padrão.

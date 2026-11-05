@@ -19,6 +19,8 @@ religar quando esse backend existir; não foi apagado.
 
 ## Arquivos
 
+- `ActionPointsPeopleView` é a mesma composição da demo: resumo, tabela por liderança, expansão animada e painel de detalhe. Para cadastros manuais reais, recebe `manual`, mantendo a estrutura visual e mostrando ausência de medição e acompanhamento ainda não iniciado. O painel mostra motivo, ação e papel do ativo. Usa título secundário para uma entrega publicada exibida abaixo.
+
 - `action-points-adherence-view.tsx` — Client Component principal. Recebe `board`
   (`AdherenceBoard`) por prop. Monta os cards de resumo (Em dia, Em atenção, Em risco,
   Aguardando resposta), o seletor de filtro (`TabsList variant="selector"`: Todos,
@@ -37,6 +39,8 @@ religar quando esse backend existir; não foi apagado.
   aderência atual, por que existe, ativo vinculado + versão, frequência/modo,
   responsável, evidência no período e o feed de check-ins.
 
+Nos acompanhamentos manuais reais, o feed mostra a pergunta entregue e a resposta literal recebida do Slack, com quebras de linha preservadas. O resumo gerado pelo agente não aparece na conversa. A badge da pessoa mostra `Validado` para execução declarada, `Dúvida` para pergunta e estados próprios para parcial, bloqueio e não execução. A pergunta sem resposta mostra `Aguardando resposta` até 24 horas após a entrega e `Não respondido` em vermelho depois disso. Se o evento original estiver indisponível, o feed informa a ausência da mensagem sem atribuir o resumo à pessoa. A declaração da pessoa é um registro válido do que ela informou.
+
 Os dados e os helpers puros (`buildActionPointsAdherenceExample`, `rollupHealth`,
 `countActionPoints`, `flattenActionPoints`, rótulos) ficam em
 `src/lib/data/action-points-adherence-example.ts`.
@@ -45,6 +49,9 @@ Os dados e os helpers puros (`buildActionPointsAdherenceExample`, `rollupHealth`
 
 - **Implantação ≠ manutenção.** A faixa representa **aderência/manutenção** (pode subir
   e cair), não progresso rumo a "concluído". Um action point de manutenção nunca fecha.
+
+Na visão manual real, a coluna e o resumo mostram execução relatada: perguntas entregues nos últimos 30 dias com relato confirmado entram na base imediatamente; perguntas sem confirmação entram após 24 horas. Somente confirmação explícita de execução completa entra no numerador. Parciais confirmados são contados separadamente. A média da pessoa e o total são ponderados por ocorrências, não por ação. Sem base, mostram ausência de medição.
+Essa visão não exibe o parágrafo explicativo da taxa abaixo da tabela.
 - **A frequência decide a medida.** Ritual periódico mostra `feito/total` no ciclo com
   barra; action point por evento (`Conforme ocorrência`, `Por entrega`, etc.) mostra um
   rótulo livre, **sem barra falsa**, porque não há denominador.
@@ -192,3 +199,11 @@ C1/A01: Sem medição é uma ausência de base, separada da situação Sem respo
 C1: o detalhe recebe a descrição recomendada da ação publicada, idêntica à fonte do PDF de Action Points. A leitura do consultor permanece separada como contexto; exemplos sem descrição mantêm o resumo existente.
 
 O detalhe operacional também mostra responsável, etapa, prazo acordado e andamento da implantação. Prazo sugerido da publicação permanece identificado como sugestão; percentual de implantação não representa execução recorrente. Sem atribuição, prazo/andamento são ausentes, nunca zero inventado.
+
+Action Points manuais da empresa usam o mesmo agrupamento por pessoa. A lista e o detalhe exibem perguntas entregues, respostas literais da pessoa, respostas entregues pelo agente e estados de interação. Se o agente enviou um resumo, ele aparece como parte da mensagem literal enviada. A aderência ainda não é calculada nesse fluxo. Antes do primeiro envio, mostram ausência de medição.
+
+O detalhe dos Action Points manuais segue a hierarquia da demo: situação/cadência, título, motivo e Atualizações com o texto integral de cada mensagem vinculada ao acompanhamento. O restante do cadastro fica em Detalhes da ação, após a conversa. A timeline mostra a foto atual da liderança obtida do diretório Slack tanto na lista quanto em cada resposta. Sem foto disponível, usa iniciais. Fotos demonstrativas nunca substituem a identidade de uma mensagem real. O histórico contém apenas envios confirmados e mensagens persistidas; não infere perguntas ou respostas.
+
+A conversa manual é lida de baixo para cima: a pergunta mais antiga fica na base, seguida pelas mensagens da pessoa e do agente em ordem de envio; cada ciclo posterior é empilhado acima do anterior. A tabela usa o timestamp da interação mais recente.
+
+Na timeline, nome e mensagem ocupam linhas separadas para a pessoa e para o agente, inclusive nas respostas curtas. As mensagens do Slack não exibem chips de recebimento ou envio; permanecem o horário e, quando aplicável, a badge de classificação como `Validado`, `Dúvida` ou `Não respondido`.

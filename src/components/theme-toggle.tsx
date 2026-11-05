@@ -5,7 +5,7 @@ import { useTheme } from "next-themes";
 import { useSyncExternalStore } from "react";
 
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { nextTheme } from "@/components/theme-cycle";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -16,21 +16,18 @@ export function ThemeToggle() {
   );
 
   const selectedTheme = mounted ? theme : undefined;
+  const themeChoice = selectedTheme === "light" || selectedTheme === "dark" ? selectedTheme : "system";
+  const themeName = themeChoice === "system" ? "Sistema" : themeChoice === "light" ? "Claro" : "Escuro";
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger aria-label="Selecionar tema" render={<Button variant="ghost" size="icon" />}>
-        {selectedTheme === "dark" ? <Moon className="size-4" /> : selectedTheme === "light" ? <Sun className="size-4" /> : <Monitor className="size-4" />}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-36">
-        <DropdownMenuGroup>
-          <DropdownMenuRadioGroup value={selectedTheme} onValueChange={setTheme}>
-            <DropdownMenuRadioItem value="system"><Monitor aria-hidden="true" />Sistema</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="light"><Sun aria-hidden="true" />Claro</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="dark"><Moon aria-hidden="true" />Escuro</DropdownMenuRadioItem>
-          </DropdownMenuRadioGroup>
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button
+      variant="ghost"
+      size="icon"
+      aria-label={`Tema: ${themeName}. Alternar tema`}
+      title={`Tema: ${themeName}`}
+      onClick={() => setTheme(nextTheme(themeChoice))}
+    >
+      {themeChoice === "dark" ? <Moon aria-hidden="true" className="size-4" /> : themeChoice === "light" ? <Sun aria-hidden="true" className="size-4" /> : <Monitor aria-hidden="true" className="size-4" />}
+    </Button>
   );
 }

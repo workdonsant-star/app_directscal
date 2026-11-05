@@ -24,7 +24,7 @@ export const diagnosticTemplateIdSchema = z.enum(diagnosticTemplateIdValues);
 export const diagnosticCreatorSchema = z.object({
   userId: idSchema,
   name: z.string().min(1),
-  avatarUrl: z.string().url().nullable(),
+  avatarUrl: z.union([z.string().url(), z.string().regex(/^\/(?!\/).+/)]).nullable(),
   role: z.enum(["cliente", "admin"]),
 });
 

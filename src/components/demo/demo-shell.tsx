@@ -54,6 +54,6 @@ export function DemoShell({ children }: { children: ReactNode }) {
   ? { id: "demo-superadmin", name: "Admin Directscal", company: "Directscal", role: "superadmin" as const, initials: "DS" }
   : profile ? { ...demoUser, name: profile.name, company: profile.companyDetails.socialName ?? profile.company, avatarUrl: profile.avatarUrl } : demoUser;
  return <AppRuntimeProvider value={runtime}><TooltipProvider delay={200}>
- {(pathname.startsWith("/demo/r/") || pathname === "/demo/responder") ? children : <SidebarProvider className="app-shell bg-shell"><AppSidebar user={user} demoMode initiativeScope="demo-vertex" assetNavigationPreferences={state.navigation} managementAssetCategories={demoFolders(state)} /><SidebarInset className="overflow-clip bg-shell">{!persistent && <p role="status" className="px-6 py-2 text-xs text-muted-foreground">As alterações duram somente nesta aba porque o armazenamento está indisponível.</p>}{children}</SidebarInset></SidebarProvider>}
+ {(pathname.startsWith("/demo/r/") || pathname === "/demo/responder") ? children : <SidebarProvider className="app-shell bg-shell"><AppSidebar user={user} demoMode initiativeScope="demo-vertex" assetNavigationPreferences={state.navigation} managementAssetCategories={demoFolders(state)} /><SidebarInset className="overflow-clip bg-background">{!persistent && <p role="status" className="px-6 py-2 text-xs text-muted-foreground">As alterações duram somente nesta aba porque o armazenamento está indisponível.</p>}{children}</SidebarInset></SidebarProvider>}
  </TooltipProvider></AppRuntimeProvider>;
 }

@@ -21,10 +21,11 @@ Pergunta → embedding da pergunta (opcional) → busca híbrida filtrada pela o
 
 - `config.ts` lê `ASSET_AGENT_PROVIDER`, `ASSET_AGENT_MODEL`, `ASSET_EMBEDDING_PROVIDER`, `ASSET_EMBEDDING_MODEL` e `OLLAMA_BASE_URL`. O provedor selecionado no painel global prevalece para o agente de consulta; sem seleção, essas variáveis continuam valendo. Sem configuração, o modo é `extractive` (trechos citados, sem IA) e a busca é só textual.
 - `answer-policy.ts` é puro e testado: limiar de evidência, prompt do sistema, contrato JSON da resposta, mapeamento de rótulos para citações e modo extrativo.
-- `answer-providers.ts` implementa Anthropic (SDK oficial, structured outputs, `effort: "low"` e `fallbacks: "default"` nos modelos que aceitam), OpenAI (Responses API com JSON Schema e `store: false`), Gemini (REST com `responseJsonSchema`, `thinkingLevel: "low"` nos modelos Gemini 3 e uma nova tentativa em 429/503; o padrão é `gemini-3.5-flash-lite`) e Ollama (`/api/chat` com `format`).
+- `answer-providers.ts` implementa Anthropic (SDK oficial, structured outputs, `effort: "low"` e `fallbacks: "default"` nos modelos que aceitam), OpenAI (Responses API com JSON Schema e `store: false`), Gemini (REST com `responseJsonSchema`, `thinkingLevel: "low"` nos modelos Gemini 3 e uma nova tentativa em 429/503; o padrão é `gemini-3.5-flash-lite`) e Ollama (`/api/chat` com `format`). O prompt padrão do agente de ativos permanece; a conversa de Action Points pode passar sistema e mensagem específicos com o mesmo contrato estruturado.
 - `agent-provider-data-source.ts` cifra chaves globais com AES-256-GCM derivado de `AUTH_SECRET`, lê configuração privada e valida chave/modelo no endpoint de metadados do provedor. Nunca devolver o segredo ao navegador; girar `AUTH_SECRET` exige cadastrar novamente as chaves salvas.
 - `embeddings.ts` gera vetores de 768 dimensões via Gemini (`outputDimensionality`) ou Ollama (`nomic-embed-text`, com prefixos de tarefa). O vetor é gravado com a chave `provedor:modelo`; a busca só compara vetores do mesmo modelo.
 - `asset-question-service.ts` expõe `answerAssetQuestion()` e `recordAssetAnswerFeedback()`.
+- `follow-up/manual-follow-up-chat.ts` conversa sobre uma dúvida do Action Point manual com o motor selecionado, usando apenas campos do Action Point, trechos da versão publicada do ativo vinculado e contexto recente da thread. Exige rótulos de fonte válidos e não registra execução.
 
 ## Regras
 

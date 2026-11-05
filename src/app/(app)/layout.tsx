@@ -12,6 +12,7 @@ import { listCustomerDocuments } from "@/lib/data/customer-documents-data-source
 import { getPublishedManagementAssets } from "@/lib/data/management-assets-data-source";
 import { getClientOnboardingForUser } from "@/lib/data/client-onboarding-data-source";
 import { isFeatureAcquisitionEnabled } from "@/lib/env";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -23,13 +24,27 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
 function AppShellFallback() {
   return (
-    <div role="status" aria-label="Carregando aplicativo" className="flex min-h-svh bg-shell">
-      <div aria-hidden="true" className="hidden w-64 shrink-0 border-r border-border xl:block" />
-      <div className="min-w-0 flex-1">
-        <div aria-hidden="true" className="h-14 border-b border-border" />
-        <div aria-hidden="true" className="p-6 lg:p-10">
-          <div className="h-7 w-48 rounded bg-muted" />
-          <div className="mt-6 h-11 max-w-2xl rounded bg-muted" />
+    <div role="status" aria-label="Carregando aplicativo" className="flex h-svh overflow-hidden bg-shell">
+      <aside aria-hidden="true" className="hidden w-64 shrink-0 flex-col gap-5 px-3 pt-4 xl:flex">
+        <div className="mb-8 flex items-center gap-3">
+          <Skeleton className="size-12 shrink-0 rounded-full" />
+          <div className="flex flex-col gap-2"><Skeleton className="h-4 w-28" /><Skeleton className="h-3 w-20" /></div>
+        </div>
+        {Array.from({ length: 4 }, (_, index) => <div key={index} className="flex items-center gap-3 px-2"><Skeleton className="size-6 rounded-md" /><Skeleton className="h-4 w-28" /></div>)}
+      </aside>
+      <div className="min-w-0 flex-1 p-3 md:py-5 md:pr-5 md:pl-0">
+        <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-[20px] bg-background pt-3 md:pt-5">
+          <div aria-hidden="true" className="flex h-14 shrink-0 items-center px-6 lg:px-10">
+            <Skeleton className="h-4 w-24" />
+          </div>
+          <div aria-hidden="true" className="min-h-0 flex-1 overflow-hidden px-6 pb-8 lg:px-10">
+            <Skeleton className="h-7 w-64 max-w-full" />
+            <Skeleton className="mt-3 h-4 w-96 max-w-full" />
+            <div className="mt-10 grid gap-4 xl:grid-cols-2">
+              <Skeleton className="h-72 rounded-[10px]" />
+              <Skeleton className="h-72 rounded-[10px]" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -55,7 +70,7 @@ async function AuthenticatedAppLayout({
   const isSuperadmin = accessContext.session.user.role === "superadmin";
   const [companyName, publishedAssets, assetNavigationPreferences, customerFiles] = await Promise.all([
     isSuperadmin
-      ? accessContext.session.user.company
+      ? "Directscal"
       : getSidebarCompanyName(
           accessContext.session.user,
           accessContext.access?.primaryOrganizationId ?? null,
@@ -89,7 +104,7 @@ async function AuthenticatedAppLayout({
           managementAssetCategories={assetFolders}
           initiativeScope={`${sidebarUser.id}:${accessContext.access?.primaryOrganizationId ?? "local"}`}
         />
-        <SidebarInset className="overflow-clip bg-shell">{children}</SidebarInset>
+        <SidebarInset className="overflow-clip bg-background">{children}</SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
   );

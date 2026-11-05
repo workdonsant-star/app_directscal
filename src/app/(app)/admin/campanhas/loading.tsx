@@ -1,40 +1,40 @@
 import { AppPage } from "@/components/app-page";
 import { AppTopbar } from "@/components/app-topbar";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export default function Loading() {
   return (
     <>
       <AppTopbar />
       <AppPage>
-        <div role="status" aria-label="Carregando campanhas" className="flex flex-col gap-8">
-          <div aria-hidden="true" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div role="status" aria-label="Carregando campanhas" className="flex w-full flex-col gap-8">
+          <section aria-hidden="true" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: 4 }, (_, index) => (
-              <Card key={index} className="gap-2">
-                <CardHeader className="pb-0"><Skeleton className="h-4 w-28 bg-border" /></CardHeader>
-                <CardContent className="flex flex-col gap-1">
-                  <Skeleton className="h-9 w-16 bg-border" />
-                  <Skeleton className="h-5 w-36 bg-border" />
-                  <Skeleton className="h-4 w-40 bg-border" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          <div aria-hidden="true" className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1">
-              <h2 className="text-ui-title text-foreground">Campanhas de aquisição</h2>
-              <p className="text-muted-foreground text-sm">Cada campanha tem um link público e um formulário próprio.</p>
-            </div>
-            <Skeleton className="h-11 w-full" />
-            {Array.from({ length: 3 }, (_, index) => (
-              <div key={index} className="flex h-[55px] items-center justify-between gap-6 border-b border-border/50 px-4">
-                <Skeleton className="h-5 w-1/3" />
-                <Skeleton className="h-5 w-1/4" />
-                <Skeleton className="h-5 w-16" />
+              <div key={index} className="flex flex-col gap-3 rounded-xl border bg-card px-6 py-5">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-9 w-16" />
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-36 max-w-full" />
               </div>
             ))}
-          </div>
+          </section>
+          <section aria-hidden="true" className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="flex flex-col gap-2"><Skeleton className="h-6 w-52" /><Skeleton className="h-4 w-96 max-w-full" /></div>
+              <div className="flex gap-2"><Skeleton className="h-8 w-24" /><Skeleton className="h-8 w-32" /></div>
+            </div>
+            <Table>
+              <TableHeader><TableRow>
+                {["w-24", "w-16", "w-16", "w-28", "w-12", "w-16", "w-14", "w-12"].map((width, index) => <TableHead key={index}><Skeleton className={`h-4 ${width}`} /></TableHead>)}
+              </TableRow></TableHeader>
+              <TableBody>
+                {Array.from({ length: 4 }, (_, row) => <TableRow key={row}>
+                  {["w-28", "w-16", "w-20", "w-36", "w-8", "w-12", "w-8", "w-12"].map((width, index) => <TableCell key={index}><Skeleton className={`h-4 max-w-full ${width}`} /></TableCell>)}
+                </TableRow>)}
+              </TableBody>
+            </Table>
+          </section>
         </div>
       </AppPage>
     </>

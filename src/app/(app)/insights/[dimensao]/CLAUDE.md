@@ -1,5 +1,7 @@
 # `/insights/[dimensao]` — Dashboard de uma dimensão
 
+Esta rota é apenas compatibilidade: redireciona para `/omdx?dimensao=<id>#nivel-perguntas`, preservando `diagnostico` quando informado. Dimensão inválida volta à aba Cultura.
+
 ## Propósito
 
 Página dinâmica para visualizar o resumo agregado de uma dimensão de Maturidade e filtrar por diagnóstico específico.

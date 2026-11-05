@@ -8,7 +8,7 @@ Esta pasta implementa as listagens de SOPs, Playbooks, Governança e Matriz RACI
 
 As páginas de categoria também listam arquivos PDF/DOCX enviados pelo superadmin para a mesma pasta. O link baixa pelo servidor após conferir o vínculo à empresa; pastas vazias continuam visíveis.
 
-`CustomerDocumentDownloadLink` usa o runtime compartilhado para baixar arquivos privados. No produto, a requisição passa pela rota autenticada; na demo, o runtime responde com os bytes locais do IndexedDB.
+`CustomerDocumentDownloadLink` usa o runtime compartilhado para baixar arquivos privados. No produto, a requisição passa pela rota autenticada; na demo, o runtime responde com os bytes locais do IndexedDB. Aceita conteúdo e classes opcionais para que o card inteiro de Diagnósticos seja o botão de download, sem duplicar a lógica.
 
 ## Convenções locais
 

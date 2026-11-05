@@ -51,7 +51,7 @@ export default async function AdminCompanyPage({
           <header>
             <h1 className="text-ui-page">{company.name}</h1>
           </header>
-          <AdminCompanyTabs companyId={id} active="overview" hasOrganization={Boolean(organizationId)} showActionPoints={Boolean(organizationId)} />
+          <AdminCompanyTabs companyId={id} active="overview" hasOrganization={Boolean(organizationId)} showActionPoints={Boolean(organizationId)} showReport={Boolean(organizationId)} />
           {organizationId ? (
             <AnalyticsOverview
               analytics={analytics}

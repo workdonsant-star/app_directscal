@@ -12,43 +12,49 @@ const dimensionExamples = [
 ] as const;
 
 // Afirmações reais do template Maturidade (supabase/migrations/20260517000100_production_base_auth.sql),
-// quatro por dimensão, para o exemplo ler como uma coleta de verdade.
+// cinco por dimensão, para o exemplo ler como uma coleta de verdade.
 const questionStatements: Record<(typeof dimensionExamples)[number]["id"], string[]> = {
   cultura: [
     "Problemas relevantes podem ser levantados sem custo político.",
     "O time consegue discordar de decisões quando identifica risco operacional.",
     "Erros recorrentes são tratados como aprendizado e não como culpa individual.",
     "Feedbacks são dados com clareza suficiente para melhorar comportamento e execução.",
+    "As pessoas pedem ajuda antes que o problema vire urgência.",
   ],
   visao: [
     "A direção comunica prioridades de forma clara para todos os níveis.",
     "Cada área entende como seu trabalho contribui para os objetivos da empresa.",
     "As metas de curto prazo estão conectadas à visão de médio prazo.",
     "Mudanças de prioridade são explicadas com contexto suficiente.",
+    "O time consegue tomar decisões sem depender de alinhamentos excessivos.",
   ],
   comunicacao: [
     "As informações necessárias chegam a tempo para decisão e execução.",
     "Reuniões têm pauta, decisão registrada e próximo passo definido.",
     "Áreas diferentes mantêm alinhamento sem depender de conversas informais.",
     "Responsáveis por decisões importantes são claros para o time.",
+    "Bloqueios de comunicação são tratados antes de impactar entrega.",
   ],
   processos: [
     "Os processos críticos estão documentados em um nível útil para execução.",
     "A operação consegue repetir entregas sem depender de improviso.",
     "Gargalos são identificados com dados e tratados de forma recorrente.",
     "Ferramentas e rituais sustentam o trabalho sem criar burocracia excessiva.",
+    "A empresa reduz dependência de pessoas-chave nos fluxos principais.",
   ],
   lideranca: [
     "A liderança delega com contexto, critério de sucesso e autonomia.",
     "Gestores acompanham execução sem centralizar todas as decisões.",
     "O time recebe suporte antes que problemas de execução escalem.",
     "Responsabilidades entre líderes e operação são claras no dia a dia.",
+    "Líderes desenvolvem capacidade do time, não apenas cobram entrega.",
   ],
   performance: [
     "Métricas de sucesso são conhecidas por quem executa o trabalho.",
     "Prioridades são protegidas quando surgem demandas paralelas.",
     "A empresa acompanha resultado com cadência suficiente para corrigir rota.",
     "Reconhecimento e cobrança estão conectados a entregas objetivas.",
+    "O foco operacional é preservado nos ciclos de maior pressão.",
   ],
 };
 
@@ -68,7 +74,7 @@ export function buildAnalyticsExampleReports() {
         description: `Percepção das três camadas sobre ${dimension.name.toLowerCase()}.`,
         score, classification: classifyScore(score), variance: dimension.variance, responses: responses.total,
         layerScores, misalignment: { value: Number((fundador - operacao).toFixed(1)), highestGroup: "fundador", lowestGroup: "operacao" },
-        questions: [-0.3, 0.15, -0.1, 0.25].map((offset, question) => ({
+        questions: [-0.3, 0.15, -0.1, 0.25, -0.2].map((offset, question) => ({
           id: `${id}-${dimension.id}-${question}`, diagnosticId: id, dimensionId: dimension.id,
           text: questionStatements[dimension.id][question],
           score: Number((score + offset).toFixed(2)), variance: dimension.variance, responses: responses.total,

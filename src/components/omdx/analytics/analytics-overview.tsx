@@ -1,6 +1,5 @@
 import { AnalyticsDimensionGapChart } from "@/components/omdx/analytics/analytics-dimension-gap-chart";
 import { AnalyticsLayerPerceptionChart } from "@/components/omdx/analytics/analytics-layer-perception-chart";
-import { AnalyticsLeverTable } from "@/components/omdx/analytics/analytics-lever-table";
 import { AnalyticsLevel } from "@/components/omdx/analytics/analytics-primitives";
 import { AnalyticsQuestionTable } from "@/components/omdx/analytics/analytics-question-table";
 import { OverviewDiagnosticFilter } from "@/components/omdx/overview-diagnostic-filter";
@@ -25,6 +24,7 @@ type AnalyticsOverviewProps = {
   actionPointsHref?: string;
   showActionPointsLink?: boolean;
   concise?: boolean;
+  initialDimension?: string;
   /** Esconde título e filtro quando a página já os mostra (ex.: filtro na linha das abas). */
   hideHeader?: boolean;
 };
@@ -36,13 +36,11 @@ export function AnalyticsOverview({
   diagnosticOptions,
   selectedDiagnostic,
   illustrativeImpact = false,
-  actionPointsHref,
-  showActionPointsLink = true,
   concise = false,
+  initialDimension,
   hideHeader = false,
 }: AnalyticsOverviewProps) {
   const overview = buildAnalyticsOverview({ analytics, comparison, processUsage, illustrativeImpact });
-  const diagnostic = diagnosticOptions.find(item => item.id === selectedDiagnostic);
 
   return (
     <div className="flex w-full flex-col gap-10">
@@ -76,12 +74,8 @@ export function AnalyticsOverview({
         </AnalyticsLevel>
       </div>
 
-      <AnalyticsLevel id="nivel-alavancas" title="O que atacar e como está andando">
-        <AnalyticsLeverTable levers={overview.levers} illustrative={illustrativeImpact} actionPointsHref={actionPointsHref ?? (diagnostic ? `/action-points?diagnostico=${encodeURIComponent(diagnostic.id)}` : "/action-points")} showActionPointsLink={showActionPointsLink} concise={concise} />
-      </AnalyticsLevel>
-
-      <AnalyticsLevel id="nivel-perguntas" title="Onde dói, pergunta a pergunta">
-        <AnalyticsQuestionTable gapCutoff={gapCutoff} rows={overview.questions} total={overview.questionTotal} concise={concise} />
+      <AnalyticsLevel id="nivel-perguntas" title="Afirmações coletadas">
+        <AnalyticsQuestionTable key={initialDimension} gapCutoff={gapCutoff} rows={overview.questions} initialDimension={initialDimension} concise={concise} />
       </AnalyticsLevel>
 
       <AnalyticsLevel id="nivel-execucao" title="Consultas e execução">

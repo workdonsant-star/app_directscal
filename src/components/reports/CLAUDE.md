@@ -6,6 +6,7 @@ Esta pasta contém a listagem e as experiências de leitura de relatórios dentr
 
 - Relatórios são páginas nativas do app, não visualizadores de PDF ou HTML em `iframe`.
 - `ReportsList` apresenta um card por diagnóstico analisável cuja entrega foi publicada. O card inteiro é um link acessível, mostra título, avatar e nome do responsável pela criação, e usa `closedAt ?? updatedAt` como data do relatório. Registros históricos sem autoria exibem um fallback explícito, sem atribuição inventada.
+- `UploadedReportsList` usa o mesmo grid, altura, badge, título, divisória, hover e foco dos cards de `ReportsList` para os PDFs finais enviados pelo superadmin. O card inteiro aciona o download privado pelo runtime; o rodapé mostra nome do PDF e data de envio, pois o contrato do upload não registra autoria.
 - Conteúdo deve herdar os tokens semânticos, a tipografia e os temas claro/escuro do sistema.
 - Use fluxo contínuo e responsivo. Não reproduza folhas A4, paginação fixa, rodapés repetidos ou posicionamento absoluto de documentos exportáveis.
 - A leitura segue os ativos de gestão: grid de até 1028px, índice de 220px, gap de 40px e artigo de até 768px a partir de lg; sem card ao redor do índice. Título 36/40px, H2 28/36px, H3 18/28px, corpo 15/25px e seções com 32px de respiro.

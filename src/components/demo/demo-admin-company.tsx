@@ -2,6 +2,8 @@
 
 import { ManagementAssetsWorkspace } from "@/components/admin/management-assets-workspace";
 import { CompanyFilesWorkspace } from "@/components/admin/company-files-workspace";
+import { CustomerDocumentsWorkspace } from "@/components/admin/customer-documents-workspace";
+import { AdminCompanyTabs } from "@/components/admin/admin-company-tabs";
 import { ManagementAssetEditorWorkspace } from "@/components/admin/management-asset-editor-workspace";
 import { AssetQuestionAuditsWorkspace } from "@/components/admin/asset-question-audits-workspace";
 import { AdminRoutinesWorkspace } from "@/components/admin/routines/admin-routines-workspace";
@@ -15,11 +17,12 @@ import { DemoAdminActionPoints } from "./demo-admin-action-points";
 import { AppTopbar } from "@/components/app-topbar";
 import { AppPage } from "@/components/app-page";
 
-export function DemoAdminCompany({ section, assetId, deliveryId }: { section: "assets" | "questions" | "routines" | "action-points"; assetId?: string; deliveryId?: string }) {
+export function DemoAdminCompany({ section, assetId, deliveryId }: { section: "assets" | "questions" | "routines" | "action-points" | "reports"; assetId?: string; deliveryId?: string }) {
   const { state } = useDemo();
   const company = { id: "demo-vertex", name: DEMO_COMPANY, organizationId: DEMO_ADMIN_ORGANIZATION_ID };
   const specialists = (state.adminSpecialists ?? demoAdminSpecialists).filter(item => item.status === "ativo" && !item.archived);
   if (state.deletedCompanyIds?.includes(company.id)) return <><AppTopbar /><AppPage>Empresa não encontrada.</AppPage></>;
+  if (section === "reports") return <><AppTopbar breadcrumb={[{ label: "Empresas", href: "/admin/empresas" }, { label: company.name }]} /><AppPage><div className="flex w-full flex-col gap-8"><h1 className="text-ui-page">{company.name}</h1><CustomerDocumentsWorkspace companyId={company.id} initialDocuments={(state.uploadedDocuments ?? []).filter(document => document.kind === "report")} initialFolders={[]} reportsOnly renderTabs={actions => <AdminCompanyTabs companyId={company.id} active="report" hasOrganization showActionPoints showReport actions={actions} />} /></div></AppPage></>;
   if (section === "action-points") return <DemoAdminActionPoints company={company} />;
   if (section === "routines") return <AdminRoutinesWorkspace initial={demoRoutineWorkspace(state)} initialPolicy={demoContactPolicy(state)} initialBaselines={state.adminBaselines ?? []} checkedAt={DEMO_DATE} />;
   if (section === "questions") {

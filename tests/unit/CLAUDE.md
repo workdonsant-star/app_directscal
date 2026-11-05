@@ -1,12 +1,16 @@
 # Testes unitários
 
-`demo.test.ts` valida ligação entre ativos/rotinas e os quatro tipos, fonte/recusa do agente, reentrada do estado local, proteção das coletas encerradas, revisão única e roteamento isolado entre as visões de cliente e superadmin. Não chama serviços externos.
+`demo.test.ts` valida 30 respostas do instrumento (cinco por dimensão), além da ligação entre ativos/rotinas e os quatro tipos, fonte/recusa do agente, reentrada do estado local, proteção das coletas encerradas, revisão única e roteamento isolado entre as visões de cliente e superadmin. Não chama serviços externos.
 
 `reports-empty-state.test.ts` verifica que uma conta sem diagnósticos publicados e sem PDFs enviados vê o estado vazio, sem relatório Acme inserido automaticamente. `profile-settings-data.test.ts` também recusa montar o perfil de uma conta definitiva sem organização persistida.
 
 `agent-openai-provider.test.ts` valida a chamada estruturada ao endpoint Responses da OpenAI com fonte fictícia, segredo somente no header e `store: false`; o transporte é substituído e não usa uma chave real.
 
 `admin-action-points-view.test.ts` verifica agrupamento das ações publicadas por responsável e uso da revisão vigente da rotina sem confundir Action Points de diagnósticos diferentes.
+`customer-company-action-points.test.ts` verifica que o cadastro manual só consulta organizações autorizadas e chega ao cliente com ativo e liderança reais, sem medição fabricada.
+O mesmo teste cobre a apresentação de relato vindo do Slack sem converter `executado_relato` em conclusão verificada ou saúde positiva.
+Também verifica que a pergunta enviada no mesmo ciclo aparece abaixo do resumo confirmado, sem a referência técnica.
+Com dois ciclos, verifica a leitura de baixo para cima (pergunta antiga → resposta antiga → pergunta recente → resposta recente) mesmo quando a consulta simulada retorna os relatos invertidos e conserva o timestamp mais novo para a tabela.
 
 `action-point-follow-up-classification.test.ts` cobre silêncio após prazo e entrega, falha de transporte, resposta vaga/contraditória, cumprimento parcial, falta de evidência e atendimento. A regra ainda não recebe respostas reais do Slack.
 
@@ -15,6 +19,8 @@ Vitest em ambiente Node, com alias `@/` configurado na raiz. Teste regras de dom
 `diagnostic-leader-selection.test.ts` cobre associação automática de lideranças ativas, exclusão de pendentes/inativas e empresa sem lideranças. A demo cobre criação de pesquisa sem seleção e link geral fictício de Time.
 
 `diagnostic-response-csv.test.ts` verifica autorização antes da leitura e serialização de notas individuais com UTF-8, acentos e proteção contra fórmulas de planilha. Não consulta respostas reais.
+
+`diagnostic-generator-csv.test.ts` verifica interpretação do CSV de respostas, média por pessoa/grupo, células com delimitador entre aspas, recusa de coleta incompleta e de nota fora da escala. Usa somente dados fictícios.
 
 C1: collection-comparison verifica seleção da coleta por data original, IDs de pergunta independentes, mudança de texto/conjunto/empresa e exclusão de referências incompatíveis sem mutar o histórico.
 
@@ -150,3 +156,13 @@ A suíte demo cobre reentrada de action points pontuais antigos e novos sem praz
 `access-snapshot.test.ts` verifica RPC única, perfil persistido sobre o Google, fallback quando a função não existe (sem reinsistir), propagação de outros erros e IDs fora do formato UUID. `auth-session-promotion.test.ts` cobre também a revalidação JWT pelo snapshot: sem consultas avulsas, versão divergente, acesso removido e precedência do superadmin.
 
 `omdx-diagnostic-visibility.test.ts` executa `getDiagnostics` e `getVisibleDiagnosticIds` com Supabase em memória: cliente vê todos, admin vê os próprios e os atribuídos por setor (painel e Slack), admin sem vínculo não vê nada, e o nome do criador segue o perfil persistido antes da conta Google.
+
+`customer-company-action-points.test.ts` verifica pergunta integral, resposta literal da pessoa, resposta entregue pelo agente à dúvida, confirmação posterior, mensagens da thread sem relato, isolamento entre empresas, estados Validado e Dúvida e silêncio antes/depois de 24 horas. `manual-action-point-followups.test.ts` cobre o roteamento de uma DM sem thread: apenas um ciclo recente da mesma pessoa/canal pode receber o relato; vários ciclos exigem resposta na thread; sem ciclo, a consulta normal continua. Uma declaração genérica de conclusão gera proposta literal de execução relatada. `slack-delivery.test.ts` confirma que o relato manual tem prioridade sobre a busca de ativos.
+O mesmo teste verifica que uma dúvida na thread é registrada e envia ação, motivo, papel do ativo, trechos da versão publicada e conversa ao motor de IA, sem criar proposta de confirmação.
+`manual-follow-up-chat.test.ts` verifica a montagem de fontes e histórico no prompt e recusa uma resposta sem rótulo de fonte válido, sem chamar um provedor real.
+`manual-follow-up-question.test.ts` verifica a mensagem personalizada, ausência de rótulos técnicos, uso das perguntas anteriores e nova tentativa quando a abertura se repete. O provedor é substituído; não gera nem envia mensagem real.
+O mesmo teste cobre 503 temporário do Gemini, última tentativa em `gemini-3.5-flash` quando o Flash Lite segue sobrecarregado e erro específico após três respostas 503. O teste de envio confirma que esse erro não grava nem dispara Slack.
+`manual-action-point-question-send.test.ts` verifica que o fluxo busca o histórico da ação, passa o primeiro nome ao gerador, persiste exatamente o texto enviado e não grava nem chama o Slack quando a geração falha.
+`manual-action-point-schedule.test.ts` verifica horário de Brasília, tolerância do cron, encerramento, alternância quinzenal e primeira semana mensal sem contato externo.
+`manual-action-point-cron-auth.test.ts` verifica assinatura, segredo e expiração sem contato externo.
+`agent-openai-provider.test.ts` verifica também que o prompt contextual de Action Point chega ao provedor sem armazenamento da conversa.

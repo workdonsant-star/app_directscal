@@ -161,7 +161,7 @@ export function applyDemoRequest(state: DemoState, address: string, init: Reques
   }
   if (url.pathname === "/api/assistant/feedback" && method === "POST") return result({});
   if (url.pathname === "/api/assistant/history" && method === "GET") return result({ items: state.messages.flatMap((m, i) => m.role === "assistant" ? [{ id: `00000000-0000-4000-8000-${String(i).padStart(12, "0")}`, question: state.messages[i - 1]?.text ?? "Consulta", answer: m.text, status: m.assetId ? "respondida" : "insuficiente", createdAt: DEMO_DATE, citations: [] }] : []), nextCursor: null });
-  if (url.pathname === "/api/settings/slack-users" && method === "GET") return result({ users: demoSectors.map(s => ({ userId: s.leader.slackUserId, name: s.leader.name, position: s.leader.position, avatarUrl: null })) });
+  if (url.pathname === "/api/settings/slack-users" && method === "GET") return result({ users: demoSectors.map(s => ({ userId: s.leader.slackUserId, name: s.leader.name, position: s.leader.position, avatarUrl: s.leader.avatarUrl })) });
   if (url.pathname === "/api/settings/sectors" && method === "POST") {
    const parsed = z.object({ name: z.string().trim().min(2), slackUserId: z.string(), position: z.string().optional() }).parse(body);
    const source = demoSectors.find(s => s.leader.slackUserId === parsed.slackUserId);

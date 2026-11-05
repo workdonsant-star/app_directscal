@@ -6,4 +6,7 @@ Uso: `node scripts/demo/prepare.mjs /private/tmp/directscal-demo-<id>`. O destin
 
 O pacote para demo_directscal usa assetPrefix /demo-static, com logos, ícones e avatares também nesse namespace para não colidir com o app. Gera .gitignore, AGENTS.md, documentação local, scripts verificáveis e testes sem credenciais. O projeto principal recebe somente regras externas de /demo e /demo-static na Vercel; não precisa publicar código operacional para essa montagem.
 
+`prepare.mjs` copia `public/demo/avatars/` e reescreve as referências locais para `/demo-static/demo/avatars/`, preservando o recorte definido no CSS da demo.
+
+
 O pacote inclui `src/lib/pdf/assets` e o tracing explícito da rota de relatório, para que fontes e capa também estejam disponíveis no download em produção.

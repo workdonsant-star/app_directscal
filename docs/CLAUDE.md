@@ -8,6 +8,9 @@ Esta pasta registra decisões de produto, especificações funcionais e proposta
 
 ## Convenções
 
+- `caso-validacao-omdx/` reúne um pacote fictício de documentos de cliente e a matriz preliminar de triangulação para testar a Fase I com a pesquisa Maturidade Q4. O README da pasta separa agregados consultados no sistema de evidências simuladas e registra as divergências entre o instrumento aplicado e a metodologia v2.
+- `caso-nutrivance-brasil/` reúne o caso fictício DS-001, com arquivos editáveis das três fases da Metodologia v2 e matriz de testes. O índice fixa dados mestres e separa a pesquisa de outro caso da Nutrivance; não atribuir médias ou respostas sem vínculo comprovado.
+
 - `ambiente-demo.md` descreve o ambiente fictício, o roteiro de apresentação, reinício local e a distribuição isolada, sem tratar demonstração como homologação operacional.
 
 - Escreva em português do Brasil, com linguagem consultiva, direta e operacional.
@@ -20,6 +23,7 @@ Esta pasta registra decisões de produto, especificações funcionais e proposta
 
 
 - `shell-e-iniciativas.md` registra a portabilidade da interface Symbach, o ponto de preservação no Git e a validação local.
+- O apêndice Figma `318:2` de `shell-e-iniciativas.md` registra a topbar dentro da superfície arredondada compartilhada pelo app e pela demo.
 - `experiencia-agentica-projetos-e-action-points.md` reúne o estudo funcional com foco no gestor e o requisito confirmado de acompanhamento proativo pelo Slack, com atualização da tarefa na ferramenta do cliente. Diferencia decisões de produto, propostas de interface e capacidades ainda não implementadas.
 - A seção 15 de `experiencia-agentica-projetos-e-action-points.md` registra a escolha da opção 2 e a implementação frontend de projetos, distinguindo demonstração, armazenamento de metadados e futuras integrações. `design-qa.md` na raiz reúne a comparação visual e o escopo de verificação.
 - `padroes-de-tabelas-e-seletores.md` registra a referência Figma de 04/10/2026 e as variantes compartilhadas obrigatórias para novas tabelas e botões seletores. Substitui a orientação anterior de wrapper de tabela com borda; o projeto é o primeiro consumidor.

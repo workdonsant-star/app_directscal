@@ -1,0 +1,4 @@
+/* Os retratos verticais mostram o rosto inteiro ao ancorar o recorte no topo. */
+img[data-slot="avatar-image"][src*="/demo/avatars/"] {
+  object-position: center top;
+}

@@ -26,8 +26,6 @@ import {
 import type { ProcessUsageAnalytics } from "@/lib/data/process-usage-analytics";
 import type { Classification } from "@/lib/types";
 
-export const ANALYTICS_TOP_QUESTIONS = 5;
-
 export type AnalyticsLayerKey = "diretoria" | "lideranca" | "time";
 
 // Progresso calculado pelo agente desde a última pesquisa. Ilustrativo até o agente
@@ -78,6 +76,7 @@ export type AnalyticsQuestionRow = {
   // Progresso pelas ações da dimensão da pergunta; null fora das alavancas ou sem ativo.
   progress: number | null;
   layerGap: number | null;
+  classification: Classification;
 };
 
 export type AnalyticsLever = LeverImpact & {
@@ -201,6 +200,7 @@ function buildQuestionRows(
         progress:
           impact.levers.find((lever) => lever.dimension === first.dimension)?.progress ?? null,
         layerGap: gaps.length > 0 ? round(average(gaps)) : null,
+        classification: classifyScore(round(average(items.map((item) => item.score)))),
       };
     })
     .sort(
@@ -295,7 +295,7 @@ export function buildAnalyticsOverview({
           diverges: gap !== null && gap >= gapCutoff,
         };
       }),
-    questions: questionRows.slice(0, ANALYTICS_TOP_QUESTIONS),
+    questions: questionRows,
     questionTotal: questionRows.length,
   };
 }

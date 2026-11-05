@@ -9,8 +9,11 @@ Rotas autenticadas da visão de superadministrador. Usam a mesma shell do app (`
 ## Rotas
 
 - `/admin` redireciona para `/admin/empresas`.
+- O loading da raiz administrativa reutiliza o skeleton da lista de empresas, destino do redirecionamento.
 - `/admin/demo` oferece ao superadmin atalhos para a apresentação pública isolada, sem acesso aos dados do cliente.
+- `/admin/perfil` permite ao superadmin editar o próprio nome e foto persistidos, pelo menu do usuário.
 - `/admin/motores-de-ia` configura conexões reais Anthropic, OpenAI e Google Gemini e escolhe uma alternativa para o agente de consulta.
+- `/admin/geradores/[tipo]` oferece os briefings de contratos, diagnósticos, documentos gerais, propostas e SOPs. Diagnósticos também aceita o CSV de respostas, calcula notas por pessoa e grupo e oferece rascunho editorial local para revisão e download. Os demais formulários montam apenas Markdown de briefing. Não chamam IA nem persistem documentos.
 - `/admin/operacao` concentra indicadores e a fila de entregas.
 - `/admin/especialistas` lista e cadastra especialistas internos em estado local.
 - `/admin/operacao/criacao-dos-ativos` redireciona para `/admin/empresas`; toda produção, edição, revisão, publicação e auditoria fica em `/admin/empresas/[id]/criacao-dos-ativos` e suas subrotas.
@@ -34,7 +37,7 @@ Rotas autenticadas da visão de superadministrador. Usam a mesma shell do app (`
 
 ## Navegação administrativa
 
-- `Demo` não aparece na sidebar; a apresentação permanece acessível pela rota `/admin/demo`. `Empresas cadastradas` continua na seção Empresas, `Especialistas` fica em Equipe, `Motores de IA` em Agentes e `Campanhas` em Aquisição.
+- `Demo` não aparece na sidebar; a apresentação permanece acessível pela rota `/admin/demo`. `Empresas cadastradas` continua na seção Empresas, `Especialistas` fica em Equipe, os cinco geradores e `Motores de IA` ficam em Agentes, e `Campanhas` em Aquisição.
 - Leads e Entregas não aparecem na sidebar. Suas rotas existentes continuam acessíveis por links contextuais ou URL legada; o fluxo de ativos não passa por elas.
 - A primeira versão de Operação usa mocks tipados e estado local; não deve simular persistência ou ampliar acesso do `superadmin` ao app do cliente.
 

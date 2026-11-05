@@ -10,7 +10,7 @@ const visited = new Set();
 const extensions = ["", ".ts", ".tsx", ".js", ".mjs", ".json", ".css", "/index.ts", "/index.tsx"];
 
 function scopePublicAssets(source) {
-  return source.replace(/(["'`])\/(favicon\.png|directscal-logo(?:-dark)?\.svg|(?:action-points|initiatives\/avatars)\/[^"'`]+\.(?:svg|png|jpe?g|webp))/g, "$1/demo-static/$2");
+  return source.replace(/(["'`])\/(favicon\.png|directscal-logo(?:-dark)?\.svg|(?:action-points|initiatives\/avatars|demo\/avatars)\/[^"'`]+\.(?:svg|png|jpe?g|webp))/g, "$1/demo-static/$2");
 }
 
 async function resolveImport(importer, specifier) {
@@ -47,7 +47,7 @@ for (const relative of ["package.json", "package-lock.json", "postcss.config.mjs
   await mkdir(path.dirname(path.join(destination, relative)), { recursive: true });
   await cp(path.join(root, relative), path.join(destination, relative));
 }
-for (const relative of ["public/favicon.png", "public/directscal-logo.svg", "public/directscal-logo-dark.svg", "public/action-points", "public/initiatives/avatars"]) {
+for (const relative of ["public/favicon.png", "public/directscal-logo.svg", "public/directscal-logo-dark.svg", "public/action-points", "public/initiatives/avatars", "public/demo/avatars"]) {
   const output = path.join(destination, "public/demo-static", path.relative("public", relative));
   await mkdir(path.dirname(output), { recursive: true });
   await cp(path.join(root, relative), output, { recursive: true });

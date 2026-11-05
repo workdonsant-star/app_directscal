@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 type MaturityPageProps = {
-  searchParams?: Promise<{ diagnostico?: string | string[]; exemplo?: string | string[] }>;
+  searchParams?: Promise<{ diagnostico?: string | string[]; exemplo?: string | string[]; dimensao?: string | string[] }>;
 };
 
 export default async function MaturityPage({
@@ -25,6 +25,14 @@ export default async function MaturityPage({
       : "todos";
 
   const showUsageExample = resolvedSearchParams?.exemplo === "uso";
+  const initialDimension = {
+    cultura: "Cultura",
+    visao: "Visão",
+    comunicacao: "Comunicação",
+    processos: "Processos",
+    lideranca: "Liderança",
+    performance: "Performance",
+  }[typeof resolvedSearchParams?.dimensao === "string" ? resolvedSearchParams.dimensao : "cultura"] ?? "Cultura";
 
   if (showUsageExample) {
     return <AnalyticsExampleDashboard diagnostic={requestedDiagnostic} />;
@@ -53,6 +61,7 @@ export default async function MaturityPage({
           diagnosticOptions={diagnosticOptions}
           processUsage={processUsage}
           selectedDiagnostic={selectedDiagnostic}
+          initialDimension={initialDimension}
         />
       </AppPage>
     </>

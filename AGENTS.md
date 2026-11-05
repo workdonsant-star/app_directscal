@@ -298,7 +298,7 @@ Atualize este arquivo quando mudar stack, comandos, arquitetura, fluxo de dados,
 
 Ambiente de apresentação: `/demo` usa somente fixtures e estado local reiniciável. A distribuição por `scripts/demo/prepare.mjs` contém apenas as rotas da demo, sem APIs, autenticação ou serviços de produção. Não conectar essa experiência ao banco/Slack nem usar como prova de homologação. Ver `docs/ambiente-demo.md`.
 
-Na branch `symbach`, a referência visual portada de `Symbach Os` governa o shell e a navegação: sidebar expandida em >=1280px, topbar de 56px, fundo contínuo e conteúdo com raio de 20px. Os itens Analytics, Pesquisas e Agente preservam `/omdx`, `/omdx/diagnosticos` e `/assistente`. Iniciativas usa armazenamento local por usuário/empresa; ativos por categoria reutilizam leituras publicadas existentes. Bibliotecas por tipo sai da sidebar; cada pasta reúne todos os tipos pela categoria cadastrada. Ver `docs/shell-e-iniciativas.md`.
+Na branch `symbach`, a referência visual portada de `Symbach Os` governa o shell e a navegação: sidebar expandida em >=1280px, topbar de 56px dentro da superfície de conteúdo com raio de 20px, conforme o frame Figma `318:2`. Os itens Analytics, Pesquisas e Agente preservam `/omdx`, `/omdx/diagnosticos` e `/assistente`. Iniciativas usa armazenamento local por usuário/empresa; ativos por categoria reutilizam leituras publicadas existentes. Bibliotecas por tipo sai da sidebar; cada pasta reúne todos os tipos pela categoria cadastrada. Ver `docs/shell-e-iniciativas.md`.
 
 ## Lideranças pelo Slack
 
@@ -311,6 +311,8 @@ O dono cria pastas vazias pelo + no hover de Ativos de gestão e renomeia pelo m
 Excluir categoria exige redistribuir todos os documentos existentes para outra categoria ou uma nova, na mesma transação. Inclui rascunhos e arquivados; nenhum documento é apagado. Categorias padrão excluídas têm supressão persistida para não reaparecer vazias.
 
 ## Operação de rotinas e entrega Slack
+
+Action Points manuais recorrentes da aba da empresa têm dias e horário de Brasília. Supabase Cron chama `GET /api/internal/manual-action-points` a cada cinco minutos com assinatura HMAC baseada em `CRON_SECRET` e no segredo correspondente do Vault. A chave única por ocorrência evita disparos duplicados; pontos antigos sem horário não entram na agenda. O botão administrativo continua disponível para teste explícito. O job só é ativado após o deploy compatível e a migração `supabase_manual_action_point_cron`.
 
 Acordos versionados em /admin/empresas/[id]/rotinas; políticas de contato por empresa começam desativadas, com público/janela/fuso/cotas explícitos. Agenda e consumidor internos exigem segredo dedicado e não são configurados automaticamente em produção. Eventos precisam de ocorrência atestada; envio Incerto nunca recebe retry cego. Identidade app/Slack exige prova de posse no perfil, sem conceder acesso. Ver docs/agente-proativo-rotinas.md, docs/entrega-duravel-slack.md e docs/identidade-app-slack.md.
 

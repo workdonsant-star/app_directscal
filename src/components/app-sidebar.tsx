@@ -2,22 +2,21 @@
 
 import {
   ArrowLeft,
+  ClipboardList,
+  FilePenLine,
+  FileText,
+  Files,
+  ScrollText,
   Plug,
   Blocks,
   Building2,
   ChartNoAxesColumn,
-  Eye,
-  Flag,
   Megaphone,
-  MessageSquareText,
   Settings,
   SquarePlus,
   ListChecks,
-  Sprout,
   UserRoundCheck,
   Users,
-  Workflow,
-  Zap,
 } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -59,18 +58,6 @@ const data = {
     { title: "Pesquisas", url: "/omdx/diagnosticos", icon: SquarePlus },
     { title: "Diagnósticos", url: "/relatorios", icon: ChartNoAxesColumn },
     { title: "Action Points", url: "/action-points", icon: ListChecks },
-  ],
-  insights: [
-    { name: "Cultura", url: "/insights/cultura", icon: Sprout },
-    { name: "Visão", url: "/insights/visao", icon: Eye },
-    {
-      name: "Comunicação",
-      url: "/insights/comunicacao",
-      icon: MessageSquareText,
-    },
-    { name: "Processos", url: "/insights/processos", icon: Workflow },
-    { name: "Liderança", url: "/insights/lideranca", icon: Flag },
-    { name: "Performance", url: "/insights/performance", icon: Zap },
   ],
 };
 
@@ -177,12 +164,6 @@ export function AppSidebar({
       isActive: pathname === item.url || pathname.startsWith(`${item.url}/`),
     })),
   ];
-  const dimensionNavigation = data.insights.map((item) => ({
-    title: item.name,
-    url: item.url,
-    icon: item.icon,
-    isActive: pathname === item.url || pathname.startsWith(`${item.url}/`),
-  }));
   const settingsNavigation = isOrganizationAdmin
     ? []
     : [
@@ -216,12 +197,16 @@ export function AppSidebar({
     },
     ...(demoMode || user.role === "superadmin" ? [{
       label: "Agentes",
-      items: [{
-        title: "Motores de IA",
-        url: "/admin/motores-de-ia",
-        icon: Plug,
-        isActive: pathname === "/admin/motores-de-ia",
-      }],
+      items: [
+        ...(!demoMode ? [
+          { title: "Contratos", url: "/admin/geradores/contratos", icon: ScrollText, isActive: pathname === "/admin/geradores/contratos" },
+          { title: "Diagnósticos", url: "/admin/geradores/diagnosticos", icon: ClipboardList, isActive: pathname === "/admin/geradores/diagnosticos" },
+          { title: "Documentos gerais", url: "/admin/geradores/documentos", icon: Files, isActive: pathname === "/admin/geradores/documentos" },
+          { title: "Propostas", url: "/admin/geradores/propostas", icon: FilePenLine, isActive: pathname === "/admin/geradores/propostas" },
+          { title: "SOPs", url: "/admin/geradores/sops", icon: FileText, isActive: pathname === "/admin/geradores/sops" },
+        ] : []),
+        { title: "Motores de IA", url: "/admin/motores-de-ia", icon: Plug, isActive: pathname === "/admin/motores-de-ia" },
+      ],
     }] : []),
     ...(acquisitionEnabled ? [{
       label: "Aquisição",
@@ -239,7 +224,7 @@ export function AppSidebar({
       collapsible="icon"
       className="bg-shell [&_[data-slot=sidebar-inner]]:bg-shell [&_[data-slot=sidebar-container]]:border-r-0"
     >
-      <SidebarHeader className="h-18 px-2 pt-2 pb-4">
+      <SidebarHeader className="h-18 px-2 pt-2 pb-4 group-data-[collapsible=icon]:pt-4">
         <NavUser user={sidebarUser} />
       </SidebarHeader>
       <SidebarContent>
@@ -268,11 +253,6 @@ export function AppSidebar({
               initialPreferences={assetNavigationPreferences}
               canManage={false}
               folders={managementAssetCategories}
-              onNavigate={closeCompactSidebar}
-            />
-            <NavMain
-              label="Dimensões"
-              items={dimensionNavigation}
               onNavigate={closeCompactSidebar}
             />
           </>

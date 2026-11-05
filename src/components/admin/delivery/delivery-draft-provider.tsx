@@ -9,6 +9,7 @@ import {
   createContext,
   useContext,
   useState,
+  useSyncExternalStore,
   type Dispatch,
   type ReactNode,
   type SetStateAction,
@@ -62,6 +63,7 @@ type DeliveryDraft = {
 };
 
 const DeliveryDraftContext = createContext<DeliveryDraft | null>(null);
+const subscribeLocalDraft = () => () => {};
 
 export function useDeliveryDraft() {
   const value = useContext(DeliveryDraftContext);
@@ -80,12 +82,16 @@ export function DeliveryDraftProvider({
   children,
   delivery,
   deliveryOptions,
+  localDraftKey,
+  localOnly = false,
   publication,
 }: {
   analysis: AdminDeliveryAnalysis;
   children: ReactNode;
   delivery: AdminDelivery;
   deliveryOptions: DeliveryOption[];
+  localDraftKey?: string;
+  localOnly?: boolean;
   publication: AdminDeliveryPublication | null;
 }) {
   const { getSpecialist: getAdminSpecialist } = useSpecialists();
@@ -95,9 +101,25 @@ export function DeliveryDraftProvider({
   const [specialistId, setSpecialistId] = useState(
     delivery.specialistId ?? "unassigned",
   );
-  const [report, setReport] = useState(
-    () => publication?.report ?? buildInitialReport(),
+  const storedDraft = useSyncExternalStore(
+    subscribeLocalDraft,
+    () => localDraftKey && !publication ? window.localStorage.getItem(localDraftKey) : null,
+    () => null,
   );
+  let localReport: AdminDeliveryReportDraft | null = null;
+  try {
+    const parsed: unknown = JSON.parse(storedDraft ?? "null");
+    if (parsed && typeof parsed === "object" && reportFields.every(field =>
+      typeof (parsed as Record<string, unknown>)[field.key] === "string"
+    )) localReport = parsed as AdminDeliveryReportDraft;
+  } catch {
+    // Um rascunho local inválido não impede abrir o editor.
+  }
+  const [reportOverride, setReportOverride] = useState<AdminDeliveryReportDraft | null>(null);
+  const report = reportOverride ?? localReport ?? publication?.report ?? buildInitialReport();
+  function setReport(value: SetStateAction<AdminDeliveryReportDraft>) {
+    setReportOverride(current => typeof value === "function" ? value(current ?? report) : value);
+  }
   const [selectedActionPointIds, setSelectedActionPointIds] = useState(
     () =>
       new Set(
@@ -136,6 +158,13 @@ export function DeliveryDraftProvider({
     const submittedContent = content;
 
     try {
+      if (localOnly && intent === "save" && localDraftKey) {
+        window.localStorage.setItem(localDraftKey, JSON.stringify(report));
+        setSavedContent(submittedContent);
+        setFeedbackKind("success");
+        setFeedback("Rascunho salvo neste navegador.");
+        return;
+      }
       const response = await runtime.request(`/api/admin/deliveries/${delivery.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -158,6 +187,7 @@ export function DeliveryDraftProvider({
 
       setStatus(result.publication.status);
       setSavedContent(submittedContent);
+      if (localDraftKey) window.localStorage.removeItem(localDraftKey);
       setFeedbackKind("success");
       setFeedback(
         intent === "publish"

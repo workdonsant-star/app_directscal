@@ -17,7 +17,7 @@ export const organizationLeaderSchema = z.object({
   id: idSchema,
   email: z.union([z.string().email(), z.literal("")]),
   name: z.string().nullable(),
-  avatarUrl: z.string().url().nullable(),
+  avatarUrl: z.union([z.string().url(), z.string().regex(/^\/(?!\/).+/)]).nullable(),
   position: z.string().max(120),
   slackUserId: z.string().optional(),
   slackTeamId: z.string().optional(),

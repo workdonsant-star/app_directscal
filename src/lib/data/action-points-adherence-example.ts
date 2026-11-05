@@ -37,6 +37,8 @@ export type AdherenceCheckIn = {
   when: string;
   message: string;
   source?: "slack";
+  originalAvailable?: boolean;
+  result?: "validado" | "duvida" | "nao_respondido" | "aguardando" | "aguardando_confirmacao" | "parcial" | "nao_executado" | "bloqueado" | "inconclusivo";
   context?: string;
 };
 
@@ -54,11 +56,12 @@ export type AdherenceActionPoint = {
   eventLabel?: string;
   lastCheckIn: string;
   lastCheckInAt?: string;
-  actualCounts?: { eligible: number; reported: number; validated: number };
+  actualCounts?: { eligible: number; reported: number; validated: number; partial?: number };
   why?: string;
   description?: string;
   implementation?: { stage: string; dueOn: string | null; progress: number | null; suggestedDeadline: string };
   checkIns: AdherenceCheckIn[];
+  manualDetails?: { assetAvailable: boolean; deadline: string | null; reason: string; action: string; continuity: string };
 };
 
 // Categoria = um ativo de gestão. Reúne os action points que o mantêm vivo.
@@ -180,10 +183,10 @@ export function averageAdherence(actionPoints: AdherenceActionPoint[]): number |
 }
 
 export const adherenceLeaderPhotos: Record<string, string> = {
-  "Marina Alves": "/initiatives/avatars/marina.jpg",
-  "Rafael Nunes": "/initiatives/avatars/rafael.jpg",
-  "Camila Rocha": "/initiatives/avatars/ana.jpg",
-  "Diego Martins": "/initiatives/avatars/lucas.jpg",
+  "Marina Alves": "/demo/avatars/marina-alves.png",
+  "Rafael Nunes": "/demo/avatars/rafael-nunes.png",
+  "Camila Rocha": "/demo/avatars/camila-rocha.png",
+  "Diego Martins": "/demo/avatars/diego-martins.png",
 };
 
 const leaders = {

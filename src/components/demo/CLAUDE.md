@@ -1,6 +1,8 @@
 # Apresentação com os componentes do produto
 
-`DemoShell` compõe os mesmos AppSidebar, NavUser, SidebarProvider e SidebarInset do layout autenticado. Não manter uma segunda sidebar, topbar, chat, biblioteca ou tabela. As telas usam DiagnosticsWorkspace, ManagementAssetsLibrary, ManagementAssetEditableReader, AiChatWorkspace, DimensionInsightWorkspace, ReportWorkspace e os formulários de Configurações/Perfil do produto. A visão administrativa reutiliza AdminCompaniesTable, AdminSpecialistsWorkspace, AdminCompanyTabs e AnalyticsOverview; operações desses componentes passam pelo AppRuntimeProvider e por fixtures locais.
+Na área Diagnósticos da demo, o cliente vê somente PDFs enviados pelo superadmin fictício. `DemoUploadedReports` lê os metadados locais e usa `UploadedReportsList`, com o mesmo card da listagem anterior; o download vem do IndexedDB pelo runtime. Sem arquivo enviado, mostra estado vazio. A aba Diagnósticos da empresa abre o mesmo formulário de upload restrito a PDF; não há leitura HTML demonstrativa.
+
+`DemoShell` compõe os mesmos AppSidebar, NavUser, SidebarProvider e SidebarInset do layout autenticado. Não manter uma segunda sidebar, topbar, chat, biblioteca ou tabela. As telas usam DiagnosticsWorkspace, ManagementAssetsLibrary, ManagementAssetEditableReader, AiChatWorkspace, ReportWorkspace e os formulários de Configurações/Perfil do produto. A visão administrativa reutiliza AdminCompaniesTable, AdminSpecialistsWorkspace, AdminCompanyTabs e AnalyticsOverview; operações desses componentes passam pelo AppRuntimeProvider e por fixtures locais.
 
 `AppRuntimeProvider` injeta somente resolução de URLs, pathname canônico e adapter local de requisições. Fora do provider, os componentes preservam URLs e fetch operacionais. O runtime da demo é estável para não reiniciar efeitos de formulário a cada atualização do estado. Qualquer operação não implementada retorna erro local; nunca encaminhar ao backend.
 

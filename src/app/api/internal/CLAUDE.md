@@ -1,6 +1,7 @@
 # Processadores internos
 
 Handlers de processamento durável sem sessão de navegador. Cada consumidor exige segredo dedicado configurado, recusa acesso quando ausente e processa carga limitada. Não aceitar empresa ou ator como substituto de autenticação. Configuração de acionamento e monitoramento deve ser homologada na implantação; não criar scheduler externo por efeito colateral de teste.
+`manual-action-points` é chamado pelo Supabase Cron a cada cinco minutos e valida assinatura HMAC de curta duração baseada em `CRON_SECRET`. Só fica ativo após deploy compatível e migração do job.
 
 A05: routine-contacts agenda até 25 rotinas de políticas explicitamente ativadas. Não aceita escopo no payload e usa o mesmo segredo dedicado obrigatório do consumidor Slack. Avanço persiste por rotina para permitir lotes justos e recuperação; não implica configuração de cron em produção.
 

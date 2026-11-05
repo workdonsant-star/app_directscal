@@ -2,6 +2,8 @@
 
 Componentes da página `/perfil`, usados para configurar os dados pessoais da conta autenticada.
 
+`admin-profile-settings.tsx` atende `/admin/perfil`: edita apenas nome e foto da sessão do superadmin, com o mesmo recorte circular e `PUT /api/profile`. Não solicita dados empresariais nem oferece troca de senha do cliente.
+
 ## Propósito
 
 - Persistir nome e avatar via PUT /api/profile, com identidade derivada da sessão.

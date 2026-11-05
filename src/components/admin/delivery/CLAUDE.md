@@ -39,3 +39,5 @@ Interface interna de `/admin/entregas/[id]/*`: analisar os dados do cliente, pro
 Shell e rascunho consomem o mesmo SpecialistsProvider preenchido pelo layout no servidor, preservando nomes e seleção desde a primeira renderização.
 
 Provider e shell adaptam requisições, links, downloads e pathname por useAppRuntime, inclusive o checklist e o seletor de diagnóstico. O catálogo e os cálculos puros vêm de admin-delivery-domain.ts, para que a demo reutilize as etapas sem carregar os seeds de especialistas/empresas da operação.
+
+Na aba Relatório da empresa, `DeliveryDraftProvider` aceita `localOnly` e `localDraftKey` para coleta ainda aberta. Só o texto do relatório é salvo neste navegador; quando a coleta é encerrada, o editor recupera o texto local para o próximo salvamento persistido. O fluxo original de entregas encerradas permanece server-side.

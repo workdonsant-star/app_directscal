@@ -147,12 +147,12 @@ describe("componentes operacionais sobre fonte isolada", () => {
    expect(result.state).toBe(state);
   }
  });
- it("usa o formulário real, valida as 24 respostas e bloqueia envio duplicado ou coleta encerrada", () => {
+ it("usa o formulário real, valida as 30 respostas e bloqueia envio duplicado ou coleta encerrada", () => {
   const state = createDemoState();
   const token = demoShareLinks(state)["demo-survey-active"][0].token;
   const workspace = diagnosticResponseWorkspaceSchema.parse(demoResponseWorkspace(state, token));
   const answers = workspace.dimensions.flatMap(d => d.questions.map(q => ({ questionId: q.id, value: 4 })));
-  expect(answers).toHaveLength(24);
+  expect(answers).toHaveLength(30);
   const send = (source = state, responses = answers) => applyDemoRequest(source, "/api/omdx/responses", { method: "POST", body: JSON.stringify({ token, answers: responses }) });
   expect(send(state, answers.slice(1)).status).toBe(400);
   const submitted = send();
@@ -175,7 +175,7 @@ describe("componentes operacionais sobre fonte isolada", () => {
  it("fornece contratos válidos para pesquisas, dimensões, agente e histórico", () => {
   const state = createDemoState();
   expect(demoDiagnostics(state)).toHaveLength(3);
-  expect(demoDimension("cultura").questionResults).toHaveLength(4);
+  expect(demoDimension("cultura").questionResults).toHaveLength(5);
   const asked = applyDemoRequest(state, "/api/assistant/ask", { method: "POST", body: JSON.stringify({ question: "Como funciona a comunicação?" }) });
   const body = asked.body as { answer: unknown };
   expect(assetQuestionAnswerSchema.parse(body.answer).citations[0].href).toMatch(/^\/demo/);

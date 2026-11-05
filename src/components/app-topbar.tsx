@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Fragment, type ReactNode } from "react";
 import { useAppRuntime } from "@/components/app-runtime";
 
@@ -23,40 +22,23 @@ type AppTopbarProps = {
 
 export function AppTopbar({ breadcrumb = [], actions }: AppTopbarProps) {
   const runtime = useAppRuntime();
-  const pathname = runtime.pathname(usePathname());
-  const title =
-    pathname === "/omdx"
-      ? "Analytics"
-      : pathname === "/omdx/diagnosticos"
-        ? "Pesquisas"
-        : pathname === "/relatorios"
-          ? "Diagnósticos"
-        : pathname === "/assistente"
-          ? "Agente"
-          : pathname === "/action-points"
-            ? "Action Points"
-            : pathname === "/iniciativas"
-              ? "Iniciativas"
-              : null;
+  const hasBreadcrumb = breadcrumb.length > 1;
   return (
     <header
       data-slot="app-topbar"
-      className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 bg-shell"
+      className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 bg-background"
     >
       <div className="flex h-full min-w-0 flex-1 items-center gap-4 px-6 lg:px-10">
         <div className="flex min-w-0 items-center gap-2">
           <SidebarTrigger className="-ml-1 self-center xl:hidden md:group-has-data-[collapsible=icon]/sidebar-wrapper:hidden" />
-          {breadcrumb.length > 0 ? (
+          {hasBreadcrumb ? (
             <Separator
               orientation="vertical"
               className="mr-2 self-center data-[orientation=vertical]:h-4 data-[orientation=vertical]:self-center"
             />
           ) : null}
 
-          {breadcrumb.length === 0 && title ? (
-            <span className="truncate text-sm">{title}</span>
-          ) : null}
-          {breadcrumb.length > 0 && (
+          {hasBreadcrumb && (
             <Breadcrumb className="flex min-w-0 items-center">
               <BreadcrumbList className="min-h-8 items-center leading-none">
                 {breadcrumb.map((item, index) => {

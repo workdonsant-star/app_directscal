@@ -2,7 +2,7 @@
 
 Página dedicada para visualizar contexto da empresa, especialista principal, entregas e acessos.
 
-O cabeçalho oferece `Visão geral`, `Arquivos` e `Action points` para empresas com organização. A visão geral espelha os componentes e cálculos do Analytics do cliente, com relatórios e consultas filtrados pela organização da URL e leitura administrativa autorizada. Pastas, uploads em modal e o editor anterior ficam em Arquivos, sempre com organização fixa. Action points lê as ações publicadas e a revisão vigente das rotinas, agrupadas por responsável. As rotas antigas de Operação e Rotinas permanecem acessíveis por URL, sem abas no cabeçalho.
+O cabeçalho oferece `Visão geral`, `Arquivos`, `Diagnósticos` e `Action points` para empresas com organização. A visão geral espelha os componentes e cálculos do Analytics do cliente, com relatórios e consultas filtrados pela organização da URL e leitura administrativa autorizada. Pastas, uploads em modal e o editor anterior ficam em Arquivos, sempre com organização fixa. Action points cadastra ações manuais por líder Slack e ativo publicado; ações das entregas e revisões de rotinas aparecem separadamente. As rotas antigas de Operação e Rotinas permanecem acessíveis por URL, sem abas no cabeçalho.
 
 O breadcrumb de todas as páginas sob esta empresa termina no nome da empresa. As abas e os títulos internos mostram a seção atual.
 
@@ -22,3 +22,5 @@ A visão geral resolve a empresa sem consultar a RPC de entregas; essa leitura p
 C2: Entregas no Slack usa SlackDeliveriesPanel com a API por empresa. Falha confirmada pode ser recuperada após confirmação; Incerto exige revisão humana sem reenvio. Guia de operação abre /admin/guia.
 
 Contexto e diretório de especialistas são carregados em paralelo após autorização. SpecialistsProvider evita que o seletor e o nome atribuído comecem vazios.
+
+A aba Diagnósticos lista os PDFs finais enviados à empresa e oferece `Enviar PDF`. O envio usa o armazenamento privado de documentos e deixa o arquivo disponível imediatamente na área Diagnósticos do cliente. A preparação e formatação do PDF acontecem fora desta tela.

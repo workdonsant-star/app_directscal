@@ -27,7 +27,7 @@ src/app/
 │           ├── action-points/route.ts ← download direto de PDF RACI
 │           └── relatorio/route.ts ← download direto de relatório PDF ou CSV consolidado
 │   └── insights/
-│       ├── page.tsx          ← redirect para /insights/cultura
+│       ├── page.tsx          ← redirect para /omdx?dimensao=cultura
 │       └── [dimensao]/page.tsx ← dashboard compacto por dimensão
 │   └── docs/
 │       └── page.tsx          ← manual prático de uso do módulo Maturidade
@@ -121,8 +121,8 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 | `/omdx/[id]/acompanhamento` | `(app)/omdx/[id]/acompanhamento/` | Coleta em andamento |
 | `/omdx/[id]/resultado` | `(app)/omdx/[id]/resultado/` | Visão executiva |
 | `/omdx/[id]/resultado/[dimensao]` | `(app)/omdx/[id]/resultado/[dimensao]/` | Detalhe por dimensão |
-| `/insights` | `(app)/insights/` | Redireciona para `/insights/cultura`. |
-| `/insights/[dimensao]` | `(app)/insights/[dimensao]/` | Dashboard agregado por dimensão, com filtro por diagnóstico. |
+| `/insights` | `(app)/insights/` | Redireciona para as afirmações de Cultura em `/omdx`. |
+| `/insights/[dimensao]` | `(app)/insights/[dimensao]/` | Rota legada que redireciona para a aba da dimensão em `/omdx`, preservando o diagnóstico. |
 | `/docs` | `(app)/docs/` | Documentação prática em página única para uso do módulo pelo cliente administrador. |
 | `/configuracoes` | `(app)/configuracoes/` | Configurações empresariais reais derivadas do onboarding e do CNPJ. |
 | `/perfil` | `(app)/perfil/` | Perfil iniciado pela sessão autenticada: nome/foto persistidos, posição na empresa e senha simulada. |
@@ -163,15 +163,15 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - A sidebar tem uma seção `Documentos` com `Contratos` e `Relatórios` desabilitados como placeholders, sem rotas nesta fase. `Contratos` não aparece para `admin` da empresa.
 - `Configurações` fica fixado no rodapé da sidebar do Superadmin da empresa (`cliente`) e aponta para `/configuracoes`; não aparece para `admin` da empresa nem para o `superadmin` global.
 - Quando o pathname começa com `/admin`, a sidebar muda para `Administração`, com `Operação`, `Especialistas`, `Empresas`, `Leads` e `Campanhas`.
-- Usuários `superadmin` ficam restritos à superfície `/admin/*`. Tentativas de abrir `/omdx`, `/insights`, `/action-points`, `/assistente`, `/docs`, `/configuracoes` ou `/perfil` redirecionam para `/admin/operacao`; APIs internas de cliente respondem `403`.
+- Usuários `superadmin` ficam restritos à superfície `/admin/*`, incluindo o perfil pessoal em `/admin/perfil`. Tentativas de abrir `/omdx`, `/insights`, `/action-points`, `/assistente`, `/docs`, `/configuracoes` ou `/perfil` redirecionam para `/admin/operacao`; APIs internas de cliente respondem `403`.
 - Usuários `admin` da empresa acessam toda a superfície cliente, exceto Configurações e Contratos. A rota `/configuracoes` redireciona para `/omdx` e as APIs `/api/settings/*` respondem `403`.
 - `Empresas` não faz parte da navegação principal nesta fase.
 - A topbar é limpa: trigger da sidebar, separador e breadcrumb quando houver camada.
 - Ações primárias de página, incluindo `Salvar alterações` em Perfil e Configurações, ficam antes do sino na topbar; não se repetem no rodapé dos cards.
-- Páginas raiz abertas diretamente pela sidebar ou pelo menu do usuário não usam breadcrumb na topbar.
+- Páginas raiz abertas diretamente pela sidebar, pelo menu do usuário ou por link direto não exibem nome nem breadcrumb na topbar; títulos ficam no conteúdo.
 - O breadcrumb começa apenas em uma página aberta a partir da raiz e parte da raiz imediata, sem repetir a seção superior da sidebar.
 - `/omdx/camadas` redireciona para `/omdx` e não renderiza breadcrumb próprio.
-- `/omdx`, `/omdx/diagnosticos`, `/action-points`, `/assistente`, `/insights/[dimensao]`, `/docs`, `/relatorios`, `/perfil`, `/configuracoes` e as categorias de Ativos de gestão são raízes sem breadcrumb.
+- `/omdx`, `/omdx/diagnosticos`, `/action-points`, `/assistente`, `/docs`, `/relatorios`, `/perfil`, `/configuracoes` e as categorias de Ativos de gestão são raízes sem breadcrumb.
 - `/omdx/[id]/compartilhar` somente redireciona para Pesquisas; não renderiza tela ou breadcrumb.
 - `/omdx/[id]/action-points` não renderiza página nem breadcrumb; retorna PDF como attachment.
 - `/omdx/[id]/relatorio` não renderiza página nem breadcrumb; retorna PDF como attachment por padrão e CSV consolidado quando recebe `?formato=csv`.
@@ -182,9 +182,11 @@ Quando criar essas rotas, abra um `CLAUDE.md` na nova pasta:
 - `/ativos-de-gestao/matriz-de-papeis` redireciona para `/ativos-de-gestao/matriz-raci`; `/sops` continua como redirect legado para `/omdx`.
 - `/omdx/membros-da-operacao` redireciona para `/omdx/diagnosticos` e não renderiza breadcrumb.
 - `/admin/operacao`, `/admin/especialistas`, `/admin/modulos`, `/admin/campanhas`, `/admin/leads` e `/admin/empresas` são raízes sem breadcrumb.
+- `/admin/guia` é raiz de leitura sem breadcrumb; não usa `Empresas` como ancestral.
 - `/admin/leads/[id]` usa `Leads / Detalhe`.
 - As rotas de `/admin/empresas/[id]`, incluindo abas, editor de ativos e perguntas, usam `Empresas / Nome da empresa`.
 - `/admin/entregas/[id]` usa `Operação / Empresa`.
+- `/admin/geradores/[tipo]` oferece cinco formulários de briefing exclusivos do superadmin. O tipo diagnósticos combina CSV de respostas com briefing em rascunho local revisável; não usa IA nem persiste documentos. São raízes sem breadcrumb.
 - Futuras rotas de acompanhamento e resultado começam o breadcrumb pela raiz imediata `Pesquisas`.
 - Criação e configuração não devem abrir páginas próprias; acontecem em drawer dentro de `/omdx/diagnosticos`.
 - `Pesquisas` deve ser item da sidebar e apontar para `/omdx/diagnosticos`; não use CTA no Overview para acessar essa área.
@@ -249,7 +251,7 @@ Superfícies seguem uma escala única nos dois temas, documentada em `docs/token
 
 `/exemplos/analytics` é uma visualização autenticada para capturas com dados fictícios de aderência, sem habilitar módulos nem acessar métricas reais. Reutiliza componentes e temas do produto e fica fora da sidebar.
 
-A superfície autenticada rola internamente abaixo da topbar: app-shell tem altura de 100svh, SidebarInset recorta overflow e o main usa min-height: 0 e overflow-y: auto. Assim os cantos de 20px permanecem visíveis durante a rolagem em ambos os temas.
+A superfície autenticada do frame Figma `318:2` inclui a topbar dentro do `SidebarInset` arredondado, com margem externa de 20px no desktop. O app-shell tem altura de 100svh; o main rola abaixo da topbar com min-height: 0 e overflow-y: auto. Assim os cantos de 20px permanecem visíveis durante a rolagem em ambos os temas.
 
 - Estados de hover usam cores neutras, sem azul; ações primárias preservam azul somente no repouso.
 

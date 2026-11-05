@@ -1,13 +1,20 @@
 import type { AdminDeliveryReportDraft } from "@/lib/contracts/admin-operations";
 import { managementAssetDocumentSchema, diagnosticActionPlanSchema, type DiagnosticReport, type RichTextBlock } from "@/lib/contracts";
 import { buildAnalyticsExampleReports } from "@/lib/data/analytics-example";
-import { buildActionPointsAdherenceExample } from "@/lib/data/action-points-adherence-example";
+import { adherenceLeaderPhotos, buildActionPointsAdherenceExample } from "@/lib/data/action-points-adherence-example";
 import { buildProcessUsageExample } from "@/lib/data/process-usage-example";
 
 export const DEMO_COMPANY = "Vertex Logistics";
 export const DEMO_DATE = "2026-10-21T12:00:00.000Z";
 const sourceBoard = buildActionPointsAdherenceExample();
-export const demoBoard = { ...sourceBoard, source: { diagnosticId: "analytics-example-1", name: "Diagnóstico de outubro" } };
+export const demoBoard = {
+  ...sourceBoard,
+  categories: sourceBoard.categories.map(category => ({
+    ...category,
+    leader: category.leader ? { ...category.leader, avatarUrl: adherenceLeaderPhotos[category.leader.name] ?? null } : null,
+  })),
+  source: { diagnosticId: "analytics-example-1", name: "Diagnóstico de outubro" },
+};
 export const demoReports = buildAnalyticsExampleReports();
 export const demoReport = demoReports[1];
 const score = demoReport.generalScore.toLocaleString("pt-BR", { maximumFractionDigits: 1 });

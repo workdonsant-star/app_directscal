@@ -850,8 +850,7 @@
 }
 
 @layer components {
-  .app-shell [data-slot="sidebar-inner"],
-  .app-shell [data-slot="app-topbar"] {
+  .app-shell [data-slot="sidebar-inner"] {
     background: var(--surface-shell);
   }
 
@@ -862,18 +861,32 @@
 
   .app-shell [data-slot="sidebar-inset"] {
     min-height: 0;
+    margin: 20px 20px 20px 0;
+    padding-top: 20px;
+    border-radius: 20px;
     overflow: clip;
+    background: var(--background);
+  }
+
+  .app-shell [data-slot="app-topbar"] {
+    background: var(--background);
   }
 
   .app-shell [data-slot="sidebar-inset"] > main,
   .app-shell [data-slot="sidebar-inset"] > [data-slot="app-content"] {
     flex: 1;
     min-height: 0;
-    border-radius: 20px;
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: none;
     background: var(--background);
+  }
+
+  @media (max-width: 767px) {
+    .app-shell [data-slot="sidebar-inset"] {
+      margin: 12px;
+      padding-top: 12px;
+    }
   }
 
   .auth-gradient-stage {

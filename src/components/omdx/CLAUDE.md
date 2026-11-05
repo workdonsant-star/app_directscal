@@ -130,8 +130,8 @@ Para o respondente, prever:
 
 ## Insights por dimensão
 
-- `/insights/[dimensao]` mostra uma visão agregada da dimensão em todos os diagnósticos.
-- As seis páginas de dimensão usam o mesmo recuo horizontal de `/omdx` (`px-6 lg:px-10`), sem `max-width` ou centralização adicional no conteúdo.
+- `/insights/[dimensao]` é compatibilidade e redireciona à aba da dimensão em `/omdx`.
+- As seis dimensões são abas na tabela Afirmações coletadas do Analytics.
 - O filtro padrão é `Todos os diagnósticos`; o usuário pode selecionar um diagnóstico individual.
 - Filtros dos Insights ficam na `AppTopbar`, usando a área `actions`. A Overview também repete o controle no cabeçalho de Resultado de coletas, conforme `252:545`, sem estado independente.
 - O filtro de diagnóstico em Insights controla a query string `?diagnostico=...`; `todos` remove o parâmetro.

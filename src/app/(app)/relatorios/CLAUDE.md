@@ -1,21 +1,5 @@
-# `/relatorios` — Listagem de relatórios
+# `/relatorios` — Diagnósticos do cliente
 
-Esta rota autenticada é a entrada de `Relatórios` na seção `Documentos` da sidebar.
+A entrada `Diagnósticos` da sidebar mostra somente PDFs enviados pelo superadmin para a organização do cliente. Os metadados vêm de `listCustomerDocumentsForUser(userId, "report")`, ordenados por publicação. `UploadedReportsList` mantém o card original da listagem de relatórios e faz o card inteiro baixar o PDF via `CustomerDocumentDownloadLink` e a rota autenticada `/api/customer-documents/[id]`, que confere vínculo à organização e responde com attachment privado. Sem PDFs, a página mostra um estado vazio em card.
 
-## Estado atual
-
-- Lista somente diagnósticos autorizados, com base de respostas para análise e entrega publicada pela operação Directscal.
-- Também lista PDFs de relatório enviados diretamente pelo superadmin para a empresa. Esses arquivos são baixados pela rota autorizada `/api/customer-documents/[id]` e não dependem de uma entrega gerada pelo app.
-- Cada relatório aparece em um card clicável com o título obrigatório do diagnóstico, avatar e nome do responsável pela criação, além da data de encerramento ou última atualização.
-- Os cards formam uma grade responsiva e abrem a leitura em `/relatorios/[id]`.
-- A página inclui um estado vazio quando ainda não existe relatório disponível.
-- Permite acesso a usuários do app cliente e redireciona o `superadmin` global para `/admin/operacao`.
-
-## Dados
-
-- A listagem cruza a elegibilidade analítica do Overview com `admin_deliveries.status = 'publicada'` para não antecipar entregas ainda em preparação.
-- A rota de detalhe e o download também exigem a publicação, impedindo acesso antecipado por URL direta.
-- A rota de detalhe resolve um `DiagnosticReport` autorizado e conecta os seis gráficos às respostas consolidadas daquele diagnóstico.
-- Os textos editoriais vêm da entrega publicada; a foto do especialista continua como conteúdo de referência. Fontes, cores e estrutura vêm do próprio app.
-
-Exemplos não entram na área operacional. O relatório Acme foi retirado da listagem e sua rota estática; `/relatorios/exemplo-acme` agora segue a rota dinâmica e retorna 404 por não ter diagnóstico autorizado e publicação. Com zero publicações e zero PDFs enviados, a página mostra somente o estado vazio.
+O fluxo é PDF pronto: o superadmin abre a empresa, aba Diagnósticos, e usa `Enviar PDF`. Rotas legadas de leitura de entregas continuam isoladas, mas não compõem esta listagem.

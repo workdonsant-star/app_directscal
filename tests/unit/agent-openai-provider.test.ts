@@ -30,3 +30,20 @@ test("OpenAI recebe fontes isoladas e devolve resposta estruturada sem armazenar
   expect(body.input).toContain("O marcador é azul.");
   expect(body.text.format.type).toBe("json_schema");
 });
+
+test("OpenAI usa o prompt contextual do Action Point quando fornecido", async () => {
+  const fetchMock = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({ status: "completed", output: [{ content: [{ type: "output_text", text: JSON.stringify({ status: "answered", answer: "Revise as decisões abertas.", confidence: "alta", sources: ["AP"] }) }] }] }),
+  });
+  vi.stubGlobal("fetch", fetchMock);
+
+  await generateGroundedAnswer("openai", "modelo-ficticio", "O que faço?", [], [], "chave-ficticia", {
+    system: "Responda com base no Action Point.", user: "AP: revisar as decisões abertas. Pergunta: O que faço?",
+  });
+
+  const body = JSON.parse(String((fetchMock.mock.calls[0][1] as RequestInit).body));
+  expect(body.instructions).toBe("Responda com base no Action Point.");
+  expect(body.input).toContain("AP: revisar as decisões abertas.");
+  expect(body.store).toBe(false);
+});

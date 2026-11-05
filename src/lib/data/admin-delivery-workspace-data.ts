@@ -16,9 +16,9 @@ import { requireAdminPageSession } from "@/lib/data/admin-page-data";
  * Contexto compartilhado pelo layout e pelas etapas de `/admin/entregas/[id]`.
  * O `cache` do React deduplica a leitura dentro da mesma requisição.
  */
-export const loadAdminDeliveryContext = cache(async (id: string) => {
+export const loadAdminDeliveryContext = cache(async (id: string, includeOpen = false) => {
   await requireAdminPageSession();
-  const reports = await getAdminDiagnosticReports();
+  const reports = await getAdminDiagnosticReports(undefined, undefined, undefined, includeOpen);
   const report = reports.find((item) => item.diagnostic.id === id);
 
   if (!report) return null;

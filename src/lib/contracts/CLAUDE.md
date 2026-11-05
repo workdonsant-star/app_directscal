@@ -18,6 +18,7 @@ Esta pasta define os contratos de dados preparados para a futura integração co
 - Especialistas e autores dos ativos aceitam `avatarUrl` opcional, como URL absoluta ou caminho local iniciado por uma única `/`. Ausência de foto mantém as iniciais na biblioteca.
 - Contratos dos ativos de gestão ficam em `management-assets.ts` (biblioteca, leitura, fluxo editorial do admin, perguntas ao agente com histórico opcional, citações e auditoria) e `rich-text.ts` (documento restrito do editor). O formato legado em blocos por seção continua aceito como `legacySop*` para modelos e versões antigas.
 - Contratos de setores, lideranças e convites ficam em `organization-structure.ts`. `accessLevel` usa `owner | admin` na UI e mapeia para `cliente | admin` no banco; o `superadmin` global nunca é uma opção. Essa opção de acesso pertence aos convites legados. Novas lideranças usam `createSlackSectorLeaderInputSchema`: setor e Slack user ID, cargo opcional, sem e-mail nem nível de acesso. DTO permite cargo/e-mail vazios e carrega referência Slack opcional; nome/foto/cargo são hidratados do workspace, sem persistir diretório.
+- Fotos nos DTOs de liderança e criador de diagnóstico aceitam URL absoluta ou caminho público local iniciado por uma única `/`, para os retratos da demo. A escrita de identidade e as permissões seguem os contratos próprios.
 - `Diagnostic` carrega criador, setores e permissões derivadas. `DiagnosticShareLink` possui identidade própria e setor opcional; a coleção de links é variável porque existe um link de Time por setor.
 
 ## Mappers
@@ -98,3 +99,8 @@ routine-directory.ts define RoutineDirectoryUser, o DTO mínimo exibido no edito
 # Arquivos enviados
 
 `customer-documents.ts` define o DTO de metadados usado pelo produto e pela demo. O DTO nunca inclui o caminho privado do bucket nem o conteúdo do arquivo.
+# Action points manuais
+
+`admin-company-action-points.ts` valida os campos do formulário administrativo e o token de concorrência. O identificador da empresa e o ator nunca vêm do payload.
+Para recorrência, o contrato exige dias únicos da semana, horário `HH:mm` e data inicial. A API recusa programação incompleta e pontos pontuais com programação.
+O DTO administrativo inclui o último ciclo de teste e propostas/relatos de todos os ciclos; a confirmação do líder é campo separado. A classificação `executado_relato` não representa conclusão verificada.

@@ -4,13 +4,15 @@
 
 Fonte pura e determinística exclusiva de `/demo`. Usa empresa e pessoas fictícias, sem sessão, Supabase, modelos de IA, e-mail ou Slack. Reutiliza contratos e cálculos do produto. Datas do cenário são fixas, não vencem conforme o dia da apresentação.
 
+As quatro lideranças usam os retratos locais de `public/demo/avatars/`, compartilhados entre Action Points, setores e diretório fictício. O perfil principal usa `perfil.png`, conforme a foto enviada para esse destino; ao reiniciar a demo, ela volta como avatar padrão. Fotos editadas durante a apresentação continuam apenas no estado local.
+
 `demo-data.ts` mantém o cenário único: pesquisas, relatório editorial, ativos, responsáveis e roteiro do agente. `demo-state.ts` valida o estado local versionado e concentra as transições. Alterações só persistem no navegador e podem ser reiniciadas. Perguntas sem conteúdo correspondente recebem recusa; consulta não comprova rotina.
 
 `uploadedDocuments` guarda apenas os metadados dos arquivos enviados na apresentação. Os bytes ficam no IndexedDB por ID, acessados exclusivamente pelo runtime da demo. `demoFolders` combina categorias, ativos editoriais e arquivos enviados para alimentar a sidebar do cliente.
 
 O pacote online é montado por `scripts/demo/prepare.mjs`: inclui somente rotas `/demo`, componentes e suas dependências transitivas, sem APIs operacionais, autenticação, `.env`, credenciais ou conexões. Não usar esta experiência como evidência de homologação do produto real.
 
-demo-workspaces.ts produz os DTOs dos componentes reais, validados pelos mesmos schemas. demo-routes.ts traduz URLs sem mudar a navegação original, incluindo a sidebar fictícia de superadmin sob `/demo/admin` e as abas da Vertex Logistics no mesmo contexto administrativo. demo-request.ts é uma lista fechada de transições locais de pesquisas, categorias, ativos, perfil e setores; não usa fetch. Formulário valida conjunto completo e único de 24 respostas e evita duplicação por token. IDs desconhecidos e endereços externos são recusados.
+demo-workspaces.ts produz os DTOs dos componentes reais, validados pelos mesmos schemas. demo-routes.ts traduz URLs sem mudar a navegação original, incluindo a sidebar fictícia de superadmin sob `/demo/admin` e as abas da Vertex Logistics no mesmo contexto administrativo. demo-request.ts é uma lista fechada de transições locais de pesquisas, categorias, ativos, perfil e setores; não usa fetch. Formulário valida conjunto completo e único de 30 respostas e evita duplicação por token. IDs desconhecidos e endereços externos são recusados.
 
 Na criação/edição de pesquisas, a demo associa automaticamente lideranças ativas do estado local. Sem setores, gera um link fictício geral de Time, sem consultar Slack ou produção.
 

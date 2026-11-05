@@ -19,7 +19,7 @@ Página autenticada para listar, filtrar, criar e configurar diagnósticos Matur
 
 - Pesquisas não exibe coluna Prazo. Status, filtros, contadores e ações usam getEffectiveDiagnosticStatus: ativo com prazo vencido em São Paulo ou coleta encerrada manualmente aparece Encerrado; rascunhos permanecem configuráveis. Não altera status no banco ao ler. A tela reavalia a cada minuto e ao recuperar foco.
 
-- loading.tsx reutiliza AppTopbar/AppPage e Table operacional: 13 colunas na mesma ordem/largura da lista, cinco linhas com nome/data, avatar/criador, três links, status, total e volumes por nível, score, Dados CSV e ações. Sem título extra, card externo ou coluna Setores/Prazo. Skeleton respeita movimento reduzido e anuncia Carregando pesquisas.
+- `loading.tsx` usa skeletons dos filtros e da tabela de Pesquisas dentro do shell.
 
 - A coluna Dados CSV baixa as respostas concluídas de cada pesquisa via `/omdx/[id]/respostas`, mesmo antes de publicar o relatório. Sem respostas, o botão fica desativado. Na demo, fica desativado porque as contagens são agregadas fictícias.
 

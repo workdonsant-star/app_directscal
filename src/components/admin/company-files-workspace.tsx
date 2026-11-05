@@ -23,8 +23,8 @@ export function CompanyFilesWorkspace({ company, assets, documents, folders, sho
         <div>
           <h1 className="text-ui-page">{company.name}</h1>
         </div>
-        {actionsInTabs ? null : <AdminCompanyTabs companyId={company.id} active="assets" hasOrganization showActionPoints={showActionPoints} />}
-        <CustomerDocumentsWorkspace companyId={company.id} initialDocuments={documents} initialFolders={folders} assets={assets} renderTabs={actionsInTabs ? actions => <AdminCompanyTabs companyId={company.id} active="assets" hasOrganization showActionPoints={showActionPoints} actions={actions} /> : undefined} />
+        {actionsInTabs ? null : <AdminCompanyTabs companyId={company.id} active="assets" hasOrganization showActionPoints={showActionPoints} showReport />}
+        <CustomerDocumentsWorkspace companyId={company.id} initialDocuments={documents} initialFolders={folders} assets={assets} renderTabs={actionsInTabs ? actions => <AdminCompanyTabs companyId={company.id} active="assets" hasOrganization showActionPoints={showActionPoints} showReport actions={actions} /> : undefined} />
       </div>
     </AppPage>
   </>;

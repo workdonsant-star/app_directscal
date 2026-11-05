@@ -6,16 +6,13 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useAppRuntime } from "@/components/app-runtime";
+import { nextTheme } from "@/components/theme-cycle";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -65,6 +62,7 @@ export function NavUser({
     () => false,
   );
   const selectedTheme = mounted ? theme : undefined;
+  const themeChoice = selectedTheme === "light" || selectedTheme === "dark" ? selectedTheme : "system";
   const displayName = user.name;
   const displayAvatar = user.avatar;
   const displayInitials = getInitials(displayName) || user.initials;
@@ -93,7 +91,7 @@ export function NavUser({
           <DropdownMenuTrigger
             aria-label={`Abrir menu de ${displayName}`}
             render={
-              <SidebarMenuButton size="lg" className="aria-expanded:bg-muted" />
+              <SidebarMenuButton size="lg" className="p-0! transition-none hover:bg-transparent! hover:text-sidebar-foreground! data-open:hover:bg-transparent! data-open:hover:text-sidebar-foreground!" />
             }
           >
             <Avatar className="size-8 rounded-full">
@@ -116,23 +114,15 @@ export function NavUser({
             align="end"
             sideOffset={4}
           >
-            {user.role !== "superadmin" ? (
-              <>
-                <DropdownMenuItem render={<Link href={runtime.href("/perfil")} />}>
-                  <UserRound aria-hidden="true" className="size-4" />
-                  Meu perfil
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-              </>
-            ) : null}
-            <DropdownMenuGroup>
-              <DropdownMenuLabel>Tema</DropdownMenuLabel>
-              <DropdownMenuRadioGroup value={selectedTheme} onValueChange={setTheme}>
-                <DropdownMenuRadioItem value="system"><Monitor aria-hidden="true" />Sistema</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="light"><Sun aria-hidden="true" />Claro</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="dark"><Moon aria-hidden="true" />Escuro</DropdownMenuRadioItem>
-              </DropdownMenuRadioGroup>
-            </DropdownMenuGroup>
+            <DropdownMenuItem render={<Link href={runtime.href(user.role === "superadmin" ? "/admin/perfil" : "/perfil")} />}>
+              <UserRound aria-hidden="true" className="size-4" />
+              Meu perfil
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem closeOnClick={false} onClick={() => setTheme(nextTheme(themeChoice))}>
+              {themeChoice === "system" ? <Monitor aria-hidden="true" /> : themeChoice === "light" ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+              Tema: {themeChoice === "system" ? "Sistema" : themeChoice === "light" ? "Claro" : "Escuro"}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               disabled={isSigningOut}

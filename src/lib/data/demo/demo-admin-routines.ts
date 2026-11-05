@@ -5,7 +5,7 @@ import { demoAdminId, getDemoAdminAssets } from "./demo-admin-assets";
 import { DEMO_COMPANY, DEMO_DATE, demoReport, demoPeople } from "./demo-data";
 import type { DemoState } from "./demo-state";
 
-export const demoRoutineUsers = demoPeople.map((person, index) => ({ userId: `UDEMO${index}`, name: person.name, position: "Líder de área", avatarUrl: null }));
+export const demoRoutineUsers = demoPeople.map((person, index) => ({ userId: `UDEMO${index}`, name: person.name, position: "Líder de área", avatarUrl: person.avatarUrl ?? null }));
 export function demoRoutineWorkspace(state: DemoState): AdminRoutineWorkspace {
   const diagnosticId = demoAdminId(300);
   const assets = getDemoAdminAssets(state).filter(asset => asset.status === "publicado" && asset.published).map(asset => ({ id: asset.id, versionId: asset.published!.id, title: asset.title, version: asset.published!.versionNumber }));

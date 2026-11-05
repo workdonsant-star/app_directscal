@@ -3,12 +3,12 @@ import type { AdminDeliveryReportDraft } from "@/lib/contracts/admin-operations"
 import { buildAnalyticsExampleReports } from "@/lib/data/analytics-example";
 
 const questions: Record<string, string[]> = {
-  cultura: ["Os valores orientam as decisões do dia a dia.", "O time recebe feedback sobre comportamentos esperados.", "As práticas de gestão são coerentes com os valores declarados.", "As pessoas colaboram na resolução de problemas entre áreas."],
-  visao: ["As prioridades estratégicas são claras para todos.", "As metas da área se conectam aos objetivos da empresa.", "O time entende os critérios de priorização.", "As mudanças de direção são comunicadas com contexto."],
-  comunicacao: ["As decisões relevantes ficam registradas e acessíveis.", "Os canais de comunicação têm finalidade definida.", "As áreas compartilham informações necessárias às entregas.", "Os alinhamentos terminam com responsáveis e próximos passos."],
-  processos: ["Os processos críticos possuem instruções atualizadas.", "As entregas seguem critérios claros de qualidade.", "As responsabilidades nas passagens entre áreas são definidas.", "As falhas recorrentes geram melhorias no processo."],
-  lideranca: ["Os líderes esclarecem expectativas e prioridades.", "O time tem autonomia compatível com suas responsabilidades.", "Os líderes acompanham impedimentos com regularidade.", "As decisões são tomadas no nível adequado da estrutura."],
-  performance: ["Os indicadores possuem responsáveis e frequência de atualização.", "As metas são acompanhadas em uma rotina de gestão.", "Os desvios geram ações com responsável e prazo.", "Os critérios de desempenho são conhecidos pelo time."],
+  cultura: ["Os valores orientam as decisões do dia a dia.", "O time recebe feedback sobre comportamentos esperados.", "As práticas de gestão são coerentes com os valores declarados.", "As pessoas colaboram na resolução de problemas entre áreas.", "O time pode pedir ajuda antes que um impedimento se torne urgente."],
+  visao: ["As prioridades estratégicas são claras para todos.", "As metas da área se conectam aos objetivos da empresa.", "O time entende os critérios de priorização.", "As mudanças de direção são comunicadas com contexto.", "As pessoas conseguem decidir com autonomia dentro das prioridades definidas."],
+  comunicacao: ["As decisões relevantes ficam registradas e acessíveis.", "Os canais de comunicação têm finalidade definida.", "As áreas compartilham informações necessárias às entregas.", "Os alinhamentos terminam com responsáveis e próximos passos.", "Bloqueios entre áreas são tratados antes de afetar as entregas."],
+  processos: ["Os processos críticos possuem instruções atualizadas.", "As entregas seguem critérios claros de qualidade.", "As responsabilidades nas passagens entre áreas são definidas.", "As falhas recorrentes geram melhorias no processo.", "As entregas principais não dependem de uma única pessoa."],
+  lideranca: ["Os líderes esclarecem expectativas e prioridades.", "O time tem autonomia compatível com suas responsabilidades.", "Os líderes acompanham impedimentos com regularidade.", "As decisões são tomadas no nível adequado da estrutura.", "Os líderes desenvolvem a capacidade de decisão do time."],
+  performance: ["Os indicadores possuem responsáveis e frequência de atualização.", "As metas são acompanhadas em uma rotina de gestão.", "Os desvios geram ações com responsável e prazo.", "Os critérios de desempenho são conhecidos pelo time.", "O foco nas prioridades é preservado mesmo em períodos de maior pressão."],
 };
 
 export function buildAcmeReportExample() {

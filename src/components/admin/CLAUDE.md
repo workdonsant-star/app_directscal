@@ -33,6 +33,7 @@ Componentes compartilhados com `/demo/admin` usam `useAppRuntime()` para requisi
 | `AdminOperationsWorkspace` | `/admin/operacao`, métricas e fila de entregas. |
 | `AdminSpecialistsWorkspace` | `/admin/especialistas`, equipe, cadastro persistido, perfil com nome e foto, ativação, arquivamento e exclusão. |
 | `AdminAiProvidersWorkspace` | `/admin/motores-de-ia`, três conexões reais, teste de chave/modelo e seleção de um motor para o agente. |
+| `GeneratorBriefingWorkspace` | `/admin/geradores/[tipo]`, campos por tipo e briefing Markdown; em Diagnósticos também importa CSV, mostra agregados e exporta rascunho revisável. |
 
 | `AdminCompanyDetail` | `/admin/empresas/[id]`, atribuição, entregas e acessos. |
 | `DeliveryDraftProvider` / `DeliveryShell` e etapas em `delivery/` | `/admin/entregas/[id]/*`, rascunho compartilhado, cabeçalho, navegação lateral por fase, checklist de publicação e uma etapa por rota (dados, relatório, action points, publicação). Ver `delivery/CLAUDE.md`. |
@@ -86,7 +87,11 @@ A12: criação inclui RACI e modelo de responsabilidades. Editor envia a versão
 
 A04: routines/ contém workspace por empresa com tabela operacional, criação/edição em Sheet, histórico de revisões, pausa/retomada e transferência de todas as rotinas da ação. Diretório é consultado ao abrir formulário; erros mantêm texto/seleção. Link Operação das rotinas no detalhe da empresa. Sem percentuais inventados ou contato automático.
 
-O detalhe da empresa usa `AdminCompanyTabs` em Visão geral, Arquivos e Action points quando há organização. `AdminActionPointsWorkspace` agrupa as ações publicadas pelo responsável atual e mostra a revisão vigente da rotina, quando existe; a aba não cria um segundo cadastro. A prop `showActionPoints` mantém a demo no mesmo componente. As rotas antigas de Operação e Rotinas permanecem acessíveis por URL, sem abas na navegação da empresa.
+O detalhe da empresa usa `AdminCompanyTabs` em Visão geral, Arquivos, Diagnósticos e Action points quando há organização. `AdminActionPointsWorkspace` agrupa as ações manuais por líder e mostra separadamente as ações publicadas pelo responsável atual, com a revisão vigente da rotina, quando existe. Os dois registros não se substituem. A prop `showActionPoints` mantém a demo no mesmo cabeçalho. As rotas antigas de Operação e Rotinas permanecem acessíveis por URL, sem abas na navegação da empresa.
+Na aba real, `AdminCompanyActionPointForm` permite cadastrar e editar ações manuais por líder Slack e ativo publicado. O formulário preserva campos e mostra conflito de versão; o painel do agente da demo continua uma simulação local, sem ativação no app real.
+Action Points recorrentes exigem dias da semana e horário de Brasília. A agenda começa na data do primeiro cadastro; quinzenais usam semanas alternadas a partir dela e mensais usam os dias escolhidos na primeira semana do mês. Registros recorrentes antigos sem agenda precisam ser editados antes do disparo automático.
+Na mesma aba, `Enviar pergunta no Slack` inicia uma pergunta privada apenas por ação explícita do superadmin. Após a entrega confirmada, `Enviar nova pergunta` inicia outro ciclo e outra thread mesmo sem resposta ao anterior; os relatos continuam ligados ao ciclo original. O último ciclo mostra entrega e relatos resumidos. Envios em preparação e incertos ficam travados para evitar duplicação.
+Dúvidas recebidas no acompanhamento manual ficam registradas como `Dúvida registrada` na aba administrativa, sem exibir um pedido de confirmação de resumo que não foi enviado à pessoa.
 As duas abas mantêm largura e posição estáveis entre rotas, inclusive quando o peso da aba ativa muda.
 
 Na Visão geral e em Arquivos, não repetir o nome da área em frases auxiliares como “Dados e trabalho desta empresa” ou “Área de gestão desta empresa”.
@@ -114,3 +119,6 @@ Todos os consumidores de `useAdminDataSnapshot` exigem snapshot do servidor: Cam
 Listagem/editor/perguntas de ativos, revisão de lacunas, operação e navegação usam useAppRuntime para requisições e URLs. O runtime padrão conserva o backend administrativo; a demo mantém estado local. O editor aceita companyId explícito para conservar a empresa do breadcrumb (o fallback operacional continua company_organizationId). Regras editoriais e componentes visuais permanecem compartilhados.
 
 `AdminCompanyTabs` aceita `actions` opcional para mostrar as ações da aba ativa na mesma linha das abas, à direita. `CompanyFilesWorkspace` só usa isso com `actionsInTabs` (repassado como `renderTabs` a `CustomerDocumentsWorkspace`, que então omite o título Arquivos). Sem essas props, o app operacional mantém o layout anterior; hoje só a demo as liga.
+
+`AdminCompanyTabs` usa `showReport` no produto e na demo para a aba Diagnósticos. A aba reutiliza `CustomerDocumentsWorkspace` com `reportsOnly`: o superadmin envia um PDF final, que aparece na área Diagnósticos do cliente. O fluxo não usa editor ou rascunho.
+Na rota real, `AdminCompanyReportsWorkspace` é a fronteira de cliente que cria a função `renderTabs`; a página de servidor passa somente ID e documentos. Não passar funções do servidor como props para esse workspace.

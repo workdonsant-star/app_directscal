@@ -1,10 +1,12 @@
 # `/omdx` — Maturidade por camadas
 
+As afirmações coletadas ficam no Analytics em seis abas por dimensão. `?dimensao=<id>` seleciona a aba inicial e `#nivel-perguntas` leva à seção. A sidebar não lista mais páginas individuais de dimensões.
+
 ## Propósito
 
 C1/M04: a experiência operacional mostra Percepção e acompanhamento e seleciona a coleta mais recente por closedAt/createdAt. O parâmetro legado todos passa a selecionar a última coleta, sem consolidar instrumentos. Referências históricas exigem mesma empresa, instrumento e perguntas; a tela explicita limites de público/período. O topo não tem bloco de leitura (CollectionReading removido em 02/11/2026) e consulta aos ativos fica distinta de execução. Estas regras substituem a descrição histórica abaixo.
 
-Raiz executiva do módulo Maturidade. Desde 18/10/2026 a página segue seis níveis de valor para o cliente, montados por `AnalyticsOverview` (`src/components/omdx/analytics/`): 1 · Veredito, 2 · O que atacar e como está andando, 3 · Onde está o gap, 4 · Quem vê diferente, 5 · Onde dói, pergunta a pergunta e 6 · Execução e impacto, com a aderência dos ativos ao final do nível 6. Notas, camadas, perguntas e aderência vêm dos dados reais; execução das alavancas, uso do ativo, estimativa do agente e evolução são ilustrativos e identificados como tal (ver `docs/analytics-impacto.md`).
+Raiz executiva do módulo Maturidade. Desde 18/10/2026 a página segue seis níveis de valor para o cliente, montados por `AnalyticsOverview` (`src/components/omdx/analytics/`): Dimensões gerenciais, Percepção por camada, Afirmações coletadas e Consultas e execução, com a aderência dos ativos ao final do nível 6. Notas, camadas, perguntas e aderência vêm dos dados reais; execução das alavancas, uso do ativo, estimativa do agente e evolução são ilustrativos e identificados como tal (ver `docs/analytics-impacto.md`).
 
 ## Convenções locais
 
@@ -26,7 +28,7 @@ Raiz executiva do módulo Maturidade. Desde 18/10/2026 a página segue seis nív
 
 Frame `252:545` do DirectScal App. AppPage mantém 40px nas laterais desktop e 32px na vertical; topbar alinhada ao conteúdo. Seções e grids usam 16px de intervalo. Charts de aderência em duas colunas, cards de 490px e chart semanal de 360px; maturidade em três colunas, cards de 490px e visualizações de 389px. Em larguras menores, os grids empilham; aderência mantém no mínimo 490px e cresce quando a descrição precisa de mais linhas. O filtro de diagnóstico aparece somente no cabeçalho dos resultados, usando o query param `diagnostico`; não modifica a aderência dos ativos. A topbar não duplica o seletor. A apresentação `distilled` do workspace admin permanece com seus cinco visuais anteriores.
 
-O loading usa `bg-sidebar dark:bg-card`, acompanhando as superfícies de conteúdo do frame escuro `272:2` sem alterar o tema claro.
+O loading acompanha o `AnalyticsOverview` atual: cabeçalho com filtro, dois gráficos lado a lado e tabela de afirmações. Não voltar aos cards de KPI da composição antiga.
 
 `/omdx?exemplo=uso` abre uma visualização autenticada para capturas, somente com a seção de aderência preenchida por `buildProcessUsageExample`. Reutiliza os componentes e temas reais; não consulta nem modifica métricas reais e não depende de diagnósticos disponíveis. A navegação normal `/omdx` mantém sua leitura original.
 

@@ -6,15 +6,16 @@ import { useAppRuntime } from "@/components/app-runtime";
 
 import { cn } from "@/lib/utils";
 
-type CompanyTab = "overview" | "assets" | "operation" | "routines" | "action-points";
+type CompanyTab = "overview" | "assets" | "report" | "operation" | "routines" | "action-points";
 
 // showActionPoints liga a aba quando a empresa possui organização e a rota está disponível.
-export function AdminCompanyTabs({ companyId, active, hasOrganization, showActionPoints = false, actions }: { companyId: string; active: CompanyTab; hasOrganization: boolean; showActionPoints?: boolean; actions?: ReactNode }) {
+export function AdminCompanyTabs({ companyId, active, hasOrganization, showActionPoints = false, showReport = false, actions }: { companyId: string; active: CompanyTab; hasOrganization: boolean; showActionPoints?: boolean; showReport?: boolean; actions?: ReactNode }) {
   const runtime = useAppRuntime();
   const base = `/admin/empresas/${companyId}`;
   const tabs: { key: CompanyTab; label: string; href: string }[] = [
     { key: "overview", label: "Visão geral", href: base },
     { key: "assets", label: "Arquivos", href: `${base}/criacao-dos-ativos` },
+    ...(showReport ? [{ key: "report" as const, label: "Diagnósticos", href: `${base}/relatorio` }] : []),
     ...(showActionPoints ? [{ key: "action-points" as const, label: "Action points", href: `${base}/action-points` }] : []),
   ];
 

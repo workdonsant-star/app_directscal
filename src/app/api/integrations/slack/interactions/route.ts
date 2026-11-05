@@ -69,30 +69,33 @@ export async function POST(request: Request) {
     return new Response(null, { status: 200 });
   }
 
-  const installation = await getSlackInstallation(teamId);
+  const auditId = action.value;
+  // O Slack exige o aceite em até três segundos. A consulta à instalação,
+  // persistência e atualização da mensagem continuam após o 200.
+  after(async () => {
+    try {
+      const installation = await getSlackInstallation(teamId);
+      if (!installation) return;
 
-  if (!installation) {
-    return new Response(null, { status: 200 });
-  }
+      // Só a pessoa que perguntou avalia a resposta; os demais cliques são ignorados.
+      const saved = await recordAssetAnswerFeedback({
+        auditId,
+        organizationId: installation.organizationId,
+        externalUserId: `${teamId}:${userId}`,
+        value,
+      });
 
-  // Só a pessoa que perguntou avalia a resposta; os demais cliques são ignorados.
-  const saved = await recordAssetAnswerFeedback({
-    auditId: action.value,
-    organizationId: installation.organizationId,
-    externalUserId: `${teamId}:${userId}`,
-    value,
-  }).catch((error: unknown) => {
-    console.error("[slack] feedback failed", error);
-    return false;
+      if (saved && payload.response_url && payload.message?.blocks) {
+        await respondToSlackAction(payload.response_url, {
+          replace_original: true,
+          text: payload.message.text ?? "Resposta do DirectScal",
+          blocks: replaceSlackFeedbackBlock(payload.message.blocks, value),
+        });
+      }
+    } catch (error) {
+      console.error("[slack] feedback failed", error);
+    }
   });
-
-  if (saved && payload.response_url && payload.message?.blocks) {
-    await respondToSlackAction(payload.response_url, {
-      replace_original: true,
-      text: payload.message.text ?? "Resposta do DirectScal",
-      blocks: replaceSlackFeedbackBlock(payload.message.blocks, value),
-    });
-  }
 
   return new Response(null, { status: 200 });
 }

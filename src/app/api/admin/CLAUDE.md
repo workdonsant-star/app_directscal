@@ -19,6 +19,8 @@ A12: PATCH de management-assets exige `expectedRevision`; a data-source salva co
 
 A04: /companies/[id]/routines oferece GET sem cache (workspace ou directory=1) e POST estrito para salvar, transferir e pausar/retomar. Exige superadmin definitivo antes de dados/diretório; empresa/ator vêm de rota/sessão. Mensagens de erro não expõem detalhes do banco ou Slack.
 
+`/companies/[id]/action-points` lê e salva o cadastro manual da aba da empresa. Revalida ativo publicado e líder Slack ativo; POST usa a versão esperada e não ativa o agente.
+
 A15: /companies/[id]/slack-deliveries lista metadados paginados e recupera falha confirmada com id/expectedUpdatedAt. Exige superadmin definitivo antes de consultar e revalida ator no banco. Não retorna perguntas/respostas/tokens e não repete envio incerto.
 
 A05: companies/[id]/routine-contact-policy lê/grava política versionada; routine-events registra ocorrência com origem e prazo. Ambos exigem superadmin definitivo antes de dados e derivam empresa/ator da rota/sessão. Salvar não envia Slack nem configura scheduler externo.

@@ -6,7 +6,7 @@ Lista empresas que possuem conta cliente criada no sistema.
 
 - A página exige sessão definitiva de superadmin antes de carregar o snapshot real no servidor. Organizações são identificadas por ID e precisam ter membership `cliente`; a organização técnica e leads sem conta ficam fora da lista.
 - `AdminCompaniesTable` recebe `initialSnapshot` obrigatório: nunca renderizar organizações seed enquanto o banco carrega. A primeira listagem já contém somente os registros persistidos.
-- `loading.tsx` mostra skeletons sem nomes ou ações; `error.tsx` permite repetir a leitura sem apresentar empresas fictícias. A exclusão conserva confirmação e atualização pela API existente.
+- `loading.tsx` usa skeleton da busca e da tabela, sem nomes de empresas; `error.tsx` permite repetir a leitura sem apresentar empresas fictícias. A exclusão conserva confirmação e atualização pela API existente.
 - Não há cadastro manual de empresa nesta etapa.
 - A tabela deve permanecer densa e orientada a operação.
 - Cada empresa abre um detalhe próprio em `/admin/empresas/[id]`.
