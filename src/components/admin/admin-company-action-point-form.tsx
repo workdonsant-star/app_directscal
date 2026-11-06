@@ -14,23 +14,25 @@ const hours = Array.from({ length: 24 }, (_, hour) => String(hour).padStart(2, "
 const minutes = Array.from({ length: 12 }, (_, step) => String(step * 5).padStart(2, "0"));
 const todayInSaoPaulo = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 
-export function AdminCompanyActionPointForm({ companyId, item, open, assets, leaders, onClose, onSaved }: {
+export function AdminCompanyActionPointForm({ companyId, item, open, assets, leaders, onClose, onSaved, save }: {
   companyId: string; item: AdminCompanyActionPoint | null; open: boolean;
   assets: { id: string; title: string }[]; leaders: { userId: string; name: string }[];
   onClose: () => void; onSaved: () => void;
+  save?: (input: AdminCompanyActionPointInput) => Promise<void> | void;
 }) {
   return <Sheet open={open} onOpenChange={value => { if (!value) onClose(); }}>
     <SheetContent className="flex flex-col gap-0 data-[side=right]:w-full data-[side=right]:sm:w-[640px] data-[side=right]:sm:max-w-[min(640px,100vw)]">
       <SheetHeader className="shrink-0 px-6 py-6"><SheetTitle>{item ? "Editar action point" : "Novo action point"}</SheetTitle><SheetDescription>Vincule um ativo publicado e escolha o líder no Slack da empresa.</SheetDescription></SheetHeader>
-      {open ? <Fields key={item?.id ?? "new"} companyId={companyId} item={item} assets={assets} leaders={leaders} onClose={onClose} onSaved={onSaved} /> : null}
+      {open ? <Fields key={item?.id ?? "new"} companyId={companyId} item={item} assets={assets} leaders={leaders} onClose={onClose} onSaved={onSaved} save={save} /> : null}
     </SheetContent>
   </Sheet>;
 }
 
-function Fields({ companyId, item, assets, leaders, onClose, onSaved }: {
+function Fields({ companyId, item, assets, leaders, onClose, onSaved, save }: {
   companyId: string; item: AdminCompanyActionPoint | null;
   assets: { id: string; title: string }[]; leaders: { userId: string; name: string }[];
   onClose: () => void; onSaved: () => void;
+  save?: (input: AdminCompanyActionPointInput) => Promise<void> | void;
 }) {
   const [id] = useState(() => item?.id ?? crypto.randomUUID());
   const [title, setTitle] = useState(item?.title ?? "");
@@ -63,6 +65,11 @@ function Fields({ companyId, item, assets, leaders, onClose, onSaved }: {
     };
     setSaving(true); setError(null);
     try {
+      if (save) {
+        await save(payload);
+        onSaved();
+        return;
+      }
       const response = await fetch(`/api/admin/companies/${companyId}/action-points`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const result = await response.json() as { message?: string };
       if (!response.ok) throw new Error(result.message ?? "Não foi possível salvar o action point.");

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useAppRuntime } from "@/components/app-runtime";
 
 import { useAdminDataSnapshot } from "@/components/admin/use-admin-data";
 import type { AdminDataSnapshot } from "@/lib/data/admin-data-source";
@@ -110,6 +111,7 @@ function InfoItem({
 }
 
 export function AdminLeadDetail({ leadId, initialSnapshot }: AdminLeadDetailProps) {
+  const runtime = useAppRuntime();
   const { campaigns, leads, modules } = useAdminDataSnapshot(initialSnapshot);
   const lead = leads.find((item) => item.id === leadId);
   const campaign = lead
@@ -123,7 +125,7 @@ export function AdminLeadDetail({ leadId, initialSnapshot }: AdminLeadDetailProp
           <Button
             variant="outline"
             nativeButton={false}
-            render={<Link href="/admin/leads" />}
+            render={<Link href={runtime.href("/admin/leads")} />}
           >
             Voltar para leads
           </Button>
@@ -140,7 +142,7 @@ export function AdminLeadDetail({ leadId, initialSnapshot }: AdminLeadDetailProp
         <Button
           variant="outline"
           nativeButton={false}
-          render={<Link href="/admin/leads" />}
+          render={<Link href={runtime.href("/admin/leads")} />}
         >
           Voltar para leads
         </Button>

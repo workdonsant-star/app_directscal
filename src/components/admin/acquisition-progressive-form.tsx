@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, useMemo, useRef, useState } from "react";
+import { useAppRuntime } from "@/components/app-runtime";
 import { ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -216,6 +217,7 @@ export function AcquisitionProgressiveForm({
   submitError = null,
   submittingLabel,
 }: AcquisitionProgressiveFormProps) {
+  const runtime = useAppRuntime();
   const sections = useMemo(
     () => buildSections(fields, includePassword),
     [fields, includePassword],
@@ -318,7 +320,7 @@ export function AcquisitionProgressiveForm({
       setIsResolvingCnpj(true);
 
       try {
-        const response = await fetch("/api/acquisition/company-by-cnpj", {
+        const response = await runtime.request("/api/acquisition/company-by-cnpj", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ cnpj: resolvedValues.cnpj }),

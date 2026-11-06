@@ -4,9 +4,15 @@ Link principal: https://app.directscal.com/demo. Origem independente: https://di
 
 ## Fidelidade ao produto
 
+Atualização local em 05/11/2026: a sidebar compartilhada da visão administrativa também mostra os cinco geradores do app, e `/demo/admin/geradores/[tipo]` abre os mesmos briefings locais. A aba Action points da Vertex usa o workspace e o formulário atuais, incluindo ações publicadas em entregas, dias da semana e horário de Brasília em passos de cinco minutos. O botão de teste é rotulado como simulação e não chama Slack; a programação fica apenas no navegador, sem cron. `/demo/admin/perfil` reutiliza o formulário de nome e foto do superadmin com identidade fictícia local. Chromium headless confirmou o formulário e a seção de ações publicadas em claro e escuro a 1440px, o gerador em 375px sem overflow horizontal e o marcador após simular um envio. Ainda não foram publicados.
+
+Após confirmação de escopo em 05/11/2026, a demo local inclui Campanhas, Leads, detalhe do lead, link público de aquisição, entrada, cadastro e recuperação. Campanhas e Leads usam os componentes do app com snapshot fictício; alterações e novos leads ficam no navegador. O cadastro do link termina como lead de apresentação, sem criar conta ou empresa operacional. A opção Google é uma etapa simulada, sem OAuth. Entrada e recuperação mostram o fluxo visual com aviso explícito de que não autenticam nem enviam e-mail. O pacote isolado copia os assets das telas públicas sob `/demo-static` e mantém a proibição de importar autenticação e dados server-side.
+
+Nesta ampliação, 22 testes unitários da demo, TypeScript, lint (sem erros; um aviso preexistente em Especialistas), build principal e build isolado passaram. Chromium headless percorreu em 375px o cadastro pelo link, incluindo consulta fictícia de CNPJ, e encontrou o novo lead na lista administrativa após navegação. Campanhas e Leads foram conferidos em claro e escuro a 1440px; páginas públicas, em 375px escuro, sem rolagem horizontal. Não houve publicação desta ampliação.
+
 A primeira entrega recriou uma sidebar e algumas telas, gerando divergências. A correção remove essas versões e usa AppSidebar, NavUser, AppTopbar, AppPage e os componentes originais das áreas. A versão operacional consultada usa o commit 7a4854a, deployment dpl_5oK6jQy5wVeR3bGVx97Bi1NXnhUd.
 
-A sidebar conserva os ícones, grupos, perfil, pastas e seis dimensões do produto. Configurações troca a navegação pelas seções contextuais originais. Não há mistura da administração DirectScal na sidebar do cliente. O controle Demo na topbar alterna entre visão do cliente e visão fictícia de superadmin, além de oferecer reinício e acesso ao agente. A visão de superadmin usa a sidebar administrativa, a central de apresentação, a tabela real de empresas, o workspace real de especialistas, o Analytics real e a aba Operação real no detalhe da Vertex Logistics. O adapter local atende cadastro/edição de especialistas, atribuição principal e exclusão fictícia da empresa. Entregas Slack mostram uma lista fictícia vazia, sem transporte. A Operação global continua ilustrativa; as abas de Ativos de gestão e Rotinas do detalhe ainda não reproduzem o workspace administrativo. A demo não abre o painel real.
+A sidebar conserva os ícones, grupos, perfil, pastas e seis dimensões do produto. Configurações troca a navegação pelas seções contextuais originais. Não há mistura da administração DirectScal na sidebar do cliente. O controle Demo na topbar alterna entre visão do cliente e visão fictícia de superadmin, além de oferecer reinício e acesso ao agente. A visão de superadmin usa a sidebar administrativa, a central de apresentação, a tabela real de empresas, o workspace real de especialistas, o Analytics real e a aba Operação real no detalhe da Vertex Logistics. O adapter local atende cadastro/edição de especialistas, atribuição principal e exclusão fictícia da empresa. Entregas Slack mostram uma lista fictícia vazia, sem transporte. A Operação global continua ilustrativa; Ativos de gestão e Rotinas no detalhe da empresa usam os workspaces administrativos com estado local. A demo não abre o painel real.
 
 ## Conteúdo e operações
 
@@ -42,7 +48,7 @@ Esta demo cobre as interfaces fictícias de cliente e superadmin. Não comprova 
 
 Executar node scripts/demo/prepare.mjs /private/tmp/directscal-demo-<id> com destino novo. O script copia somente /demo e dependências transitivas, tokens e assets explícitos; rejeita imports de autenticação, banco, IA, integrações e fontes operacionais. Não copia .env, .git ou .vercel. Gera manifesto com commit e indicador de alterações locais. Instalar/buildar o pacote, vinculá-lo explicitamente ao projeto dedicado e publicar. Não publicar o repositório integral no projeto demo.
 
-## Verificação desta correção
+## Verificação da publicação anterior
 
 Build principal e independente aprovados; o pacote isolado lista somente raiz, 404, catch-all demo e os três downloads. TypeScript, lint e 517 testes (89 arquivos) passaram, incluindo nove da demo.
 

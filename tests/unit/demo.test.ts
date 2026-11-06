@@ -45,14 +45,22 @@ describe("cenário público de demonstração", () => {
     ];
     const restored = restoreDemoState(JSON.stringify({ ...initial, slackConnected: false, adminActionPoints: points }));
     expect(restored.slackConnected).toBe(false);
-    expect(restored.adminActionPoints).toEqual(points.map(point => ({ frequency: null, ...point })));
+    expect(restored.adminActionPoints).toEqual(points.map(point => ({ frequency: null, weekdays: [], sendTime: null, scheduleStartsOn: null, ...point })));
     expect(restored.surveys).toEqual(initial.surveys);
+  });
+
+  it("mantém o perfil fictício do superadmin separado do perfil do cliente", () => {
+    const initial = createDemoState();
+    const restored = restoreDemoState(JSON.stringify({ ...initial, adminProfile: { name: "Consultora Demo", avatarUrl: null } }));
+    expect(restored.adminProfile?.name).toBe("Consultora Demo");
+    expect(restored.profile).toBeUndefined();
+    expect(createDemoState().adminProfile).toBeUndefined();
   });
 
   it("mantém plano aprovado no navegador e simula ciclos sem aprovação posterior", () => {
     const state = createDemoState();
     const asset = getDemoAdminAssets(state)[0];
-    const point = { id: "teste-ap", title: "Registrar prioridades", assetId: asset.id, leaderUserId: "UDEMO0", deadline: null, frequency: "semanal" as const, reason: "Comunicação sem registro de prioridades", action: "Realizar o ritual", continuity: "Usar o ativo" };
+    const point = { id: "teste-ap", title: "Registrar prioridades", assetId: asset.id, leaderUserId: "UDEMO0", deadline: null, frequency: "semanal" as const, weekdays: [1], sendTime: "09:00", scheduleStartsOn: "2026-11-02", reason: "Comunicação sem registro de prioridades", action: "Realizar o ritual", continuity: "Usar o ativo" };
     const proposal = proposeDemoFollowUpPlan(point, asset);
     expect(proposal.diagnosticId).toBe(demoReport.diagnostic.id);
     expect(proposal.assetVersionId).toBe(asset.published?.id);
@@ -97,6 +105,8 @@ import { assistantHistoryPageSchema } from "@/lib/contracts/assistant-history";
 import { applyDemoRequest } from "@/lib/data/demo/demo-request";
 import { demoDiagnostics, demoDimension, demoResponseWorkspace, demoShareLinks } from "@/lib/data/demo/demo-workspaces";
 import { demoHref, demoPathname } from "@/lib/data/demo/demo-routes";
+import { demoAdminSnapshot } from "@/lib/data/demo/demo-admin-data";
+import { registerDemoLead } from "@/lib/data/demo/demo-acquisition";
 import { diagnosticResponseWorkspaceSchema, assetQuestionAnswerSchema } from "@/lib/contracts";
 
 describe("componentes operacionais sobre fonte isolada", () => {
@@ -125,6 +135,33 @@ describe("componentes operacionais sobre fonte isolada", () => {
   expect(assigned.state.adminAssignedSpecialistId).toBe("demo-specialist-clara");
   expect(applyDemoRequest(initial, "/api/admin/companies/demo-vertex/slack-deliveries").body).toEqual({ items: [], nextCursor: null });
  });
+ it("edita campanhas apenas no snapshot local da demo", () => {
+  const state = createDemoState();
+  const snapshot = applyDemoRequest(state, "/api/admin/acquisition").body as { campaigns: Array<{ id: string; name: string }> ; leads: unknown[] };
+  expect(snapshot.campaigns).toHaveLength(2);
+  expect(snapshot.leads).toHaveLength(2);
+  const campaign = { ...demoAdminSnapshot.campaigns[0], name: "Maturidade — Evento" };
+  const changed = applyDemoRequest(state, "/api/admin/campaigns", { method: "PUT", body: JSON.stringify(campaign) });
+  expect(changed.status).toBeUndefined();
+  expect((applyDemoRequest(changed.state, "/api/admin/acquisition").body as { campaigns: Array<{ name: string }> }).campaigns[0].name).toBe("Maturidade — Evento");
+  expect(demoAdminSnapshot.campaigns[0].name).toBe("Maturidade — Site");
+ });
+ it("registra lead fictício sem criar usuário ou empresa operacional", () => {
+  const state = createDemoState();
+  const values = { ...Object.fromEntries(demoAdminSnapshot.campaigns[0].fields.map(field => [field.id, field.id === "email" ? "teste@empresa.example" : field.id === "nome" ? "Pessoa Demo" : "Dado fictício"])), empresa: "Empresa Demo" };
+  const updated = registerDemoLead(state, demoAdminSnapshot.campaigns[0].slug, values, "password");
+  const lead = updated.adminLeads?.at(-1);
+  expect(lead).toMatchObject({ email: "teste@empresa.example", companyName: "Empresa Demo", status: "lead", userId: null, organizationId: null });
+  expect(demoAdminSnapshot.leads).toHaveLength(2);
+  expect(() => registerDemoLead(updated, demoAdminSnapshot.campaigns[0].slug, values, "password")).toThrow();
+ });
+ it("resolve CNPJ da apresentação sem consultar cadastro externo", () => {
+  const state = createDemoState();
+  const response = applyDemoRequest(state, "/api/acquisition/company-by-cnpj", { method: "POST", body: JSON.stringify({ cnpj: "12.345.678/0001-90" }) });
+  expect(response.state).toBe(state);
+  expect(response.body).toMatchObject({ values: { razao_social: "Empresa de demonstração Ltda", nome_fantasia: "Empresa Demo" } });
+  expect(applyDemoRequest(state, "/api/acquisition/company-by-cnpj", { method: "POST", body: JSON.stringify({ cnpj: "123" }) }).status).toBe(400);
+ });
  it("mantém navegação de ida e volta dentro da demo, incluindo downloads", () => {
   expect(demoHref("/admin/empresas/demo-vertex/criacao-dos-ativos")).toBe("/demo/admin/empresas/demo-vertex/criacao-dos-ativos");
   expect(demoHref("/admin/empresas/demo-vertex/rotinas")).toBe("/demo/admin/empresas/demo-vertex/rotinas");
@@ -138,6 +175,11 @@ describe("componentes operacionais sobre fonte isolada", () => {
   expect(demoHref("/ativos-de-gestao/download/sop/ativo-sops")).toBe("/demo/ativos/download/ativo-sops");
   expect(demoHref("/admin/demo")).toBe("/demo/admin");
   expect(demoHref("/admin/empresas")).toBe("/demo/admin/empresas");
+  expect(demoHref("/admin/geradores/diagnosticos")).toBe("/demo/admin/geradores/diagnosticos");
+  expect(demoHref("/admin/perfil")).toBe("/demo/admin/perfil");
+  expect(demoHref("/admin/campanhas")).toBe("/demo/admin/campanhas");
+  expect(demoHref("/admin/leads/lead_01")).toBe("/demo/admin/leads/lead_01");
+  expect(demoHref("/a/omdx-site")).toBe("/demo/a/omdx-site");
  });
  it("recusa endereços externos, IDs desconhecidos e operações fora da lista", () => {
   const state = createDemoState();

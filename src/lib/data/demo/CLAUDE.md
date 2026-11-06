@@ -24,7 +24,14 @@ O adapter de requisições atende apenas a empresa fictícia; IDs externos são 
 
 As entregas administrativas sem edição local começam em análise, com relatório editorial vazio e gráficos da coleta disponíveis no editor. O relatório fictício publicado na visão do cliente permanece um cenário separado da redação administrativa.
 
-`adminActionPoints` aceita prazo/encerramento ISO date ou null e frequência diária, semanal, quinzenal ou mensal, ou null para pontuais. Campos ausentes recebem null para restaurar registros antigos sem reiniciar o restante da demo. Não há horário, agenda ou integração; a frequência descreve apenas a execução esperada.
+`adminActionPoints` aceita prazo/encerramento ISO date ou null e frequência diária, semanal, quinzenal ou mensal, ou null para pontuais. Dias de envio, horário de Brasília e início da recorrência espelham o formulário do produto; campos ausentes recebem valores neutros para restaurar registros antigos sem reiniciar o restante da demo. São somente dados locais de apresentação: não há agenda, envio ou integração.
+
+`adminProfile` é a identidade fictícia editável do superadmin da apresentação; nome e avatar são separados do perfil do cliente e reiniciados com o restante do cenário.
+
+`adminCampaigns` e `adminLeads` começam nos seeds fictícios de aquisição e recebem alterações apenas no estado local. `demoAdminSnapshotForState` alimenta as telas compartilhadas. `registerDemoLead` valida o link ativo, os campos obrigatórios e duplicidade por campanha; registra um lead sem usuário nem organização. Senhas e intenções OAuth não entram no estado.
+A consulta de CNPJ do formulário progressivo é atendida exclusivamente por `demo-request.ts`, com razão social fictícia fixa para 14 dígitos; não sai para cadastro externo.
+
+`adminTestedActionPoints` guarda somente os IDs dos testes de envio simulados na aba administrativa; não representa mensagem no Slack nem ocorrência do cron.
 
 `adminFollowUpPlans` conserva planos de acompanhamento por Action Point e versão. `demo-action-point-follow-up.ts` monta uma proposta fictícia com diagnóstico e texto da versão publicada do ativo, simula ciclos determinísticos e soma contagens. A proposta é editável antes da aprovação; um plano ativo mantém os ciclos da sua versão. Nenhuma classificação da demo deve ser apresentada como avaliação real de uma resposta ou prova de execução.
 

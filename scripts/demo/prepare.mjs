@@ -10,7 +10,7 @@ const visited = new Set();
 const extensions = ["", ".ts", ".tsx", ".js", ".mjs", ".json", ".css", "/index.ts", "/index.tsx"];
 
 function scopePublicAssets(source) {
-  return source.replace(/(["'`])\/(favicon\.png|directscal-logo(?:-dark)?\.svg|(?:action-points|initiatives\/avatars|demo\/avatars)\/[^"'`]+\.(?:svg|png|jpe?g|webp))/g, "$1/demo-static/$2");
+  return source.replace(/(["'`])\/(favicon\.png|directscal-logo(?:-dark)?\.svg|auth-figma-google\.svg|auth-caio-farah\.png|liquid_background\.mp4|(?:action-points|initiatives\/avatars|demo\/avatars|auth)\/[^"'`]+\.(?:svg|png|jpe?g|webp))/g, "$1/demo-static/$2");
 }
 
 async function resolveImport(importer, specifier) {
@@ -26,7 +26,7 @@ async function resolveImport(importer, specifier) {
 async function include(file) {
   if (visited.has(file)) return;
   const relative = path.relative(root, file);
-  if (relative.startsWith("..") || /src\/lib\/(auth|supabase|agent|integrations|email)\//.test(relative) || /data-source\.ts$/.test(relative)) {
+  if (relative.startsWith("..") || /src\/lib\/(auth|supabase|agent|integrations|email)\//.test(relative) || (/data-source\.ts$/.test(relative) && relative !== "src/lib/data/admin-data-source.ts")) {
     throw new Error(`Dependência operacional proibida no pacote demo: ${relative}`);
   }
   visited.add(file);
@@ -47,7 +47,7 @@ for (const relative of ["package.json", "package-lock.json", "postcss.config.mjs
   await mkdir(path.dirname(path.join(destination, relative)), { recursive: true });
   await cp(path.join(root, relative), path.join(destination, relative));
 }
-for (const relative of ["public/favicon.png", "public/directscal-logo.svg", "public/directscal-logo-dark.svg", "public/action-points", "public/initiatives/avatars", "public/demo/avatars"]) {
+for (const relative of ["public/favicon.png", "public/directscal-logo.svg", "public/directscal-logo-dark.svg", "public/auth-figma-google.svg", "public/auth-caio-farah.png", "public/liquid_background.mp4", "public/auth", "public/action-points", "public/initiatives/avatars", "public/demo/avatars"]) {
   const output = path.join(destination, "public/demo-static", path.relative("public", relative));
   await mkdir(path.dirname(output), { recursive: true });
   await cp(path.join(root, relative), output, { recursive: true });

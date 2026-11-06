@@ -12,8 +12,9 @@ import { submitDemoResponse, type DemoState } from "./demo-state";
 import { normalizeManagementAssetCategory } from "@/lib/data/management-asset-categories";
 import { getManagementAssetHref } from "@/lib/data/management-asset-routes";
 import { demoHref } from "./demo-routes";
-import { demoAdminSnapshot, demoAdminSpecialists } from "./demo-admin-data";
+import { demoAdminSnapshot, demoAdminSnapshotForState, demoAdminSpecialists } from "./demo-admin-data";
 import { adminSpecialistSchema } from "@/lib/contracts/admin-operations";
+import { acquisitionCampaignSchema } from "@/lib/contracts/admin";
 
 const surveyInput = z.object({ name: z.string().trim().min(1).max(120), description: z.string().nullable(), deadline: z.string().nullable() });
 const categoryInput = z.object({ key: z.string().optional(), title: z.string().trim().min(2).max(120) });
@@ -30,6 +31,11 @@ export function applyDemoRequest(state: DemoState, address: string, init: Reques
   const body = JSON.parse(typeof init.body === "string" ? init.body : "{}");
   const assets = state.assets ?? demoAssets;
   const folders = demoFolders(state);
+  if (url.pathname === "/api/acquisition/company-by-cnpj" && method === "POST") {
+   const digits = String(body.cnpj ?? "").replace(/\D/g, "");
+   if (digits.length !== 14) return fail("Informe um CNPJ com 14 dígitos.");
+   return result({ values: { razao_social: "Empresa de demonstração Ltda", nome_fantasia: "Empresa Demo", situacao_cadastral: "Ativa", cnpj: body.cnpj } });
+  }
   if (url.pathname.startsWith("/api/admin/") && state.deletedCompanyIds?.includes("demo-vertex") && !["/api/admin/acquisition", "/api/admin/specialists", "/api/admin/companies"].includes(url.pathname)) return fail("Empresa não encontrada.", 404);
   const adminAsset = applyDemoAdminAssetRequest(state, url.pathname, method, body);
   if (adminAsset) return adminAsset;
@@ -54,7 +60,18 @@ export function applyDemoRequest(state: DemoState, address: string, init: Reques
    return result({}, { ...state, adminGapReviews: [...(state.adminGapReviews ?? []), { ...input, sequence: (latest?.sequence ?? 0) + 1, actorName: "Admin Directscal", recordedAt: DEMO_DATE }] });
   }
 
-  if (url.pathname === "/api/admin/acquisition" && method === "GET") return result({ ...demoAdminSnapshot, companies: demoAdminSnapshot.companies.filter(company => !state.deletedCompanyIds?.includes(company.id)) });
+  if (url.pathname === "/api/admin/acquisition" && method === "GET") return result(demoAdminSnapshotForState(state));
+  if (url.pathname === "/api/admin/campaigns" && (method === "POST" || method === "PUT")) {
+   const campaign = acquisitionCampaignSchema.parse(body);
+   const campaigns = state.adminCampaigns ?? demoAdminSnapshot.campaigns;
+   if (!demoAdminSnapshot.modules.some(module => module.id === campaign.moduleId)) return fail("Módulo indisponível.");
+   if (campaign.publicPath !== `/a/${campaign.slug}`) return fail("Link da campanha inválido.");
+   if (campaigns.some(item => item.slug === campaign.slug && item.id !== campaign.id)) return fail("Este link já está em uso.", 409);
+   if (method === "POST" && campaigns.some(item => item.id === campaign.id)) return fail("Campanha já cadastrada.", 409);
+   if (method === "PUT" && !campaigns.some(item => item.id === campaign.id)) return fail("Campanha não encontrada.", 404);
+   const updated = { ...campaign, updatedAt: DEMO_DATE };
+   return result({ campaign: updated }, { ...state, adminCampaigns: method === "POST" ? [...campaigns, updated] : campaigns.map(item => item.id === campaign.id ? updated : item) });
+  }
   if (url.pathname === "/api/admin/companies" && method === "DELETE") {
    const parsed = z.object({ companyIds: z.string().array().min(1), confirmation: z.literal("EXCLUIR") }).parse(body);
    if (parsed.companyIds.some(id => !demoAdminSnapshot.companies.some(company => company.id === id))) return fail("Empresa não encontrada.", 404);

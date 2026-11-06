@@ -1,5 +1,11 @@
 # /demo — Apresentação pública
 
+Os cinco geradores em `/demo/admin/geradores/[tipo]` reutilizam os mesmos briefings do superadmin operacional. CSV, rascunho, cópia e download funcionam no navegador, sem serviço ou persistência operacional. A sidebar da demo mostra esses destinos.
+
+`/demo/admin/campanhas`, `/demo/admin/leads` e `/demo/admin/leads/[id]` reutilizam os componentes administrativos sobre um snapshot fictício local. `/demo/a/[slug]` e `/demo/a/[slug]/completar` usam o formulário progressivo compartilhado; cadastro gera apenas um lead no navegador. `/demo/entrar`, `/demo/criar-conta` e `/demo/recuperar-senha` são superfícies ilustrativas, sem sessão, OAuth ou e-mail. Todas essas rotas públicas ficam fora do shell com sidebar.
+
+`/demo/admin/perfil` reutiliza a edição de nome e foto do superadmin. Os dados fictícios ficam somente no estado local da demo e aparecem no cabeçalho; reiniciar restaura a identidade inicial.
+
 Layout público com dados fictícios e os mesmos componentes do app autenticado. A base visual foi conferida com o commit 7a4854a, implantado no produto durante esta correção. Mudanças no produto devem ser reaproveitadas nos componentes, sem recriar navegação ou telas.
 
 O shell de demonstração também usa o frame Figma `318:2`: topbar e conteúdo ficam na mesma superfície arredondada, com fundo `bg-background`. O recuo externo preserva a sidebar visível no desktop e vira 12px no mobile; rotas públicas do respondente continuam fora desse shell.

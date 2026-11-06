@@ -1,5 +1,11 @@
 # `src/components/admin` — Componentes do superadmin
 
+`AdminCompanyActionPointForm` aceita um callback `save` opcional para a apresentação isolada reutilizar os mesmos campos e validações visuais com persistência local. Sem callback, mantém a escrita operacional pela API administrativa.
+`AdminActionPointsWorkspace` aceita callbacks opcionais de salvamento e teste para a demo, mantendo a listagem e as seções do produto. O teste local é identificado como simulação; sem callbacks, o fluxo usa a API real.
+
+Campanhas, tabela de Leads e detalhe de Lead resolvem links por `AppRuntimeProvider`; `CampaignEditorDrawer` usa o request do runtime. No app, o runtime padrão mantém URLs e API operacionais. Na demo, esses componentes navegam somente em `/demo` e o adapter grava campanhas fictícias.
+`AcquisitionProgressiveForm` resolve a consulta de CNPJ pelo mesmo runtime; a demo responde com um cadastro fictício local e nunca consulta o serviço operacional.
+
 Antes de editar, releia o **AGENTS.md** da raiz e o `CLAUDE.md` de `src/components/`.
 
 ## Propósito

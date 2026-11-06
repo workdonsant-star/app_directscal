@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { ArrowUpRight, RotateCcw } from "lucide-react";
 import { AdminCompaniesTable } from "@/components/admin/admin-companies-table";
+import { AdminCampaignsWorkspace } from "@/components/admin/admin-campaigns-workspace";
+import { AdminLeadsTable } from "@/components/admin/admin-leads-table";
+import { AdminLeadDetail } from "@/components/admin/admin-lead-detail";
 import { AdminCompanyTabs } from "@/components/admin/admin-company-tabs";
 import { OverviewDiagnosticFilter } from "@/components/omdx/overview-diagnostic-filter";
 import { AdminCompanyDetail } from "@/components/admin/admin-company-detail";
@@ -13,21 +16,28 @@ import { AdminOperationsWorkspace } from "@/components/admin/admin-operations-wo
 import { demoAdminAssetId } from "@/lib/data/demo/demo-admin-assets";
 import { Button } from "@/components/ui/button";
 import { buildAnalyticsExample } from "@/lib/data/analytics-example";
-import { demoAdminSnapshot, demoAdminSpecialists, demoAdminCompanyContext, demoAdminDeliveries, DEMO_ORGANIZATION_ID } from "@/lib/data/demo/demo-admin-data";
+import { demoAdminSnapshot, demoAdminSnapshotForState, demoAdminSpecialists, demoAdminCompanyContext, demoAdminDeliveries, DEMO_ORGANIZATION_ID } from "@/lib/data/demo/demo-admin-data";
 import { buildDemoUsage, DEMO_COMPANY } from "@/lib/data/demo/demo-data";
-import { useDemo } from "@/components/demo/demo-store";
+import { updateDemo, useDemo } from "@/components/demo/demo-store";
+import { AdminProfileSettings } from "@/components/profile/admin-profile-settings";
 
 const demoAreas = [
   { title: "Empresas cadastradas", description: "Abra os dados e as áreas de trabalho da empresa.", href: "/demo/admin/empresas" },
   { title: "Especialistas", description: "Consulte a equipe responsável pelas entregas.", href: "/demo/admin/especialistas" },
   { title: "Motores de IA", description: "Cadastre modelos fictícios de Anthropic, OpenAI e Google e defina as etapas do agente.", href: "/demo/admin/motores-de-ia" },
+  { title: "Campanhas", description: "Configure links e campos de aquisição fictícios.", href: "/demo/admin/campanhas" },
+  { title: "Leads", description: "Consulte cadastros fictícios e os recebidos nesta apresentação.", href: "/demo/admin/leads" },
   { title: "Ativos de gestão", description: "Documentos da Vertex Logistics no contexto administrativo.", href: "/demo/admin/empresas/demo-vertex/criacao-dos-ativos" },
 ];
 
-type Section = "home" | "empresas" | "especialistas" | "operacao" | "empresa" | "empresa-operacao";
+type Section = "home" | "empresas" | "especialistas" | "operacao" | "empresa" | "empresa-operacao" | "perfil" | "campanhas" | "leads" | "lead-detail";
 
-export function DemoAdmin({ section, diagnosticId }: { section: Section; diagnosticId?: string }) {
+export function DemoAdmin({ section, diagnosticId, leadId }: { section: Section; diagnosticId?: string; leadId?: string }) {
   const { state } = useDemo();
+  if (section === "perfil") return <AdminProfileSettings profile={{ name: state.adminProfile?.name ?? "Admin Directscal", email: "admin@directscal.example", avatarUrl: state.adminProfile?.avatarUrl ?? null }} saveProfile={profile => updateDemo(current => ({ ...current, adminProfile: profile }))} />;
+  if (section === "campanhas") return <AdminCampaignsWorkspace initialSnapshot={demoAdminSnapshotForState(state)} />;
+  if (section === "leads") return <AdminLeadsTable initialSnapshot={demoAdminSnapshotForState(state)} />;
+  if (section === "lead-detail" && leadId) return <AdminLeadDetail leadId={leadId} initialSnapshot={demoAdminSnapshotForState(state)} />;
   if (section === "empresas") {
     return <AdminCompaniesTable initialSnapshot={{ ...demoAdminSnapshot, companies: demoAdminSnapshot.companies.filter(company => !state.deletedCompanyIds?.includes(company.id)) }} />;
   }

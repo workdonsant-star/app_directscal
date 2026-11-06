@@ -2,6 +2,7 @@
 
 import { Plus, Save, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { useAppRuntime } from "@/components/app-runtime";
 
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { Button } from "@/components/ui/button";
@@ -90,6 +91,7 @@ export function CampaignEditorDrawer({
   open,
   onOpenChange,
 }: CampaignEditorDrawerProps) {
+  const runtime = useAppRuntime();
   const [draft, setDraft] = useState<AcquisitionCampaign | null>(campaign);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -173,7 +175,7 @@ export function CampaignEditorDrawer({
     };
 
     try {
-      const response = await fetch("/api/admin/campaigns", {
+      const response = await runtime.request("/api/admin/campaigns", {
         method: mode === "create" ? "POST" : "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(nextDraft),

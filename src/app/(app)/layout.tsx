@@ -98,6 +98,7 @@ async function AuthenticatedAppLayout({
       <SidebarProvider className="app-shell bg-shell">
         <AppSidebar
           assetNavigationPreferences={assetNavigationPreferences}
+          canManageAssetCategories={sidebarUser.role === "cliente" && !accessContext.session.acquisition}
           acquisitionEnabled={isFeatureAcquisitionEnabled()}
           enabledModuleIds={accessContext.enabledModuleIds}
           user={sidebarUser}

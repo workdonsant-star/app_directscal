@@ -3,6 +3,7 @@
 import { Check, Copy, ExternalLink, Plus, Settings } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useAppRuntime } from "@/components/app-runtime";
 
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { CampaignEditorDrawer } from "@/components/admin/campaign-editor-drawer";
@@ -44,6 +45,7 @@ export function AdminCampaignsWorkspace({
 }: {
   initialSnapshot: AdminDataSnapshot;
 }) {
+  const runtime = useAppRuntime();
   const { campaigns, leads, modules } = useAdminDataSnapshot(initialSnapshot);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const [selectedCampaign, setSelectedCampaign] =
@@ -69,7 +71,7 @@ export function AdminCampaignsWorkspace({
 
   async function handleCopy(campaign: AcquisitionCampaign) {
     const origin = window.location.origin;
-    const url = `${origin}${campaign.publicPath}`;
+    const url = `${origin}${runtime.href(campaign.publicPath)}`;
     await navigator.clipboard.writeText(url);
     setCopiedSlug(campaign.slug);
     window.setTimeout(() => setCopiedSlug(null), 1800);
@@ -133,7 +135,7 @@ export function AdminCampaignsWorkspace({
               variant="outline"
               size="sm"
               nativeButton={false}
-              render={<Link href="/admin/leads" />}
+              render={<Link href={runtime.href("/admin/leads")} />}
             >
               Ver leads
             </Button>
@@ -227,7 +229,7 @@ export function AdminCampaignsWorkspace({
                           size="icon-sm"
                           aria-label="Abrir link público"
                           nativeButton={false}
-                          render={<Link href={campaign.publicPath} />}
+                          render={<Link href={runtime.href(campaign.publicPath)} />}
                         >
                           <ExternalLink className="size-4" />
                         </Button>

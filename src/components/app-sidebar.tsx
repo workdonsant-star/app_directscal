@@ -94,6 +94,7 @@ export function AppSidebar({
   initiativeScope,
   assetNavigationPreferences = { order: [], icons: {} },
   managementAssetCategories = getManagementAssetCategoryFolders([]),
+  canManageAssetCategories,
   demoMode = false,
   acquisitionEnabled = false,
   enabledModuleIds,
@@ -102,6 +103,7 @@ export function AppSidebar({
   initiativeScope?: string;
   assetNavigationPreferences?: AssetNavigationPreferences;
   managementAssetCategories?: ManagementAssetCategoryFolder[];
+  canManageAssetCategories?: boolean;
   demoMode?: boolean;
   acquisitionEnabled?: boolean;
   enabledModuleIds?: string[];
@@ -198,13 +200,11 @@ export function AppSidebar({
     ...(demoMode || user.role === "superadmin" ? [{
       label: "Agentes",
       items: [
-        ...(!demoMode ? [
           { title: "Contratos", url: "/admin/geradores/contratos", icon: ScrollText, isActive: pathname === "/admin/geradores/contratos" },
           { title: "Diagnósticos", url: "/admin/geradores/diagnosticos", icon: ClipboardList, isActive: pathname === "/admin/geradores/diagnosticos" },
           { title: "Documentos gerais", url: "/admin/geradores/documentos", icon: Files, isActive: pathname === "/admin/geradores/documentos" },
           { title: "Propostas", url: "/admin/geradores/propostas", icon: FilePenLine, isActive: pathname === "/admin/geradores/propostas" },
           { title: "SOPs", url: "/admin/geradores/sops", icon: FileText, isActive: pathname === "/admin/geradores/sops" },
-        ] : []),
         { title: "Motores de IA", url: "/admin/motores-de-ia", icon: Plug, isActive: pathname === "/admin/motores-de-ia" },
       ],
     }] : []),
@@ -251,7 +251,7 @@ export function AppSidebar({
             <ManagementAssetNavigation
               key={`${initiativeScope ?? user.id}:${JSON.stringify(assetNavigationPreferences)}`}
               initialPreferences={assetNavigationPreferences}
-              canManage={false}
+              canManage={canManageAssetCategories ?? user.role === "cliente"}
               folders={managementAssetCategories}
               onNavigate={closeCompactSidebar}
             />

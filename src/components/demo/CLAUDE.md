@@ -1,5 +1,9 @@
 # Apresentação com os componentes do produto
 
+O superadmin da demo acessa os cinco geradores pelo `AppSidebar` compartilhado; os briefings são locais e não chamam APIs.
+
+`DemoAcquisition` reutiliza `AuthPageShell` e `AcquisitionProgressiveForm` para os links de Campanhas. A opção Google abre apenas a etapa fictícia de conclusão; o envio cria um lead local com status `lead`, sem conta. `DemoAuth` usa o mesmo shell visual para entrada, cadastro e recuperação e identifica a simulação. Nunca importar Auth.js, clientes de banco ou serviços operacionais para estes componentes.
+
 Na área Diagnósticos da demo, o cliente vê somente PDFs enviados pelo superadmin fictício. `DemoUploadedReports` lê os metadados locais e usa `UploadedReportsList`, com o mesmo card da listagem anterior; o download vem do IndexedDB pelo runtime. Sem arquivo enviado, mostra estado vazio. A aba Diagnósticos da empresa abre o mesmo formulário de upload restrito a PDF; não há leitura HTML demonstrativa.
 
 `DemoShell` compõe os mesmos AppSidebar, NavUser, SidebarProvider e SidebarInset do layout autenticado. Não manter uma segunda sidebar, topbar, chat, biblioteca ou tabela. As telas usam DiagnosticsWorkspace, ManagementAssetsLibrary, ManagementAssetEditableReader, AiChatWorkspace, ReportWorkspace e os formulários de Configurações/Perfil do produto. A visão administrativa reutiliza AdminCompaniesTable, AdminSpecialistsWorkspace, AdminCompanyTabs e AnalyticsOverview; operações desses componentes passam pelo AppRuntimeProvider e por fixtures locais.
@@ -28,7 +32,7 @@ No superadmin, o menu Demo oferece somente a troca explícita para cliente e o r
 
 ## Action points do consultor
 
-A empresa fictícia tem a aba Action points (`/demo/admin/empresas/demo-vertex/action-points`), ligada por `showActionPoints` em `AdminCompanyTabs`. `DemoAdminActionPoints` segue o padrão visual da aba Arquivos, sem repetir o nome da aba como título: um botão alinhado à direita, lista simples e painel lateral (`Sheet`), como o editor de Rotinas. O consultor cria e edita cada action point com título, ativo de gestão (seletor obrigatório entre os ativos da empresa), líder (seletor no diretório Slack fictício `demoRoutineUsers`), tipo Pontual/Recorrente e três textos: Por que existe, O que fazer e Papel do ativo na continuidade. Não há subações, status ou publicação por item.
+A empresa fictícia tem a aba Action points (`/demo/admin/empresas/demo-vertex/action-points`). `DemoAdminActionPoints` injeta fixtures e salvamento local no mesmo `AdminActionPointsWorkspace` do produto, incluindo a seção de ações publicadas em entregas. O consultor cria e edita cada action point no formulário compartilhado com ativo publicado, líder do diretório fictício, tipo e os três textos operacionais. O teste de envio é rotulado como simulação e não chama Slack.
 
 O estado fica em `adminActionPoints` no navegador; até o primeiro salvamento a aba mostra dois exemplos. Reiniciar a demo restaura os exemplos. A visão do cliente em `/demo/action-points` ainda não lê esses registros. O workspace antigo de Entregas permanece sem alteração.
 
@@ -36,11 +40,11 @@ A listagem administrativa agrupa os action points pelo ID do líder no diretóri
 
 Nas três abas da empresa (Visão geral, Arquivos e Action points) não há título de seção repetindo o nome da aba. As ações de cada aba ficam na linha das abas, à direita, acima da divisória: filtro de pesquisa, Nova pasta/Novo arquivo e Novo action point. A demo liga isso por `actions` em `AdminCompanyTabs`, `actionsInTabs` em `CompanyFilesWorkspace` e `hideHeader` em `AnalyticsOverview`.
 
-Action points pontuais aceitam prazo opcional. Recorrentes têm frequência diária, semanal, quinzenal ou mensal, sem horários, e encerramento opcional; não há agendamento nem geração de ocorrências. A lista mostra frequência e data de encerramento ou Sem encerramento; pontuais sem data mostram Sem prazo. Trocar o tipo limpa a data para não converter prazo em encerramento implicitamente. Os exemplos iniciais são semanais. O estado antigo sem frequência é tratado como pontual, preservando o prazo existente.
+Action points pontuais aceitam prazo opcional. Recorrentes usam o mesmo formulário do produto, com frequência diária, semanal, quinzenal ou mensal, dias da semana e horário de Brasília em passos de cinco minutos, além de encerramento opcional. A demo salva essa programação apenas no navegador: não agenda nem envia ocorrências. A lista mostra dias, horário e data de encerramento ou Sem encerramento; pontuais sem data mostram Sem prazo. Trocar o tipo limpa a data para não converter prazo em encerramento implicitamente. Os exemplos iniciais são semanais e têm programação fictícia. O estado antigo sem frequência é tratado como pontual, preservando o prazo existente.
 
 ## Plano do agente na demo
 
-Cada linha administrativa abre `DemoActionPointPlan` em um painel próprio. A proposta local usa a pergunta do diagnóstico fictício e um trecho da versão publicada do ativo; o consultor revisa fatos, campos, perguntas, esclarecimentos, evidência e orientação antes de `Aprovar e ativar`. Rascunhos e versões aprovadas ficam em `adminFollowUpPlans` no armazenamento local. Mudança de ativo publicado ou frequência bloqueia novos ciclos até preparar outra versão. A aprovação ocorre uma vez por plano; os ciclos seguintes não têm revisão humana. `Simular próximo ciclo` apresenta até três respostas e classificações fixas, adaptadas à frequência, com contagens de aderência demonstrada, respostas e lacunas. A interface identifica a simulação e não faz chamadas de IA, Slack ou API. A visão do cliente continua independente desta configuração.
+O antigo `DemoActionPointPlan` não aparece mais nessa aba: o app atual mostra teste de envio e histórico de acompanhamento por Action Point. A demo preserva o código do plano apenas para compatibilidade de estados antigos, mas a interface exibe somente um marcador de envio simulado, sem conversa ou medição fictícia.
 
 ## Motores de IA do superadmin fictício
 

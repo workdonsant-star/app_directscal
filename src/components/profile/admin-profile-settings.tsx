@@ -28,7 +28,7 @@ function initials(name: string) {
   return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("");
 }
 
-export function AdminProfileSettings({ profile }: { profile: AdminProfile }) {
+export function AdminProfileSettings({ profile, saveProfile }: { profile: AdminProfile; saveProfile?: (profile: Pick<AdminProfile, "name" | "avatarUrl">) => Promise<void> | void }) {
   const router = useRouter();
   const [name, setName] = useState(profile.name);
   const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl);
@@ -71,6 +71,12 @@ export function AdminProfileSettings({ profile }: { profile: AdminProfile }) {
     setSaving(true);
     setNotice(null);
     try {
+      if (saveProfile) {
+        await saveProfile({ name: trimmedName, avatarUrl });
+        setName(trimmedName);
+        setNotice({ message: "Alterações salvas.", tone: "success" });
+        return;
+      }
       const response = await fetch("/api/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },

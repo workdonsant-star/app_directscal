@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAppRuntime } from "@/components/app-runtime";
 
 import { useAdminDataSnapshot } from "@/components/admin/use-admin-data";
 import type { AdminDataSnapshot } from "@/lib/data/admin-data-source";
@@ -34,6 +35,7 @@ const leadStatusLabel: Record<AcquisitionLeadStatus, string> = {
 export function AdminLeadsTable({ initialSnapshot }: { initialSnapshot: AdminDataSnapshot }) {
   const { leads } = useAdminDataSnapshot(initialSnapshot);
   const router = useRouter();
+  const runtime = useAppRuntime();
 
   return (
     <section className="flex flex-col gap-4">
@@ -50,7 +52,7 @@ export function AdminLeadsTable({ initialSnapshot }: { initialSnapshot: AdminDat
           variant="outline"
           size="sm"
           nativeButton={false}
-          render={<Link href="/admin/campanhas" />}
+          render={<Link href={runtime.href("/admin/campanhas")} />}
         >
           Ver campanhas
         </Button>
@@ -77,12 +79,12 @@ export function AdminLeadsTable({ initialSnapshot }: { initialSnapshot: AdminDat
                 <TableRow
                   key={lead.id}
                   className="cursor-pointer"
-                  onClick={() => router.push(detailPath)}
+                  onClick={() => router.push(runtime.href(detailPath))}
                 >
                   <TableCell>
                     <div className="flex flex-col">
                       <Link
-                        href={detailPath}
+                        href={runtime.href(detailPath)}
                         className="font-medium text-foreground underline-offset-4 hover:underline"
                         onClick={(event) => event.stopPropagation()}
                       >

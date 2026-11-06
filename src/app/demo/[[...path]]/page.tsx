@@ -13,6 +13,10 @@ import { DemoAdminDelivery } from "@/components/demo/demo-admin-delivery";
 import { ProductGuide } from "@/components/help/product-guide";
 import { DemoAdmin } from "@/components/demo/demo-admin";
 import { DemoAiEngines } from "@/components/demo/demo-ai-engines";
+import { DemoAcquisition } from "@/components/demo/demo-acquisition";
+import { DemoAuth } from "@/components/demo/demo-auth";
+import { GeneratorBriefingWorkspace } from "@/components/admin/generators/generator-briefing-workspace";
+import { isGeneratorKind } from "@/components/admin/generators/generator-config";
 import { AnalyticsOverview } from "@/components/omdx/analytics/analytics-overview";
 import { PublicResponseThankYou } from "@/components/omdx/public-response-thank-you";
 import { ReportWorkspace } from "@/components/reports/report-workspace";
@@ -29,6 +33,7 @@ export default async function DemoPage({ params, searchParams }: {
  const section = path.join("/");
  const query = await searchParams;
  if (path[0] === "admin") {
+  if (path[1] === "geradores" && path.length === 3 && isGeneratorKind(path[2])) return <><AppTopbar /><AppPage><GeneratorBriefingWorkspace kind={path[2]} /></AppPage></>;
   if (path[1] === "motores-de-ia" && path.length === 2) return <><AppTopbar /><AppPage><DemoAiEngines /></AppPage></>;
   if (path[1] === "empresas" && path[2] === "demo-vertex") {
    if (path[3] === "relatorio" && path.length === 4) return <DemoAdminCompany section="reports" />;
@@ -43,14 +48,19 @@ export default async function DemoPage({ params, searchParams }: {
   if (path[1] === "guia" && path.length === 2) return <><AppTopbar /><AppPage><ProductGuide audience="operation" /></AppPage></>;
 
   const adminSection = path.length === 1 ? "home"
-   : path.length === 2 && ["empresas", "especialistas", "operacao"].includes(path[1]) ? path[1]
+   : path.length === 2 && ["empresas", "especialistas", "operacao", "perfil", "campanhas", "leads"].includes(path[1]) ? path[1]
+   : path.length === 3 && path[1] === "leads" ? "lead-detail"
    : path.length === 3 && path[1] === "empresas" && path[2] === "demo-vertex" ? "empresa"
    : path.length === 4 && path[1] === "empresas" && path[2] === "demo-vertex" && path[3] === "operacao" ? "empresa-operacao"
    : null;
   if (!adminSection) notFound();
-  const breadcrumb = adminSection === "empresa" || adminSection === "empresa-operacao" ? [{ label: "Empresas", href: "/demo/admin/empresas" }, { label: "Vertex Logistics" }] : undefined;
-  return <><AppTopbar breadcrumb={breadcrumb} /><AppPage><DemoAdmin diagnosticId={query.diagnostico} section={adminSection as "home" | "empresas" | "especialistas" | "operacao" | "empresa" | "empresa-operacao"} /></AppPage></>;
+  const breadcrumb = adminSection === "empresa" || adminSection === "empresa-operacao" ? [{ label: "Empresas", href: "/demo/admin/empresas" }, { label: "Vertex Logistics" }] : adminSection === "lead-detail" ? [{ label: "Leads", href: "/demo/admin/leads" }, { label: "Detalhe" }] : undefined;
+  return <><AppTopbar breadcrumb={breadcrumb} /><AppPage><DemoAdmin diagnosticId={query.diagnostico} leadId={adminSection === "lead-detail" ? path[2] : undefined} section={adminSection as "home" | "empresas" | "especialistas" | "operacao" | "empresa" | "empresa-operacao" | "perfil" | "campanhas" | "leads" | "lead-detail"} /></AppPage></>;
  }
+ if (section === "entrar") return <DemoAuth mode="login" />;
+ if (section === "criar-conta") return <DemoAuth mode="signup" />;
+ if (section === "recuperar-senha") return <DemoAuth mode="reset" />;
+ if (path[0] === "a" && path[1] && (path.length === 2 || (path.length === 3 && path[2] === "completar"))) return <DemoAcquisition slug={path[1]} googleCompletion={path[2] === "completar"} />;
  if (section === "pesquisas") return <DemoSurveys />;
  if (section === "responder") return <DemoResponse token={`${query.pesquisa ?? "demo-survey-active"}~operacao`} />;
  if (path[0] === "r" && path[1]) return path[2] === "obrigado" ? <PublicResponseThankYou /> : <DemoResponse token={decodeURIComponent(path[1])} />;

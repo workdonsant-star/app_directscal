@@ -4,6 +4,8 @@ Componentes da página `/perfil`, usados para configurar os dados pessoais da co
 
 `admin-profile-settings.tsx` atende `/admin/perfil`: edita apenas nome e foto da sessão do superadmin, com o mesmo recorte circular e `PUT /api/profile`. Não solicita dados empresariais nem oferece troca de senha do cliente.
 
+Na demo isolada, o mesmo componente recebe `saveProfile` e guarda nome/foto fictícios apenas no estado local reiniciável. Sem callback, a gravação operacional continua na API.
+
 ## Propósito
 
 - Persistir nome e avatar via PUT /api/profile, com identidade derivada da sessão.

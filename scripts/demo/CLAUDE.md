@@ -8,5 +8,7 @@ O pacote para demo_directscal usa assetPrefix /demo-static, com logos, ícones e
 
 `prepare.mjs` copia `public/demo/avatars/` e reescreve as referências locais para `/demo-static/demo/avatars/`, preservando o recorte definido no CSS da demo.
 
+As telas públicas fictícias reutilizam `AuthPageShell`; por isso o pacote também copia as imagens, logos e vídeo de `public/auth/` e os assets `auth-*` para `/demo-static`. A exceção de import para `admin-data-source.ts` é restrita a esse módulo puro de transformação e seeds; as fontes server-side de aquisição continuam proibidas.
+
 
 O pacote inclui `src/lib/pdf/assets` e o tracing explícito da rota de relatório, para que fontes e capa também estejam disponíveis no download em produção.

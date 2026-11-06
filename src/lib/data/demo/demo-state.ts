@@ -11,6 +11,7 @@ import { adminManagementAssetDetailSchema } from "@/lib/contracts/management-ass
 import { adminDeliveryPublicationSchema } from "@/lib/contracts/admin-operations";
 import { agentGapReviewSchema } from "@/lib/contracts/agent-operations";
 import { adminSpecialistSchema } from "@/lib/contracts/admin-operations";
+import { acquisitionCampaignSchema, leadSchema } from "@/lib/contracts/admin";
 import { customerDocumentSchema } from "@/lib/contracts/customer-documents";
 
 export const DEMO_STORAGE_KEY = "directscal:presentation:v1";
@@ -21,6 +22,9 @@ export const demoActionPointSchema = z.object({
   leaderUserId: z.string().max(100),
   deadline: z.iso.date().nullable().default(null),
   frequency: z.enum(["diaria", "semanal", "quinzenal", "mensal"]).nullable().default(null),
+  weekdays: z.array(z.number().int().min(0).max(6)).max(7).default([]),
+  sendTime: z.string().regex(/^([01]\d|2[0-3]):[0-5][05]$/).nullable().default(null),
+  scheduleStartsOn: z.iso.date().nullable().default(null),
   reason: z.string().max(2000),
   action: z.string().max(2000),
   continuity: z.string().max(2000),
@@ -75,16 +79,20 @@ export const demoStateSchema = z.object({
   messages: z.array(z.object({ role: z.enum(["user", "assistant"]), text: z.string().max(5000), assetId: z.string().nullable() })).max(100),
   sectors: organizationSectorSchema.array().optional(),
   profile: profileSettingsDataSchema.optional(),
+  adminProfile: z.object({ name: z.string().trim().min(1).max(120), avatarUrl: z.string().max(2000000).nullable() }).optional(),
   slackConnected: z.boolean().default(true),
   assets: managementAssetDocumentSchema.array().optional(),
   navigation: assetNavigationPreferencesSchema.default({ order: [], icons: {} }),
   responseTokens: z.string().array().default([]),
   adminAssets: adminManagementAssetDetailSchema.array().max(100).optional(),
+  adminCampaigns: acquisitionCampaignSchema.array().max(50).optional(),
+  adminLeads: leadSchema.array().max(200).optional(),
   adminDeletedAssetIds: z.string().array().max(100).optional(),
   adminRoutineChanges: adminRoutineWriteSchema.array().max(100).optional(),
   adminContactPolicies: routineContactPolicyInputSchema.array().max(100).optional(),
   adminBaselines: resultBaselineSchema.array().max(100).optional(),
   adminActionPoints: demoActionPointSchema.array().max(100).optional(),
+  adminTestedActionPoints: z.string().array().max(100).optional(),
   adminFollowUpPlans: demoFollowUpPlanSchema.array().max(100).optional(),
   adminAiEngines: demoAiEngineSchema.array().max(30).optional(),
   adminAiAssignments: demoAiAssignmentsSchema.optional(),
